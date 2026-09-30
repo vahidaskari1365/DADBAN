@@ -7,6 +7,8 @@ import { noFlashScript } from "@/components/no-flash";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Tracker } from "@/components/tracker";
+import { RegisterSW } from "@/components/pwa/register-sw";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/brand";
 
 /* فونت وزیرمتن به‌صورت local میزبانی می‌شود تا build به شبکه خارجی وابسته نباشد */
@@ -28,9 +30,32 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   keywords: [
     "وکیل", "مشاوره حقوقی آنلاین", "وکیل خانواده", "وکیل ملکی", "وکیل کیفری",
-    "تنظیم قرارداد", "چک برگشتی", "طلاق", "ثبت شرکت", "مشاوره وکیل", "دادبان",
+    "تنظیم قرارداد", "چک برگشتی", "طلاق", "ثبت شرکت", "مشاوره وکیل", "شریف‌مند",
   ],
-  icons: { icon: "/logo1.png", apple: "/logo1.png" },
+  applicationName: SITE_NAME,
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: ["/favicon-32.png"],
+  },
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: "black-translucent",
+    startupImage: ["/icon-512.png"],
+  },
+  formatDetection: {
+    telephone: false,
+    address: false,
+    email: false,
+  },
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
@@ -39,11 +64,16 @@ export const metadata: Metadata = {
     title: `${SITE_NAME} | پلتفرم هوشمند خدمات حقوقی`,
     description:
       `جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در ${SITE_NAME}.`,
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: SITE_NAME }],
   },
   robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f5f7fb" },
     { media: "(prefers-color-scheme: dark)", color: "#141416" },
@@ -79,6 +109,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content={SITE_NAME} />
+        <meta name="application-name" content={SITE_NAME} />
+        <meta name="msapplication-TileColor" content="#15365d" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="theme-color" content="#15365d" />
       </head>
       <body className="bg-background text-foreground antialiased">
         <ThemeProvider>
@@ -88,12 +126,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           >
             پرش به محتوای اصلی
           </a>
-          <Header />
-          <main id="main" className="page-wash">
-            {children}
-          </main>
-          <Footer />
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main id="main" className="page-wash flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
           <Tracker />
+          <RegisterSW />
+          <InstallPrompt />
         </ThemeProvider>
       </body>
     </html>
