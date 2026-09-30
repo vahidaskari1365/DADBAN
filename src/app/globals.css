@@ -324,3 +324,44 @@ input, select, textarea {
     padding-right: max(1rem, var(--safe-right));
   }
 }
+
+/* ============================================================
+   Bottom Navigation — mobile app-like tab bar
+   ============================================================ */
+
+/* فضای خالی پایین body برای جلوگیری از پنهان شدن محتوا زیر bottom nav
+   فقط روی موبایل/تبلت (lg breakpoint و پایین‌تر) */
+@media (max-width: 1023px) {
+  body {
+    /* 80px ارتفاع نوار + safe-area-inset-bottom */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+  /* اگه install prompt هم فعال شد، فضای بیشتری لازمه */
+  body:has([data-pwa-install-banner]) {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 100px);
+  }
+}
+
+/* روی دسکتاپ، body بدون padding-bottom */
+@media (min-width: 1024px) {
+  body {
+    padding-bottom: 0;
+  }
+}
+
+/* انیمیشن محو شدن نوار پایین هنگام اسکرول (اختیاری) */
+.bottom-nav-hidden {
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bottom-nav-visible {
+  transform: translateY(0);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* بک‌گراند شیشه‌ای نوار پایین */
+.glass-nav {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: color-mix(in oklab, var(--surface) 88%, transparent);
+}
