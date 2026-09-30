@@ -75,7 +75,6 @@ export default function ManagedOperations({ currentRole }: { currentRole: string
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
     void loadOps();
   }, [load, loadOps]);
