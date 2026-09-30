@@ -365,3 +365,74 @@ input, select, textarea {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   background-color: color-mix(in oklab, var(--surface) 88%, transparent);
 }
+
+/* ============================================================
+   Native App-like enhancements — mobile UX
+   ============================================================ */
+
+/* انیمیشن‌های drawer موبایل */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in { animation: fade-in 0.2s ease-out both; }
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in-right { animation: slide-in-right 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* در RTL، drawer از راست میاد — برای LTR از چپ */
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* انیمیشن ورود محتوا (stagger) برای حس اپ نیتیو */
+@keyframes app-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.app-entrance > * {
+  animation: app-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.app-entrance > *:nth-child(1) { animation-delay: 0.05s; }
+.app-entrance > *:nth-child(2) { animation-delay: 0.12s; }
+.app-entrance > *:nth-child(3) { animation-delay: 0.19s; }
+.app-entrance > *:nth-child(4) { animation-delay: 0.26s; }
+.app-entrance > *:nth-child(5) { animation-delay: 0.33s; }
+.app-entrance > *:nth-child(6) { animation-delay: 0.40s; }
+
+/* حذف scroll restoration مزاحم روی موبایل */
+@media (max-width: 1023px) {
+  html {
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+  }
+  /* هدر موبایل فشرده‌تر */
+  header.sticky > div {
+    height: 56px !important;
+  }
+}
+
+/* دکمه‌های لمسی — feedback فوری */
+@media (pointer: coarse) {
+  a, button, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* افکت فشردگی برای دکمه‌های اصلی */
+  .btn-press {
+    transition: transform 0.1s ease;
+  }
+  .btn-press:active {
+    transform: scale(0.96);
+  }
+}
+
+/* کارت‌های لمسی بزرگ‌تر روی موبایل */
+@media (max-width: 640px) {
+  /* اطمینان از حداقل ارتفاع کارت‌های لمسی */
+  a[class*="rounded-2xl"][class*="border"]:not([class*="h-full"]) {
+    min-height: 56px;
+  }
+}

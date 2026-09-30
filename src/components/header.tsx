@@ -154,23 +154,33 @@ export function Header() {
           </ul>
         </nav>
 
-        {/* Left actions */}
+        {/* Left actions — مینیمال روی موبایل */}
         <div className="flex items-center gap-2">
-          <ThemeToggle compact />
-          <a
-            href="/dashboard/client"
-            className="hidden items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-foreground-soft transition-colors hover:bg-surface-2 hover:text-foreground sm:inline-flex"
-          >
-            <Icon name="user" className="h-4 w-4" />
-            ورود
-          </a>
-          <Button href="/consultation" size="sm" icon="calendar" className="hidden sm:inline-flex">
-            رزرو مشاوره
-          </Button>
+          {/* تم‌تاگل فقط روی دسکتاپ */}
+          <div className="hidden lg:block">
+            <ThemeToggle compact />
+          </div>
+          {/* دکمه ورود فقط روی دسکتاپ (در موبایل از طریق BottomNav) */}
+          <div className="hidden lg:block">
+            <a
+              href="/dashboard/client"
+              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-foreground-soft transition-colors hover:bg-surface-2 hover:text-foreground"
+            >
+              <Icon name="user" className="h-4 w-4" />
+              ورود
+            </a>
+          </div>
+          {/* دکمه رزرو مشاوره فقط روی دسکتاپ (در موبایل از طریق BottomNav تب وسط) */}
+          <div className="hidden lg:block">
+            <Button href="/consultation" size="sm" icon="calendar">
+              رزرو مشاوره
+            </Button>
+          </div>
+          {/* آیکون منو — موبایل/تبلت، حداقل 44px touch target */}
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-foreground lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface text-foreground transition-all active:scale-90 lg:hidden"
             aria-label="منو"
             aria-expanded={mobileOpen}
           >
@@ -181,23 +191,46 @@ export function Header() {
         </div>
       </Container>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — Fullscreen drawer */}
       {mobileOpen && (
-        <div className="lg:hidden">
-          <div className="glass border-t border-border px-4 py-4">
-            <nav className="flex flex-col gap-1">
+        <div className="fixed inset-0 z-[60] lg:hidden">
+          {/* پس‌زمینه تیره */}
+          <div
+            className="absolute inset-0 bg-black/40 animate-fade-in"
+            onClick={() => setMobileOpen(false)}
+          />
+          {/* drawer از راست (RTL) */}
+          <div className="absolute inset-y-0 right-0 w-[85%] max-w-sm overflow-y-auto bg-surface shadow-[var(--shadow-lift)] animate-slide-in-right">
+            {/* هدر drawer */}
+            <div className="flex items-center justify-between border-b border-border p-4">
+              <Logo />
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted hover:bg-surface-2 active:scale-90"
+                aria-label="بستن منو"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M6 6l12 12M6 18 18 6" />
+                </svg>
+              </button>
+            </div>
+            {/* ناوبری */}
+            <nav className="flex flex-col gap-1 p-3">
               {NAV.map((item) =>
                 item.children ? (
                   <div key={item.label} className="border-b border-border pb-2 last:border-0">
-                    <p className="px-2 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-muted">{item.label}</p>
+                    <p className="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-muted">{item.label}</p>
                     <div className="flex flex-col">
                       {item.children.map((c) => (
                         <Link
                           key={c.label}
                           href={c.href}
-                          className="flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm font-medium text-foreground-soft hover:bg-surface-2"
+                          className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground-soft hover:bg-surface-2 active:bg-surface-3"
                         >
-                          <Icon name={childIcon(c.label)} className="h-4 w-4 text-primary" />
+                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                            <Icon name={childIcon(c.label)} className="h-4 w-4" />
+                          </span>
                           {c.label}
                         </Link>
                       ))}
@@ -209,8 +242,8 @@ export function Header() {
                     href={item.href}
                     className={
                       item.ai
-                        ? "mb-2 flex items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent-soft px-3 py-3 text-sm font-bold text-accent"
-                        : "flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm font-medium text-foreground-soft hover:bg-surface-2"
+                        ? "mb-2 mt-1 flex items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent-soft px-4 py-3 text-sm font-bold text-accent active:scale-95"
+                        : "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground-soft hover:bg-surface-2 active:bg-surface-3"
                     }
                   >
                     {item.ai && <Icon name="sparkles" className="h-4 w-4" />}
@@ -219,9 +252,14 @@ export function Header() {
                 )
               )}
             </nav>
-            <div className="mt-4 flex flex-col gap-2">
+            {/* پایین drawer — اقلام اکانت */}
+            <div className="border-t border-border p-3">
+              <div className="mb-3 flex items-center justify-between px-3">
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">حالت نمایش</span>
+                <ThemeToggle compact />
+              </div>
               <Button href="/consultation" icon="calendar" className="w-full">رزرو مشاوره</Button>
-              <Button href="/dashboard/client" variant="outline" icon="user" className="w-full">ورود / ثبت‌نام</Button>
+              <Button href="/dashboard/client" variant="outline" icon="user" className="mt-2 w-full">ورود / ثبت‌نام</Button>
             </div>
           </div>
         </div>

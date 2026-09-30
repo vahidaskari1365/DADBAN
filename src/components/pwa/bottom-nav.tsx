@@ -91,25 +91,25 @@ export function BottomNav() {
                 </Link>
               );
             }
-            // تب‌های معمولی
+            // تب‌های معمولی — filled icon when active
             return (
               <Link
                 key={tab.label}
                 href={tab.href}
                 aria-label={tab.label}
                 aria-current={active ? "page" : undefined}
-                className="flex flex-1 flex-col items-center gap-1 py-1.5 transition-colors"
+                className="flex flex-1 flex-col items-center gap-1 py-1.5 transition-colors active:scale-90"
               >
                 <span
                   className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 ${
                     active
-                      ? "bg-primary-soft text-primary scale-105"
+                      ? "bg-primary text-primary-foreground"
                       : "text-muted-soft"
                   }`}
                 >
                   <Icon
                     name={tab.icon}
-                    className={`h-5 w-5 ${active ? "stroke-[2.2]" : ""}`}
+                    className={`h-5 w-5 ${active ? "stroke-[2.4]" : "stroke-[1.6]"}`}
                   />
                 </span>
                 <span

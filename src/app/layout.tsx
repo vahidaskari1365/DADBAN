@@ -7,7 +7,6 @@ import { noFlashScript } from "@/components/no-flash";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Tracker } from "@/components/tracker";
-import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { BottomNav } from "@/components/pwa/bottom-nav";
 import { SW_REGISTER_SCRIPT } from "@/components/pwa/sw-register-script";
 import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/brand";
@@ -139,7 +138,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Tracker />
           {/* نوار ناوبری پایین موبایل — فقط روی موبایل/تبلت */}
           <BottomNav />
-          <InstallPrompt />
         </ThemeProvider>
       </body>
     </html>
