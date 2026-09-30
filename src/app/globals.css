@@ -333,12 +333,8 @@ input, select, textarea {
    فقط روی موبایل/تبلت (lg breakpoint و پایین‌تر) */
 @media (max-width: 1023px) {
   body {
-    /* 80px ارتفاع نوار + safe-area-inset-bottom */
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-  }
-  /* اگه install prompt هم فعال شد، فضای بیشتری لازمه */
-  body:has([data-pwa-install-banner]) {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 100px);
+    /* نوار بیضی شناور: 12px bottom + 64px height + 16px gap + safe-area */
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   }
 }
 

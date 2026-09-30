@@ -6,20 +6,23 @@ import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
 
 /**
- * نوار ناوبری پایین — شبیه اپ‌های نیتیو موبایل.
+ * نوار ناوبری پایین — طراحی بیضی شناور (floating oval) مثل اپ‌های مدرن.
  * فقط روی موبایل/تبلت (lg:hidden) نمایش داده می‌شود.
- * روی دسکتاپ، ناوبری اصلی هدر استفاده می‌شود.
  *
- * الگو بر اساس تجربه اپ‌مانند (مثل 10on): ۵ تب اصلی با آیکون + برچسب،
- * تب وسط (مشاوره) برجسته‌تر است (FAB-style) تا تبدیل کاربر را افزایش دهد.
+ * ویژگی‌ها:
+ * - کانتینر بیضی شکل با rounded-full و margin از لبه‌ها
+ * - شناور با سایه زیبا (floating)
+ * - تب وسط FAB بزرگ با gradient طلایی
+ * - active indicator به‌صورت pill/dot
+ * - انیمیشن‌های spring نرم
  */
 
 type Tab = {
   label: string;
   href: string;
   icon: IconKey;
-  match?: string[]; // مسیرهایی که این تب را «فعال» نشان می‌دهند
-  center?: boolean; // آیا این تب وسطی و برجسته است؟
+  match?: string[];
+  center?: boolean;
 };
 
 const TABS: Tab[] = [
@@ -45,86 +48,116 @@ export function BottomNav() {
   return (
     <nav
       aria-label="ناوبری اصلی موبایل"
-      className="fixed inset-x-0 bottom-0 z-50 lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 flex justify-center lg:hidden"
       style={{
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)",
+        paddingLeft: "16px",
+        paddingRight: "16px",
       }}
     >
-      {/* پس‌زمینه blur شیشه‌ای */}
+      {/* کانتینر بیضی شناور */}
       <div
-        className="glass border-t border-border"
+        className="relative flex w-full max-w-md items-center justify-around overflow-visible"
         style={{
-          backdropFilter: "blur(20px) saturate(180%)",
-          WebkitBackdropFilter: "blur(20px) saturate(180%)",
-          backgroundColor: "color-mix(in oklab, var(--surface) 88%, transparent)",
+          height: "64px",
+          borderRadius: "9999px",
+          backgroundColor: "color-mix(in oklab, var(--surface) 92%, transparent)",
+          backdropFilter: "blur(24px) saturate(200%)",
+          WebkitBackdropFilter: "blur(24px) saturate(200%)",
+          boxShadow:
+            "0 8px 32px -8px rgb(0 0 0 / 0.28), 0 2px 8px -4px rgb(0 0 0 / 0.12), inset 0 1px 0 0 rgb(255 255 255 / 0.08)",
+          border: "1px solid color-mix(in oklab, var(--border) 60%, transparent)",
+          padding: "0 8px",
         }}
       >
-        <div className="mx-auto flex max-w-md items-end justify-around px-2 pt-2 pb-1">
-          {TABS.map((tab) => {
-            const active = isActive(tab);
-            if (tab.center) {
-              // تب وسطی برجسته (FAB-style)
-              return (
-                <Link
-                  key={tab.label}
-                  href={tab.href}
-                  aria-label={tab.label}
-                  aria-current={active ? "page" : undefined}
-                  className="flex -translate-y-3 flex-col items-center gap-1"
-                >
-                  <span
-                    className={`flex h-14 w-14 items-center justify-center rounded-full shadow-[var(--shadow-lift)] transition-transform duration-200 active:scale-90 ${
-                      active
-                        ? "bg-primary text-primary-foreground scale-105"
-                        : "bg-accent text-accent-foreground hover:scale-105"
-                    }`}
-                  >
-                    <Icon name={tab.icon} className="h-6 w-6" />
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold ${
-                      active ? "text-primary" : "text-accent"
-                    }`}
-                  >
-                    {tab.label}
-                  </span>
-                </Link>
-              );
-            }
-            // تب‌های معمولی — filled icon when active
+        {TABS.map((tab) => {
+          const active = isActive(tab);
+          if (tab.center) {
+            // تب وسط — FAB بزرگ با gradient طلایی
             return (
               <Link
                 key={tab.label}
                 href={tab.href}
                 aria-label={tab.label}
                 aria-current={active ? "page" : undefined}
-                className="flex flex-1 flex-col items-center gap-1 py-1.5 transition-colors active:scale-90"
+                className="group flex flex-col items-center"
+                style={{ marginTop: "-22px" }}
               >
                 <span
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 ${
-                    active
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-soft"
-                  }`}
+                  className="flex items-center justify-center transition-transform duration-300 group-active:scale-90"
+                  style={{
+                    width: "56px",
+                    height: "56px",
+                    borderRadius: "9999px",
+                    background: active
+                      ? "linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)"
+                      : "linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%)",
+                    boxShadow: active
+                      ? "0 8px 20px -6px color-mix(in oklab, var(--primary) 50%, transparent), 0 0 0 4px color-mix(in oklab, var(--primary) 15%, transparent)"
+                      : "0 8px 20px -6px color-mix(in oklab, var(--accent) 50%, transparent), 0 0 0 4px color-mix(in oklab, var(--accent) 15%, transparent)",
+                    color: active ? "var(--primary-foreground)" : "var(--accent-foreground)",
+                  }}
                 >
-                  <Icon
-                    name={tab.icon}
-                    className={`h-5 w-5 ${active ? "stroke-[2.4]" : "stroke-[1.6]"}`}
-                  />
+                  <Icon name={tab.icon} className="h-6 w-6" strokeWidth={2.2} />
                 </span>
                 <span
-                  className={`text-[10px] ${
-                    active
-                      ? "font-bold text-primary"
-                      : "font-medium text-muted-soft"
-                  }`}
+                  className="mt-1 text-[10px] font-bold transition-colors"
+                  style={{ color: active ? "var(--primary)" : "var(--accent)" }}
                 >
                   {tab.label}
                 </span>
               </Link>
             );
-          })}
-        </div>
+          }
+          // تب‌های معمولی — با active indicator dot
+          return (
+            <Link
+              key={tab.label}
+              href={tab.href}
+              aria-label={tab.label}
+              aria-current={active ? "page" : undefined}
+              className="group flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-transform duration-200 active:scale-90"
+            >
+              <span
+                className="flex items-center justify-center transition-all duration-300"
+                style={{
+                  width: "38px",
+                  height: "32px",
+                  borderRadius: "9999px",
+                  backgroundColor: active
+                    ? "color-mix(in oklab, var(--primary) 12%, transparent)"
+                    : "transparent",
+                }}
+              >
+                <Icon
+                  name={tab.icon}
+                  className="h-5 w-5 transition-colors"
+                  strokeWidth={active ? 2.4 : 1.7}
+                  style={{
+                    color: active ? "var(--primary)" : "var(--muted-soft)",
+                  }}
+                />
+              </span>
+              <span
+                className="text-[10px] leading-none transition-colors"
+                style={{
+                  color: active ? "var(--primary)" : "var(--muted-soft)",
+                  fontWeight: active ? 700 : 500,
+                }}
+              >
+                {tab.label}
+              </span>
+              {/* active indicator dot */}
+              <span
+                className="h-1 w-1 rounded-full transition-all duration-300"
+                style={{
+                  backgroundColor: active ? "var(--primary)" : "transparent",
+                  opacity: active ? 1 : 0,
+                }}
+              />
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
