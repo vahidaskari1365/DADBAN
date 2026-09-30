@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // standalone برای sandbox محلی (start.sh از standalone server استفاده می‌کند)
+  // Vercel با standalone هم مشکلی ندارد — خودش بهینه‌سازی می‌کند
+  output: "standalone",
   poweredByHeader: false,
   compress: true,
   async headers() {
