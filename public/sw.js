@@ -4,11 +4,11 @@
    استراتژی‌ها:
    - Static assets (_next/static, fonts, icons): cache-first (همیشه سریع)
    - Navigation (HTML pages): network-first با fallback به cache و offline page
-   - API routes: network-only (داده تازه مهمه) با timeout کوتاه
+   - API routes: network-only (داده تازه مهمه)
    - تصاویر: stale-while-revalidate
    ========================================================================== */
 
-const VERSION = "sharifmand-v1.0.0";
+const VERSION = "sharifmand-v1.1.0";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;
@@ -22,6 +22,12 @@ const NEVER_CACHE = [
   /\/dashboard\//,      // داشبورد کاربر (داده شخصی)
   /\/login/,
   /\/register/,
+  // HMR / WebSocket در dev mode — هرگز cache نمی‌شوند
+  /\/_next\/webpack/,
+  /\/_next\/hmr/,
+  /\/__nextjs/,
+  /hot-update/,
+  /\.hot-update\./,
 ];
 
 // Pre-cache: آیکون‌ها و صفحه offline (سبک، همیشه در دسترس)
@@ -70,7 +76,11 @@ self.addEventListener("activate", (event) => {
 // آیا درخواست نباید cache شود؟
 const shouldNeverCache = (url) =>
   NEVER_CACHE.some((re) => re.test(url.pathname)) ||
-  url.searchParams.has("XTransformPort");
+  url.searchParams.has("XTransformPort") ||
+  // پارامترهای HMR و query strings های dev mode
+  url.searchParams.has("t") ||
+  url.searchParams.has("ts") ||
+  url.searchParams.has("hash");
 
 // تشخیص درخواست navigation (HTML)
 const isNavigation = (req) =>
@@ -163,4 +173,12 @@ self.addEventListener("fetch", (event) => {
 // مدیریت پیام از کلاینت (مثلاً برای force update)
 self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
+  if (event.data === "UNREGISTER") {
+    // برای debug: unregister همه SWها
+    self.registration.unregister().then(() => {
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((c) => c.navigate(c.url));
+      });
+    });
+  }
 });

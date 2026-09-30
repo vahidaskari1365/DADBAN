@@ -7,8 +7,8 @@ import { noFlashScript } from "@/components/no-flash";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Tracker } from "@/components/tracker";
-import { RegisterSW } from "@/components/pwa/register-sw";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { SW_REGISTER_SCRIPT } from "@/components/pwa/sw-register-script";
 import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/brand";
 
 /* فونت وزیرمتن به‌صورت local میزبانی می‌شود تا build به شبکه خارجی وابسته نباشد */
@@ -105,6 +105,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="fa" dir="rtl" suppressHydrationWarning className={vazirmatn.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashScript }} />
+        {/* ثبت Service Worker برای PWA — inline تا مستقل از React hydration باشد */}
+        <script dangerouslySetInnerHTML={{ __html: SW_REGISTER_SCRIPT }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
@@ -134,7 +136,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <Footer />
           </div>
           <Tracker />
-          <RegisterSW />
           <InstallPrompt />
         </ThemeProvider>
       </body>

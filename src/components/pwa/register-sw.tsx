@@ -3,12 +3,18 @@
 import { useEffect } from "react";
 
 /**
- * ثبت Service Worker در production.
- * در dev محیط فعال نمی‌شود تا با HMR تداخل پیدا نکند.
+ * ثبت Service Worker — در همه محیط‌ها (dev و production).
+ *
+ * PWA قابل‌نصب بودن نیاز به SW با fetch handler دارد. اگر فقط در production
+ * ثبت شود، در dev mode معیار beforeinstallprompt هرگز فعال نمی‌شود و بنر نصب
+ * نمایش داده نمی‌شود.
+ *
+ * نکته: در dev mode ممکن است SW با HMR تداخل داشته باشد، لذا فقط مسیرهای
+ * static را cache می‌کنیم (نه /_next/ که HMR استفاده می‌کند) — به sw.js رجوع کنید.
  */
 export function RegisterSW() {
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production") return;
+    if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
 
     const register = () => {
