@@ -80,14 +80,44 @@ export default async function LawyerProfile({
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "LegalService",
+    "@type": "Attorney",
+    "@id": `/lawyers/${l.slug}#lawyer`,
     name: l.name,
-    description: l.bio,
-    image: undefined,
-    areaServed: l.city,
-    address: { "@type": "PostalAddress", addressLocality: l.city, addressRegion: l.province },
-    aggregateRating: { "@type": "AggregateRating", ratingValue: l.rating, reviewCount: l.reviewCount },
-    priceRange: "from " + l.priceChat + " IRR",
+    jobTitle: l.title,
+    description: l.bio || `${l.name}، ${l.title} متخصص ${l.specialties.join("، ")} در ${l.city} با ${l.experienceYears} سال سابقه.`,
+    url: `/lawyers/${l.slug}`,
+    telephone: "+98-21-66921500",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: l.city,
+      addressRegion: l.province,
+      addressCountry: "IR",
+    },
+    knowsAbout: l.specialties,
+    hasCredential: {
+      "@type": "EducationalOccupationalCredential",
+      name: `پروانه وکالت شماره ${l.licenseNo}`,
+      recognizedBy: "کانون وکلای دادگستری",
+    },
+    aggregateRating: l.reviewCount > 0 ? {
+      "@type": "AggregateRating",
+      ratingValue: l.rating,
+      reviewCount: l.reviewCount,
+      bestRating: 5,
+      worstRating: 1,
+    } : undefined,
+    worksFor: { "@id": "/#organization" },
+    areaServed: { "@type": "Country", name: "ایران" },
+  };
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "خانه", item: "/" },
+      { "@type": "ListItem", position: 2, name: "وکلا", item: "/lawyers" },
+      { "@type": "ListItem", position: 3, name: l.name, item: `/lawyers/${l.slug}` },
+    ],
   };
 
   return (
@@ -289,7 +319,7 @@ export default async function LawyerProfile({
         </Container>
       )}
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }} />
     </>
   );
 }

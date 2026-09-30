@@ -10,6 +10,7 @@ import { Tracker } from "@/components/tracker";
 import { BottomNav } from "@/components/pwa/bottom-nav";
 import { SW_REGISTER_SCRIPT } from "@/components/pwa/sw-register-script";
 import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/brand";
+import { organizationSchema, websiteSchema, jsonLd } from "@/lib/seo";
 
 /* فونت وزیرمتن به‌صورت local میزبانی می‌شود تا build به شبکه خارجی وابسته نباشد */
 const vazirmatn = localFont({
@@ -66,7 +67,27 @@ export const metadata: Metadata = {
       `جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در ${SITE_NAME}.`,
     images: [{ url: "/icon-512.png", width: 512, height: 512, alt: SITE_NAME }],
   },
-  robots: { index: true, follow: true },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} | پلتفرم هوشمند خدمات حقوقی`,
+    description:
+      `جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در ${SITE_NAME}.`,
+    images: ["/icon-512.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
 };
 
 export const viewport: Viewport = {
@@ -80,25 +101,8 @@ export const viewport: Viewport = {
   ],
 };
 
-const orgJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "LegalService",
-  name: SITE_NAME,
-  alternateName: `${SITE_NAME_EN} Legal Platform`,
-  description:
-    "پلتفرم هوشمند خدمات حقوقی؛ وکیل‌یابی، مشاوره آنلاین، ثبت پرونده، تنظیم اسناد حقوقی و دستیار حقوقی هوش مصنوعی.",
-  url: "https://sharifmand.ir",
-  areaServed: "IR",
-  knowsLanguage: ["fa"],
-  priceRange: "$$",
-  serviceType: [
-    "مشاوره حقوقی آنلاین",
-    "وکیل‌یابی",
-    "تنظیم قرارداد",
-    "ثبت پرونده",
-    "خدمات ثبتی",
-  ],
-};
+const orgJsonLd = organizationSchema;
+const siteJsonLd = websiteSchema;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -107,10 +111,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: noFlashScript }} />
         {/* ثبت Service Worker برای PWA — inline تا مستقل از React hydration باشد */}
         <script dangerouslySetInnerHTML={{ __html: SW_REGISTER_SCRIPT }} />
+        {/* Schema.org JSON-LD: Organization + WebSite برای Semantic SEO و AI Search */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLd([orgJsonLd, siteJsonLd]) }}
         />
+        {/* لینک به llms.txt برای AI Search Engines (ChatGPT, Gemini, Perplexity) */}
+        <link rel="llms-txt" href="/llms.txt" />
+        <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} — مقالات حقوقی`} href="/knowledge/feed" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -119,6 +127,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <meta name="msapplication-TileColor" content="#15365d" />
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" content="#15365d" />
+        {/* AI-friendly meta tags برای citation */}
+        <meta name="ai-content-summary" content={`${SITE_NAME} پلتفرم خدمات حقوقی ایران: وکیل‌یابی، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی.`} />
+        <meta name="geo.region" content="IR" />
+        <meta name="geo.placename" content="تهران، ایران" />
+        <meta name="language" content="Persian" />
+        <meta name="revisit-after" content="1 day" />
       </head>
       <body className="bg-background text-foreground antialiased">
         <ThemeProvider>

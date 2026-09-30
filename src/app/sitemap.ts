@@ -5,9 +5,21 @@ import { GLOSSARY, LAWS, JUDGMENTS, LEGAL_FORMS } from "@/lib/content";
 import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
+// صفحه‌ی sitemap هر ساعت refresh شود (به‌جای هر request)
+export const revalidate = 3600;
 
 const BASE = SITE_URL;
+const NOW = new Date();
 
+/**
+ * sitemap.xml — نقشه‌ی سایت جامع با اولویت‌بندی بر اساس ارزش تجاری.
+ *
+ * ساختار:
+ *  - صفحات اصلی (priority 1.0) — خانه، خدمات، وکیل‌یابی
+ *  - صفحات conversion (priority 0.9) — مشاوره، قرارداد، ثبت پرونده
+ *  - محتوای داینامیک (priority 0.7-0.8) — پروفایل وکلا، مقالات، قراردادها
+ *  - محتوای ارجاعی (priority 0.5-0.6) — قوانین، آرای قضایی، واژه‌نامه
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let lw: { slug: string; updatedAt: Date }[] = [];
   let ct: { slug: string }[] = [];
@@ -24,35 +36,92 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     /* degrade gracefully when DB is not configured */
   }
 
+  // صفحات اصلی — بالاترین اولویت
   const staticRoutes: MetadataRoute.Sitemap = [
-    "", "services", "services/family", "services/property", "services/criminal", "services/commercial", "services/administrative",
-    "lawyers", "consultation", "case/new", "contracts", "contracts/builder", "contracts/review",
-    "legal-forms", "ai-assistant", "knowledge", "qa", "laws", "judgments", "glossary",
-    "pricing", "business", "about", "contact", "support", "notifications", "login", "register",
-    "dashboard/client", "dashboard/lawyer", "dashboard/documents",
-    "legal/terms", "legal/privacy", "legal/refund-policy", "legal/security", "legal/transparency",
-    "glossary/*",
+    // صفحه‌ی اصلی
+    { path: "", priority: 1.0, changeFreq: "daily" as const, lastMod: NOW },
+    // صفحات conversion-critical
+    { path: "lawyers", priority: 0.9, changeFreq: "daily" as const, lastMod: NOW },
+    { path: "consultation", priority: 0.9, changeFreq: "weekly" as const, lastMod: NOW },
+    { path: "case/new", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
+    { path: "contracts", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
+    { path: "contracts/builder", priority: 0.7, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "contracts/review", priority: 0.7, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "ai-assistant", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
+    // خدمات
+    { path: "services", priority: 0.9, changeFreq: "weekly" as const, lastMod: NOW },
+    { path: "services/family", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "services/property", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "services/criminal", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "services/commercial", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "services/administrative", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    // پایگاه دانش
+    { path: "knowledge", priority: 0.7, changeFreq: "weekly" as const, lastMod: NOW },
+    { path: "qa", priority: 0.7, changeFreq: "weekly" as const, lastMod: NOW },
+    { path: "laws", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "judgments", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "glossary", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "legal-forms", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
+    // کسب‌وکار و تعرفه
+    { path: "business", priority: 0.7, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "pricing", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
+    // درباره و تماس
+    { path: "about", priority: 0.5, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "contact", priority: 0.5, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "support", priority: 0.5, changeFreq: "monthly" as const, lastMod: NOW },
+    // صفحات قانونی
+    { path: "legal/terms", priority: 0.3, changeFreq: "yearly" as const, lastMod: NOW },
+    { path: "legal/privacy", priority: 0.3, changeFreq: "yearly" as const, lastMod: NOW },
   ].map((r) => ({
-    url: `${BASE}/${r}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: r === "" ? 1 : 0.7,
+    url: `${BASE}/${r.path}`,
+    lastModified: r.lastMod,
+    changeFrequency: r.changeFreq,
+    priority: r.priority,
   }));
 
+  // محتوای static مرجعی (glossary, laws, judgments, legal-forms)
   const contentRoutes: MetadataRoute.Sitemap = [
-    ...GLOSSARY.map((g) => `${BASE}/glossary/${g.slug}`),
-    ...LAWS.map((l) => `${BASE}/laws/${l.slug}`),
-    ...JUDGMENTS.map((j) => `${BASE}/judgments/${j.slug}`),
-    ...LEGAL_FORMS.map((f) => `${BASE}/legal-forms/${f.slug}`),
-    `${BASE}/services/category/family`,
-  ].map((url) => ({ url, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.6 }));
+    ...GLOSSARY.map((g) => ({ url: `${BASE}/glossary/${g.slug}`, priority: 0.5 })),
+    ...LAWS.map((l) => ({ url: `${BASE}/laws/${l.slug}`, priority: 0.6 })),
+    ...JUDGMENTS.map((j) => ({ url: `${BASE}/judgments/${j.slug}`, priority: 0.5 })),
+    ...LEGAL_FORMS.map((f) => ({ url: `${BASE}/legal-forms/${f.slug}`, priority: 0.5 })),
+  ].map((r) => ({
+    url: r.url,
+    lastModified: NOW,
+    changeFrequency: "yearly" as const,
+    priority: r.priority,
+  }));
 
   return [
     ...staticRoutes,
     ...contentRoutes,
-    ...lw.map((l) => ({ url: `${BASE}/lawyers/${l.slug}`, lastModified: l.updatedAt, changeFrequency: "monthly" as const, priority: 0.9 })),
-    ...ct.map((c) => ({ url: `${BASE}/contracts/${c.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7 })),
-    ...ar.map((a) => ({ url: `${BASE}/knowledge/${a.slug}`, lastModified: a.updatedAt, changeFrequency: "monthly" as const, priority: 0.7 })),
-    ...qa.map((q) => ({ url: `${BASE}/qa/${q.slug}`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.6 })),
+    // پروفایل وکلا — priority بالا (صفحات conversion-critical)
+    ...lw.map((l) => ({
+      url: `${BASE}/lawyers/${l.slug}`,
+      lastModified: l.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
+    // قراردادها
+    ...ct.map((c) => ({
+      url: `${BASE}/contracts/${c.slug}`,
+      lastModified: NOW,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+    // مقالات — priority متوسط (محتوای طولانی‌مدت)
+    ...ar.map((a) => ({
+      url: `${BASE}/knowledge/${a.slug}`,
+      lastModified: a.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+    // پرسش و پاسخ — برای AI Citation مهم
+    ...qa.map((q) => ({
+      url: `${BASE}/qa/${q.slug}`,
+      lastModified: NOW,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
   ];
 }
