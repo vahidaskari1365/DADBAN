@@ -57,22 +57,45 @@ export const metadata: Metadata = {
     address: false,
     email: false,
   },
-  alternates: { canonical: "/" },
+  alternates: {
+    canonical: "/",
+    languages: {
+      "fa-IR": "/",
+      "en-US": "/en",
+      "x-default": "/",
+    },
+  },
   openGraph: {
     type: "website",
     locale: "fa_IR",
+    alternateLocale: ["en_US"],
     siteName: SITE_NAME,
     title: `${SITE_NAME} | پلتفرم هوشمند خدمات حقوقی`,
     description:
       `جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در ${SITE_NAME}.`,
-    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: SITE_NAME }],
+    images: [
+      {
+        url: "/og-default.jpg",
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} — پلتفرم هوشمند خدمات حقوقی`,
+        type: "image/jpeg",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE_NAME} | پلتفرم هوشمند خدمات حقوقی`,
     description:
       `جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در ${SITE_NAME}.`,
-    images: ["/icon-512.png"],
+    images: [
+      {
+        url: "/twitter-card.jpg",
+        width: 1024,
+        height: 576,
+        alt: SITE_NAME,
+      },
+    ],
   },
   robots: {
     index: true,
