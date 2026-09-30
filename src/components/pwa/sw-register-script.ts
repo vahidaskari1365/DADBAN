@@ -9,7 +9,15 @@ export const SW_REGISTER_SCRIPT = `
   function register() {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then(function(reg) {
-        // بررسی آپدیت دوره‌ای
+        // بررسی آپدیت دوره‌ای — هر ۶۰ ثانیه آپدیت چک کن
+        setInterval(function() {
+          reg.update().catch(function() {});
+        }, 60000);
+
+        // بررسی آپدیت اولیه (هنگام load)
+        reg.update().catch(function() {});
+
+        // وقتی SW جدید پیدا شد
         reg.addEventListener('updatefound', function() {
           var nw = reg.installing;
           if (!nw) return;
@@ -37,6 +45,15 @@ export const SW_REGISTER_SCRIPT = `
     if (reloading) return;
     reloading = true;
     window.location.reload();
+  });
+
+  // اضافه: اگه کاربر از سایتی برگشته و SW قدیمی داره، در اولین فرصت update کن
+  window.addEventListener('focus', function() {
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.getRegistration().then(function(reg) {
+        if (reg) reg.update().catch(function() {});
+      });
+    }
   });
 })();
 `;

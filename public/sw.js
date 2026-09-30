@@ -8,7 +8,7 @@
    - تصاویر: stale-while-revalidate
    ========================================================================== */
 
-const VERSION = "sharifmand-v1.1.0";
+const VERSION = "sharifmand-v1.2.0";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;
