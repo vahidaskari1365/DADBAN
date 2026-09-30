@@ -20,6 +20,50 @@ const CATEGORY_SPECIALTIES: Record<string, string[]> = {
   administrative: ["کار", "مالیاتی"],
 };
 
+/** Keyword-rich metadata برای هر دسته — بر اساس Keyword Research. */
+const CATEGORY_META: Record<string, {
+  title: string;
+  description: string;
+  keywords: string[];
+  ogImage: string;
+}> = {
+  family: {
+    title: "وکیل خانواده | طلاق، مهریه، حضانت، نفقه و ارث",
+    description:
+      "وکیل متخصص دعاوی خانواده: طلاق توافقی و یک‌طرفه، مطالبه مهریه و اجرت‌المثل، حضانت فرزندان، نفقه و تقسیم ارث. مشاوره آنلاین و رزرو نوبت با بهترین وکلای خانواده ایران.",
+    keywords: ["وکیل خانواده", "وکیل طلاق", "وکیل مهریه", "وکیل حضانت", "طلاق توافقی", "مطالبه مهریه", "نفقه", "ارث", "انحصار وراثت"],
+    ogImage: "/og-family.jpg",
+  },
+  property: {
+    title: "وکیل ملکی | تخلیه، تصرف عدوانی، اجاره، سند و سرقفلی",
+    description:
+      "وکیل متخصص دعاوی ملکی: تخلیه ملک، الزام به تنظیم سند رسمی، تصرف عدوانی و خلع ید، افراز و فروش، سرقفلی و اجاره. مشاوره آنلاین با وکلای ملکی دادبان.",
+    keywords: ["وکیل ملکی", "وکیل تخلیه", "وکیل تصرف عدوانی", "وکیل سرقفلی", "الزام به تنظیم سند", "اجاره", "افراز"],
+    ogImage: "/og-property.jpg",
+  },
+  criminal: {
+    title: "وکیل کیفری | کلاهبرداری، سرقت، خیانت در امانت و جعل",
+    description:
+      "وکیل متخصص دعاوی کیفری: کلاهبرداری، سرقت، خیانت در امانت، جعل و جرایم رایانه‌ای. دفاع تخصصی در مرحله دادسرا و دادگاه با وکلای کیفری دادبان.",
+    keywords: ["وکیل کیفری", "وکیل کلاهبرداری", "وکیل سرقت", "وکیل خیانت در امانت", "وکیل جعل", "دفاع کیفری"],
+    ogImage: "/og-criminal.jpg",
+  },
+  commercial: {
+    title: "وکیل تجاری | قراردادها، شرکت‌ها، چک و اسناد تجاری",
+    description:
+      "وکیل متخصص دعاوی تجاری: تنظیم و بررسی قراردادها، ثبت شرکت و تغییرات، چک برگشتی و اسناد تجاری، دعاوی تجاری و داوری. مشاوره با وکلای تجاری دادبان.",
+    keywords: ["وکیل تجاری", "وکیل قرارداد", "ثبت شرکت", "چک برگشتی", "اسناد تجاری", "داوری", "حقوق شرکت‌ها"],
+    ogImage: "/og-commercial.jpg",
+  },
+  administrative: {
+    title: "وکیل کار و مالیاتی | حقوق کارگر و کارفرما، مالیات",
+    description:
+      "وکیل متخصص دعاوی کار و مالیاتی: حقوق کارگر و کارفرما، تأخیر تأدیه، مالیات حقوقی و ارزش افزوده، اجرای احکام و امور اداری. مشاوره با وکلای کار و مالیاتی دادبان.",
+    keywords: ["وکیل کار", "وکیل مالیاتی", "حقوق کارگر", "حقوق کارفرما", "تأخیر تأدیه", "مالیات", "اجرای احکام"],
+    ogImage: "/og-administrative.jpg",
+  },
+};
+
 export async function generateMetadata({
   params,
 }: {
@@ -28,10 +72,38 @@ export async function generateMetadata({
   const { category } = await params;
   const c = SERVICE_CATEGORIES.find((x) => x.slug === category);
   if (!c) return { title: "خدمت یافت نشد" };
+  const meta = CATEGORY_META[category];
+  if (!meta) {
+    return {
+      title: `خدمات حقوقی ${c.name}`,
+      description: c.desc,
+      alternates: { canonical: `/services/${category}` },
+    };
+  }
   return {
-    title: `خدمات حقوقی ${c.name}`,
-    description: c.desc,
-    alternates: { canonical: `/services/${category}` },
+    title: meta.title,
+    description: meta.description,
+    keywords: meta.keywords,
+    alternates: {
+      canonical: `/services/category/${category}`,
+      languages: { "fa-IR": `/services/category/${category}`, "x-default": `/services/category/${category}` },
+    },
+    openGraph: {
+      title: `${meta.title} | دادبان`,
+      description: meta.description,
+      url: `/services/category/${category}`,
+      siteName: "دادبان",
+      locale: "fa_IR",
+      type: "website",
+      images: [{ url: meta.ogImage, width: 1200, height: 630, alt: meta.title, type: "image/jpeg" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${meta.title} | دادبان`,
+      description: meta.description,
+      images: [meta.ogImage],
+    },
+    robots: { index: true, follow: true, googleBot: { "max-image-preview": "large", "max-snippet": -1 } },
   };
 }
 

@@ -13,6 +13,7 @@ import { Counter } from "@/components/counter";
 import { CONSULTATION_TYPES, faNum, faPrice } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { SPECIAL_SERVICES } from "@/lib/content";
+import { RelatedLinks } from "@/components/related-links";
 import { getPlatformStats } from "@/lib/stats";
 
 export const dynamic = "force-dynamic";
@@ -349,6 +350,11 @@ export default async function HomePage() {
           </Reveal>
         </Container>
       </section>
+
+      {/* Internal linking — صفحات مرتبط برای SEO و UX */}
+      <Container>
+        <RelatedLinks pathname="/" />
+      </Container>
     </div>
   );
 }

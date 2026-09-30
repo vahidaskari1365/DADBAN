@@ -11,6 +11,7 @@ import { BottomNav } from "@/components/pwa/bottom-nav";
 import { SW_REGISTER_SCRIPT } from "@/components/pwa/sw-register-script";
 import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/brand";
 import { organizationSchema, websiteSchema, jsonLd } from "@/lib/seo";
+import { getGoogleSearchConsoleVerification, getGoogleAnalyticsId } from "@/lib/metadata-builder";
 
 /* فونت وزیرمتن به‌صورت local میزبانی می‌شود تا build به شبکه خارجی وابسته نباشد */
 const vazirmatn = localFont({
@@ -108,6 +109,13 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GSC_VERIFICATION,
+    other: {
+      // Bing Webmaster Tools verification (در صورت تنظیم)
+      "msvalidate.01": process.env.NEXT_PUBLIC_BING_VERIFICATION || "",
+    },
+  },
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
   publisher: SITE_NAME,
@@ -156,6 +164,31 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <meta name="geo.placename" content="تهران، ایران" />
         <meta name="language" content="Persian" />
         <meta name="revisit-after" content="1 day" />
+        {/* Google Search Console verification — در صورت تنظیم env */}
+        {getGoogleSearchConsoleVerification() && (
+          <meta name="google-site-verification" content={getGoogleSearchConsoleVerification()!} />
+        )}
+        {/* Google Analytics 4 — در صورت تنظیم env */}
+        {getGoogleAnalyticsId() && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${getGoogleAnalyticsId()!}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${getGoogleAnalyticsId()!}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body className="bg-background text-foreground antialiased">
         <ThemeProvider>

@@ -50,11 +50,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "ai-assistant", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
     // خدمات
     { path: "services", priority: 0.9, changeFreq: "weekly" as const, lastMod: NOW },
-    { path: "services/family", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
-    { path: "services/property", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
-    { path: "services/criminal", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
-    { path: "services/commercial", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
-    { path: "services/administrative", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "services/category/family", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "services/category/property", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "services/category/criminal", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "services/category/commercial", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "services/category/administrative", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
     // پایگاه دانش
     { path: "knowledge", priority: 0.7, changeFreq: "weekly" as const, lastMod: NOW },
     { path: "qa", priority: 0.7, changeFreq: "weekly" as const, lastMod: NOW },
