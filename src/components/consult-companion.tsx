@@ -178,14 +178,14 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
 
   return (
     <>
-      {/* دکمه‌ی شناور (FAB) */}
+      {/* دکمه‌ی شناور (FAB) — در سمت چپ پایین، هماهنگ با پنجره‌ی چت */}
       {!open && !hideFab && (
         <button
           onClick={() => setOpen(true)}
           aria-label="مشاور همراه"
-          className="fixed bottom-24 left-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-lift)] transition-all hover:scale-105 active:scale-95 lg:bottom-6"
+          className="fixed bottom-24 left-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-lift)] transition-all hover:scale-105 active:scale-95 sm:bottom-6 sm:left-6"
         >
-          <Icon name="sparkles" className="h-6 w-6" />
+          <Icon name="chat" className="h-6 w-6" />
           {unreadCount > 0 && (
             <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">
               {unreadCount}
@@ -195,9 +195,9 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
         </button>
       )}
 
-      {/* پنجره‌ی چت */}
+      {/* پنجره‌ی چت — در سمت چپ، هماهنگ با موقعیت FAB */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-end p-0 sm:inset-auto sm:bottom-6 sm:right-6 sm:p-0">
+        <div className="fixed inset-0 z-50 flex items-end justify-start p-0 sm:inset-auto sm:bottom-6 sm:left-6 sm:p-0">
           {/* پس‌زمینه تیره (موبایل) */}
           <div
             className="absolute inset-0 bg-black/30 sm:hidden"
@@ -210,7 +210,7 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
             <div className="flex items-center justify-between border-b border-border bg-primary p-4 text-primary-foreground">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/20">
-                  <Icon name="sparkles" className="h-5 w-5" />
+                  <Icon name="chat" className="h-5 w-5" />
                 </span>
                 <div>
                   <h3 className="text-sm font-bold">مشاور همراه</h3>
