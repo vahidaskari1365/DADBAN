@@ -1,3 +1,4 @@
+import { formatJalali } from "@/lib/jalali";
 "use client";
 import { useState } from "react";
 import { PageHero } from "@/components/page-hero";
@@ -61,7 +62,7 @@ export default function TrackCasePage() {
               </div>
               <div className="mt-3 grid gap-2 text-sm">
                 <div className="flex justify-between rounded-xl bg-surface-2/60 p-3"><span className="text-muted">وضعیت</span><Badge tone="primary">{FA[result.caseData.status] ?? result.caseData.status}</Badge></div>
-                <div className="flex justify-between rounded-xl bg-surface-2/60 p-3"><span className="text-muted">تاریخ ثبت</span><span className="font-bold text-foreground">{new Date(result.caseData.createdAt).toLocaleDateString("fa-IR")}</span></div>
+                <div className="flex justify-between rounded-xl bg-surface-2/60 p-3"><span className="text-muted">تاریخ ثبت</span><span className="font-bold text-foreground">{formatJalali(result.caseData.createdAt)}</span></div>
               </div>
 
             </Card>

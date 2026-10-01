@@ -1,3 +1,4 @@
+import { formatJalali } from "@/lib/jalali";
 "use client";
 import Link from "next/link";
 import { Badge, Card } from "@/components/ui";
@@ -95,7 +96,7 @@ export function Timeline({ events }: { events: { id: number; type: string; title
           {e.description && <p className="mt-0.5 text-sm leading-6 text-muted">{e.description}</p>}
           <p className="mt-1 text-xs text-muted">
             {e.createdByName ? `${e.createdByName} • ` : ""}
-            {new Date(e.createdAt).toLocaleDateString("fa-IR")}
+            {formatJalali(e.createdAt)}
           </p>
         </li>
       ))}

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { io, Socket } from "socket.io-client";
+import { formatJalaliTime } from "@/lib/jalali";
 import { Icon } from "@/components/icons";
 
 /**
@@ -314,10 +315,7 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
                     {msg.message}
                   </div>
                   <span className="text-[10px] text-muted">
-                    {new Date(msg.timestamp).toLocaleTimeString("fa-IR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatJalaliTime(msg.timestamp)}
                   </span>
                 </div>
               ))}

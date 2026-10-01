@@ -7,6 +7,7 @@ import { PageHero } from "@/components/page-hero";
 import { Container, Card, Badge, Button, EmptyState } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
+import { formatJalaliLong } from "@/lib/jalali";
 import { getCurrentUser } from "@/lib/user-auth";
 import { CASE_STATUS_FA, buildCaseTimeline, nextActionForCase } from "@/lib/case-facts";
 
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const faDate = (d: Date | null | undefined) =>
-  d ? new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(d as Date) : "—";
+  d ? formatJalaliLong(d as Date) : "—";
 
 const PAYMENT_STATUS_FA: Record<string, string> = {
   initiated: "ایجاد شده",

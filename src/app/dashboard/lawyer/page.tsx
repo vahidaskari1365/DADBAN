@@ -1,3 +1,4 @@
+import { formatJalaliLong as faDate } from "@/lib/jalali";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
@@ -49,8 +50,7 @@ export default async function LawyerDashboard() {
     { label: "نوبت‌های ثبت‌شده", value: faNum(scheduled.length), icon: "calendar" as const },
   ];
 
-  const faDate = (d: Date) => new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(d);
-
+  
   return (
     <DashboardShell
       role="وکیل"

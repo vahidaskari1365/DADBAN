@@ -173,13 +173,7 @@ export function faPrice(n: number): string {
 }
 
 export function relativeTime(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const diff = Date.now() - d.getTime();
-  const day = 86400000;
-  const days = Math.floor(diff / day);
-  if (days < 1) return "امروز";
-  if (days < 7) return faNum(days) + " روز پیش";
-  if (days < 30) return faNum(Math.floor(days / 7)) + " هفته پیش";
-  if (days < 365) return faNum(Math.floor(days / 30)) + " ماه پیش";
-  return faNum(Math.floor(days / 365)) + " سال پیش";
+  // استفاده از helper شمسی (jalali.ts) برای زمان نسبی فارسی
+  const { relativeTimeJalali } = require("./jalali");
+  return relativeTimeJalali(date);
 }

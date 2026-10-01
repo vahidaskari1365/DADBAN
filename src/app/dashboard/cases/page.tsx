@@ -1,3 +1,4 @@
+import { formatJalaliLong as faDate } from "@/lib/jalali";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -17,7 +18,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const faDate = (d: Date) => new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(d);
 
 export default async function MyCasesPage() {
   const user = await getCurrentUser();

@@ -1,3 +1,4 @@
+import { formatJalali } from "@/lib/jalali";
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -58,7 +59,7 @@ export default function AdminArticlesPage() {
                 <Badge tone="accent">{a.category}</Badge>
                 <span dir="ltr">/{a.slug}</span>
                 <span>{faNum(a.views)} بازدید</span>
-                <span>{new Date(a.publishedAt).toLocaleDateString("fa-IR")}</span>
+                <span>{formatJalali(a.publishedAt)}</span>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
