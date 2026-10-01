@@ -51,10 +51,25 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const iceServers: RTCIceServer[] = useMemo(
-    () => [
-      { urls: "stun:stun.l.google.com:19302" },
-      { urls: "stun:stun1.l.google.com:19302" },
-    ],
+    () => {
+      const servers: RTCIceServer[] = [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+      ];
+      // TURN server (برای عبور از NAT restrictive مثل ایران)
+      // در صورت تنظیم env، فعال می‌شه
+      const turnUrl = process.env.NEXT_PUBLIC_TURN_URL;
+      const turnUser = process.env.NEXT_PUBLIC_TURN_USER;
+      const turnPass = process.env.NEXT_PUBLIC_TURN_PASS;
+      if (turnUrl && turnUser && turnPass) {
+        servers.push({
+          urls: turnUrl,
+          username: turnUser,
+          credential: turnPass,
+        });
+      }
+      return servers;
+    },
     []
   );
 

@@ -8,6 +8,7 @@ import { faNum, relativeTime } from "@/lib/data";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 3600; // ISR — هر ساعت آپدیت می‌شه
 
 export const metadata: Metadata = {
   title: "بانک دانش و مقالات حقوقی",

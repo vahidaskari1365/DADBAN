@@ -8,6 +8,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Tracker } from "@/components/tracker";
 import { BottomNav } from "@/components/pwa/bottom-nav";
+import { ConsultCompanion } from "@/components/consult-companion";
 import { SW_REGISTER_SCRIPT } from "@/components/pwa/sw-register-script";
 import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/brand";
 import { organizationSchema, websiteSchema, jsonLd } from "@/lib/seo";
@@ -208,6 +209,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Tracker />
           {/* نوار ناوبری پایین موبایل — فقط روی موبایل/تبلت */}
           <BottomNav />
+          {/* مشاور همراه — چت AI در همه‌ی صفحات */}
+          <ConsultCompanion />
         </ThemeProvider>
       </body>
     </html>
