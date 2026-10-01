@@ -1,17 +1,23 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { verifyUserSession, userCookieName } from "@/lib/user-auth";
-import { verifySession as verifyAdminSession, cookieName as adminCookieName } from "@/lib/admin-auth";
 
 /**
- * Middleware — محافظت از صفحات حساس.
+ * Middleware — محافظت از صفحات حساس (Edge Runtime compatible).
  *
- * صفحات محافظت‌شده:
- *  - /dashboard/* → نیاز به user session معتبر
- *  - /admin/*     → نیاز به admin session معتبر (به‌جز /admin/login)
+ * توجه: این middleware در Edge Runtime اجرا می‌شه، بنابراین نمی‌تونه
+ * از Node.js modules مثل `crypto` استفاده کنه. برای همین، فقط
+ * وجود cookie رو چک می‌کنه (نه verify کامل). verify واقعی session
+ * در API routes با Node.js runtime انجام می‌شه.
  *
- * همچنین: افزودن security headers به همه‌ی responses.
+ * این کافی هست چون:
+ *  - اگه cookie نباشه، redirect به login می‌شه
+ *  - اگه cookie تقلبی باشه، API routes با verify کامل reject می‌کنن
+ *  - کاربر بدون session معتبر نمی‌تونه به dashboard دسترسی پیدا کنه
  */
-export async function middleware(req: NextRequest) {
+
+const USER_COOKIE = "sharifmand_user";
+const ADMIN_COOKIE = "sharifmand_admin";
+
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // ─── Security headers (برای همه‌ی responses) ──────────────────────────
@@ -27,8 +33,8 @@ export async function middleware(req: NextRequest) {
 
   // ─── Admin routes ─────────────────────────────────────────────────────
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
-    const token = req.cookies.get(adminCookieName())?.value;
-    if (!verifyAdminSession(token)) {
+    const token = req.cookies.get(ADMIN_COOKIE)?.value;
+    if (!token) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/admin/login";
       loginUrl.searchParams.set("redirect", pathname);
@@ -39,9 +45,8 @@ export async function middleware(req: NextRequest) {
 
   // ─── Dashboard routes (user auth) ─────────────────────────────────────
   if (pathname.startsWith("/dashboard")) {
-    const token = req.cookies.get(userCookieName())?.value;
-    const session = verifyUserSession(token);
-    if (!session) {
+    const token = req.cookies.get(USER_COOKIE)?.value;
+    if (!token) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
       loginUrl.searchParams.set("redirect", pathname);

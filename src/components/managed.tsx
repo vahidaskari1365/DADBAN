@@ -1,5 +1,5 @@
-import { formatJalali } from "@/lib/jalali";
 "use client";
+import { formatJalali } from "@/lib/jalali";
 import Link from "next/link";
 import { Badge, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
