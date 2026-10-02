@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Avatar, Badge, StarRating } from "@/components/ui";
+import { Badge, StarRating } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { LawyerPhoto } from "@/components/lawyer-photo";
 import { faNum, faPrice } from "@/lib/data";
 
 /**
@@ -31,6 +32,7 @@ export type ViewedLawyer = {
   verified: boolean;
   specialties: string[];
   avatarColor: string;
+  photoUrl?: string | null;
   ts?: number;
 };
 
@@ -71,7 +73,7 @@ function LawyerMiniCard({ l }: { l: ViewedLawyer }) {
       className="group flex w-[248px] shrink-0 flex-col rounded-2xl border border-border bg-surface p-4 transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[var(--shadow-lift)]"
     >
       <div className="flex items-center gap-3">
-        <Avatar name={l.name} color={l.avatarColor} size="md" />
+        <LawyerPhoto name={l.name} color={l.avatarColor} photoUrl={l.photoUrl} size="md" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1">
             <h3 className="truncate text-sm font-bold text-foreground">{l.name}</h3>

@@ -320,6 +320,7 @@ export const lawyers = pgTable("lawyers", {
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
   avatarColor: text("avatar_color").notNull().default("#15365d"),
+  photoUrl: text("photo_url"),
   title: text("title").notNull().default("وکیل پایه یک دادگستری"),
   licenseNo: text("license_no").notNull(),
   city: text("city").notNull(),

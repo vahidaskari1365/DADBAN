@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Avatar, Badge, StarRating } from "./ui";
+import { Badge, StarRating } from "./ui";
 import { Icon } from "./icons";
+import { LawyerPhoto } from "./lawyer-photo";
 import { faNum, faPrice } from "@/lib/data";
 import type { Lawyer } from "@/db/schema";
 
@@ -11,7 +12,7 @@ export function LawyerCard({ lawyer }: { lawyer: Lawyer }) {
       className="group flex flex-col rounded-2xl border border-border bg-surface p-5 card-shadow transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[var(--shadow-lift)]"
     >
       <div className="flex items-start gap-3">
-        <Avatar name={lawyer.name} color={lawyer.avatarColor} size="lg" />
+        <LawyerPhoto name={lawyer.name} color={lawyer.avatarColor} photoUrl={lawyer.photoUrl} size="lg" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <h3 className="truncate text-base font-bold text-foreground">{lawyer.name}</h3>

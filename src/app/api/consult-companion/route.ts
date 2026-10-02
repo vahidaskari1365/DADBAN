@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { askLLM } from "@/lib/llm";
 import { rateLimit } from "@/lib/api-security";
 import { logger } from "@/lib/logger";
+import { detectSpecialtiesFromMessage, hasLawyerIntent, matchLawyers, type MatchedLawyer } from "@/lib/lawyer-match";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -104,6 +105,19 @@ export async function POST(req: Request) {
 
     const log = logger.child({ module: "companion" });
 
+    // تطبیق وکیل: اگر پیام نیت وکیل/مشاوره دارد یا موضوع حقوقی شناسایی شد،
+    // ۱۰ وکیل پیشنهادی (بر اساس تخصص واقعی) کنار پاسخ برمی‌گردد.
+    const { specialties, topic } = detectSpecialtiesFromMessage(message);
+    const wantLawyers = hasLawyerIntent(message) || specialties.length > 0;
+    let matched: MatchedLawyer[] = [];
+    if (wantLawyers) {
+      try {
+        matched = await matchLawyers(specialties, 10);
+      } catch {
+        /* non-fatal — پاسخ بدون پیشنهاد وکیل */
+      }
+    }
+
     // ساخت messages برای LLM
     const messages = [
       { role: "system", content: SYSTEM_PROMPT },
@@ -130,6 +144,7 @@ export async function POST(req: Request) {
         answer: fallback.text,
         links: fallback.links,
         source: "fallback",
+        lawyerMatch: matched.length ? { topic, specialties, lawyers: matched } : undefined,
       });
     }
 
@@ -147,6 +162,7 @@ export async function POST(req: Request) {
       answer: cleaned,
       links,
       source: "llm",
+      lawyerMatch: matched.length ? { topic, specialties, lawyers: matched } : undefined,
     });
   } catch (err) {
     logger.error("companion error", err);

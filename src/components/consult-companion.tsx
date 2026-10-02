@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Icon } from "@/components/icons";
+import { LawyerPicksFlow } from "@/components/ai/lawyer-picks";
+import type { MatchedLawyer } from "@/lib/lawyer-match";
 
 /**
  * مشاور همراه — چت هوش مصنوعی انسانی.
@@ -12,6 +14,7 @@ import { Icon } from "@/components/icons";
  *  - memory (۵ پیام آخر)
  *  - typing indicator واقعی
  *  - quick actions (دکمه‌های سریع)
+ *  - پیشنهاد هوشمند ۱۰ وکیل بر اساس مشکل کاربر + سؤال «۳ نفر برتر رو بگم؟» (بله/نه)
  *  - قابل دسترس از همه‌ی صفحات (FAB شناور)
  */
 
@@ -21,6 +24,8 @@ interface Message {
   timestamp: number;
   /** آیا پاسخ شامل ارجاع به صفحه‌ای در سایت هست؟ */
   links?: { label: string; href: string }[];
+  /** پیشنهاد وکیل: لیست ۱۰ وکیل + موضوع شناسایی‌شده (رندر با LawyerPicksFlow) */
+  lawyerPicks?: { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[] };
 }
 
 interface ConsultCompanionProps {
@@ -91,6 +96,9 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  /** جلوگیری از اسپم پیشنهاد وکیل: فقط وقتی موضوع/تخصص عوض بشه دوباره پیشنهاد بده */
+  const lastSuggestedKeyRef = useRef<string | null>(null);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -151,7 +159,30 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
         links: data.links || [],
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      const newMessages: Message[] = [assistantMessage];
+
+      // پیشنهاد وکیل: فقط بار اول یا وقتی موضوع/تخصص تغییر کنه
+      const match = data.lawyerMatch as
+        | { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[] }
+        | undefined;
+      if (match?.lawyers?.length) {
+        const key = match.topic || match.specialties?.join(",") || "general";
+        if (lastSuggestedKeyRef.current !== key) {
+          lastSuggestedKeyRef.current = key;
+          newMessages.push({
+            role: "assistant",
+            content: "",
+            timestamp: Date.now(),
+            lawyerPicks: {
+              lawyers: match.lawyers,
+              topic: match.topic ?? null,
+              specialties: match.specialties ?? [],
+            },
+          });
+        }
+      }
+
+      setMessages((prev) => [...prev, ...newMessages]);
 
       if (!open) {
         setUnreadCount((c) => c + 1);
@@ -242,16 +273,29 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
                     key={i}
                     className={`flex ${msg.role === "user" ? "justify-start" : "justify-end"}`}
                   >
-                    <div className={`max-w-[85%] ${msg.role === "user" ? "" : "flex flex-col items-end"}`}>
-                      <div
-                        className={`rounded-2xl px-3 py-2 text-sm leading-6 whitespace-pre-wrap ${
-                          msg.role === "user"
-                            ? "rounded-bl-md bg-primary-soft text-foreground"
-                            : "rounded-br-md bg-surface-3 text-foreground"
-                        }`}
-                      >
-                        {msg.content}
-                      </div>
+                    <div className={`max-w-[95%] ${msg.role === "user" ? "" : "flex w-full flex-col items-end"}`}>
+                      {msg.content && (
+                        <div
+                          className={`rounded-2xl px-3 py-2 text-sm leading-6 whitespace-pre-wrap ${
+                            msg.role === "user"
+                              ? "rounded-bl-md bg-primary-soft text-foreground"
+                              : "rounded-br-md bg-surface-3 text-foreground"
+                          }`}
+                        >
+                          {msg.content}
+                        </div>
+                      )}
+
+                      {/* فلو پیشنهاد وکیل: ۱۰ وکیل → سؤال ۳ نفر برتر → بله/نه */}
+                      {msg.lawyerPicks && (
+                        <div className="mt-2 w-full rounded-2xl border border-border bg-surface p-2.5 card-shadow">
+                          <LawyerPicksFlow
+                            lawyers={msg.lawyerPicks.lawyers}
+                            topic={msg.lawyerPicks.topic}
+                            specialties={msg.lawyerPicks.specialties}
+                          />
+                        </div>
+                      )}
 
                       {/* لینک‌های پیشنهادی */}
                       {msg.links && msg.links.length > 0 && (

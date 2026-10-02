@@ -5,6 +5,7 @@ import { lawyers, reviews } from "@/db/schema";
 import { eq, sql, desc } from "drizzle-orm";
 import { Container, Button, StarRating, Avatar, Badge, Card, EmptyState } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { LawyerPhoto } from "@/components/lawyer-photo";
 import { faNum, faPrice, relativeTime } from "@/lib/data";
 import { AvailabilityPanel } from "@/components/availability-panel";
 import { LawyerViewRecorder, LawyerDiscovery } from "@/components/amazon/recently-viewed";
@@ -141,6 +142,7 @@ export default async function LawyerProfile({
           verified: l.verified,
           specialties: l.specialties,
           avatarColor: l.avatarColor,
+          photoUrl: l.photoUrl,
         }}
       />
 
@@ -157,7 +159,7 @@ export default async function LawyerProfile({
 
           <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-              <Avatar name={l.name} color={l.avatarColor} size="xl" />
+              <LawyerPhoto name={l.name} color={l.avatarColor} photoUrl={l.photoUrl} size="xl" />
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">{l.name}</h1>
@@ -329,7 +331,7 @@ export default async function LawyerProfile({
               const relatedLawyer = r;
               return (
                 <a key={relatedLawyer.id} href={`/lawyers/${relatedLawyer.slug}`} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">
-                  <Avatar name={relatedLawyer.name} color={relatedLawyer.avatarColor} size="md" />
+                  <LawyerPhoto name={relatedLawyer.name} color={relatedLawyer.avatarColor} photoUrl={relatedLawyer.photoUrl} size="md" />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold text-foreground">{relatedLawyer.name}</p>
                     <p className="text-xs text-muted">{relatedLawyer.city} • {faNum(relatedLawyer.experienceYears)} سال</p>

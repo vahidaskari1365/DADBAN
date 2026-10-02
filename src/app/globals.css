@@ -143,6 +143,17 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted-soft); }
 
+/* اسکرول‌بار نازک برای لیست‌های داخل چت */
+.nice-scroll { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+.nice-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.nice-scroll::-webkit-scrollbar-track { background: transparent; }
+.nice-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 99px;
+  border: none;
+}
+.nice-scroll::-webkit-scrollbar-thumb:hover { background: var(--muted-soft); }
+
 /* ===== Utilities ===== */
 .glass {
   background: color-mix(in oklab, var(--surface) 78%, transparent);

@@ -16,6 +16,7 @@ export async function GET(req: Request) {
       name: lawyers.name,
       city: lawyers.city,
       specialties: lawyers.specialties,
+      photoUrl: lawyers.photoUrl,
     })
     .from(lawyers)
     .where(featuredOnly ? eq(lawyers.featured, true) : undefined)

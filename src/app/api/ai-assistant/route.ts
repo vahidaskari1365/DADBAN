@@ -3,6 +3,7 @@ import { analyzeLegalQuery, analyzeContract } from "@/lib/legal-engine";
 import { askLLM, SYSTEM_LEGAL } from "@/lib/llm";
 import { webSearch, type WebSearchResult } from "@/lib/ai";
 import { rateLimit, readJson, text } from "@/lib/api-security";
+import { detectSpecialtiesFromMessage, matchLawyers, TOPIC_SPECIALTIES, type MatchedLawyer } from "@/lib/lawyer-match";
 
 export const runtime = "nodejs";
 
@@ -63,8 +64,31 @@ export async function POST(req: Request) {
     }
 
     const llm = await withTimeout(askLLM([{ role: "user", content: query }], 700, systemPrompt), 25_000);
-    if (llm) return NextResponse.json({ ok: true, mode: "guide", source: "llm", answer: llm, sources });
-    return NextResponse.json({ ok: true, mode: "guide", source: "local", guidance: analyzeLegalQuery(query), sources: [] });
+
+    // پیشنهاد وکیل بر اساس مشکل کاربر (۱۰ وکیل هم‌تخصص از دیتابیس واقعی)
+    let lawyerMatch: { topic: string | null; specialties: string[]; lawyers: MatchedLawyer[] } | undefined;
+    try {
+      const det = detectSpecialtiesFromMessage(query);
+      if (det.specialties.length > 0) {
+        const matched = await matchLawyers(det.specialties, 10);
+        if (matched.length) lawyerMatch = { topic: det.topic, specialties: det.specialties, lawyers: matched };
+      }
+    } catch {
+      /* non-fatal */
+    }
+
+    if (llm) return NextResponse.json({ ok: true, mode: "guide", source: "llm", answer: llm, sources, lawyerMatch });
+    const guidance = analyzeLegalQuery(query);
+    if (!lawyerMatch && guidance.matched && TOPIC_SPECIALTIES[guidance.topic]) {
+      try {
+        const specs = TOPIC_SPECIALTIES[guidance.topic];
+        const matched = await matchLawyers(specs, 10);
+        if (matched.length) lawyerMatch = { topic: guidance.topic, specialties: specs, lawyers: matched };
+      } catch {
+        /* non-fatal */
+      }
+    }
+    return NextResponse.json({ ok: true, mode: "guide", source: "local", guidance, sources: [], lawyerMatch });
   } catch {
     return NextResponse.json({ ok: false, error: "پاسخ‌گویی در حال حاضر ممکن نیست." }, { status: 503 });
   }

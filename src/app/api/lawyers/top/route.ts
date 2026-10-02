@@ -37,6 +37,7 @@ export async function GET(req: Request) {
         verified: lawyers.verified,
         specialties: lawyers.specialties,
         avatarColor: lawyers.avatarColor,
+        photoUrl: lawyers.photoUrl,
       })
       .from(lawyers)
       .where(and(...conds))

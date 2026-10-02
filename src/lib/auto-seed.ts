@@ -21,7 +21,33 @@ const DAY = 86400000;
 const daysAgo = (n: number) => new Date(Date.now() - n * DAY);
 
 /* ----------------------------- Seed data ----------------------------- */
-const lawyerData = [
+export const lawyerData: Array<{
+  slug: string;
+  name: string;
+  avatarColor: string;
+  title?: string;
+  licenseNo: string;
+  city: string;
+  province: string;
+  gender: string;
+  experienceYears: number;
+  specialties: string[];
+  rating: number;
+  reviewCount: number;
+  caseCount: number;
+  priceChat: number;
+  priceVoice: number;
+  priceVideo: number;
+  topRated: boolean;
+  fastResponder: boolean;
+  contractExpert: boolean;
+  responseTime: string;
+  bio: string;
+  about: string;
+  services: string[];
+  views: number;
+  featured: boolean;
+}> = [
   { slug: "sohrab-mohammadi", name: "دکتر سهراب محمدی", avatarColor: "#15365d", title: "وکیل پایه یک دادگستری", licenseNo: "۱۲۳۴۵/تهران", city: "تهران", province: "تهران", gender: "male", experienceYears: 16, specialties: ["خانواده", "طلاق", "ارث"], rating: 4.9, reviewCount: 312, caseCount: 540, priceChat: 120000, priceVoice: 350000, priceVideo: 600000, topRated: true, fastResponder: true, contractExpert: false, responseTime: "کمتر از ۳۰ دقیقه", bio: "متخصص دعاوی خانواده با ۱۶ سال سابقه؛ تمرکز بر طلاق توافقی و یک‌طرفه، مهریه و حضانت.", about: "دکتر سهراب محمدی دانش‌آموخته حقوق خصوصی و عضو کانون وکلای دادگستری مرکز است. ایشان با رویکرد میانجی‌گری، تلاش می‌کند دعاوی خانواده با کمترین تنش و در کوتاه‌ترین زمان به نتیجه برسد. تجربه گسترده در پرونده‌های مهریه، نفقه، اجرت‌المثل و حضانت را داراست.", services: ["مشاوره طلاق توافقی", "مطالبه مهریه", "حضانت فرزندان", "تنظیم دادخواست خانواده"], views: 8420, featured: true },
   { slug: "neda-karimi", name: "ندا کریمی", avatarColor: "#946809", title: "وکیل پایه یک دادگستری", licenseNo: "۸۷۶۵۴/اصفهان", city: "اصفهان", province: "اصفهان", gender: "female", experienceYears: 12, specialties: ["ملک", "قراردادها"], rating: 4.8, reviewCount: 198, caseCount: 360, priceChat: 100000, priceVoice: 300000, priceVideo: 500000, topRated: true, fastResponder: false, contractExpert: true, responseTime: "کمتر از ۲ ساعت", bio: "وکیل تخصصی املاک؛ تخلیه، الزام به تنظیم سند، تصرف عدوانی و تنظیم قرارداد اجاره.", about: "خانم ندا کریمی عضو کانون وکلای استان اصفهان و متخصص حقوق ملک است. ایشان در زمینه دعاوی تخلیه، مطالبه اجاره‌بها، الزام به تنظیم سند رسمی و تصرف عدوانی تجربه گسترده‌ای دارد و قراردادهای اجاره امن تهیه می‌کند.", services: ["تخلیه ملک", "الزام به تنظیم سند", "تصرف عدوانی", "تنظیم قرارداد اجاره"], views: 5310, featured: true },
   { slug: "amirhossein-rostami", name: "امیرحسین رستمی", avatarColor: "#1d6a3f", title: "وکیل پایه یک دادگستری", licenseNo: "۴۵۳۲۱/خراسان رضوی", city: "مشهد", province: "خراسان رضوی", gender: "male", experienceYears: 9, specialties: ["کیفری", "قراردادها"], rating: 4.7, reviewCount: 142, caseCount: 210, priceChat: 110000, priceVoice: 320000, priceVideo: 520000, topRated: false, fastResponder: true, contractExpert: false, responseTime: "کمتر از یک ساعت", bio: "دفاع کیفری در جرایم کلاهبرداری، خیانت در امانت، جعل و سرقت؛ پاسخ‌گویی سریع.", about: "آقای امیرحسین رستمی وکیل پایه یک و عضو کانون وکلای خراسان رضوی است. تخصص ایشان دعاوی کیفری به‌ویژه کلاهبرداری، خیانت در امانت، جعل و سرقت است و در مرحله دادسرا و دادگاه دفاع می‌کند.", services: ["شکایت کلاهبرداری", "دفاع کیفری", "تنظیم شکواییه", "اعاده اعتبار"], views: 4120, featured: true },
@@ -104,7 +130,8 @@ const DDL = [
   `DO $$ BEGIN CREATE TYPE case_status AS ENUM ('new','reviewing','matched','active','closed'); EXCEPTION WHEN duplicate_object THEN null; END $$`,
   `DO $$ BEGIN CREATE TYPE consultation_type AS ENUM ('chat','voice','video'); EXCEPTION WHEN duplicate_object THEN null; END $$`,
   `DO $$ BEGIN CREATE TYPE consultation_status AS ENUM ('pending','confirmed','completed','cancelled'); EXCEPTION WHEN duplicate_object THEN null; END $$`,
-  `CREATE TABLE IF NOT EXISTS lawyers (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL, avatar_color TEXT NOT NULL DEFAULT '#15365d', title TEXT NOT NULL DEFAULT 'وکیل پایه یک دادگستری', license_no TEXT NOT NULL, city TEXT NOT NULL, province TEXT NOT NULL, gender TEXT NOT NULL DEFAULT 'male', experience_years INTEGER NOT NULL DEFAULT 0, specialties TEXT[] NOT NULL DEFAULT '{}', rating REAL NOT NULL DEFAULT 0, review_count INTEGER NOT NULL DEFAULT 0, case_count INTEGER NOT NULL DEFAULT 0, price_chat INTEGER NOT NULL DEFAULT 0, price_voice INTEGER NOT NULL DEFAULT 0, price_video INTEGER NOT NULL DEFAULT 0, verified BOOLEAN NOT NULL DEFAULT true, top_rated BOOLEAN NOT NULL DEFAULT false, fast_responder BOOLEAN NOT NULL DEFAULT false, contract_expert BOOLEAN NOT NULL DEFAULT false, response_time TEXT NOT NULL DEFAULT 'کمتر از یک ساعت', bio TEXT NOT NULL DEFAULT '', about TEXT NOT NULL DEFAULT '', services TEXT[] NOT NULL DEFAULT '{}', views INTEGER NOT NULL DEFAULT 0, featured BOOLEAN NOT NULL DEFAULT false, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+  `CREATE TABLE IF NOT EXISTS lawyers (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL, avatar_color TEXT NOT NULL DEFAULT '#15365d', photo_url TEXT, title TEXT NOT NULL DEFAULT 'وکیل پایه یک دادگستری', license_no TEXT NOT NULL, city TEXT NOT NULL, province TEXT NOT NULL, gender TEXT NOT NULL DEFAULT 'male', experience_years INTEGER NOT NULL DEFAULT 0, specialties TEXT[] NOT NULL DEFAULT '{}', rating REAL NOT NULL DEFAULT 0, review_count INTEGER NOT NULL DEFAULT 0, case_count INTEGER NOT NULL DEFAULT 0, price_chat INTEGER NOT NULL DEFAULT 0, price_voice INTEGER NOT NULL DEFAULT 0, price_video INTEGER NOT NULL DEFAULT 0, verified BOOLEAN NOT NULL DEFAULT true, top_rated BOOLEAN NOT NULL DEFAULT false, fast_responder BOOLEAN NOT NULL DEFAULT false, contract_expert BOOLEAN NOT NULL DEFAULT false, response_time TEXT NOT NULL DEFAULT 'کمتر از یک ساعت', bio TEXT NOT NULL DEFAULT '', about TEXT NOT NULL DEFAULT '', services TEXT[] NOT NULL DEFAULT '{}', views INTEGER NOT NULL DEFAULT 0, featured BOOLEAN NOT NULL DEFAULT false, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+  `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS photo_url TEXT`,
   `CREATE TABLE IF NOT EXISTS reviews (id SERIAL PRIMARY KEY, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, client_name TEXT NOT NULL, rating INTEGER NOT NULL, comment TEXT NOT NULL, service TEXT, created_at TIMESTAMP NOT NULL DEFAULT now())`,
   `CREATE TABLE IF NOT EXISTS contracts (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, category TEXT NOT NULL, icon TEXT NOT NULL DEFAULT 'file', description TEXT NOT NULL, use_case TEXT NOT NULL, risks TEXT[] NOT NULL DEFAULT '{}', key_clauses TEXT[] NOT NULL DEFAULT '{}', sample_price INTEGER NOT NULL DEFAULT 0, custom_price INTEGER NOT NULL DEFAULT 0, popular BOOLEAN NOT NULL DEFAULT false, steps TEXT[] NOT NULL DEFAULT '{}')`,
   `CREATE TABLE IF NOT EXISTS articles (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, category TEXT NOT NULL, excerpt TEXT NOT NULL, content TEXT NOT NULL, read_time INTEGER NOT NULL DEFAULT 5, author TEXT NOT NULL DEFAULT 'تیم تحریریه دادبان', author_role TEXT NOT NULL DEFAULT 'پژوهشگر حقوق', views INTEGER NOT NULL DEFAULT 0, published_at TIMESTAMP NOT NULL DEFAULT now())`,
@@ -227,11 +254,27 @@ export function getCounts(): SeedCounts {
 }
 
 async function insertAll() {
-  await db.insert(lawyers).values(lawyerData);
+  await db.insert(lawyers).values(lawyerData.map((l) => ({ ...l, photoUrl: `/lawyers/${l.slug}.jpg` })));
   await db.insert(reviews).values(reviewData);
   await db.insert(contracts).values(contractData);
   await db.insert(articles).values(articleData);
   await db.insert(qaQuestions).values(qaData);
+}
+
+/**
+ * Backfill photo_url for lawyers created before photos existed (idempotent, cheap).
+ * Photo files live at /lawyers/{slug}.jpg — see scripts/gen-lawyer-photos.ts.
+ */
+export async function ensureLawyerPhotos(): Promise<void> {
+  try {
+    await db.execute(sql.raw(`ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS photo_url TEXT`));
+    const slugList = lawyerData.map((l) => `'${l.slug}'`).join(", ");
+    await db.execute(
+      sql.raw(`UPDATE lawyers SET photo_url = '/lawyers/' || slug || '.jpg' WHERE photo_url IS NULL AND slug IN (${slugList})`),
+    );
+  } catch {
+    /* non-fatal */
+  }
 }
 
 /** Manual re-seed: wipe and re-insert. */
@@ -258,6 +301,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
       try {
         await seedManagedServices();
         await seedDemoOperators();
+        await ensureLawyerPhotos();
       } catch {
         /* non-fatal */
       }

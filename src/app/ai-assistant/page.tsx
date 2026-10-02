@@ -4,7 +4,9 @@ import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Container, Button, Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { LawyerPicksFlow } from "@/components/ai/lawyer-picks";
 import type { LegalGuidance } from "@/lib/legal-engine";
+import type { MatchedLawyer } from "@/lib/lawyer-match";
 import type { IconKey } from "@/lib/data";
 
 interface ClauseFinding {
@@ -229,6 +231,9 @@ function AIAssistantContent() {
   const [loading, setLoading] = useState(false);
   const [guidance, setGuidance] = useState<{ g: LegalGuidance; echo: string } | null>(null);
   const [llmAnswer, setLlmAnswer] = useState<string | null>(null);
+  const [lawyerMatch, setLawyerMatch] = useState<
+    { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[] } | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
 
   const [contractText, setContractText] = useState("");
@@ -247,6 +252,7 @@ function AIAssistantContent() {
     setError(null);
     setGuidance(null);
     setLlmAnswer(null);
+    setLawyerMatch(null);
     try {
       const res = await fetch("/api/ai-assistant", {
         method: "POST",
@@ -259,6 +265,13 @@ function AIAssistantContent() {
         setLlmAnswer(data.answer);
       } else {
         setGuidance({ g: data.guidance, echo: data.echo });
+      }
+      if (data.lawyerMatch?.lawyers?.length) {
+        setLawyerMatch({
+          lawyers: data.lawyerMatch.lawyers,
+          topic: data.lawyerMatch.topic ?? null,
+          specialties: data.lawyerMatch.specialties ?? [],
+        });
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "خطا در ارتباط با سرور");
@@ -303,7 +316,7 @@ function AIAssistantContent() {
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [guidance, contractResult]);
+  }, [guidance, contractResult, lawyerMatch]);
 
   return (
     <>
@@ -414,12 +427,30 @@ function AIAssistantContent() {
                   <p className="border-t border-border pt-3 text-xs text-muted">
                     این پاسخ توسط هوش مصنوعی تولید شده و جنبه اطلاع‌رسانی دارد؛ برای اقدام حقوقی با وکیل متخصص مشورت کنید.
                   </p>
+                  {lawyerMatch && (
+                    <div className="border-t border-border pt-4">
+                      <LawyerPicksFlow
+                        lawyers={lawyerMatch.lawyers}
+                        topic={lawyerMatch.topic}
+                        specialties={lawyerMatch.specialties}
+                      />
+                    </div>
+                  )}
                 </Card>
               )}
 
               {guidance && (
-                <div ref={scrollRef}>
+                <div ref={scrollRef} className="space-y-6">
                   <GuidanceView g={guidance.g} echo={guidance.echo} />
+                  {lawyerMatch && (
+                    <Card hover={false} className="p-4">
+                      <LawyerPicksFlow
+                        lawyers={lawyerMatch.lawyers}
+                        topic={lawyerMatch.topic}
+                        specialties={lawyerMatch.specialties}
+                      />
+                    </Card>
+                  )}
                 </div>
               )}
             </div>
