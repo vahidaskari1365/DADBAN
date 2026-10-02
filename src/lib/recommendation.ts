@@ -73,7 +73,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   const reasons: string[] = [];
   if (topic) reasons.push(`موضوع شما (${topic}) در حوزه «${specialty ?? "عمومی"}» قرار می‌گیرد.`);
   if (stage) reasons.push(`پرونده در مرحله «${stage}» است.`);
-  if (city) reasons.push(`شهر شما: ${city}.`);
+  if (city) reasons.push(`استان شما: ${city}.`);
   if (inCourt) reasons.push("در این مرحله، حضور وکیل متخصص معمولاً تعیین‌کننده است.");
 
   const q = encodeURIComponent(topic ? `مشکل ${topic} (مرحله: ${stage})` : "مشکل حقوقی");

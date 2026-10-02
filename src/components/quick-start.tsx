@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "./ui";
 import { Icon } from "./icons";
-import { LEGAL_TOPICS, ALL_CITIES, faNum } from "@/lib/data";
+import { LEGAL_TOPICS, ALL_PROVINCES, faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { buildRecommendation, type HelpType, type Recommendation } from "@/lib/recommendation";
 import { trackEvent } from "@/lib/analytics";
@@ -21,7 +21,7 @@ const STEP_TITLES = [
   "موضوع پرونده شما چیست؟",
   "یک‌خطی مشکل‌تان را بنویسید (اختیاری)",
   "پرونده در چه مرحله‌ای است؟",
-  "در کدام شهر هستید؟",
+  "در کدام استان هستید؟",
   "چه کمکی می‌خواهید؟",
 ];
 
@@ -80,13 +80,13 @@ function QuickStartInner() {
   const [topic, setTopic] = useState<string | null>(initialTopic && LEGAL_TOPICS.some((t) => t.label === initialTopic) ? initialTopic : null);
   const [description, setDescription] = useState("");
   const [stage, setStage] = useState<string | null>(null);
-  const [city, setCity] = useState<string | null>(null);
+  const [province, setProvince] = useState<string | null>(null);
   const [help, setHelp] = useState<HelpType | null>(null);
   const [started, setStarted] = useState(false);
   const [done, setDone] = useState(false);
 
   const canNext =
-    step === 0 ? topic !== null : step === 1 ? true : step === 2 ? stage !== null : step === 3 ? city !== null : help !== null;
+    step === 0 ? topic !== null : step === 1 ? true : step === 2 ? stage !== null : step === 3 ? province !== null : help !== null;
 
   const goNext = () => {
     if (!started) {
@@ -106,15 +106,15 @@ function QuickStartInner() {
     setTopic(null);
     setDescription("");
     setStage(null);
-    setCity(null);
+    setProvince(null);
     setHelp(null);
     setDone(false);
     setStarted(false);
   };
 
   const rec: Recommendation | null =
-    done && topic && stage && city && help
-      ? buildRecommendation({ topic, description, stage, city, help })
+    done && topic && stage && province && help
+      ? buildRecommendation({ topic, description, stage, city: province, help })
       : null;
 
   return (
@@ -210,19 +210,38 @@ function QuickStartInner() {
                 )}
 
                 {step === 3 && (
-                  <div className="flex flex-wrap gap-2">
-                    {ALL_CITIES.slice(0, 18).map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setCity(c)}
-                        className={`rounded-full border px-3.5 py-2 text-sm font-medium transition-all cursor-pointer ${
-                          city === c ? "border-primary bg-primary text-primary-foreground" : "border-border text-foreground-soft hover:bg-primary-soft"
-                        }`}
+                  <div>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute right-3.5 top-1/2 z-10 -translate-y-1/2 text-muted-soft">
+                        <Icon name="location" className="h-5 w-5" />
+                      </span>
+                      <select
+                        value={province ?? ""}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setProvince(v || null);
+                          // انتخاب استان → رفتن خودکار به مرحله بعد
+                          if (v) goNext();
+                        }}
+                        aria-label="انتخاب استان"
+                        className="h-13 w-full cursor-pointer appearance-none rounded-xl border border-border-strong bg-background py-3.5 pl-4 pr-11 text-sm font-medium text-foreground outline-none transition-colors focus:border-primary"
                       >
-                        {c}
-                      </button>
-                    ))}
+                        <option value="" disabled>
+                          استان خود را از فهرست انتخاب کنید…
+                        </option>
+                        {ALL_PROVINCES.map((p) => (
+                          <option key={p} value={p}>
+                            استان {p}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-muted-soft">
+                        <Icon name="chevron" className="h-4 w-4" />
+                      </span>
+                    </div>
+                    <p className="mt-2 text-[11px] text-muted">
+                      همه ۳۱ استان ایران در فهرست است — استان محل سکونت یا اقامت فعلی خود را انتخاب کنید.
+                    </p>
                   </div>
                 )}
 

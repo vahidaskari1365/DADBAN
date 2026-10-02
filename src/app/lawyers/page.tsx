@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { db } from "@/db";
 import { lawyers } from "@/db/schema";
-import { and, desc, asc, eq, sql, count } from "drizzle-orm";
+import { and, desc, asc, eq, inArray, sql, count } from "drizzle-orm";
 import { Container, Button, EmptyState, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
 import { LawyerFilters } from "@/components/lawyer-filters";
 import { LawyerDiscovery } from "@/components/amazon/recently-viewed";
 import { StickyCta } from "@/components/amazon/sticky-cta";
-import { SPECIALTIES, ALL_CITIES, ALL_PROVINCES, faNum } from "@/lib/data";
+import { SPECIALTIES, ALL_CITIES, ALL_PROVINCES, LOCATIONS, faNum } from "@/lib/data";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +45,12 @@ export default async function LawyersPage({
 
   const conds = [];
   if (sp) conds.push(sql`${lawyers.specialties} @> ARRAY[${sp}]::text[]`);
-  if (city) conds.push(eq(lawyers.city, city));
+  if (city) {
+    // اگر پارامتر یک استان باشد، همه شهرهای آن استان جستجو می‌شود
+    const prov = LOCATIONS.find((l) => l.province === city);
+    if (prov) conds.push(inArray(lawyers.city, prov.cities));
+    else conds.push(eq(lawyers.city, city));
+  }
   if (gender) conds.push(eq(lawyers.gender, gender));
   if (q) conds.push(sql`${lawyers.name} ilike ${`%${q}%`}`);
 
@@ -71,7 +76,14 @@ export default async function LawyersPage({
     console.error("[dadban] lawyers list query failed:", err);
   }
 
-  const heading = sp ? (city ? `وکیل ${sp} در ${city}` : `وکیل ${sp}`) : city ? `وکیل در ${city}` : "همه وکلا";
+  const isProvince = city ? LOCATIONS.some((l) => l.province === city) : false;
+  const heading = sp
+    ? city
+      ? `وکیل ${sp} در ${isProvince ? `استان ${city}` : city}`
+      : `وکیل ${sp}`
+    : city
+      ? `وکیل در ${isProvince ? `استان ${city}` : city}`
+      : "همه وکلا";
 
   const faqJsonLd = {
     "@context": "https://schema.org",

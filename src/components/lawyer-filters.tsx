@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "./icons";
-import { SPECIALTIES, ALL_CITIES } from "@/lib/data";
+import { SPECIALTIES, ALL_CITIES, ALL_PROVINCES } from "@/lib/data";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -82,16 +82,23 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
               ))}
             </select>
           </Field>
-          <Field label="شهر">
+          <Field label="استان / شهر">
             <select
               value={initial.city ?? "all"}
               onChange={(e) => update("city", e.target.value)}
               className={selectCls}
             >
-              <option value="all">همه شهرها</option>
-              {ALL_CITIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+              <option value="all">همه استان‌ها و شهرها</option>
+              <optgroup label="استان‌ها">
+                {ALL_PROVINCES.map((p) => (
+                  <option key={p} value={p}>استان {p}</option>
+                ))}
+              </optgroup>
+              <optgroup label="شهرها">
+                {ALL_CITIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </optgroup>
             </select>
           </Field>
           <Field label="جنسیت">
