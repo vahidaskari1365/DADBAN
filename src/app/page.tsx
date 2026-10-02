@@ -15,7 +15,6 @@ import type { IconKey } from "@/lib/data";
 import { SPECIAL_SERVICES } from "@/lib/content";
 import { RelatedLinks } from "@/components/related-links";
 import { getPlatformStats } from "@/lib/stats";
-import { HowItWorks } from "@/components/amazon/how-it-works";
 import { ReviewsSpotlight } from "@/components/amazon/reviews-spotlight";
 import { LawyerDiscovery } from "@/components/amazon/recently-viewed";
 import { TrustLine } from "@/components/amazon/trust-line";
@@ -74,16 +73,7 @@ export default async function HomePage() {
     <div className="page-wash">
       <HomeHero />
 
-      {/* #1 — چطور کار می‌کند؟ سه‌مرحله‌ای (وضوح مسیر، سبک آمازون) */}
-      <section className="mt-14">
-        <Container>
-          <Reveal>
-            <HowItWorks />
-          </Reveal>
-        </Container>
-      </section>
-
-      {/* #2 — Intent cards: "هر کمکی نیاز دارید، اینجاست" */}
+      {/* #1 — Intent cards: "هر کمکی نیاز دارید، اینجاست" */}
       <section className="mt-20">
         <Container>
           <Reveal>
