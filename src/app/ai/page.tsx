@@ -113,6 +113,36 @@ export default function AiHubPage() {
         </Container>
       </section>
 
+      {/* ─── جعبه‌ابزار منبع‌باز ─── */}
+      <section className="mt-10">
+        <Container>
+          <Link
+            href="/ai/resources"
+            className="group relative block overflow-hidden rounded-3xl border border-border bg-surface p-6 transition-all hover:border-primary hover:shadow-[var(--shadow-lift)] sm:p-8"
+          >
+            <div aria-hidden className="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full bg-primary-soft blur-2xl" />
+            <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+                <Icon name="bolt" className="h-7 w-7" />
+              </span>
+              <div className="flex-1">
+                <h3 className="text-lg font-black text-foreground sm:text-xl">
+                  جعبه‌ابزار منبع‌باز هوش مصنوعی
+                  <Badge tone="primary" icon="sparkles">جدید</Badge>
+                </h3>
+                <p className="mt-1.5 max-w-2xl text-sm leading-7 text-muted">
+                  کاتالوگ زنده‌ی ۱۱۸ مدل رایگان از ۱۶ تأمین‌کننده، خواندن صفحه وب و تحلیل مخزن گیت‌هاب،
+                  ۳۱ مهارت عامل، آکادمی مهندسی AI و تست سلامت دروازه‌ی مسیریابی دادبان.
+                </p>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-primary">
+                ورود به جعبه‌ابزار <Icon name="arrow" className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              </span>
+            </div>
+          </Link>
+        </Container>
+      </section>
+
       {/* ─── ابزارها (تعاملی) ─── */}
       <section id="tools" className="mt-16 scroll-mt-24">
         <Container>

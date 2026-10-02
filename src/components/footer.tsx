@@ -19,6 +19,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
     title: "هوش مصنوعی",
     links: [
       { label: "مرکز هوش مصنوعی", href: "/ai" },
+      { label: "جعبه‌ابزار منبع‌باز", href: "/ai/resources" },
       { label: "دستیار حقوقی", href: "/ai-assistant" },
       { label: "تحلیل سند با عکس", href: "/ai#tools" },
       { label: "جستجوی وب حقوقی", href: "/ai#tools" },

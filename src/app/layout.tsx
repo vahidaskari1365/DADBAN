@@ -138,7 +138,7 @@ const siteJsonLd = websiteSchema;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning className={vazirmatn.variable}>
+    <html lang="fa" dir="rtl" suppressHydrationWarning data-scroll-behavior="smooth" className={vazirmatn.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashScript }} />
         {/* ثبت Service Worker برای PWA — inline تا مستقل از React hydration باشد */}

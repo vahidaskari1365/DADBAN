@@ -134,6 +134,7 @@ export const NAV: {
     href: "/ai",
     children: [
       { label: "مرکز هوش مصنوعی", href: "/ai", desc: "تحلیل سند، جستجوی وب و استودیوی صدا" },
+      { label: "جعبه‌ابزار منبع‌باز", href: "/ai/resources", desc: "کاتالوگ API رایگان، مهارت‌ها و آکادمی AI" },
       { label: "دستیار حقوقی", href: "/ai-assistant", desc: "راهنمای حقوقی هوشمند" },
       { label: "تحلیل سند با عکس", href: "/ai", desc: "عکس سند را بفرست، تحلیل بگیر" },
       { label: "تحلیل قرارداد", href: "/contracts/review", desc: "بندهای پرریسک" },

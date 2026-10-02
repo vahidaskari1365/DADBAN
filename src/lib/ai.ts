@@ -19,8 +19,12 @@ type ZaiInstance = {
     asr: { create: (opts: unknown) => Promise<{ text?: string }> };
   };
   functions: {
-    invoke: (name: "web_search", args: { query: string; num?: number; recency_days?: number }) => Promise<
+    invoke: (
+      name: "web_search" | "page_reader",
+      args: { query: string; num?: number; recency_days?: number } | { url: string },
+    ) => Promise<
       { url: string; name: string; snippet: string; host_name: string; rank: number; date: string; favicon: string }[]
+      | { title?: string; html?: string; url?: string; publishedTime?: string }
     >;
   };
 };
