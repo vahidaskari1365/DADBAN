@@ -36,3 +36,7 @@ server.log
 /.zscripts
 /Caddyfile
 /mini-services/.gitkeep
+node_modules/
+*.log
+dev.log
+server.log
