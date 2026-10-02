@@ -6,6 +6,8 @@ import { Container, Button, EmptyState, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
 import { LawyerFilters } from "@/components/lawyer-filters";
+import { LawyerDiscovery } from "@/components/amazon/recently-viewed";
+import { StickyCta } from "@/components/amazon/sticky-cta";
 import { SPECIALTIES, ALL_CITIES, ALL_PROVINCES, faNum } from "@/lib/data";
 import Link from "next/link";
 
@@ -114,7 +116,19 @@ export default async function LawyersPage({
             ))}
           </div>
         )}
+
+        {/* بازدیدهای اخیر + پیشنهاد برای شما (شخصی‌سازی، سبک آمازون) */}
+        <div className="mt-10">
+          <LawyerDiscovery />
+        </div>
       </Container>
+
+      {/* CTA چسبان موبایل — همیشه یک اقدام بعدی در دسترس */}
+      <StickyCta
+        href="/case/new"
+        label="پرونده‌ات را ثبت کن"
+        sub="ارزیابی اولیه • محرمانگی کامل • بدون هزینه اولیه"
+      />
 
       {/* SEO: specialties */}
       <section id="specialties" className="mt-8 scroll-mt-24 border-t border-border py-12">

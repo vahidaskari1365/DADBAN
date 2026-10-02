@@ -7,6 +7,9 @@ import { Container, Button, StarRating, Avatar, Badge, Card, EmptyState } from "
 import { Icon } from "@/components/icons";
 import { faNum, faPrice, relativeTime } from "@/lib/data";
 import { AvailabilityPanel } from "@/components/availability-panel";
+import { LawyerViewRecorder, LawyerDiscovery } from "@/components/amazon/recently-viewed";
+import { StickyCta } from "@/components/amazon/sticky-cta";
+import { TrustLine } from "@/components/amazon/trust-line";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -122,6 +125,25 @@ export default async function LawyerProfile({
 
   return (
     <>
+      {/* ثبت بازدید برای شخصی‌سازی (بازدیدهای اخیر / پیشنهاد برای شما) */}
+      <LawyerViewRecorder
+        lawyer={{
+          id: l.id,
+          slug: l.slug,
+          name: l.name,
+          title: l.title,
+          city: l.city,
+          rating: l.rating,
+          reviewCount: l.reviewCount,
+          caseCount: l.caseCount,
+          priceChat: l.priceChat,
+          experienceYears: l.experienceYears,
+          verified: l.verified,
+          specialties: l.specialties,
+          avatarColor: l.avatarColor,
+        }}
+      />
+
       {/* Hero */}
       <section className="border-b border-border bg-gradient-to-b from-primary-soft/40 to-background">
         <Container className="py-8">
@@ -276,6 +298,7 @@ export default async function LawyerProfile({
                 درخواست وکالت
               </Button>
             </div>
+            <TrustLine compact className="justify-start pt-1" />
           </Card>
 
           <Card hover={false}>
@@ -318,6 +341,18 @@ export default async function LawyerProfile({
           </div>
         </Container>
       )}
+
+      {/* شخصی‌سازی: بازدیدهای اخیر + پیشنهاد بر اساس همین پروفایل (سبک آمازون) */}
+      <Container className="pb-6">
+        <LawyerDiscovery excludeSlug={l.slug} />
+      </Container>
+
+      {/* CTA چسبان موبایل — رزرو همیشه در دسترس */}
+      <StickyCta
+        href={`/consultation?lawyer=${l.slug}`}
+        label={`رزرو مشاوره با ${l.name}`}
+        sub={`از ${faPrice(l.priceChat)} • پرداخت امن • ضمانت بازگشت وجه`}
+      />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }} />
     </>

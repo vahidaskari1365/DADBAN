@@ -15,6 +15,10 @@ import type { IconKey } from "@/lib/data";
 import { SPECIAL_SERVICES } from "@/lib/content";
 import { RelatedLinks } from "@/components/related-links";
 import { getPlatformStats } from "@/lib/stats";
+import { HowItWorks } from "@/components/amazon/how-it-works";
+import { ReviewsSpotlight } from "@/components/amazon/reviews-spotlight";
+import { LawyerDiscovery } from "@/components/amazon/recently-viewed";
+import { TrustLine } from "@/components/amazon/trust-line";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +73,15 @@ export default async function HomePage() {
   return (
     <div className="page-wash">
       <HomeHero />
+
+      {/* #1 — چطور کار می‌کند؟ سه‌مرحله‌ای (وضوح مسیر، سبک آمازون) */}
+      <section className="mt-14">
+        <Container>
+          <Reveal>
+            <HowItWorks />
+          </Reveal>
+        </Container>
+      </section>
 
       {/* #2 — Intent cards: "هر کمکی نیاز دارید، اینجاست" */}
       <section className="mt-20">
@@ -237,6 +250,13 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* شخصی‌سازی: بازدیدهای اخیر + پیشنهاد برای شما (سبک آمازون) */}
+      <section className="mt-10">
+        <Container>
+          <LawyerDiscovery />
+        </Container>
+      </section>
+
       {/* Consultation types */}
       <section className="mt-24">
         <Container>
@@ -364,6 +384,9 @@ export default async function HomePage() {
         </Container>
       </section>
 
+      {/* برترین نظرات کاربران — فقط نظرات واقعی (سبک Top reviews آمازون) */}
+      <ReviewsSpotlight />
+
       {/* Final CTA */}
       <section className="mt-24 pb-8">
         <Container>
@@ -379,6 +402,7 @@ export default async function HomePage() {
                   <Button href="/lawyers" size="lg" icon="search">پیدا کردن وکیل</Button>
                   <Button href="/case/new" size="lg" variant="outline" icon="folder">ثبت پرونده</Button>
                 </div>
+                <TrustLine className="mt-5" />
               </div>
             </div>
           </Reveal>

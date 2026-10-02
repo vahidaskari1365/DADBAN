@@ -7,6 +7,8 @@ import { Icon } from "@/components/icons";
 import { CONSULTATION_TYPES, faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
+import { FaqAccordion } from "@/components/amazon/faq-accordion";
+import { TrustLine } from "@/components/amazon/trust-line";
 import Link from "next/link";
 
 const DURATIONS: Record<string, { min: number; price: number }[]> = {
@@ -392,6 +394,7 @@ function ConsultationContent() {
             <Button onClick={submit} disabled={loading} icon="calendar" className="mt-4 w-full">
               {loading ? "در حال ثبت…" : slot ? "ثبت نهایی نوبت" : "ثبت درخواست مشاوره"}
             </Button>
+            <TrustLine compact className="mt-3" />
             <p className="mt-2 text-center text-[11px] text-muted">
               با ثبت، شرایط استفاده دادبان را می‌پذیرید. اطلاعات شما محرمانه است و هیچ مبلغی پیش از تأیید کسر نمی‌شود.
             </p>
@@ -443,6 +446,18 @@ function ConsultationContent() {
             </div>
           </Card>
         </aside>
+      </div>
+
+      {/* پرسش‌های متداول — کاهش تردید لحظه آخر (سبک Customer Q&A آمازون) */}
+      <div className="mt-10">
+        <FaqAccordion
+          items={[
+            { q: "چطور وکیل مناسب را انتخاب کنم؟", a: "امتیاز واقعی، تعداد پرونده‌ها، سابقه و تعرفه شفاف هر وکیل در پروفایلش نمایش داده می‌شود؛ می‌توانید چند وکیل را مقایسه کنید و بهترین را انتخاب کنید." },
+            { q: "پرداخت چه زمانی انجام می‌شود؟", a: "هیچ مبلغی قبل از تأیید نوبت کسر نمی‌شود. پرداخت امن داخل سایت انجام می‌گیرد و طبق سیاست شفاف، در صورت ارائه‌نشدن خدمت، وجه بازگردانده می‌شود." },
+            { q: "اطلاعات من محرمانه می‌ماند؟", a: "بله. اطلاعات شما طبق سیاست حریم خصوصی فقط برای انجام همان مشاوره استفاده می‌شود و در اختیار هیچ شخص ثالثی قرار نمی‌گیرد." },
+            { q: "اگر از مشاوره راضی نبودم چه کنم؟", a: "تیم پشتیبانی دادبان در صورت بروز اختلاف، رسیدگی بی‌طرفانه انجام می‌دهد و مطابق سیاست بازگشت وجه عمل می‌کند." },
+          ]}
+        />
       </div>
     </>
   );
