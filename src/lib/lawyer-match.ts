@@ -30,6 +30,14 @@ export interface MatchedLawyer {
   photoUrl: string | null;
 }
 
+/** زیرمجموعه‌ی فیلدهای عمومی وکیل که از دیتابیس انتخاب می‌شود. */
+type LawyerPublicRow = Pick<
+  typeof lawyers.$inferSelect,
+  | "id" | "slug" | "name" | "title" | "city" | "rating" | "reviewCount" | "caseCount"
+  | "priceChat" | "priceVoice" | "priceVideo" | "experienceYears" | "verified"
+  | "topRated" | "specialties" | "avatarColor" | "photoUrl"
+>;
+
 /** نگاشت موضوع حقوقی → تخصص‌های وکلای دادبان (مطابق specialties در دیتابیس). */
 export const TOPIC_SPECIALTIES: Record<string, string[]> = {
   "طلاق": ["خانواده", "طلاق"],
@@ -88,8 +96,8 @@ export function hasLawyerIntent(message: string): boolean {
   return LAWYER_INTENT.test(message || "");
 }
 
-/** وکیل را به فرمت عمومی تبدیل می‌کند. */
-function toMatched(row: typeof lawyers.$inferSelect): MatchedLawyer {
+/** تبدیل ردیف وکیل (زیرمجموعه‌ی عمومی) به فرمت MatchedLawyer. */
+function toMatched(row: LawyerPublicRow): MatchedLawyer {
   return {
     id: row.id,
     slug: row.slug,
@@ -122,7 +130,7 @@ function seedFallback(specialties: string[], limit: number): MatchedLawyer[] {
     photoUrl: `/lawyers/${l.slug}.jpg`,
   }));
   return interleave(pool, specialties, limit).map((l) =>
-    toMatched(l as unknown as typeof lawyers.$inferSelect),
+    toMatched(l as unknown as LawyerPublicRow),
   );
 }
 
