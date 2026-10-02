@@ -11,17 +11,6 @@ import { db } from "@/db";
 import { sql } from "drizzle-orm";
 
 const DDL: string[] = [
-  /* enum types — idempotent */
-  `DO $$ BEGIN CREATE TYPE proposal_status AS ENUM ('pending','negotiating','accepted','rejected','withdrawn'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
-  `DO $$ BEGIN CREATE TYPE case_event_actor AS ENUM ('lawyer','trainee','system','client'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
-  `DO $$ BEGIN CREATE TYPE appointment_kind AS ENUM ('hearing','consultation','deadline','task'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
-  `DO $$ BEGIN CREATE TYPE installment_status AS ENUM ('pending','paid','late','cancelled'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
-  `DO $$ BEGIN CREATE TYPE installment_source AS ENUM ('client','provider'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
-  `DO $$ BEGIN CREATE TYPE credit_provider AS ENUM ('azki','partner_bank'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
-  `DO $$ BEGIN CREATE TYPE credit_status AS ENUM ('draft','submitted','scoring','approved','rejected','funded'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
-  `DO $$ BEGIN CREATE TYPE dp_payout_status AS ENUM ('requested','processing','paid','rejected'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
-  `DO $$ BEGIN CREATE TYPE dp_ledger_type AS ENUM ('payment','commission','payout','refund'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
-  `DO $$ BEGIN CREATE TYPE team_role AS ENUM ('trainee','associate'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE TABLE IF NOT EXISTS case_proposals (
     id SERIAL PRIMARY KEY,
     case_id INTEGER NOT NULL,
