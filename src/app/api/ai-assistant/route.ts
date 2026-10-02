@@ -3,7 +3,7 @@ import { analyzeLegalQuery, analyzeContract } from "@/lib/legal-engine";
 import { askLLM, SYSTEM_LEGAL } from "@/lib/llm";
 import { webSearch, type WebSearchResult } from "@/lib/ai";
 import { rateLimit, readJson, text } from "@/lib/api-security";
-import { detectSpecialtiesFromMessage, matchLawyers, TOPIC_SPECIALTIES, type MatchedLawyer } from "@/lib/lawyer-match";
+import { detectSpecialtiesFromMessage, detectProvinceFromMessage, matchLawyers, TOPIC_SPECIALTIES, type MatchedLawyer } from "@/lib/lawyer-match";
 
 export const runtime = "nodejs";
 
@@ -37,6 +37,8 @@ export async function POST(req: Request) {
   const query = text(body?.query, 3000);
   const mode = body?.mode;
   const useWeb = body?.webSearch === true;
+  // استان کاربر: از state فانل (انتخاب در ویزارد) یا از خود متن پیام تشخیص داده می‌شود
+  const province = text(body?.province, 60) || (query ? detectProvinceFromMessage(query) : null);
 
   try {
     if (mode === "contract" || contract) {
@@ -66,12 +68,12 @@ export async function POST(req: Request) {
     const llm = await withTimeout(askLLM([{ role: "user", content: query }], 700, systemPrompt), 25_000);
 
     // پیشنهاد وکیل بر اساس مشکل کاربر (۱۰ وکیل هم‌تخصص از دیتابیس واقعی)
-    let lawyerMatch: { topic: string | null; specialties: string[]; lawyers: MatchedLawyer[] } | undefined;
+    let lawyerMatch: { topic: string | null; specialties: string[]; province: string | null; lawyers: MatchedLawyer[] } | undefined;
     try {
       const det = detectSpecialtiesFromMessage(query);
       if (det.specialties.length > 0) {
-        const matched = await matchLawyers(det.specialties, 10);
-        if (matched.length) lawyerMatch = { topic: det.topic, specialties: det.specialties, lawyers: matched };
+        const matched = await matchLawyers(det.specialties, 10, province);
+        if (matched.length) lawyerMatch = { topic: det.topic, specialties: det.specialties, province, lawyers: matched };
       }
     } catch {
       /* non-fatal */
@@ -82,8 +84,8 @@ export async function POST(req: Request) {
     if (!lawyerMatch && guidance.matched && TOPIC_SPECIALTIES[guidance.topic]) {
       try {
         const specs = TOPIC_SPECIALTIES[guidance.topic];
-        const matched = await matchLawyers(specs, 10);
-        if (matched.length) lawyerMatch = { topic: guidance.topic, specialties: specs, lawyers: matched };
+        const matched = await matchLawyers(specs, 10, province);
+        if (matched.length) lawyerMatch = { topic: guidance.topic, specialties: specs, province, lawyers: matched };
       } catch {
         /* non-fatal */
       }

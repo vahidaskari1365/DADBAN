@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { askLLM } from "@/lib/llm";
 import { rateLimit } from "@/lib/api-security";
 import { logger } from "@/lib/logger";
-import { detectSpecialtiesFromMessage, hasLawyerIntent, matchLawyers, type MatchedLawyer } from "@/lib/lawyer-match";
+import { detectSpecialtiesFromMessage, detectProvinceFromMessage, hasLawyerIntent, matchLawyers, type MatchedLawyer } from "@/lib/lawyer-match";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -84,9 +84,10 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { message, history = [] } = body as {
+    const { message, history = [], province: bodyProvince } = body as {
       message?: string;
       history?: { role: string; content: string }[];
+      province?: string;
     };
 
     if (!message || typeof message !== "string" || message.length < 2) {
@@ -106,13 +107,14 @@ export async function POST(req: Request) {
     const log = logger.child({ module: "companion" });
 
     // تطبیق وکیل: اگر پیام نیت وکیل/مشاوره دارد یا موضوع حقوقی شناسایی شد،
-    // ۱۰ وکیل پیشنهادی (بر اساس تخصص واقعی) کنار پاسخ برمی‌گردد.
+    // ۱۰ وکیل پیشنهادی (بر اساس تخصص و استان کاربر) کنار پاسخ برمی‌گردد.
     const { specialties, topic } = detectSpecialtiesFromMessage(message);
+    const province = (bodyProvince && typeof bodyProvince === "string" ? bodyProvince.trim() : "") || detectProvinceFromMessage(message);
     const wantLawyers = hasLawyerIntent(message) || specialties.length > 0;
     let matched: MatchedLawyer[] = [];
     if (wantLawyers) {
       try {
-        matched = await matchLawyers(specialties, 10);
+        matched = await matchLawyers(specialties, 10, province);
       } catch {
         /* non-fatal — پاسخ بدون پیشنهاد وکیل */
       }
@@ -144,7 +146,7 @@ export async function POST(req: Request) {
         answer: fallback.text,
         links: fallback.links,
         source: "fallback",
-        lawyerMatch: matched.length ? { topic, specialties, lawyers: matched } : undefined,
+        lawyerMatch: matched.length ? { topic, specialties, province: province || null, lawyers: matched } : undefined,
       });
     }
 
@@ -162,7 +164,7 @@ export async function POST(req: Request) {
       answer: cleaned,
       links,
       source: "llm",
-      lawyerMatch: matched.length ? { topic, specialties, lawyers: matched } : undefined,
+      lawyerMatch: matched.length ? { topic, specialties, province: province || null, lawyers: matched } : undefined,
     });
   } catch (err) {
     logger.error("companion error", err);

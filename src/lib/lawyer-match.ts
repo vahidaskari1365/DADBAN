@@ -5,9 +5,10 @@
 
 import { db } from "@/db";
 import { lawyers } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, notInArray } from "drizzle-orm";
 import { analyzeLegalQuery } from "@/lib/legal-engine";
 import { lawyerData } from "@/lib/auto-seed";
+import { LOCATIONS } from "@/lib/data";
 
 /** وکیل عمومی‌شده برای نمایش در چت / رابط کاربری — بدون فیلد حساس. */
 export interface MatchedLawyer {
@@ -91,6 +92,46 @@ export function detectSpecialtiesFromMessage(message: string): { specialties: st
   return { specialties: [], topic: null };
 }
 
+/** یکسان‌سازی متن فارسی برای تطبیق: ی/ک فارسی، حذف نیم‌فاصله */
+function normalizeFa(s: string): string {
+  return (s || "")
+    .replace(/\u064A/g, "\u06CC") // ي → ی
+    .replace(/\u0643/g, "\u06A9") // ك → ک
+    .replace(/\u200c/g, "") // نیم‌فاصله حذف
+    .trim();
+}
+
+/**
+ * تشخیص استان کاربر از متن پیام — ابتدا نام استان، سپس نام شهر (نگاشت به استان).
+ * با مرز واژه تطبیق داده می‌شود تا واژه‌های مشابه داخل کلمات دیگر خطا نسازند.
+ * استان‌های بدون نام شهر یکسان (مثل «خراسان» تنها) → خراسان رضوی به‌عنوان پرجمعیت‌ترین.
+ */
+export function detectProvinceFromMessage(message: string): string | null {
+  const norm = normalizeFa(message);
+  if (!norm || norm.length < 3) return null;
+  // پسوند ملکی رایج (اصفهانم، تهرانم، کرجمان...) — اما «ی» نسبت (خمینی، شیرازی) پذیرفته نمی‌شود تا false-positive نشود
+  const SUFFIX = "(?:م|ت|ش|مان|تان|شان)?";
+  const boundary = (name: string): RegExp =>
+    new RegExp(`(?<![\\p{L}\\p{N}])${name}${SUFFIX}(?![\\p{L}\\p{N}])`, "u");
+
+  // ۱) نام کامل استان
+  for (const l of LOCATIONS) {
+    const p = normalizeFa(l.province);
+    if (boundary(p).test(norm)) return l.province;
+  }
+  // ۲) «خراسان» تنها → خراسان رضوی
+  if (boundary("خراسان").test(norm)) return "خراسان رضوی";
+  // ۳) نام شهر → استان
+  for (const l of LOCATIONS) {
+    for (const c of l.cities) {
+      const cn = normalizeFa(c);
+      if (cn.length < 3) continue; // نام‌های خیلی کوتاه/مبهم (مثل «ری»)
+      if (boundary(cn).test(norm)) return l.province;
+    }
+  }
+  return null;
+}
+
 /** آیا پیام، نیت دریافت مشاوره/وکیل دارد؟ */
 export function hasLawyerIntent(message: string): boolean {
   return LAWYER_INTENT.test(message || "");
@@ -123,15 +164,20 @@ function toMatched(row: LawyerPublicRow): MatchedLawyer {
  * fallback درون‌حافظه‌ای از کاتالوگ رسمی وکلا (همان دیتای seed دیتابیس) —
  * وقتی دسترسی به دیتابیس ممکن نیست (مثلاً dev محلی یا اختلاط لحظه‌ای). دیتا واقعی است.
  */
-function seedFallback(specialties: string[], limit: number): MatchedLawyer[] {
+function seedFallback(specialties: string[], limit: number, province?: string | null): MatchedLawyer[] {
   const pool = lawyerData.map((l, i) => ({
     ...l,
     id: i + 1,
     photoUrl: `/lawyers/${l.slug}.jpg`,
   }));
-  return interleave(pool, specialties, limit).map((l) =>
-    toMatched(l as unknown as LawyerPublicRow),
-  );
+  const provCities = province ? new Set(LOCATIONS.find((l) => l.province === province)?.cities ?? []) : null;
+  const inProv = provCities ? pool.filter((l) => provCities.has(l.city)) : [];
+  const outProv = provCities ? pool.filter((l) => !provCities.has(l.city)) : pool;
+  const ranked = [
+    ...interleave(inProv, specialties, inProv.length),
+    ...interleave(outProv, specialties, outProv.length),
+  ];
+  return ranked.slice(0, limit).map((l) => toMatched(l as unknown as LawyerPublicRow));
 }
 
 /** مرتب‌سازی: وکلای هم‌تخصص اول (به ترتیب امتیاز)، سپس برترین‌های بقیه برای تکمیل ۱۰ نفر. */
@@ -149,10 +195,15 @@ function interleave<T extends { specialties: string[]; rating: number; reviewCou
 
 /**
  * بهترین وکلای تطبیق‌یافته با تخصص‌های داده‌شده — بر اساس امتیاز و تعداد نظر واقعی.
- * وکلای هم‌تخصص در صدر قرار می‌گیرند و باقی ظرفیت با برترین وکلای تأییدشده تکمیل می‌شود.
+ * اگر استان مشخص باشد: وکلای همان استان (هم‌تخصص‌ها در صدر) اول پیشنهاد می‌شوند و
+ * باقی ظرفیت با برترین وکلای سایر استان‌ها تکمیل می‌شود تا لیست کامل بماند.
  * در نبود دسترسی به دیتابیس، از کاتالوگ رسمی seed استفاده می‌شود.
  */
-export async function matchLawyers(specialties: string[], limit = 10): Promise<MatchedLawyer[]> {
+export async function matchLawyers(
+  specialties: string[],
+  limit = 10,
+  province?: string | null,
+): Promise<MatchedLawyer[]> {
   const baseSelect = {
     id: lawyers.id,
     slug: lawyers.slug,
@@ -174,7 +225,38 @@ export async function matchLawyers(specialties: string[], limit = 10): Promise<M
   };
 
   try {
-    // همه‌ی وکلای تأییدشده به ترتیب امتیاز؛ هم‌تخصص‌ها در صدر، تا سقف limit
+    const provCities = province ? (LOCATIONS.find((l) => l.province === province)?.cities ?? []) : [];
+    if (provCities.length > 0) {
+      // وکلای استان کاربر + برترین‌های سایر استان‌ها برای تکمیل ظرفیت
+      const [provRows, otherRows] = await Promise.all([
+        db
+          .select(baseSelect)
+          .from(lawyers)
+          .where(and(eq(lawyers.verified, true), inArray(lawyers.city, provCities)))
+          .orderBy(desc(lawyers.rating), desc(lawyers.reviewCount))
+          .limit(limit + 24),
+        db
+          .select(baseSelect)
+          .from(lawyers)
+          .where(and(eq(lawyers.verified, true), notInArray(lawyers.city, provCities)))
+          .orderBy(desc(lawyers.rating), desc(lawyers.reviewCount))
+          .limit(limit),
+      ]);
+      if (provRows.length + otherRows.length > 0) {
+        const inSp = (r: { specialties: string[] }) => r.specialties.some((s) => specialties.includes(s));
+        const ranked = [
+          ...provRows.filter(inSp),
+          ...provRows.filter((r) => !inSp(r)),
+          ...otherRows.filter(inSp),
+          ...otherRows.filter((r) => !inSp(r)),
+        ].slice(0, limit);
+        return ranked.map(toMatched);
+      }
+      // هیچ وکیلی در دیتابیس نیست → کاتالوگ seed
+      return seedFallback(specialties, limit, province);
+    }
+
+    // بدون استان: همه‌ی وکلای تأییدشده به ترتیب امتیاز؛ هم‌تخصص‌ها در صدر
     const rows = await db
       .select(baseSelect)
       .from(lawyers)
@@ -186,12 +268,17 @@ export async function matchLawyers(specialties: string[], limit = 10): Promise<M
     return seedFallback(specialties, limit);
   } catch {
     // دیتابیس در دسترس نیست → کاتالوگ رسمی seed
-    return seedFallback(specialties, limit);
+    return seedFallback(specialties, limit, province);
   }
 }
 
-/** مسیر کامل: پیام کاربر → لیست ۱۰ وکیل پیشنهادی. */
-export async function recommendLawyersForMessage(message: string, limit = 10): Promise<MatchedLawyer[]> {
+/** مسیر کامل: پیام کاربر → لیست ۱۰ وکیل پیشنهادی (استان هم از خود پیام تشخیص داده می‌شود). */
+export async function recommendLawyersForMessage(
+  message: string,
+  limit = 10,
+  province?: string | null,
+): Promise<MatchedLawyer[]> {
   const { specialties } = detectSpecialtiesFromMessage(message);
-  return matchLawyers(specialties, limit);
+  const prov = province || detectProvinceFromMessage(message);
+  return matchLawyers(specialties, limit, prov);
 }

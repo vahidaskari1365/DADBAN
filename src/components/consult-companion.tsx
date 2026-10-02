@@ -25,7 +25,7 @@ interface Message {
   /** آیا پاسخ شامل ارجاع به صفحه‌ای در سایت هست؟ */
   links?: { label: string; href: string }[];
   /** پیشنهاد وکیل: لیست ۱۰ وکیل + موضوع شناسایی‌شده (رندر با LawyerPicksFlow) */
-  lawyerPicks?: { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[] };
+  lawyerPicks?: { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[]; province?: string | null };
 }
 
 interface ConsultCompanionProps {
@@ -163,7 +163,7 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
 
       // پیشنهاد وکیل: فقط بار اول یا وقتی موضوع/تخصص تغییر کنه
       const match = data.lawyerMatch as
-        | { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[] }
+        | { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[]; province?: string | null }
         | undefined;
       if (match?.lawyers?.length) {
         const key = match.topic || match.specialties?.join(",") || "general";
@@ -177,6 +177,7 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
               lawyers: match.lawyers,
               topic: match.topic ?? null,
               specialties: match.specialties ?? [],
+              province: match.province ?? null,
             },
           });
         }
@@ -293,6 +294,7 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
                             lawyers={msg.lawyerPicks.lawyers}
                             topic={msg.lawyerPicks.topic}
                             specialties={msg.lawyerPicks.specialties}
+                            province={msg.lawyerPicks.province}
                           />
                         </div>
                       )}

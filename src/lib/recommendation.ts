@@ -77,6 +77,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   if (inCourt) reasons.push("در این مرحله، حضور وکیل متخصص معمولاً تعیین‌کننده است.");
 
   const q = encodeURIComponent(topic ? `مشکل ${topic} (مرحله: ${stage})` : "مشکل حقوقی");
+  const freeHref = city ? `/ai-assistant?q=${q}&province=${encodeURIComponent(city)}` : `/ai-assistant?q=${q}`;
 
   // خروجی بر اساس نوع کمک درخواستی
   let primary: RecommendationOption;
@@ -141,7 +142,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     free: {
       title: "راهنمای رایگان با دستیار حقوقی",
       desc: freeDescription,
-      href: `/ai-assistant?q=${q}`,
+      href: freeHref,
       icon: "sparkles",
     },
     specialty,

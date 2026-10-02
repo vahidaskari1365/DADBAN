@@ -228,11 +228,13 @@ function AIAssistantContent() {
   const search = useSearchParams();
   const [tab, setTab] = useState<"guide" | "contract">(search.get("tab") === "contract" ? "contract" : "guide");
   const [input, setInput] = useState(search.get("q") ?? "");
+  /** استان کاربر — از ویزارد «شروع مسیر من» یا پارامتر لینک؛ برای پیشنهاد وکلای همان استان */
+  const [province] = useState<string | null>(search.get("province"));
   const [loading, setLoading] = useState(false);
   const [guidance, setGuidance] = useState<{ g: LegalGuidance; echo: string } | null>(null);
   const [llmAnswer, setLlmAnswer] = useState<string | null>(null);
   const [lawyerMatch, setLawyerMatch] = useState<
-    { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[] } | null
+    { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[]; province?: string | null } | null
   >(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -257,7 +259,7 @@ function AIAssistantContent() {
       const res = await fetch("/api/ai-assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, province: province ?? undefined }),
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
@@ -271,6 +273,7 @@ function AIAssistantContent() {
           lawyers: data.lawyerMatch.lawyers,
           topic: data.lawyerMatch.topic ?? null,
           specialties: data.lawyerMatch.specialties ?? [],
+          province: data.lawyerMatch.province ?? province,
         });
       }
     } catch (e) {
@@ -433,6 +436,7 @@ function AIAssistantContent() {
                         lawyers={lawyerMatch.lawyers}
                         topic={lawyerMatch.topic}
                         specialties={lawyerMatch.specialties}
+                        province={lawyerMatch.province}
                       />
                     </div>
                   )}
@@ -448,6 +452,7 @@ function AIAssistantContent() {
                         lawyers={lawyerMatch.lawyers}
                         topic={lawyerMatch.topic}
                         specialties={lawyerMatch.specialties}
+                        province={lawyerMatch.province}
                       />
                     </Card>
                   )}
