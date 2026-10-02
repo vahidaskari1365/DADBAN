@@ -4,10 +4,11 @@ import { db } from "@/db";
 import { cases, consultations, tickets } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
-import { Card, Badge, Button } from "@/components/ui";
+import { Card, Badge, Button, Avatar } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
+import { ensureProfileSchema } from "@/lib/auto-seed";
 import { nextActionForCase } from "@/lib/case-facts";
 import DocumentsManager from "@/components/documents-manager";
 import Link from "next/link";
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 export default async function ClientDashboard() {
+  await ensureProfileSchema();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   const phone = user.phone;
@@ -38,8 +40,8 @@ export default async function ClientDashboard() {
     { label: "پرونده‌های من", value: faNum(myCases.length), icon: "folder" as const, tone: "primary" as const },
     { label: "مشاوره‌های من", value: faNum(myConsults.length), icon: "chat" as const, tone: "accent" as const },
     { label: "تیکت‌های پشتیبانی", value: faNum(myTickets.length), icon: "mail" as const, tone: "success" as const },
-    { label: "خوش آمدید", value: user.name.split(" ")[0], icon: "user" as const, tone: "neutral" as const },
-  ];
+    { label: user.province ? `استان شما: ${user.province}` : "استان شما", value: user.province ? "✓" : "تنظیم کنید", icon: "location" as const, tone: "neutral" as const, href: "/dashboard/client/profile" },
+  ] as { label: string; value: string; icon: "folder" | "chat" | "mail" | "location"; tone: "primary" | "accent" | "success" | "neutral"; href?: string }[];
 
   // Next Action — command centre: derived from the newest real case/consultation
   const latestCase = myCases[0] ?? null;
@@ -68,6 +70,7 @@ export default async function ClientDashboard() {
         { label: "رزرو مشاوره", icon: "calendar", href: "/consultation" },
         { label: "ثبت پرونده جدید", icon: "folder", href: "/case/new" },
         { label: "پیام‌ها و پشتیبانی", icon: "mail", badge: faNum(myTickets.length), href: "/support" },
+        { label: "پروفایل من", icon: "user", href: "/dashboard/client/profile" },
       ]}
     >
       {/* اقدام بعدی — Command Center */}
@@ -88,21 +91,30 @@ export default async function ClientDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {stats.map((s) => (
-          <Card key={s.label} hover={false} className="flex items-center gap-3">
-            <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${
-              s.tone === "primary" ? "bg-primary-soft text-primary" :
-              s.tone === "accent" ? "bg-accent-soft text-accent" :
-              s.tone === "success" ? "bg-success/15 text-success" : "bg-surface-2 text-foreground-soft"
-            }`}>
-              <Icon name={s.icon} className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="text-xl font-extrabold text-foreground">{s.value}</p>
-              <p className="text-xs text-muted">{s.label}</p>
-            </div>
-          </Card>
-        ))}
+        {stats.map((s) => {
+          const body = (
+            <>
+              <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${
+                s.tone === "primary" ? "bg-primary-soft text-primary" :
+                s.tone === "accent" ? "bg-accent-soft text-accent" :
+                s.tone === "success" ? "bg-success/15 text-success" : "bg-surface-2 text-foreground-soft"
+              }`}>
+                <Icon name={s.icon} className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-xl font-extrabold text-foreground">{s.value}</p>
+                <p className="truncate text-xs text-muted">{s.label}</p>
+              </div>
+            </>
+          );
+          return s.href ? (
+            <Link key={s.label} href={s.href} className="block rounded-2xl transition-transform hover:-translate-y-0.5">
+              <Card hover={false} className="flex items-center gap-3">{body}</Card>
+            </Link>
+          ) : (
+            <Card key={s.label} hover={false} className="flex items-center gap-3">{body}</Card>
+          );
+        })}
       </div>
       <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
         {/* Cases */}

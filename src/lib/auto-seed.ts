@@ -240,6 +240,42 @@ export async function seedDemoOperators(): Promise<void> {
       /* non-fatal */
     }
   }
+  // اتصال حساب دموی وکیل به نخستین پروفایل وکیل تا فلو «پروفایل حرفه‌ای من» کامل تست شود.
+  try {
+    await db.execute(
+      sql`UPDATE app_users SET lawyer_id = (SELECT id FROM lawyers ORDER BY id LIMIT 1) WHERE phone = '09000000002' AND lawyer_id IS NULL`,
+    );
+  } catch {
+    /* non-fatal */
+  }
+}
+
+/* ---------------- Profile features migration (idempotent, once per process) ---------------- */
+let profileSchemaReady = false;
+
+/**
+ * Additive migration for user profiles + favorites. Runs the statements once
+ * per process; safe on both fresh and existing databases (production Neon DB
+ * included — drizzle-kit push is unavailable at runtime there).
+ */
+export async function ensureProfileSchema(): Promise<void> {
+  if (profileSchemaReady) return;
+  const stmts = [
+    `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS province TEXT`,
+    `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS city TEXT`,
+    `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS avatar_color TEXT NOT NULL DEFAULT '#15365d'`,
+    `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS lawyer_id INTEGER REFERENCES lawyers(id) ON DELETE SET NULL`,
+    `CREATE TABLE IF NOT EXISTS favorite_lawyers (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES app_users(id) ON DELETE CASCADE, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS favorite_lawyers_uniq ON favorite_lawyers (user_id, lawyer_id)`,
+  ];
+  for (const stmt of stmts) {
+    try {
+      await db.execute(sql.raw(stmt));
+    } catch {
+      /* non-fatal — push is primary on dev */
+    }
+  }
+  profileSchemaReady = true;
 }
 
 
@@ -299,6 +335,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
     const existingCount = Number((existingRows[0] as { c?: number })?.c ?? 0);
     if (existingCount > 0) {
       try {
+        await ensureProfileSchema();
         await seedManagedServices();
         await seedDemoOperators();
         await ensureLawyerPhotos();
@@ -317,6 +354,11 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
     } catch {
       /* ignore — push is primary */
     }
+  }
+  try {
+    await ensureProfileSchema();
+  } catch {
+    /* non-fatal */
   }
   // Managed Services catalog + (non-prod) demo operations accounts.
   try {

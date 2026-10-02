@@ -11,6 +11,7 @@ import { AvailabilityPanel } from "@/components/availability-panel";
 import { LawyerViewRecorder, LawyerDiscovery } from "@/components/amazon/recently-viewed";
 import { StickyCta } from "@/components/amazon/sticky-cta";
 import { TrustLine } from "@/components/amazon/trust-line";
+import { FavoriteButton } from "@/components/profile/favorites-panel";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -289,6 +290,7 @@ export default async function LawyerProfile({
                 </div>
               ))}
             </div>
+            <FavoriteButton lawyerId={l.id} lawyerName={l.name} />
             <Button href={`/consultation?lawyer=${l.slug}`} icon="calendar" className="w-full">
               رزرو مشاوره
             </Button>

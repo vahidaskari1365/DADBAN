@@ -221,7 +221,14 @@ function QuickStartInner() {
                           const v = e.target.value;
                           setProvince(v || null);
                           // انتخاب استان → رفتن خودکار به مرحله بعد
-                          if (v) goNext();
+                          if (v) {
+                            try {
+                              window.localStorage.setItem("dadban_province", v);
+                            } catch {
+                              /* حافظه محلی در دسترس نیست */
+                            }
+                            goNext();
+                          }
                         }}
                         aria-label="انتخاب استان"
                         className="h-13 w-full cursor-pointer appearance-none rounded-xl border border-border-strong bg-background py-3.5 pl-4 pr-11 text-sm font-medium text-foreground outline-none transition-colors focus:border-primary"

@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { verifyPassword, signUserSession, userCookieName, isUserAuthConfigured } from "@/lib/user-auth";
+import { ensureProfileSchema } from "@/lib/auto-seed";
 import { clientIp, rateLimit, readJson, text } from "@/lib/api-security";
 export const runtime = "nodejs";
 export async function POST(req: Request) {
@@ -11,6 +12,7 @@ export async function POST(req: Request) {
   const limited = rateLimit(req, "login", 10, 15 * 60_000, identifier || clientIp(req)); if (limited) return limited;
   const password = typeof body?.password === "string" ? body.password : "";
   if (!isUserAuthConfigured()) return NextResponse.json({ ok: false, error: "سامانه ورود موقتاً در دسترس نیست؛ لطفاً بعداً تلاش کنید." }, { status: 503 });
+  try { await ensureProfileSchema(); } catch { /* migration best-effort */ }
   if (!identifier || !password || password.length > 1024) return NextResponse.json({ ok: false, error: "اطلاعات ورود صحیح نیست." }, { status: 400 });
   try {
     const normalizedPhone = identifier.replace(/[^\d]/g, "");

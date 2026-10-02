@@ -491,9 +491,33 @@ export const users = pgTable("app_users", {
   email: text("email").unique(),
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("client"),
+  /** استان/شهر انتخابی موکل — شخصی‌سازی پیشنهاد وکیل و دستیار هوشمند */
+  province: text("province"),
+  city: text("city"),
+  /** رنگ آواتار (بدون آپلود تصویر؛ از پالت برند) */
+  avatarColor: text("avatar_color").notNull().default("#15365d"),
+  /** اتصال حساب به پروفایل عمومی وکیل (فقط برای role=lawyer) */
+  lawyerId: integer("lawyer_id").references(() => lawyers.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 export type User = typeof users.$inferSelect;
+
+/* ------------------------------ Favorite lawyers (وکلای نشان‌شده) ------------------------------ */
+export const favoriteLawyers = pgTable(
+  "favorite_lawyers",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    lawyerId: integer("lawyer_id")
+      .notNull()
+      .references(() => lawyers.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("favorite_lawyers_uniq").on(t.userId, t.lawyerId)],
+);
+export type FavoriteLawyer = typeof favoriteLawyers.$inferSelect;
 
 /* ------------------------------ Lawyer availability rules ------------------------------ */
 // Weekly bookable windows per lawyer (Asia/Tehran). Real slots are derived by

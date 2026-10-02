@@ -228,8 +228,8 @@ function AIAssistantContent() {
   const search = useSearchParams();
   const [tab, setTab] = useState<"guide" | "contract">(search.get("tab") === "contract" ? "contract" : "guide");
   const [input, setInput] = useState(search.get("q") ?? "");
-  /** استان کاربر — از ویزارد «شروع مسیر من» یا پارامتر لینک؛ برای پیشنهاد وکلای همان استان */
-  const [province] = useState<string | null>(search.get("province"));
+  /** استان کاربر — از ویزارد «شروع مسیر من»، پارامتر لینک، یا استان ثبت‌شده در پروفایل موکل */
+  const [province, setProvince] = useState<string | null>(search.get("province"));
   const [loading, setLoading] = useState(false);
   const [guidance, setGuidance] = useState<{ g: LegalGuidance; echo: string } | null>(null);
   const [llmAnswer, setLlmAnswer] = useState<string | null>(null);
@@ -245,6 +245,27 @@ function AIAssistantContent() {
   const [contractError, setContractError] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // اگر پارامتر استان در لینک نبود، استان پروفایل موکل (پروفایل من) به‌عنوان پیش‌فرض استفاده می‌شود
+  useEffect(() => {
+    if (search.get("province")) return;
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        if (!res.ok) return;
+        const me = (await res.json()) as { ok: boolean; user?: { province?: string | null } };
+        const stored = typeof window !== "undefined" ? window.localStorage.getItem("dadban_province") : null;
+        const p = me.ok ? me.user?.province ?? null : null;
+        if (alive && (p || stored)) setProvince((p ?? stored) as string);
+      } catch {
+        /* بی‌اهمیت */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [search]);
 
   const ask = async (q?: string) => {
     const query = (q ?? input).trim();

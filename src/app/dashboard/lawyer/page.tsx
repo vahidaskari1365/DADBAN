@@ -3,12 +3,13 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { cases, consultations, tickets, payments } from "@/db/schema";
-import { desc, inArray } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
+import { ensureProfileSchema } from "@/lib/auto-seed";
 
 export const metadata: Metadata = {
   title: "پنل وکیل — داشبورد مدیریت",
@@ -17,17 +18,22 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function LawyerDashboard() {
+  await ensureProfileSchema();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  const linked = user.role === "lawyer" && !!user.lawyerId;
 
   let allCases: typeof cases.$inferSelect[] = [];
-  let allConsults: typeof consultations.$inferSelect[] = [];
+  let myConsults: typeof consultations.$inferSelect[] = [];
   let openTickets = 0;
   let verifiedRevenue = 0;
   try {
-    [allCases, allConsults] = await Promise.all([
+    [allCases, myConsults] = await Promise.all([
       db.select().from(cases).orderBy(desc(cases.createdAt)).limit(6),
-      db.select().from(consultations).orderBy(desc(consultations.createdAt)).limit(20),
+      // نوبت‌های وکیلِ خودِ کاربر؛ در نبود اتصال، نمای کل پلتفرم حفظ می‌شود
+      linked
+        ? db.select().from(consultations).where(eq(consultations.lawyerId, user.lawyerId as number)).orderBy(desc(consultations.createdAt)).limit(20)
+        : db.select().from(consultations).orderBy(desc(consultations.createdAt)).limit(20),
     ]);
     const t = await db.select().from(tickets);
     openTickets = t.filter((x) => x.status === "open").length;
@@ -36,6 +42,7 @@ export default async function LawyerDashboard() {
   } catch {
     /* degraded mode */
   }
+  const allConsults = myConsults;
 
   const activeCases = allCases.filter((c) => c.status !== "closed");
   const pendingRequests = allConsults.filter((c) => c.status === "pending");
@@ -57,6 +64,7 @@ export default async function LawyerDashboard() {
       title={`داشبورد وکیل — ${user.name}`}
       nav={[
         { label: "نمای کلی", icon: "home", active: true, href: "/dashboard/lawyer" },
+        { label: "پروفایل حرفه‌ای من", icon: "badge", href: "/dashboard/lawyer/profile" },
         { label: "درخواست‌های جدید", icon: "mail", badge: pendingRequests.length ? faNum(pendingRequests.length) : undefined, href: "/dashboard/lawyer" },
         { label: "دایرکتوری وکلا", icon: "user", href: "/lawyers" },
         { label: "پرسش‌های نیازمند پاسخ", icon: "chat", href: "/qa" },
@@ -96,6 +104,27 @@ export default async function LawyerDashboard() {
           </Card>
         ))}
       </div>
+
+      {/* اتصال حساب به پروفایل حرفه‌ای — CTA صادقانه */}
+      {!linked && (
+        <Card hover={false} className="border-accent/30 bg-accent-soft/40">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-wide text-accent">گام بعدی برای وکلا</p>
+              <h3 className="mt-1 font-bold text-foreground">حساب شما به پروفایل حرفه‌ای متصل نیست</h3>
+              <p className="mt-1 text-sm leading-7 text-foreground-soft">
+                با اتصال حساب، پروفایل عمومی‌تان را ویرایش کنید: تخصص‌ها، خدمات، تعرفه مشاوره متنی/صوتی/تصویری و استان.
+              </p>
+            </div>
+            <a
+              href="/dashboard/lawyer/profile"
+              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover"
+            >
+              تکمیل پروفایل حرفه‌ای
+            </a>
+          </div>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
         {/* New requests — real pending consultations */}
