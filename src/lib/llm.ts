@@ -113,13 +113,14 @@ interface ZaiClient {
 
 /* ─── 3) Pollinations بدون‌کلید (fallback نهایی) ──────────────────────── */
 
-async function viaKeyless(messages: LlmMessage[], maxTokens: number): Promise<string | null> {
+/** مسیر POST — پاسخ ساختاریافته JSON. */
+async function pollinationsPost(messages: LlmMessage[], maxTokens: number): Promise<string | null> {
   try {
     const res = await fetch("https://text.pollinations.ai/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messages, model: "openai", max_tokens: maxTokens, seed: 1 }),
-      signal: AbortSignal.timeout(25_000),
+      signal: AbortSignal.timeout(14_000),
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -128,6 +129,31 @@ async function viaKeyless(messages: LlmMessage[], maxTokens: number): Promise<st
   } catch {
     return null;
   }
+}
+
+/** مسیر GET — پرامپت در URL؛ برای مواقعی که POST بلاک/کند است. */
+async function pollinationsGet(messages: LlmMessage[]): Promise<string | null> {
+  try {
+    const prompt = messages
+      .filter((m) => m.role !== "system")
+      .map((m) => m.content)
+      .join("\n")
+      .slice(-3000);
+    const sys = messages.find((m) => m.role === "system")?.content ?? "";
+    const url =
+      `https://text.pollinations.ai/${encodeURIComponent(prompt)}` +
+      `?model=openai${sys ? `&system=${encodeURIComponent(sys.slice(0, 1200))}` : ""}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(12_000) });
+    if (!res.ok) return null;
+    const text = await res.text();
+    return text ? sanitizePersian(text) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function viaKeyless(messages: LlmMessage[], maxTokens: number): Promise<string | null> {
+  return (await pollinationsPost(messages, maxTokens)) ?? (await pollinationsGet(messages));
 }
 
 /* ─── API عمومی ────────────────────────────────────────────────────────── */
