@@ -57,7 +57,7 @@ export async function GET(req: Request) {
     total: getKeywordCount(),
     distribution: getKeywordLengthDistribution(),
     description:
-      "Keyword universe برای پلتفرم حقوقی دادبان — ترکیب seed × specialty × city × qualifier × intent.",
+      "Keyword universe برای پلتفرم حقوقی دادپیو — ترکیب seed × specialty × city × qualifier × intent.",
   });
 }
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { db } from "@/db";
 import { lawyers } from "@/db/schema";
 import { and, desc, asc, eq, sql, count } from "drizzle-orm";
-import { Container, Button, EmptyState, Badge } from "@/components/ui";
+import { Container, EmptyState } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
 import { LawyerFilters } from "@/components/lawyer-filters";
@@ -66,38 +66,53 @@ export default async function LawyersPage({
       db.select({ c: count() }).from(lawyers).where(conds.length ? and(...conds) : undefined),
     ]);
   } catch (err) {
-    console.error("[dadban] lawyers list query failed:", err);
+    console.error("[dadpayo] lawyers list query failed:", err);
   }
 
-  const heading = sp ? (city ? `وکیل ${sp} در ${city}` : `وکیل ${sp}`) : city ? `وکیل در ${city}` : "همه وکلا";
+  const heading = sp ? (city ? `وکیل ${sp} در ${city}` : `وکیل ${sp}`) : city ? `وکیل در ${city}` : "وکیل‌یابی";
 
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
-      { "@type": "Question", name: `چگونه وکیل${sp ? ` ${sp}` : ""} پیدا کنم؟`, acceptedAnswer: { "@type": "Answer", text: `از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل${sp ? ` ${sp}` : ""} مناسب پیدا و مشاوره رزرو کنید.` } },
-      { "@type": "Question", name: "آیا وکلای دادبان احراز هویت شده‌اند؟", acceptedAnswer: { "@type": "Answer", text: "بله، هویت و پروانه همه وکلا توسط کارشناسان دادبان راستی‌آزمایی می‌شود." } },
+      { "@type": "Question", name: `چگونه وکیل${sp ? ` ${sp}` : ""} پیدا کنم؟`, acceptedAnswer: { "@type": "Answer", text: `از صفحه جستجوی وکیل دادپیو با فیلتر تخصص و شهر می‌توانید وکیل${sp ? ` ${sp}` : ""} مناسب پیدا و مشاوره رزرو کنید.` } },
+      { "@type": "Question", name: "آیا وکلای دادپیو احراز هویت شده‌اند؟", acceptedAnswer: { "@type": "Answer", text: "بله، هویت و پروانه همه وکلا توسط کارشناسان دادپیو راستی‌آزمایی می‌شود." } },
     ],
   };
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">خانه</Link>
+      {/* هدر سرمه‌ای — مطابق هویت دادپیو */}
+      <section style={{ background: "linear-gradient(150deg, #101b35 0%, #17264a 60%, #0b1328 100%)" }}>
+        <Container className="py-8 sm:py-10">
+          <nav className="flex items-center gap-1.5 text-xs text-white/55">
+            <Link href="/" className="transition-colors hover:text-white">خانه</Link>
             <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">وکیل‌یابی</span>
+            <span className="text-white/85">وکیل‌یابی</span>
           </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{heading}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
+          <h1 className="mt-3 text-2xl font-black text-white sm:text-3xl">{heading}</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-white/65">
             از میان وکلای پایه یک دادگستری، تأییدشده و متخصص انتخاب کنید؛ با فیلتر تخصص، شهر، سابقه و امتیاز.
           </p>
+          <div className="mt-4 flex flex-wrap gap-2 text-xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.07] px-3 py-1.5 text-white/85">
+              <Icon name="badge" className="h-3.5 w-3.5 text-[color:var(--gold)]" />
+              وکلای راستی‌آزمایی‌شده
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.07] px-3 py-1.5 text-white/85">
+              <Icon name="star" className="h-3.5 w-3.5 text-[color:var(--gold)]" />
+              امتیاز شفاف کاربران
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.07] px-3 py-1.5 text-white/85">
+              <Icon name="calendar" className="h-3.5 w-3.5 text-[color:var(--gold)]" />
+              رزرو آنلاین مشاوره
+            </span>
+          </div>
         </Container>
       </section>
 
       <Container className="py-8">
-        <div className="sticky top-16 z-30 mb-6">
+        <div className="sticky top-16 z-30 mb-6 lg:top-[72px]">
           <LawyerFilters initial={{ q, sp, city, gender, sort }} total={totalRow[0]?.c ?? 0} />
         </div>
 
@@ -116,7 +131,7 @@ export default async function LawyersPage({
         )}
       </Container>
 
-      {/* SEO: specialties */}
+      {/* SEO: تخصص‌ها */}
       <section id="specialties" className="mt-8 scroll-mt-24 border-t border-border py-12">
         <Container>
           <h2 className="text-xl font-bold text-foreground">وکیل بر اساس حوزه تخصص</h2>
@@ -126,7 +141,7 @@ export default async function LawyersPage({
               <a
                 key={s}
                 href={`/lawyers?sp=${encodeURIComponent(s)}`}
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground-soft transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary card-shadow"
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground-soft transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:text-primary card-shadow"
               >
                 <Icon name="scale" className="h-4 w-4 text-accent" />
                 وکیل {s}
@@ -136,7 +151,7 @@ export default async function LawyersPage({
         </Container>
       </section>
 
-      {/* SEO: cities */}
+      {/* SEO: استان‌ها و شهرها */}
       <section id="cities" className="scroll-mt-24 border-t border-border py-12">
         <Container>
           <h2 className="text-xl font-bold text-foreground">وکیل بر اساس استان و شهر</h2>
@@ -145,12 +160,9 @@ export default async function LawyersPage({
             {ALL_PROVINCES.map((p) => (
               <div key={p} className="rounded-2xl border border-border bg-surface p-4">
                 <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
-                  <Icon name="location" className="h-4 w-4 text-primary" />
+                  <Icon name="location" className="h-4 w-4 text-accent" />
                   استان {p}
                 </h3>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {ALL_CITIES.filter(() => true).slice(0, 0)}
-                </div>
               </div>
             ))}
           </div>
@@ -159,7 +171,7 @@ export default async function LawyersPage({
               <a
                 key={c}
                 href={`/lawyers?city=${encodeURIComponent(c)}`}
-                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground-soft transition-colors hover:bg-primary-soft hover:text-primary"
+                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground-soft transition-colors hover:border-accent/50 hover:bg-accent-soft hover:text-[#8a6420]"
               >
                 وکیل در {c}
               </a>
@@ -169,19 +181,35 @@ export default async function LawyersPage({
       </section>
 
       <Container className="py-12">
-        <div className="rounded-3xl border border-border bg-surface p-8 text-center card-shadow">
-          <h2 className="text-xl font-bold text-foreground">وکیل مناسب خود را پیدا نکردید؟</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">
+        <div className="relative overflow-hidden rounded-3xl p-8 text-center sm:p-10" style={{ background: "linear-gradient(150deg, #101b35 0%, #17264a 55%, #0b1328 100%)" }}>
+          <div aria-hidden className="pointer-events-none absolute -top-16 right-1/3 h-48 w-48 rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(213,168,76,.3), transparent)" }} />
+          <h2 className="relative text-xl font-black text-white sm:text-2xl">وکیل مناسب خود را پیدا نکردید؟</h2>
+          <p className="relative mx-auto mt-2 max-w-lg text-sm leading-7 text-white/70">
             پرونده خود را ثبت کنید تا سیستم آن را به وکلای مرتبط معرفی کند.
           </p>
-          <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <Button href="/case/new" icon="folder">ثبت پرونده</Button>
-            <Button href="/consultation" variant="outline" icon="calendar">رزرو مشاوره</Button>
+          <div className="relative mt-5 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/case/new"
+              className="btn-gold inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl px-5 text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-[.97]"
+            >
+              <Icon name="folder" className="h-4 w-4" />
+              ثبت پرونده
+            </Link>
+            <Link
+              href="/consultation"
+              className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+            >
+              <Icon name="calendar" className="h-4 w-4" />
+              رزرو مشاوره
+            </Link>
           </div>
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Badge tone="neutral">{faNum(totalRow[0]?.c ?? 0)} وکیل فعال</Badge>
-            <Badge tone="success" icon="badge">احراز هویت‌شده</Badge>
-            <Badge tone="accent">رزرو آنلاین</Badge>
+          <div className="relative mt-6 flex flex-wrap justify-center gap-2 text-xs">
+            <span className="rounded-full border border-white/15 bg-white/[0.07] px-3 py-1.5 text-white/85">{faNum(totalRow[0]?.c ?? 0)} وکیل فعال</span>
+            <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.07] px-3 py-1.5 text-white/85">
+              <Icon name="badge" className="h-3.5 w-3.5 text-[color:var(--gold)]" />
+              احراز هویت‌شده
+            </span>
+            <span className="rounded-full border border-white/15 bg-white/[0.07] px-3 py-1.5 text-white/85">رزرو آنلاین</span>
           </div>
         </div>
       </Container>

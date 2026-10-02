@@ -50,7 +50,7 @@ const manualProvider: PaymentProvider = {
     return {
       reference: req.reference,
       status: "manual_review",
-      message: "درخواست شما ثبت شد. کارشناسان دادبان برای هماهنگی نهایی پرداخت با شما تماس می‌گیرند.",
+      message: "درخواست شما ثبت شد. کارشناسان دادپیو برای هماهنگی نهایی پرداخت با شما تماس می‌گیرند.",
     };
   },
   async verifyPayment(reference) {

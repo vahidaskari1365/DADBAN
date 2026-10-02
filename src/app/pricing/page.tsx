@@ -8,7 +8,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "تعرفه خدمات و فروشگاه خدمات حقوقی",
   description:
-    "فروشگاه خدمات حقوقی دادبان: مشاوره، تنظیم قرارداد، بررسی قرارداد، تنظیم دادخواست و شکواییه، ثبت شرکت و خدمات ثبتی. پلن‌های اشتراکی کسب‌وکار.",
+    "فروشگاه خدمات حقوقی دادپیو: مشاوره، تنظیم قرارداد، بررسی قرارداد، تنظیم دادخواست و شکواییه، ثبت شرکت و خدمات ثبتی. پلن‌های اشتراکی کسب‌وکار.",
   alternates: { canonical: "/pricing" },
 };
 
@@ -157,7 +157,7 @@ export default function PricingPage() {
       <Container className="py-12">
         <div className="rounded-3xl border border-border bg-surface p-8 text-center card-shadow">
           <h2 className="text-xl font-bold text-foreground">سؤال درباره تعرفه‌ها دارید؟</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">کارشناسان فروش دادبان برای مشاوره انتخاب پلن مناسب در خدمت شما هستند.</p>
+          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">کارشناسان فروش دادپیو برای مشاوره انتخاب پلن مناسب در خدمت شما هستند.</p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Button href="/contact" icon="phone">تماس با فروش</Button>
             <Button href="/consultation" variant="outline" icon="chat">مشاوره آنلاین</Button>

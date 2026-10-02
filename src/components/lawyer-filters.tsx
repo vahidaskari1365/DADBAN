@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "./icons";
-import { SPECIALTIES, ALL_CITIES } from "@/lib/data";
+import { SPECIALTIES, ALL_CITIES, faNum } from "@/lib/data";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -43,13 +43,13 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
   };
 
   const selectCls =
-    "h-10 w-full rounded-xl border border-border-strong bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-primary";
+    "h-10 w-full cursor-pointer rounded-xl border border-border-strong bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-accent";
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-4 card-shadow">
       <div className="flex items-center gap-2">
-        <div className="flex flex-1 items-center gap-2 rounded-xl border border-border-strong bg-background px-3">
-          <Icon name="search" className="h-4 w-4 text-muted-soft" />
+        <div className="flex flex-1 items-center gap-2 rounded-xl border border-border-strong bg-background px-3 transition-colors focus-within:border-accent">
+          <Icon name="search" className="h-4 w-4 text-accent" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -61,7 +61,8 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border-strong bg-background px-3 text-sm font-medium text-foreground-soft lg:hidden"
+          className="inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-border-strong bg-background px-3 text-sm font-medium text-foreground-soft transition-colors hover:border-accent/50 hover:text-foreground lg:hidden"
+          aria-expanded={open}
         >
           <Icon name="filter" className="h-4 w-4" />
           فیلتر
@@ -126,10 +127,10 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
               key={s}
               type="button"
               onClick={() => update("sp", s)}
-              className={`rounded-full border px-3 py-1 text-xs font-medium transition-all cursor-pointer ${
+              className={`cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-all ${
                 initial.sp === s
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-foreground-soft hover:bg-primary-soft hover:text-primary"
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "border-border text-foreground-soft hover:border-accent/50 hover:bg-accent-soft hover:text-[#8a6420]"
               }`}
             >
               {s}
@@ -138,11 +139,19 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
         </div>
 
         <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-          <span className="text-xs text-muted">{total > 0 ? `${total} وکیل` : "نتیجه‌ای یافت نشد"}</span>
+          <span className="text-xs text-muted">
+            {total > 0 ? (
+              <>
+                <span className="font-bold text-primary">{faNum(total)}</span> وکیل یافت شد
+              </>
+            ) : (
+              "نتیجه‌ای یافت نشد"
+            )}
+          </span>
           <button
             type="button"
             onClick={reset}
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-hover"
+            className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-[#8a6420]"
           >
             <Icon name="x" className="h-3.5 w-3.5" />
             پاک کردن فیلترها

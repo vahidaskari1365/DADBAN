@@ -8,7 +8,7 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-const DISMISS_KEY = "dadban_pwa_install_dismissed";
+const DISMISS_KEY = "dadpayo_pwa_install_dismissed";
 
 /**
  * بنر نصب PWA — وقتی مرورگر قابلیت نصب را تشخیص داد، یک بنر پایین صفحه
@@ -83,7 +83,7 @@ export function InstallPrompt() {
   return (
     <div
       role="dialog"
-      aria-label="نصب اپلیکیشن دادبان"
+      aria-label="نصب اپلیکیشن دادپیو"
       className="fixed inset-x-3 bottom-3 z-[80] mx-auto max-w-md animate-fade-up rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-lift)] sm:bottom-4 sm:left-4 sm:right-4 sm:m-0"
       style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
     >
@@ -92,7 +92,7 @@ export function InstallPrompt() {
           <Icon name="sparkles" className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-bold text-foreground">نصب اپلیکیشن دادبان</h3>
+          <h3 className="text-sm font-bold text-foreground">نصب اپلیکیشن دادپیو</h3>
           <p className="mt-0.5 text-xs leading-5 text-muted">
             روی صفحه اصلی نصب کنید تا مثل یک اپ سریع‌تر و بدون مرورگر اجرا شود.
           </p>

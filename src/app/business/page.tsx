@@ -32,7 +32,7 @@ export default function BusinessPage() {
       <PageHero
         badge="برای کسب‌وکارها"
         title="واحد حقوقی کسب‌وکارتان را دیجیتال کنید"
-        desc="از قرارداد و پرونده تا اسناد و مشاوره؛ دادبان زیرساخت حقوقی آماده‌ی کسب‌وکار شما را فراهم می‌کند."
+        desc="از قرارداد و پرونده تا اسناد و مشاوره؛ دادپیو زیرساخت حقوقی آماده‌ی کسب‌وکار شما را فراهم می‌کند."
         breadcrumb={[{ label: "خانه", href: "/" }, { label: "برای کسب‌وکارها" }]}
       >
         <div className="flex flex-wrap gap-2">
@@ -81,7 +81,7 @@ export default function BusinessPage() {
           <Card hover={false} className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-right">
             <div>
               <h2 className="text-xl font-bold text-foreground">آماده‌اید تیم حقوقی اختصاصی داشته باشید؟</h2>
-              <p className="mt-1 text-sm text-muted">کارشناسان فروش دادبان بهترین پلن را برای کسب‌وکار شما پیشنهاد می‌دهند.</p>
+              <p className="mt-1 text-sm text-muted">کارشناسان فروش دادپیو بهترین پلن را برای کسب‌وکار شما پیشنهاد می‌دهند.</p>
             </div>
             <div className="flex shrink-0 flex-wrap justify-center gap-2">
               <Badge tone="success" icon="shield">قرارداد سازمانی</Badge>

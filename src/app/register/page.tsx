@@ -54,7 +54,7 @@ export default function RegisterPage() {
 
   return (
     <>
-      <PageHero badge="ثبت‌نام" title="همین حالا حساب کاربری بسازید" desc="ثبت‌نام به‌عنوان موکل یا وکیل و شروع استفاده از خدمات دادبان." breadcrumb={[{ label: "خانه", href: "/" }, { label: "ثبت‌نام" }]} />
+      <PageHero badge="ثبت‌نام" title="همین حالا حساب کاربری بسازید" desc="ثبت‌نام به‌عنوان موکل یا وکیل و شروع استفاده از خدمات دادپیو." breadcrumb={[{ label: "خانه", href: "/" }, { label: "ثبت‌نام" }]} />
       <Container className="py-12">
         <div className="mx-auto max-w-md">
           <Card hover={false}>

@@ -29,7 +29,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     d.classList.toggle("dark", t === "dark");
     d.style.colorScheme = t;
     try {
-      localStorage.setItem("dadban-theme", t);
+      localStorage.setItem("dadpayo-theme", t);
     } catch {
       /* storage unavailable */
     }

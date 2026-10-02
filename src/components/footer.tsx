@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Container, Logo } from "./ui";
 import { Icon } from "./icons";
 import type { IconKey } from "@/lib/data";
+import { SITE_NAME, SITE_TAGLINE } from "@/lib/brand";
 
 const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -39,7 +39,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "پلتفرم",
     links: [
-      { label: "درباره دادبان", href: "/about" },
+      { label: "درباره دادپیو", href: "/about" },
       { label: "برای کسب‌وکارها", href: "/business" },
       { label: "پنل موکل", href: "/dashboard/client" },
       { label: "پنل وکیل", href: "/dashboard/lawyer" },
@@ -68,25 +68,31 @@ const FEATURES: { icon: IconKey; label: string }[] = [
 
 export function Footer() {
   return (
-    <footer className="mt-20 border-t border-border bg-surface">
-      <Container className="py-12">
+    <footer className="dp-sidebar mt-20 border-t border-[rgba(213,168,76,.28)]">
+      <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_repeat(5,1fr)]">
           <div>
             <Link
               href="/"
-              aria-label="دادبان — صفحه اصلی"
-              className="inline-block transition-opacity hover:opacity-85"
+              aria-label={`${SITE_NAME} — صفحه اصلی`}
+              className="flex items-center gap-3 transition-opacity hover:opacity-90"
             >
-              <Logo />
+              <span className="dp-logo-ring inline-flex h-11 w-11 items-center justify-center rounded-[13px] text-xl font-black">
+                د
+              </span>
+              <span className="flex flex-col leading-none">
+                <span className="text-lg font-extrabold tracking-tight text-white">{SITE_NAME}</span>
+                <span className="mt-1 text-[10px] font-medium text-[#aeb9cf]">{SITE_TAGLINE}</span>
+              </span>
             </Link>
-            <p className="mt-4 max-w-xs text-sm leading-7 text-muted">
-              دادبان، پلتفرم هوشمند خدمات حقوقی؛ از پیدا کردن وکیل متخصص و رزرو مشاوره تا مدیریت
+            <p className="mt-4 max-w-xs text-sm leading-7 text-[#aeb9cf]">
+              {SITE_NAME}، پلتفرم هوشمند خدمات حقوقی؛ از پیدا کردن وکیل متخصص و رزرو مشاوره تا مدیریت
               پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی — همه در یک‌جا.
             </p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               {FEATURES.map((f) => (
-                <span key={f.label} className="inline-flex items-center gap-2 text-xs text-foreground-soft">
-                  <Icon name={f.icon} className="h-4 w-4 text-accent" />
+                <span key={f.label} className="inline-flex items-center gap-2 text-xs text-[#cbd4e5]">
+                  <Icon name={f.icon} className="h-4 w-4 shrink-0 text-[color:var(--gold)]" />
                   {f.label}
                 </span>
               ))}
@@ -94,13 +100,13 @@ export function Footer() {
           </div>
           {COLS.map((col) => (
             <div key={col.title}>
-              <h3 className="text-sm font-bold text-foreground">{col.title}</h3>
+              <h3 className="text-sm font-bold text-white">{col.title}</h3>
               <ul className="mt-4 space-y-2.5">
                 {col.links.map((l) => (
                   <li key={l.label}>
                     <Link
                       href={l.href}
-                      className="text-sm text-muted transition-colors hover:text-primary"
+                      className="text-sm text-[#aeb9cf] transition-colors hover:text-[color:var(--gold)]"
                     >
                       {l.label}
                     </Link>
@@ -111,15 +117,15 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
-          <p className="text-xs text-muted">
-            © {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(new Date().getFullYear())} دادبان — تمامی حقوق محفوظ است.
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
+          <p className="text-xs text-[#8fa0bd]">
+            © {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(new Date().getFullYear())} {SITE_NAME} — تمامی حقوق محفوظ است.
           </p>
-          <p className="text-xs text-muted">
+          <p className="text-xs text-[#8fa0bd]">
             محتوای این پلتفرم صرفاً جنبه راهنمایی دارد و جایگزین مشاوره تخصصی وکیل نیست.
           </p>
         </div>
-      </Container>
+      </div>
     </footer>
   );
 }

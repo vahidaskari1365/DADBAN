@@ -6,33 +6,42 @@ import { Container, SectionHeading, Button, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
 import { HomeHero } from "@/components/home-hero";
-import AIFunnel from "@/components/ai-funnel";
-import { QuickStart } from "@/components/quick-start";
 import { Reveal } from "@/components/reveal";
 import { Counter } from "@/components/counter";
-import { CONSULTATION_TYPES, faNum, faPrice } from "@/lib/data";
+import { faNum, faPrice } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
-import { SPECIAL_SERVICES } from "@/lib/content";
 import { RelatedLinks } from "@/components/related-links";
 import { getPlatformStats } from "@/lib/stats";
 
 export const dynamic = "force-dynamic";
 
-// Homepage intent cards (section #2): "هر کمکی نیاز دارید، اینجاست"
-const INTENT_CARDS: { title: string; desc: string; icon: IconKey; href: string; accent?: boolean }[] = [
-  { title: "وکیل", desc: "وکیل متخصص را بیابید و با خیال آسوده اعتماد کنید.", icon: "search", href: "/lawyers", accent: true },
-  { title: "مشاوره", desc: "مشاوره متنی، صوتی یا تصویری با وکیل متخصص.", icon: "chat", href: "/consultation" },
-  { title: "پیگیری و انجام امور", desc: "پیگیری پرونده، امور اداری و ثبتی را به ما بسپارید.", icon: "briefcase", href: "/services", accent: true },
-  { title: "قرارداد", desc: "تنظیم و بررسی قراردادهای حقوقی.", icon: "document", href: "/contracts" },
-  { title: "پرونده", desc: "ثبت و ارزیابی اولیه پرونده حقوقی خود.", icon: "folder", href: "/case/new" },
-  { title: "کسب‌وکار", desc: "خدمات حقوقی شرکت‌ها و کسب‌وکارها.", icon: "building", href: "/business" },
+/* ------------------------- فرآیند: از مشکل تا راه‌حل ------------------------- */
+const FLOW: { title: string; desc: string; icon: IconKey }[] = [
+  { title: "تشریح مشکل", desc: "مشکل حقوقی خود را در چند دقیقه می‌نویسید یا توضیح می‌دهید.", icon: "chat" },
+  { title: "معرفی وکلا", desc: "فهرست وکلای متخصص متناسب با موضوع شما نمایش داده می‌شود.", icon: "user" },
+  { title: "مقایسه پیشنهادها", desc: "قیمت و دامنه خدمات وکلا را شفاف کنار هم می‌بینید.", icon: "balance" },
+  { title: "انتخاب وکیل", desc: "با خیال آسوده، وکیل مورد اعتماد خود را انتخاب می‌کنید.", icon: "check" },
+  { title: "قرارداد الکترونیکی", desc: "قرارداد به‌صورت برخط تنظیم و امضای دیجیتال می‌شود.", icon: "document" },
+  { title: "پیگیری پرونده", desc: "روند پرونده را گام‌به‌گام در تایم‌لاین دنبال می‌کنید.", icon: "clock" },
 ];
 
-const TRUST: { title: string; desc: string; icon: IconKey }[] = [
-  { title: "احراز هویت و تأیید پروانه", desc: "هویت و پروانه همه وکلا توسط کارشناسان دادبان راستی‌آزمایی می‌شود.", icon: "badge" },
-  { title: "محرمانگی اطلاعات", desc: "اطلاعات شما محرمانه نگه‌داری می‌شود و طبق سیاست حریم خصوصی در اختیار غیر قرار نمی‌گیرد.", icon: "lock" },
-  { title: "بازگشت وجه طبق سیاست شفاف", desc: "اگر خدمتی ارائه نشود، وجه شما طبق سیاست بازگشت وجه عودت داده می‌شود.", icon: "shield" },
-  { title: "حل اختلاف شفاف", desc: "تیم پشتیبانی در صورت بروز اختلاف، رسیدگی بی‌طرفانه انجام می‌دهد.", icon: "balance" },
+/* ------------------------------ چرا دادپیو؟ ------------------------------ */
+const WHY: { title: string; desc: string; icon: IconKey }[] = [
+  { title: "امنیت بالا و محرمانگی اطلاعات", desc: "اطلاعات شما رمزنگاری‌شده و محرمانه نگه‌داری می‌شود و در اختیار هیچ شخص ثالثی قرار نمی‌گیرد.", icon: "lock" },
+  { title: "اتصال مستقیم به وکلای متخصص", desc: "بدون واسطه با وکلای پایه یک دادگستری با پروانه راستی‌آزمایی‌شده در ارتباط هستید.", icon: "badge" },
+  { title: "دسترسی آسان از موبایل و وب", desc: "همه خدمات دادپیو روی موبایل و وب در دسترس است؛ بدون نیاز به نصب نرم‌افزار.", icon: "phone" },
+  { title: "پرداخت امن و اقساطی", desc: "پرداخت حق‌الوکاله از طریق درگاه امن انجام می‌شود و امکان پرداخت اقساطی نیز فراهم است.", icon: "money" },
+  { title: "پشتیبانی ۲۴ ساعته", desc: "تیم پشتیبانی دادپیو در تمام ساعات شبانه‌روز پاسخ‌گوی پرسش‌های شماست.", icon: "clock" },
+  { title: "قرارداد الکترونیکی", desc: "قرارداد وکالت به‌صورت الکترونیکی تنظیم، امضا و برای طرفین قابل دسترسی می‌ماند.", icon: "document" },
+];
+
+/* ------------------------- مراحل ویزارد ثبت پرونده با AI ------------------------- */
+const CASE_STEPS: { title: string; desc: string; icon: IconKey }[] = [
+  { title: "اطلاعات اولیه", desc: "نام، شهر و موضوع پرونده", icon: "id" },
+  { title: "جزئیات پرونده", desc: "شرح مشکل و مرحله فعلی", icon: "file" },
+  { title: "مستندات", desc: "بارگذاری اسناد و مدارک", icon: "document" },
+  { title: "تحلیل هوش مصنوعی", desc: "ارزیابی و دسته‌بندی هوشمند", icon: "sparkles" },
+  { title: "انتشار برای وکلا", desc: "دریافت پیشنهاد قیمت وکلا", icon: "send" },
 ];
 
 export default async function HomePage() {
@@ -55,7 +64,7 @@ export default async function HomePage() {
       getPlatformStats(),
     ]);
   } catch (err) {
-    console.error("[dadban] homepage query failed:", err);
+    console.error("[dadpayo] homepage query failed:", err);
   }
 
   // Real numbers only — nothing fabricated; a metric is hidden when unknown.
@@ -67,162 +76,86 @@ export default async function HomePage() {
   ];
 
   return (
-    <div className="page-wash">
+    <div>
+      {/* ۱) هیرو سرمه‌ای تمام‌عرض — جستجوی هوشمند + کمک فوری + دسترسی سریع */}
       <HomeHero />
 
-      {/* #2 — Intent cards: "هر کمکی نیاز دارید، اینجاست" */}
-      <section className="mt-20">
-        <Container>
+      <Container>
+        {/* ۲) نوار فرآیند «از مشکل تا راه‌حل، کنار شما هستیم» */}
+        <section className="mt-16 sm:mt-20">
           <Reveal>
             <SectionHeading
-              eyebrow="دریافت کمک"
-              title="هر کمکی نیاز دارید، اینجاست"
-              desc="مسیر درست را انتخاب کنید؛ دادبان شما را به بهترین اقدام بعدی هدایت می‌کند."
+              eyebrow="فرآیند کار"
+              title="از مشکل تا راه‌حل، کنار شما هستیم"
+              desc="شش گام شفاف از لحظه توضیح مشکل تا پیگیری کامل پرونده."
+            />
+          </Reveal>
+          <Reveal delay={80}>
+            <div className="relative mt-10">
+              {/* خط اتصال — موبایل: عمودی کنار آیکون‌ها · دسکتاپ: افقی پشت آیکون‌ها */}
+              <div
+                aria-hidden
+                className="absolute bottom-4 right-[27px] top-4 w-px bg-border md:bottom-auto md:left-8 md:right-8 md:top-7 md:h-px md:w-auto"
+              />
+              <ol className="relative grid gap-7 md:grid-cols-6 md:gap-4">
+                {FLOW.map((s, i) => (
+                  <li key={s.title} className="flex items-start gap-4 md:flex-col md:items-center md:gap-3 md:text-center">
+                    <span className="relative z-10 inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-border bg-surface text-primary shadow-[var(--shadow-card)]">
+                      <Icon name={s.icon} className="h-6 w-6" />
+                      <span className="btn-gold absolute -right-1.5 -top-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black">
+                        {faNum(i + 1)}
+                      </span>
+                    </span>
+                    <div className="min-w-0 md:max-w-[160px]">
+                      <h3 className="text-sm font-bold text-foreground">{s.title}</h3>
+                      <p className="mt-1 text-xs leading-5 text-muted">{s.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </Reveal>
+        </section>
+
+        {/* ۳) چرا دادپیو؟ — ۶ مزیت */}
+        <section className="mt-20 sm:mt-24">
+          <Reveal>
+            <SectionHeading
+              eyebrow="چرا دادپیو؟"
+              title="اعتماد، اصل ماجراست"
+              desc="چرا هزاران موکل و وکیل مسیر خود را از دادپیو شروع می‌کنند."
             />
           </Reveal>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {INTENT_CARDS.map((s, i) => (
-              <Reveal key={s.title} delay={i * 40}>
-                <Link
-                  href={s.href}
-                  className={`group flex h-full items-start gap-4 rounded-2xl border bg-surface p-5 card-shadow transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] ${
-                    s.accent ? "border-accent/30" : "border-border hover:border-primary/30"
-                  }`}
-                >
-                  <span
-                    className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110 ${
-                      s.accent ? "bg-accent-soft text-accent" : "bg-primary-soft text-primary"
-                    }`}
-                  >
-                    <Icon name={s.icon} className="h-6 w-6" />
+            {WHY.map((w, i) => (
+              <Reveal key={w.title} delay={i * 50}>
+                <Card className="flex h-full items-start gap-4">
+                  <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                    <Icon name={w.icon} className="h-6 w-6" />
                   </span>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="font-bold text-foreground">{s.title}</h3>
-                      <Icon name="arrow" className="h-4 w-4 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
-                    </div>
-                    <p className="mt-1 text-sm leading-6 text-muted">{s.desc}</p>
+                    <h3 className="text-sm font-bold text-foreground">{w.title}</h3>
+                    <p className="mt-1.5 text-xs leading-6 text-muted">{w.desc}</p>
                   </div>
-                </Link>
+                </Card>
               </Reveal>
             ))}
           </div>
-        </Container>
-      </section>
+        </section>
 
-      {/* #3 — AI funnel (never competes with a lawyer; routes to /ai-assistant?q=) */}
-      <section className="mt-24">
-        <Container>
-          <Reveal>
-            <AIFunnel />
-          </Reveal>
-        </Container>
-      </section>
-
-      {/* #3.5 — AI Hub banner: مرکز کامل ابزارهای هوش مصنوعی */}
-      <section className="mt-10">
-        <Container>
-          <Reveal>
-            <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-l from-primary-soft via-surface to-accent-soft p-6 sm:p-8">
-              <div aria-hidden className="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
-              <div className="relative flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
-                <div className="max-w-xl">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-bold text-accent">
-                    <Icon name="sparkles" className="h-3.5 w-3.5" /> جدید
-                  </span>
-                  <h3 className="mt-3 text-xl font-black text-foreground sm:text-2xl">
-                    مرکز هوش مصنوعی دادبان راه‌اندازی شد
-                  </h3>
-                  <p className="mt-2 text-sm leading-7 text-muted">
-                    سند حقوقی‌تان را عکس بگیرید و بفرستید، در منابع وب جستجو کنید یا با استودیوی صدا
-                    (متن به گفتار و گفتار به متن) کار کنید — همه با استناد به مواد قانونی.
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-foreground-soft">
-                    <span className="rounded-lg border border-border bg-surface px-2.5 py-1">تحلیل سند با عکس</span>
-                    <span className="rounded-lg border border-border bg-surface px-2.5 py-1">جستجوی وب حقوقی</span>
-                    <span className="rounded-lg border border-border bg-surface px-2.5 py-1">متن به گفتار</span>
-                    <span className="rounded-lg border border-border bg-surface px-2.5 py-1">گفتار به متن</span>
-                  </div>
-                </div>
-                <Button href="/ai" size="lg" icon="sparkles" className="shrink-0">
-                  ورود به مرکز هوش مصنوعی
-                </Button>
-              </div>
-            </div>
-          </Reveal>
-        </Container>
-      </section>
-
-      {/* Stats — real, DB-derived counters only (part of "rest") */}
-      {realStats.length > 0 && (
-        <Container>
-          <Reveal>
-            <div className="grid grid-cols-2 gap-4 rounded-3xl border border-border bg-surface/80 p-6 card-shadow backdrop-blur sm:grid-cols-4 sm:p-8">
-              {realStats.map((s) => (
-                <div key={s.label} className="flex flex-col items-center gap-1.5 text-center">
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary">
-                    <Icon name={s.icon} className="h-5 w-5" />
-                  </span>
-                  <Counter
-                    to={s.to}
-                    className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl"
-                  />
-                  <span className="text-xs text-muted sm:text-sm">{s.label}</span>
-                </div>
-              ))}
-            </div>
-          </Reveal>
-        </Container>
-      )}
-
-      {/* Special services */}
-      <section className="mt-24">
-        <Container>
-          <Reveal>
-            <SectionHeading eyebrow="خدمات ویژه" title="سریع‌ترین راه‌حل‌ها، همین‌جا" desc="خدماتی که بیشترین تقاضا را دارند؛ با یک کلیک شروع کنید." />
-          </Reveal>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {SPECIAL_SERVICES.map((s, i) => (
-              <Reveal key={s.title} delay={i * 50}>
-                <a
-                  href={s.href}
-                  className={`group flex h-full flex-col rounded-2xl border bg-surface p-5 card-shadow transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] ${s.accent ? "border-accent/40" : "border-border hover:border-primary/30"}`}
-                >
-                  <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl transition-transform group-hover:scale-110 ${s.accent ? "bg-accent text-accent-foreground" : "bg-primary-soft text-primary"}`}>
-                    <Icon name={s.icon} className="h-5 w-5" />
-                  </span>
-                  <h3 className="mt-3 text-sm font-bold text-foreground">{s.title}</h3>
-                  <p className="mt-1 text-xs leading-5 text-muted">{s.desc}</p>
-                </a>
-              </Reveal>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* Quick start — decision engine */}
-      <section id="quickstart" className="mt-24 scroll-mt-24">
-        <Container>
-          <Reveal>
-            <QuickStart />
-          </Reveal>
-        </Container>
-      </section>
-
-      {/* Featured lawyers */}
-      {featured.length > 0 && (
-        <section className="mt-24">
-          <Container>
+        {/* ۴) وکلای برتر — دادهٔ واقعی از پایگاه داده (همان منبع /api/lawyers) */}
+        {featured.length > 0 && (
+          <section className="mt-20 sm:mt-24">
             <Reveal>
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <SectionHeading
                   align="start"
                   eyebrow="وکیل‌یابی"
-                  title="وکلای برتر و تأییدشده"
+                  title="وکلای برتر دادپیو"
                   desc="از میان وکلای متخصص با پروانه معتبر، انتخاب کنید."
                 />
                 <Button href="/lawyers" variant="outline" icon="arrow" className="shrink-0">
-                  همه وکلا
+                  مشاهده همهٔ وکلا
                 </Button>
               </div>
             </Reveal>
@@ -233,87 +166,105 @@ export default async function HomePage() {
                 </Reveal>
               ))}
             </div>
-          </Container>
+          </section>
+        )}
+
+        {/* ۵) بنر «ثبت هوشمند پرونده با AI» — ۵ مرحلهٔ ویزارد */}
+        <section className="mt-20 sm:mt-24">
+          <Reveal>
+            <div className="relative overflow-hidden rounded-3xl p-7 text-white sm:p-10" style={{ background: "linear-gradient(150deg, #101b35 0%, #17264a 55%, #0b1328 100%)" }}>
+              <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(213,168,76,.35), transparent)" }} />
+              <div aria-hidden className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(127,216,238,.18), transparent)" }} />
+
+              <div className="relative grid items-center gap-10 lg:grid-cols-[1.25fr_1fr]">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(213,168,76,.5)] bg-[rgba(213,168,76,.12)] px-3 py-1 text-xs font-bold text-[color:var(--gold)]">
+                    <Icon name="sparkles" className="h-3.5 w-3.5" /> تازه در دادپیو
+                  </span>
+                  <h2 className="mt-4 flex items-center gap-3 text-2xl font-black leading-snug sm:text-3xl">
+                    <span className="dp-logo-ring inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl">
+                      <Icon name="balance" className="h-6 w-6" />
+                    </span>
+                    ثبت هوشمند پرونده با هوش مصنوعی
+                  </h2>
+                  <p className="mt-4 max-w-xl text-sm leading-8 text-white/75">
+                    پرونده خود را در ویزارد پنج‌مرحله‌ای ثبت کنید؛ هوش مصنوعی دادپیو موضوع را تحلیل می‌کند و
+                    پرونده شما برای وکلای متخصص همان حوزه منتشر می‌شود تا پیشنهاد قیمت دریافت کنید.
+                  </p>
+                  <div className="mt-6 flex flex-wrap items-center gap-3">
+                    <Link
+                      href="/case/new"
+                      className="btn-gold inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl px-6 text-base font-bold transition-all duration-200 hover:brightness-105 active:scale-[.97]"
+                    >
+                      <Icon name="folder" className="h-5 w-5" />
+                      شروع ثبت پرونده
+                    </Link>
+                    <Link
+                      href="/ai-assistant"
+                      className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                    >
+                      <Icon name="chat" className="h-4 w-4" />
+                      اول با دستیار هوشمند مشورت می‌کنم
+                    </Link>
+                  </div>
+                </div>
+
+                {/* مراحل ویزارد */}
+                <ol className="relative space-y-1 border-r border-white/15 pr-5">
+                  {CASE_STEPS.map((s, i) => (
+                    <li key={s.title} className="relative flex items-start gap-3 rounded-xl py-2.5">
+                      <span className="absolute -right-[31px] top-4 inline-flex h-6 w-6 items-center justify-center rounded-full border border-[rgba(213,168,76,.55)] bg-[#101b35] text-[10px] font-black text-[color:var(--gold)]">
+                        {faNum(i + 1)}
+                      </span>
+                      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[color:var(--gold)]">
+                        <Icon name={s.icon} className="h-4.5 w-4.5" />
+                      </span>
+                      <div>
+                        <p className="text-sm font-bold text-white">{s.title}</p>
+                        <p className="mt-0.5 text-xs text-white/70">{s.desc}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </Reveal>
         </section>
-      )}
 
-      {/* Consultation types */}
-      <section className="mt-24">
-        <Container>
-          <Reveal>
-            <SectionHeading
-              eyebrow="مشاوره آنلاین"
-              title="به روش خودتان مشاوره بگیرید"
-              desc="مشاوره متنی، صوتی یا تصویری با وکیل متخصص — در هر زمان و مکان."
-            />
-          </Reveal>
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {CONSULTATION_TYPES.map((c, i) => (
-              <Reveal key={c.key} delay={i * 70}>
-                <Card className="flex h-full flex-col">
-                  <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-soft text-primary">
-                    <Icon name={c.icon} className="h-6 w-6" />
-                  </span>
-                  <h3 className="mt-4 text-lg font-bold text-foreground">{c.title}</h3>
-                  <p className="mt-1 text-sm leading-6 text-muted">{c.desc}</p>
-                  <ul className="mt-4 space-y-2 text-sm text-foreground-soft">
-                    {(i === 0
-                      ? ["پاسخ مکتوب و دقیق", "ذخیره سابقه گفتگو", "ارسال فایل و سند"]
-                      : i === 1
-                        ? ["تماس ۱۵ / ۳۰ / ۶۰ دقیقه", "یادآوری پیامکی", "ثبت صورت‌جلسه"]
-                        : ["جلسه ویدئویی داخل پلتفرم", "اشتراک صفحه و فایل", "کیفیت بالا"]
-                    ).map((f) => (
-                      <li key={f} className="flex items-center gap-2">
-                        <Icon name="check" className="h-4 w-4 shrink-0 text-success" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button href="/consultation" variant="soft" icon="calendar" className="mt-5 w-full">
-                    رزرو مشاوره
-                  </Button>
-                </Card>
-              </Reveal>
-            ))}
-          </div>
-        </Container>
-      </section>
+        {/* آمار — فقط اعداد واقعیِ برگرفته از پایگاه داده */}
+        {realStats.length > 0 && (
+          <section className="mt-20 sm:mt-24">
+            <Reveal>
+              <div className="grid grid-cols-2 gap-4 rounded-3xl border border-border bg-surface/80 p-6 card-shadow backdrop-blur sm:grid-cols-4 sm:p-8">
+                {realStats.map((s) => (
+                  <div key={s.label} className="flex flex-col items-center gap-1.5 text-center">
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                      <Icon name={s.icon} className="h-5 w-5" />
+                    </span>
+                    <Counter
+                      to={s.to}
+                      className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl"
+                    />
+                    <span className="text-xs text-muted sm:text-sm">{s.label}</span>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          </section>
+        )}
 
-      {/* Trust badges */}
-      <section className="mt-24">
-        <Container>
-          <Reveal>
-            <SectionHeading eyebrow="چرا دادبان؟" title="اعتماد، اصل ماجراست" />
-          </Reveal>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {TRUST.map((t, i) => (
-              <Reveal key={t.title} delay={i * 60}>
-                <Card className="h-full text-center">
-                  <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
-                    <Icon name={t.icon} className="h-6 w-6" />
-                  </span>
-                  <h3 className="mt-4 text-sm font-bold text-foreground">{t.title}</h3>
-                  <p className="mt-1.5 text-xs leading-6 text-muted">{t.desc}</p>
-                </Card>
-              </Reveal>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* Knowledge + Q&A + Contracts */}
-      <section className="mt-24">
-        <Container>
+        {/* دانش حقوقی: مقالات + پرسش و پاسخ + قراردادهای پرطرفدار */}
+        <section className="mt-20 sm:mt-24">
           <div className="grid gap-8 lg:grid-cols-3">
             <Reveal>
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-foreground">جدیدترین مقالات</h2>
-                <Link href="/knowledge" className="text-sm font-medium text-primary hover:text-primary-hover">همه ←</Link>
+                <Link href="/knowledge" className="text-sm font-medium text-primary transition-colors hover:text-[#8a6420]">همه ←</Link>
               </div>
               <div className="mt-4 space-y-3">
                 {recentArticles.map((a) => (
-                  <Link key={a.slug} href={`/knowledge/${a.slug}`} className="block rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-primary/30 hover:bg-surface-2">
-                    <div className="flex items-center gap-2 text-xs text-accent"><Icon name="book" className="h-3.5 w-3.5" />{a.category}</div>
+                  <Link key={a.slug} href={`/knowledge/${a.slug}`} className="block rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-accent/40 hover:bg-surface-2">
+                    <div className="flex items-center gap-2 text-xs text-[#8a6420]"><Icon name="book" className="h-3.5 w-3.5" />{a.category}</div>
                     <h3 className="mt-1.5 text-sm font-bold leading-6 text-foreground">{a.title}</h3>
                     <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{a.excerpt}</p>
                   </Link>
@@ -324,11 +275,11 @@ export default async function HomePage() {
             <Reveal delay={80}>
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-foreground">پرسش و پاسخ</h2>
-                <Link href="/qa" className="text-sm font-medium text-primary hover:text-primary-hover">همه ←</Link>
+                <Link href="/qa" className="text-sm font-medium text-primary transition-colors hover:text-[#8a6420]">همه ←</Link>
               </div>
               <div className="mt-4 space-y-3">
                 {popularQa.map((q) => (
-                  <Link key={q.slug} href={`/qa#${q.slug}`} className="block rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-primary/30 hover:bg-surface-2">
+                  <Link key={q.slug} href={`/qa#${q.slug}`} className="block rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-accent/40 hover:bg-surface-2">
                     <div className="flex items-start gap-2">
                       <Icon name="chat" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <h3 className="text-sm font-bold leading-6 text-foreground">{q.question}</h3>
@@ -343,12 +294,12 @@ export default async function HomePage() {
             <Reveal delay={160}>
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-foreground">قراردادهای پرطرفدار</h2>
-                <Link href="/contracts" className="text-sm font-medium text-primary hover:text-primary-hover">همه ←</Link>
+                <Link href="/contracts" className="text-sm font-medium text-primary transition-colors hover:text-[#8a6420]">همه ←</Link>
               </div>
               <div className="mt-4 space-y-3">
                 {popularContracts.map((c) => (
-                  <Link key={c.slug} href={`/contracts/${c.slug}`} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-primary/30 hover:bg-surface-2">
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                  <Link key={c.slug} href={`/contracts/${c.slug}`} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-accent/40 hover:bg-surface-2">
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
                       <Icon name={c.icon as IconKey} className="h-5 w-5" />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -361,33 +312,43 @@ export default async function HomePage() {
               </div>
             </Reveal>
           </div>
-        </Container>
-      </section>
+        </section>
 
-      {/* Final CTA */}
-      <section className="mt-24 pb-8">
-        <Container>
+        {/* CTA پایانی */}
+        <section className="mt-20 pb-8 sm:mt-24">
           <Reveal>
-            <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-8 text-center card-shadow sm:p-12">
-              <div className="pointer-events-none absolute inset-0 opacity-50" style={{ background: "linear-gradient(110deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent), color-mix(in oklab, var(--primary) 14%, transparent))" }} />
+            <div className="relative overflow-hidden rounded-3xl p-8 text-center sm:p-12" style={{ background: "linear-gradient(150deg, #101b35 0%, #17264a 55%, #0b1328 100%)" }}>
+              <div aria-hidden className="pointer-events-none absolute -top-20 right-1/4 h-56 w-56 rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(213,168,76,.3), transparent)" }} />
               <div className="relative">
-                <h2 className="text-2xl font-bold text-foreground sm:text-3xl">آماده‌اید مشکل حقوقی‌تان را حل کنید؟</h2>
-                <p className="mx-auto mt-3 max-w-xl text-muted">
-                  همین حالا وکیل متخصص خود را پیدا کنید یا پرونده‌تان را ثبت نمایید. تیم دادبان کنار شماست.
+                <h2 className="text-2xl font-black text-white sm:text-3xl">آماده‌اید مشکل حقوقی‌تان را حل کنید؟</h2>
+                <p className="mx-auto mt-3 max-w-xl text-sm leading-8 text-white/70">
+                  همین حالا وکیل متخصص خود را پیدا کنید یا پرونده‌تان را ثبت نمایید. تیم دادپیو کنار شماست.
                 </p>
                 <div className="mt-6 flex flex-wrap justify-center gap-3">
-                  <Button href="/lawyers" size="lg" icon="search">پیدا کردن وکیل</Button>
-                  <Button href="/case/new" size="lg" variant="outline" icon="folder">ثبت پرونده</Button>
+                  <Link
+                    href="/lawyers"
+                    className="btn-gold inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl px-6 text-base font-bold transition-all duration-200 hover:brightness-105 active:scale-[.97]"
+                  >
+                    <Icon name="search" className="h-5 w-5" />
+                    پیدا کردن وکیل
+                  </Link>
+                  <Link
+                    href="/case/new"
+                    className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10"
+                  >
+                    <Icon name="folder" className="h-5 w-5" />
+                    ثبت پرونده
+                  </Link>
                 </div>
               </div>
             </div>
           </Reveal>
-        </Container>
-      </section>
+        </section>
 
-      {/* Internal linking — صفحات مرتبط برای SEO و UX */}
-      <Container>
-        <RelatedLinks pathname="/" />
+        {/* لینک‌های مرتبط — SEO و UX */}
+        <div className="pb-4">
+          <RelatedLinks pathname="/" />
+        </div>
       </Container>
     </div>
   );

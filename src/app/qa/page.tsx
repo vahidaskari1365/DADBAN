@@ -22,7 +22,7 @@ export default async function QaPage() {
   try {
     all = await db.select().from(qaQuestions).orderBy(desc(qaQuestions.helpful));
   } catch (err) {
-    console.error("[dadban] qa list query failed:", err);
+    console.error("[dadpayo] qa list query failed:", err);
   }
   const categories = Array.from(new Set(all.map((q) => q.category)));
 
@@ -47,7 +47,7 @@ export default async function QaPage() {
           </nav>
           <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">پرسش و پاسخ حقوقی</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            پاسخ وکلای متخصص دادبان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.
+            پاسخ وکلای متخصص دادپیو به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.
           </p>
         </Container>
       </section>

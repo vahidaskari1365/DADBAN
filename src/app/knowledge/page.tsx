@@ -22,7 +22,7 @@ export default async function KnowledgePage() {
   try {
     all = await db.select().from(articles).orderBy(desc(articles.publishedAt));
   } catch (err) {
-    console.error("[dadban] knowledge list query failed:", err);
+    console.error("[dadpayo] knowledge list query failed:", err);
   }
   const categories = Array.from(new Set(all.map((a) => a.category)));
   const featured = all[0];
@@ -39,7 +39,7 @@ export default async function KnowledgePage() {
           </nav>
           <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">بانک دانش و آموزش حقوقی</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادبان.
+            مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادپیو.
           </p>
         </Container>
       </section>

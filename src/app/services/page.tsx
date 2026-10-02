@@ -9,8 +9,8 @@ import { ServiceCard } from "@/components/managed";
 import { CATALOG_CATEGORIES, CATALOG_SERVICES } from "@/lib/managed-catalog";
 
 export const metadata: Metadata = {
-  title: "خدمات پیگیری و انجام امور — دادبان",
-  description: "پیگیری پرونده‌ها، امور اداری، ثبتی، مالیاتی و اجرای احکام را به کارشناسان دادبان بسپارید.",
+  title: "خدمات پیگیری و انجام امور — دادپیو",
+  description: "پیگیری پرونده‌ها، امور اداری، ثبتی، مالیاتی و اجرای احکام را به کارشناسان دادپیو بسپارید.",
 };
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ export default async function ServicesCatalog() {
         .orderBy(desc(managedServices.featured), managedServices.sortOrder),
     ]);
   } catch (err) {
-    console.error("[dadban] services catalog query failed:", err);
+    console.error("[dadpayo] services catalog query failed:", err);
   }
   if (categories.length === 0) {
     categories = CATALOG_CATEGORIES.map((c) => ({
@@ -57,7 +57,7 @@ export default async function ServicesCatalog() {
             کارهای زمان‌بر حقوقی و اداری را به ما بسپارید
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-8 text-muted">
-            پیگیری پرونده، امور ثبتی، مالیاتی، اجرای احکام و درخواست‌های اداری — تیم عملیات دادبان با نظارت حرفه‌ای آن‌ها را انجام می‌دهد.
+            پیگیری پرونده، امور ثبتی، مالیاتی، اجرای احکام و درخواست‌های اداری — تیم عملیات دادپیو با نظارت حرفه‌ای آن‌ها را انجام می‌دهد.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button href="/services#catalog" size="lg" icon="briefcase">
@@ -72,7 +72,7 @@ export default async function ServicesCatalog() {
 
       <div id="catalog" className="mt-12">
         <Container>
-        <SectionHeading eyebrow="فهرست خدمات" title="خدمات عملیاتی دادبان" desc="هر خدمت توسط کارشناس عملیات انجام می‌شود و در صورت نیاز با نظارت وکیل همراه است." />
+        <SectionHeading eyebrow="فهرست خدمات" title="خدمات عملیاتی دادپیو" desc="هر خدمت توسط کارشناس عملیات انجام می‌شود و در صورت نیاز با نظارت وکیل همراه است." />
         <div className="mt-10 space-y-12">
           {grouped.map((g) => (
             <div key={g.slug}>
@@ -115,7 +115,7 @@ export default async function ServicesCatalog() {
             <div>
               <h3 className="text-lg font-bold">نمی‌دانید کدام خدمت مناسب شماست؟</h3>
               <p className="mt-1 text-sm text-primary-foreground/80">
-                از دستیار هوشمند دادبان بپرسید؛ بهترین مسیر و اقدام بعدی را به شما نشان می‌دهد.
+                از دستیار هوشمند دادپیو بپرسید؛ بهترین مسیر و اقدام بعدی را به شما نشان می‌دهد.
               </p>
             </div>
             <Button href="/ai-assistant" variant="accent" icon="sparkles">

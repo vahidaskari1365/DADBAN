@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const svc = await getServiceBySlug(slug);
-  return { title: svc ? `${svc.title} — دادبان` : "خدمت یافت نشد", description: svc?.shortDescription };
+  return { title: svc ? `${svc.title} — دادپیو` : "خدمت یافت نشد", description: svc?.shortDescription };
 }
 
 export default async function ServiceDetail({ params }: { params: Promise<{ slug: string }> }) {
@@ -71,7 +71,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
                 {svc.requiresLawyer ? (
                   <li>• در صورت نیاز، ارجاع به وکیل واجد صلاحیت و نظارت حرفه‌ای</li>
                 ) : (
-                  <li>• انجام توسط کارشناس عملیات دادبان</li>
+                  <li>• انجام توسط کارشناس عملیات دادپیو</li>
                 )}
               </ul>
             </Card>
@@ -79,7 +79,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
             {svc.requiresLawyer && (
               <div className="mt-4 rounded-xl border border-accent/30 bg-accent-soft p-4 text-sm text-foreground-soft">
                 <Icon name="scale" className="inline h-4 w-4 text-accent" /> {" "}
-                این موضوع نیازمند اقدام حرفه‌ای حقوقی است؛ پس از بررسی اولیه به وکیل دارای صلاحیت ارجاع داده می‌شود. دادبان خود را جایگزین وکیل شما معرفی نمی‌کند.
+                این موضوع نیازمند اقدام حرفه‌ای حقوقی است؛ پس از بررسی اولیه به وکیل دارای صلاحیت ارجاع داده می‌شود. دادپیو خود را جایگزین وکیل شما معرفی نمی‌کند.
               </div>
             )}
           </div>

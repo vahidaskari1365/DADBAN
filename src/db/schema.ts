@@ -385,7 +385,7 @@ export const articles = pgTable("articles", {
   excerpt: text("excerpt").notNull(),
   content: text("content").notNull(),
   readTime: integer("read_time").notNull().default(5),
-  author: text("author").notNull().default("تیم تحریریه دادبان"),
+  author: text("author").notNull().default("تیم تحریریه دادپیو"),
   authorRole: text("author_role").notNull().default("پژوهشگر حقوق"),
   views: integer("views").notNull().default(0),
   publishedAt: timestamp("published_at").defaultNow().notNull(),
@@ -421,6 +421,21 @@ export const cases = pgTable("cases", {
   contactPhone: text("contact_phone").notNull(),
   status: caseStatus("status").notNull().default("new"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  /* ---------------- Dadpayo marketplace extension (nullable — additive) ---------------- */
+  specialty: text("specialty").notNull().default("عمومی"),
+  province: text("province").notNull().default(""),
+  clientUserPhone: text("client_user_phone").notNull().default(""),
+  assignedLawyerId: integer("assigned_lawyer_id"),
+  progress: integer("progress").notNull().default(5),
+  aiCategory: text("ai_category").notNull().default(""),
+  aiConfidence: integer("ai_confidence").notNull().default(0),
+  aiEstimate: text("ai_estimate").notNull().default(""),
+  urgency: text("urgency").notNull().default("normal"),
+  feeAgreed: numeric("fee_agreed", { precision: 14, scale: 0 }),
+  contractStatus: text("contract_status").notNull().default("none"),
+  contractCode: text("contract_code").notNull().default(""),
+  contractSignedAt: timestamp("contract_signed_at"),
+  isPublic: boolean("is_public").notNull().default(true),
 });
 
 /* ------------------------------ Consultations ------------------------------ */
@@ -562,3 +577,7 @@ export const documents = pgTable("app_documents", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 export type Document = typeof documents.$inferSelect;
+
+/* ------------------------------ Dadpayo marketplace ------------------------------ */
+/* خروجی جدول‌های مارکت‌پلیس (فونداسیون Task 8) از مسیر @/db/schema هم در دسترس باشد */
+export * from "./schema-marketplace";

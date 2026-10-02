@@ -1,0 +1,57 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { DashboardShell } from "@/components/dashboard-shell";
+import { Card } from "@/components/ui";
+import { Icon } from "@/components/icons";
+import { getCurrentUser } from "@/lib/user-auth";
+import { toFa } from "@/lib/money";
+import { fetchMarketItems, resolveLawyerContext } from "@/components/portal/lawyer/portal-server";
+import { lawyerNav } from "@/components/portal/lawyer/nav-items";
+import { MarketBrowser } from "@/components/portal/lawyer/market-browser";
+import { DpToaster } from "@/components/portal/lawyer/toaster";
+
+export const metadata: Metadata = {
+  title: "پنل وکیل — پرونده‌های پیشنهادی",
+  description: "بازار پرونده‌های جدید دادپیو با تطبیق هوشمند تخصص و ارسال پیشنهاد قیمت.",
+};
+export const dynamic = "force-dynamic";
+
+export default async function LawyerMarketPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const ctx = await resolveLawyerContext(user);
+  const items = await fetchMarketItems(ctx.lawyer, { limit: 24 });
+
+  return (
+    <DashboardShell
+      role="وکیل"
+      title="پرونده‌های پیشنهادی"
+      subtitle="بازار پرونده‌های جدید — با توجه به تخصص خود پیشنهاد قیمت ارسال کنید"
+      userName={ctx.lawyer?.name ?? user.name}
+      userRole={ctx.demo ? "وکیل · حالت نمایش" : ctx.lawyerTitle}
+      nav={lawyerNav("market")}
+    >
+      <DpToaster />
+
+      <Card hover={false}>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="flex items-center gap-2 text-[16px] font-bold text-foreground">
+              <Icon name="scale" className="h-5 w-5 text-primary" />
+              بازار پرونده‌های جدید
+            </h2>
+            <p className="mt-1 text-xs text-muted">
+              {toFa(items.length)} پروندهٔ باز · مرتب‌شده بر اساس تطبیق تخصص شما
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1.5 text-xs font-bold text-accent">
+            <Icon name="sparkles" className="h-4 w-4" />
+            AI Matching فعال
+          </span>
+        </div>
+        <MarketBrowser initialItems={items} canOffer={!ctx.demo} />
+      </Card>
+    </DashboardShell>
+  );
+}

@@ -17,7 +17,7 @@ export default function OfflinePage() {
         اتصال اینترنت قطع است
       </h1>
       <p className="mt-3 max-w-md text-muted">
-        دادبان در حالت آفلاین اجرا می‌شود. می‌توانید صفحاتی که قبلاً باز کرده‌اید را
+        دادپیو در حالت آفلاین اجرا می‌شود. می‌توانید صفحاتی که قبلاً باز کرده‌اید را
         مرور کنید، یا وقتی اینترنت وصل شد دوباره تلاش کنید.
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">

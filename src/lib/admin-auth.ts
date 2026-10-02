@@ -26,7 +26,7 @@ export function isAdminAuthConfigured(): boolean {
     requiredOrNull("ADMIN_SECRET") !== null
   );
 }
-const COOKIE = "dadban_admin";
+const COOKIE = "dadpayo_admin";
 const TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 function safeEq(a: string, b: string): boolean {

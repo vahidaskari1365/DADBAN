@@ -25,7 +25,7 @@ export default async function ContractsPage({
   try {
     all = await db.select().from(contracts).orderBy(contracts.title);
   } catch (err) {
-    console.error("[dadban] contracts list query failed:", err);
+    console.error("[dadpayo] contracts list query failed:", err);
   }
 
   let list = all;

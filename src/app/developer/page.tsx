@@ -7,8 +7,8 @@ import { ERD_DOMAINS, ERD_STATS } from "@/lib/erd";
 import { faNum } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "نقشه‌ی دیتابیس (ERD) — معماری دادبان",
-  description: "ERD کامل دیتابیس دادبان: جداول، ستون‌ها، کلیدها، ایندکس‌ها، Enum و روابط 1:N و N:M در ۱۳ دامنه.",
+  title: "نقشه‌ی دیتابیس (ERD) — معماری دادپیو",
+  description: "ERD کامل دیتابیس دادپیو: جداول، ستون‌ها، کلیدها، ایندکس‌ها، Enum و روابط 1:N و N:M در ۱۳ دامنه.",
   alternates: { canonical: "/developer" },
 };
 
@@ -18,7 +18,7 @@ export default function DeveloperPage() {
       <PageHero
         badge="Developer · Data Model"
         title="نقشه‌ی دیتابیس (ERD)"
-        desc="معماری ماژولار دیتابیس دادبان در ۱۳ دامنه‌ی مستقل — طرح‌نامه‌ی واقعی PostgreSQL با کلیدها، ایندکس‌ها و روابط. مبنای توسعه‌ی NestJS + Prisma/Drizzle."
+        desc="معماری ماژولار دیتابیس دادپیو در ۱۳ دامنه‌ی مستقل — طرح‌نامه‌ی واقعی PostgreSQL با کلیدها، ایندکس‌ها و روابط. مبنای توسعه‌ی NestJS + Prisma/Drizzle."
         breadcrumb={[{ label: "خانه", href: "/" }, { label: "نقشه‌ی دیتابیس" }]}
       >
         <div className="flex flex-wrap gap-2">

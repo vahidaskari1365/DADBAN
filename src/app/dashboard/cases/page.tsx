@@ -12,8 +12,8 @@ import { getCurrentUser } from "@/lib/user-auth";
 import { CASE_STATUS_FA } from "@/lib/case-facts";
 
 export const metadata: Metadata = {
-  title: "پرونده‌های من — دادبان",
-  description: "فهرست واقعی پرونده‌های ثبت‌شده شما در دادبان.",
+  title: "پرونده‌های من — دادپیو",
+  description: "فهرست واقعی پرونده‌های ثبت‌شده شما در دادپیو.",
 };
 
 export const dynamic = "force-dynamic";
@@ -51,7 +51,7 @@ export default async function MyCasesPage() {
             <EmptyState
               icon="folder"
               title="هنوز پرونده‌ای ثبت نکرده‌اید"
-              desc="با ثبت پرونده، کارشناسان دادبان پرونده شما را بررسی و وکیل مناسب را معرفی می‌کنند."
+              desc="با ثبت پرونده، کارشناسان دادپیو پرونده شما را بررسی و وکیل مناسب را معرفی می‌کنند."
             />
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <Button href="/case/new" icon="folder">ثبت اولین پرونده</Button>

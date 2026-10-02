@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * dadban — SMS Notification Module
+ * dadpayo — SMS Notification Module
  * ----------------------------------------------------------------------------
  * ارسال پیامک برای:
  *  - تأیید شماره موبایل (OTP)
@@ -177,9 +177,9 @@ export function normalizePhone(phone: string): string | null {
 
 /** قالب‌های پیامک کاوه‌نگار. */
 const KAVEHNEGAR_TEMPLATES: Record<SmsTemplate, string> = {
-  otp: "dadban-otp",
-  consultation_reminder: "dadban-consultation",
-  case_status: "dadban-case",
-  welcome: "dadban-welcome",
-  payment_success: "dadban-payment",
+  otp: "dadpayo-otp",
+  consultation_reminder: "dadpayo-consultation",
+  case_status: "dadpayo-case",
+  welcome: "dadpayo-welcome",
+  payment_success: "dadpayo-payment",
 };

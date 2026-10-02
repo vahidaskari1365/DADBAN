@@ -76,7 +76,7 @@ function NewCaseContent() {
             <h1 className="mt-5 text-2xl font-extrabold text-foreground">پرونده شما ثبت شد</h1>
             <p className="mt-2 text-sm leading-7 text-muted">
               پرونده‌ای با شماره <span className="font-bold text-primary" dir="ltr">{result.caseNumber}</span> ایجاد شد.
-              کارشناسان دادبان آن را بررسی و وکلای مرتبط را معرفی می‌کنند.
+              کارشناسان دادپیو آن را بررسی و وکلای مرتبط را معرفی می‌کنند.
               <br />کد پیگیری محرمانه: <span className="font-mono font-bold text-primary" dir="ltr">{result.trackingToken}</span>
             </p>
           </div>

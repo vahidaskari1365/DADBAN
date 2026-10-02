@@ -11,7 +11,7 @@ import { AGENT_SKILLS } from "@/data/agent-skills";
 import { AI_ACADEMY, ACADEMY_TRACKS, AGENT_SECURITY_CHECKLIST, GATEWAY_TIERS } from "@/data/ai-resources";
 
 /* ============================================================
-   جعبه‌ابزار منبع‌باز دادبان — پنج ابزار زنده:
+   جعبه‌ابزار منبع‌باز دادپیو — پنج ابزار زنده:
    ۱) کاتالوگ APIهای رایگان (awesome-free-llm-apis)
    ۲) ابزارهای وب عامل: خواندن صفحه + تحلیل مخزن (Agent-Reach)
    ۳) کتابخانه مهارت‌ها (mattpocock/skills)
@@ -26,7 +26,7 @@ const TABS: { key: TabKey; label: string; icon: IconKey; desc: string }[] = [
   { key: "web", label: "ابزارهای وب عامل", icon: "search", desc: "خواندن صفحه وب و تحلیل مخزن گیت‌هاب — زنده" },
   { key: "skills", label: "مهارت‌های عامل", icon: "badge", desc: "۳۱ مهارت آماده برای عامل‌های کدنویس" },
   { key: "academy", label: "آکادمی مهندسی AI", icon: "landmark", desc: "۱۸ پروژه‌ی منتخب آموزشی با راهنمای فارسی" },
-  { key: "infra", label: "مسیریابی و امنیت", icon: "shield", desc: "زنجیره‌ی دروازه دادبان + چک‌لیست امنیت عامل" },
+  { key: "infra", label: "مسیریابی و امنیت", icon: "shield", desc: "زنجیره‌ی دروازه دادپیو + چک‌لیست امنیت عامل" },
 ];
 
 function Spinner({ label }: { label: string }) {
@@ -507,7 +507,7 @@ function InfraTools() {
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h4 className="font-bold text-foreground">زنجیره‌ی مسیریابی دادبان</h4>
+            <h4 className="font-bold text-foreground">زنجیره‌ی مسیریابی دادپیو</h4>
             <p className="mt-1 text-xs leading-6 text-muted">الهام از OmniRoute: اگر طبقه‌ی بالادستی در دسترس نباشد، درخواست به‌طور خودکار به طبقه‌ی بعدی می‌رود.</p>
           </div>
           <Button onClick={() => void runHealth()} disabled={testing} icon="bolt" size="sm">

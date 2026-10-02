@@ -1,250 +1,353 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { and, asc, desc, eq, isNull, ne } from "drizzle-orm";
 import { db } from "@/db";
-import { cases, documents, payments, consultations } from "@/db/schema";
-import { desc, eq, and } from "drizzle-orm";
-import { PageHero } from "@/components/page-hero";
-import { Container, Card, Badge, Button, EmptyState } from "@/components/ui";
+import { cases, lawyers } from "@/db/schema";
+import {
+  caseEvents,
+  caseMessages,
+  caseProposals,
+  creditRequests,
+  installments,
+} from "@/db/schema-marketplace";
+import { DashboardShell } from "@/components/dashboard-shell";
+import { Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { faNum, faPrice } from "@/lib/data";
-import { formatJalaliLong } from "@/lib/jalali";
 import { getCurrentUser } from "@/lib/user-auth";
-import { CASE_STATUS_FA, buildCaseTimeline, nextActionForCase } from "@/lib/case-facts";
+import CaseWorkspace from "@/components/portal/client/case-workspace";
 
 export const metadata: Metadata = {
-  title: "پرونده من — دادبان",
-  description: "جزئیات واقعی پرونده، مراحل، مدارک و پرداخت‌های شما.",
+  title: "فضای کاری پرونده — دادپیو",
+  description: "جزئیات پرونده، تایم‌لاین، پیام‌رسان، اقساط، قرارداد و پیشنهادهای وکلا در یک فضای کاری واحد.",
 };
 
 export const dynamic = "force-dynamic";
 
-const faDate = (d: Date | null | undefined) =>
-  d ? formatJalaliLong(d as Date) : "—";
+const TABS = ["overview", "timeline", "messages", "payments", "contract", "proposals"] as const;
+type Tab = (typeof TABS)[number];
 
-const PAYMENT_STATUS_FA: Record<string, string> = {
-  initiated: "ایجاد شده",
-  pending: "در انتظار تأیید",
-  verified: "تأیید‌شده",
-  failed: "ناکام",
-  refunded: "عودت‌داده‌شده",
-  manual_review: "در حال بررسی کارشناس",
+type CreditItem = {
+  id: number;
+  provider: string;
+  amount: string;
+  months: number;
+  status: string;
+  statusDetail: string;
+  referenceCode: string;
+  createdAt: string | null;
+};
+type EventItem = {
+  id: number;
+  actor: string;
+  actorName: string;
+  title: string;
+  description: string;
+  progress: number | null;
+  createdAt: string | null;
+};
+type InstallmentItem = {
+  id: number;
+  number: number;
+  amount: string;
+  dueDate: string | null;
+  status: string;
+  source: string;
+  paidAt: string | null;
+  trackingCode: string;
+};
+type LawyerLite = { id: number; name: string; slug: string; title: string; rating: number };
+type MessageItem = { id: number; senderRole: string; senderName: string; body: string; createdAt: string | null };
+type ProposalItem = {
+  id: number;
+  lawyerId: number;
+  amount: string;
+  note: string;
+  durationMonths: number;
+  status: string;
+  aiMatchScore: number;
+  createdAt: string | null;
+};
+type WorkspaceCase = {
+  id: number;
+  caseNumber: string;
+  subject: string;
+  description: string;
+  city: string;
+  province: string;
+  specialty: string;
+  stage: string;
+  status: string;
+  budget: string | null;
+  progress: number;
+  urgency: string;
+  feeAgreed: string | null;
+  contractStatus: string;
+  contractCode: string;
+  contractSignedAt: string | null;
+  createdAt: string | null;
 };
 
+const iso = (d: Date | null | undefined): string | null => (d ? d.toISOString() : null);
+
 /**
- * Real case detail for the signed-in client. Everything on this page comes
- * from this user's own rows — ownership is enforced by contactPhone match.
+ * فضای کاری واحد پرونده برای موکل و وکیل.
+ * دسترسی: موکل صاحب پرونده (تلفن تماس یا حساب کاربری) یا همکاران پلتفرم.
  */
-export default async function CaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CaseWorkspacePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { id } = await params;
+  const { tab: tabParam } = await searchParams;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
+  const isStaff = user.role !== "client";
+  const roleLabel = user.role === "client" ? "موکل" : user.role === "lawyer" ? "وکیل" : user.role === "admin" ? "ادمین" : "همکار";
+  const dashboardHref = isStaff ? "/dashboard/lawyer" : "/dashboard/client";
+
+  const shellNav = isStaff
+    ? [
+        { label: "داشبورد وکیل", icon: "home" as const, href: "/dashboard/lawyer" },
+        { label: "فضای کاری پرونده", icon: "folder" as const, active: true },
+        { label: "پنل موکل", icon: "user" as const, href: "/dashboard/client" },
+      ]
+    : [
+        { label: "داشبورد", icon: "home" as const, href: "/dashboard/client" },
+        { label: "پرونده‌های من", icon: "folder" as const, href: "/dashboard/cases" },
+        { label: "فضای کاری پرونده", icon: "gavel" as const, active: true },
+        { label: "پیام‌ها", icon: "chat" as const, href: "/dashboard/client#messages" },
+        { label: "پرداخت و اقساط", icon: "money" as const, href: "/dashboard/client#payments" },
+        { label: "تقویم", icon: "calendar" as const, href: "/dashboard/client#calendar" },
+      ];
+
+  /* ---------------- خواندن پرونده (شناسهٔ عددی یا شمارهٔ پرونده) ---------------- */
   let row: typeof cases.$inferSelect | null = null;
-  let userDocs: typeof documents.$inferSelect[] = [];
-  let userPayments: { payment: typeof payments.$inferSelect; consult: typeof consultations.$inferSelect | null }[] = [];
   try {
-    const rows = await db
-      .select()
-      .from(cases)
-      .where(and(eq(cases.caseNumber, id), eq(cases.contactPhone, user.phone)))
-      .limit(1);
-    row = rows[0] ?? null;
-    if (row) {
-      [userDocs] = await Promise.all([
-        db.select().from(documents).where(eq(documents.userPhone, user.phone)).orderBy(desc(documents.createdAt)).limit(10),
-      ]);
-      const consultRows = await db
-        .select()
-        .from(consultations)
-        .where(eq(consultations.clientPhone, user.phone))
-        .orderBy(desc(consultations.createdAt))
-        .limit(20);
-      const refs = consultRows.map((c) => c.paymentRef).filter((r): r is string => !!r);
-      const pays: typeof payments.$inferSelect[] = [];
-      // Fetch each payment by its unique reference (indexed) — simple and safe.
-      for (const r of refs) {
-        const pr = await db.select().from(payments).where(eq(payments.reference, r)).limit(1);
-        if (pr[0]) pays.push(pr[0]);
-      }
-      userPayments = pays.map((payment) => ({
-        payment,
-        consult: consultRows.find((c) => c.paymentRef === payment.reference) ?? null,
-      }));
+    if (/^\d+$/.test(id)) {
+      const rows = await db.select().from(cases).where(eq(cases.id, Number(id))).limit(1);
+      row = rows[0] ?? null;
+    }
+    if (!row) {
+      const rows = await db.select().from(cases).where(eq(cases.caseNumber, id)).limit(1);
+      row = rows[0] ?? null;
     }
   } catch {
     row = null;
   }
 
-  if (!row) {
+  const isClientOwner = !!row && (row.contactPhone === user.phone || (!!row.clientUserPhone && row.clientUserPhone === user.phone));
+
+  if (!row || (!isClientOwner && !isStaff)) {
     return (
-      <Container className="py-16">
-        <EmptyState
-          icon="folder"
-          title="پرونده‌ای با این مشخصات پیدا نشد"
-          desc="یا شماره پرونده اشتباه است یا با این حساب دسترسی ندارید. می‌توانید با کد رهگیری، پرونده را پیگیری کنید."
-        />
-        <div className="mt-5 flex flex-wrap justify-center gap-3">
-          <Button href="/dashboard/cases" icon="folder">پرونده‌های من</Button>
-          <Button href="/track-case" variant="outline" icon="search">پیگیری با کد رهگیری</Button>
-        </div>
-      </Container>
+      <DashboardShell
+        role={roleLabel}
+        title="فضای کاری پرونده"
+        userName={user.name}
+        userRole={roleLabel}
+        nav={shellNav}
+      >
+        <Card hover={false} className="py-10 text-center">
+          <Icon name="lock" className="mx-auto h-10 w-10 text-muted" />
+          <h2 className="mt-3 font-bold text-foreground">دسترسی به این پرونده ممکن نیست</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-muted">
+            پرونده‌ای با این شناسه پیدا نشد یا این پرونده به حساب شما متصل نیست. از فهرست «پرونده‌های من» پروندهٔ خود را باز کنید.
+          </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <Button href="/dashboard/cases" icon="folder">پرونده‌های من</Button>
+            <Link
+              href="/case/new"
+              className="btn-gold inline-flex h-11 items-center gap-2 rounded-xl px-5 text-sm font-bold"
+            >
+              <Icon name="plus" className="h-4 w-4" /> ثبت پرونده جدید
+            </Link>
+          </div>
+        </Card>
+      </DashboardShell>
     );
   }
 
-  const timeline = buildCaseTimeline(row.stage);
-  const next = nextActionForCase(row.stage, row.status);
+  /* ---------------- داده‌های اولیهٔ فضای کاری (همه با حالت degraded) ---------------- */
+  const caseId = row.id;
+
+  let lawyerLite: LawyerLite | null = null;
+  let lawyerDirectory: LawyerLite[] = [];
+  let events: EventItem[] = [];
+  let messages: MessageItem[] = [];
+  let unreadCount = 0;
+  let installmentsList: InstallmentItem[] = [];
+  let credits: CreditItem[] = [];
+  let proposals: ProposalItem[] = [];
+
+  try {
+    if (row.assignedLawyerId) {
+      const lw = await db
+        .select({ id: lawyers.id, slug: lawyers.slug, name: lawyers.name, title: lawyers.title, rating: lawyers.rating })
+        .from(lawyers)
+        .where(eq(lawyers.id, row.assignedLawyerId))
+        .limit(1);
+      lawyerLite = lw[0] ?? null;
+    }
+
+    lawyerDirectory = await db
+      .select({ id: lawyers.id, slug: lawyers.slug, name: lawyers.name, title: lawyers.title, rating: lawyers.rating })
+      .from(lawyers)
+      .orderBy(lawyers.name)
+      .limit(200);
+
+    const evRows = await db
+      .select()
+      .from(caseEvents)
+      .where(and(eq(caseEvents.caseId, caseId), eq(caseEvents.visibleToClient, true)))
+      .orderBy(desc(caseEvents.createdAt))
+      .limit(100);
+    events = evRows
+      .slice()
+      .reverse()
+      .map((e) => ({
+        id: e.id,
+        actor: e.actor,
+        actorName: e.actorName,
+        title: e.title,
+        description: e.description,
+        progress: e.progress,
+        createdAt: iso(e.createdAt),
+      }));
+
+    const msgRows = await db
+      .select()
+      .from(caseMessages)
+      .where(eq(caseMessages.caseId, caseId))
+      .orderBy(desc(caseMessages.createdAt))
+      .limit(200);
+    messages = msgRows
+      .slice()
+      .reverse()
+      .map((m) => ({
+        id: m.id,
+        senderRole: m.senderRole,
+        senderName: m.senderName,
+        body: m.body,
+        createdAt: iso(m.createdAt),
+      }));
+    try {
+      const unreadRows = await db
+        .select({ id: caseMessages.id })
+        .from(caseMessages)
+        .where(
+          and(
+            eq(caseMessages.caseId, caseId),
+            isNull(caseMessages.readAt),
+            isStaff ? eq(caseMessages.senderRole, "client") : ne(caseMessages.senderRole, "client"),
+          ),
+        )
+        .limit(200);
+      unreadCount = unreadRows.length;
+    } catch {
+      unreadCount = 0;
+    }
+
+    const instRows = await db
+      .select()
+      .from(installments)
+      .where(eq(installments.caseId, caseId))
+      .orderBy(asc(installments.number));
+    installmentsList = instRows.map((i) => ({
+      id: i.id,
+      number: i.number,
+      amount: String(i.amount),
+      dueDate: iso(i.dueDate),
+      status: i.status,
+      source: i.source,
+      paidAt: iso(i.paidAt),
+      trackingCode: i.trackingCode,
+    }));
+
+    const creditRows = await db
+      .select()
+      .from(creditRequests)
+      .where(eq(creditRequests.caseId, caseId))
+      .orderBy(desc(creditRequests.createdAt))
+      .limit(20);
+    credits = creditRows.map((c) => ({
+      id: c.id,
+      provider: c.provider,
+      amount: String(c.amount),
+      months: c.months,
+      status: c.status,
+      statusDetail: c.statusDetail,
+      referenceCode: c.referenceCode,
+      createdAt: iso(c.createdAt),
+    }));
+
+    const propRows = await db
+      .select()
+      .from(caseProposals)
+      .where(eq(caseProposals.caseId, caseId))
+      .orderBy(desc(caseProposals.createdAt))
+      .limit(30);
+    proposals = propRows.map((p) => ({
+      id: p.id,
+      lawyerId: p.lawyerId,
+      amount: String(p.amount),
+      note: p.note,
+      durationMonths: p.durationMonths,
+      status: p.status,
+      aiMatchScore: p.aiMatchScore,
+      createdAt: iso(p.createdAt),
+    }));
+  } catch {
+    /* degraded — تب‌ها با دادهٔ خالی رندر می‌شوند */
+  }
+
+  const kase: WorkspaceCase = {
+    id: row.id,
+    caseNumber: row.caseNumber,
+    subject: row.subject,
+    description: row.description,
+    city: row.city,
+    province: row.province,
+    specialty: row.specialty,
+    stage: row.stage,
+    status: row.status,
+    budget: row.budget,
+    progress: row.progress,
+    urgency: row.urgency,
+    feeAgreed: row.feeAgreed ? String(row.feeAgreed) : null,
+    contractStatus: row.contractStatus,
+    contractCode: row.contractCode,
+    contractSignedAt: iso(row.contractSignedAt),
+    createdAt: iso(row.createdAt),
+  };
+
+  const initialTab: Tab = TABS.includes((tabParam ?? "") as Tab) ? ((tabParam ?? "overview") as Tab) : "overview";
 
   return (
-    <>
-      <PageHero
-        title={`پرونده: ${row.subject}`}
-        desc={`شماره ${row.caseNumber} • ${row.city} • ثبت‌شده در ${faDate(row.createdAt)}`}
-        breadcrumb={[
-          { label: "خانه", href: "/" },
-          { label: "پنل موکل", href: "/dashboard/client" },
-          { label: "پرونده‌ها", href: "/dashboard/cases" },
-          { label: row.caseNumber },
-        ]}
-        badge={`وضعیت: ${CASE_STATUS_FA[row.status] ?? row.status}`}
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          {next.href && (
-            <Button href={next.href} icon="arrow" size="sm">اقدام بعدی</Button>
-          )}
-          {row.budget && <Badge tone="neutral" icon="money">بودجه: {row.budget}</Badge>}
-        </div>
-      </PageHero>
-
-      <Container className="space-y-6 py-10">
-        {/* اقدام بعدی — command center for this case */}
-        <Card hover={false} className="border-primary/30 bg-primary-soft/40">
-          <h2 className="flex items-center gap-2 font-bold text-foreground">
-            <Icon name="bolt" className="h-5 w-5 text-accent" />
-            {next.action}
-          </h2>
-          <p className="mt-1.5 text-sm leading-7 text-foreground-soft">{next.detail}</p>
-          {next.href && (
-            <Button href={next.href} size="sm" icon="arrow" className="mt-4">همین حالا انجام بده</Button>
-          )}
-        </Card>
-
-        {/* جزئیات ثبتی واقعی */}
-        <Card hover={false} className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <p className="text-xs text-muted">موضوع</p>
-            <p className="mt-1 font-bold text-foreground">{row.subject}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted">شهر</p>
-            <p className="mt-1 font-bold text-foreground">{row.city}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted">مرحله فعلی</p>
-            <p className="mt-1 font-bold text-foreground">{row.stage}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted">کد رهگیری (برای پیگیری سریع)</p>
-            <p className="mt-1 font-mono text-sm font-bold text-primary" dir="ltr">{row.trackingToken}</p>
-          </div>
-          <div className="sm:col-span-2">
-            <p className="text-xs text-muted">شرح پرونده (همان‌طور که ثبت کرده‌اید)</p>
-            <p className="mt-1 text-sm leading-7 text-foreground-soft">{row.description}</p>
-          </div>
-        </Card>
-
-        {/* مراحل */}
-        <Card hover={false}>
-          <h2 className="font-bold text-foreground">مراحل پرونده</h2>
-          <div className="mt-5 space-y-0">
-            {timeline.map((t, i) => (
-              <div key={t.title} className="flex gap-3">
-                <div className="flex flex-col items-center">
-                  <span
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-[11px] font-bold ${
-                      t.state === "done"
-                        ? "border-success bg-success text-primary-foreground"
-                        : t.state === "current"
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-surface text-muted"
-                    }`}
-                  >
-                    {t.state === "done" ? <Icon name="check" className="h-3.5 w-3.5" /> : faNum(i + 1)}
-                  </span>
-                  {i < timeline.length - 1 && (
-                    <span className={`h-8 w-0.5 ${t.state === "done" ? "bg-success" : "bg-border"}`} />
-                  )}
-                </div>
-                <div className="-mt-0.5 pb-6">
-                  <p className={`text-sm font-bold ${t.state === "current" ? "text-primary" : "text-foreground"}`}>
-                    {t.title}
-                    {t.state === "current" && (
-                      <span className="mr-2 rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-bold text-primary">مرحله فعلی</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* مدارک — real uploads of this user */}
-        <Card hover={false}>
-          <h2 className="flex items-center gap-2 font-bold text-foreground">
-            <Icon name="document" className="h-5 w-5 text-primary" />
-            مدارک شما
-          </h2>
-          {userDocs.length ? (
-            <ul className="mt-4 divide-y divide-border">
-              {userDocs.map((d) => (
-                <li key={d.id} className="flex items-center justify-between py-3 text-sm">
-                  <span className="flex items-center gap-2 font-medium text-foreground">
-                    <Icon name="file" className="h-4 w-4 text-muted" />
-                    {d.name}
-                  </span>
-                  <span className="text-xs text-muted">{d.type} • {faNum(Math.round(d.size / 1024))} کیلوبایت</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 rounded-xl bg-surface-2 p-4 text-sm leading-7 text-muted">
-              هنوز مدرکی بارگذاری نکرده‌اید. مدارک از پنل موکل اضافه می‌شوند تا بررسی پرونده سریع‌تر انجام شود.
-            </p>
-          )}
-        </Card>
-
-        {/* پرداخت‌ها — real payment facts only */}
-        <Card hover={false}>
-          <h2 className="flex items-center gap-2 font-bold text-foreground">
-            <Icon name="money" className="h-5 w-5 text-primary" />
-            پرداخت‌ها
-          </h2>
-          {userPayments.length ? (
-            <ul className="mt-4 divide-y divide-border">
-              {userPayments.map(({ payment, consult }) => (
-                <li key={payment.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
-                  <div>
-                    <p className="font-medium text-foreground">{consult ? consult.subject : `پرداخت ${payment.orderType}`}</p>
-                    <p className="mt-0.5 font-mono text-[11px] text-muted" dir="ltr">{payment.reference}</p>
-                  </div>
-                  <div className="text-left">
-                    <p className="font-bold text-foreground">{faPrice(payment.amount)}</p>
-                    <p className="mt-0.5 text-[11px] text-muted">{PAYMENT_STATUS_FA[payment.status] ?? payment.status}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 rounded-xl bg-surface-2 p-4 text-sm leading-7 text-muted">
-              هنوز پرداختی برای شما ثبت نشده است. بعد از تأیید هر خدمت، صورتحساب واقعی همین‌جا نمایش داده می‌شود.
-            </p>
-          )}
-        </Card>
-
-        <div className="flex flex-wrap gap-3">
-          <Button href="/support" variant="outline" icon="mail">سؤال از پشتیبانی</Button>
-          <Button href="/consultation" variant="outline" icon="chat">درخواست مشاوره</Button>
-        </div>
-      </Container>
-    </>
+    <DashboardShell
+      role={roleLabel}
+      title="فضای کاری پرونده"
+      subtitle={`${row.subject} — همهٔ بخش‌های پرونده در یک نگاه`}
+      userName={user.name}
+      userRole={roleLabel}
+      nav={shellNav}
+    >
+      <CaseWorkspace
+        viewerRole={isStaff ? "lawyer" : "client"}
+        kase={kase}
+        lawyer={lawyerLite}
+        events={events}
+        messages={messages}
+        unreadCount={unreadCount}
+        installments={installmentsList}
+        credits={credits}
+        proposals={proposals}
+        lawyers={lawyerDirectory}
+        initialTab={initialTab}
+      />
+    </DashboardShell>
   );
 }
