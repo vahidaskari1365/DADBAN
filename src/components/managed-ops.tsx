@@ -75,6 +75,8 @@ export default function ManagedOperations({ currentRole }: { currentRole: string
   }, []);
 
   useEffect(() => {
+    // بارگذاری اولیه از سرور — همه‌ی setStateها پس از await اجرا می‌شوند (غیرهمزمان).
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- false positive روی الگوی fetch-on-mount
     void load();
     void loadOps();
   }, [load, loadOps]);

@@ -131,9 +131,11 @@ export const NAV: {
   },
   {
     label: "ابزارها",
-    href: "/ai-assistant",
+    href: "/ai",
     children: [
+      { label: "مرکز هوش مصنوعی", href: "/ai", desc: "تحلیل سند، جستجوی وب و استودیوی صدا" },
       { label: "دستیار حقوقی", href: "/ai-assistant", desc: "راهنمای حقوقی هوشمند" },
+      { label: "تحلیل سند با عکس", href: "/ai", desc: "عکس سند را بفرست، تحلیل بگیر" },
       { label: "تحلیل قرارداد", href: "/contracts/review", desc: "بندهای پرریسک" },
       { label: "قراردادساز", href: "/contracts/builder", desc: "ساخت قرارداد گام‌به‌گام" },
       { label: "فرم‌های حقوقی", href: "/legal-forms", desc: "دادخواست، شکواییه، اظهارنامه" },
@@ -152,7 +154,7 @@ export const NAV: {
   },
   { label: "برای کسب‌وکارها", href: "/business" },
   { label: "پیگیری پرونده", href: "/track-case" },
-  { label: "دستیار حقوقی", href: "/ai-assistant", ai: true },
+  { label: "هوش مصنوعی", href: "/ai", ai: true },
 ];
 
 /* ---------------- Contract categories ---------------- */

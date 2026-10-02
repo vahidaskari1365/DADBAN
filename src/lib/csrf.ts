@@ -13,7 +13,7 @@ import { createHash, randomBytes } from "crypto";
  *  - API: چک کردن header X-CSRF-Token با csrfVerify()
  */
 
-const COOKIE_NAME = "sharifmand_csrf";
+const COOKIE_NAME = "dadban_csrf";
 const TTL_MS = 1000 * 60 * 30; // 30 دقیقه
 
 /** تولید token جدید CSRF. */

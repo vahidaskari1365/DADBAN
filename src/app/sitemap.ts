@@ -48,6 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "contracts/builder", priority: 0.7, changeFreq: "monthly" as const, lastMod: NOW },
     { path: "contracts/review", priority: 0.7, changeFreq: "monthly" as const, lastMod: NOW },
     { path: "ai-assistant", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
+    { path: "ai", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
     // خدمات
     { path: "services", priority: 0.9, changeFreq: "weekly" as const, lastMod: NOW },
     { path: "services/category/family", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },

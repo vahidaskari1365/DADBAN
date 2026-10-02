@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Middleware — محافظت از صفحات حساس (Edge Runtime compatible).
+ * Proxy (جانشین Middleware در Next.js 16) — محافظت از صفحات حساس.
  *
- * توجه: این middleware در Edge Runtime اجرا می‌شه، بنابراین نمی‌تونه
+ * توجه: این proxy در Edge Runtime اجرا می‌شه، بنابراین نمی‌تونه
  * از Node.js modules مثل `crypto` استفاده کنه. برای همین، فقط
  * وجود cookie رو چک می‌کنه (نه verify کامل). verify واقعی session
  * در API routes با Node.js runtime انجام می‌شه.
@@ -14,10 +14,10 @@ import { NextResponse, type NextRequest } from "next/server";
  *  - کاربر بدون session معتبر نمی‌تونه به dashboard دسترسی پیدا کنه
  */
 
-const USER_COOKIE = "sharifmand_user";
-const ADMIN_COOKIE = "sharifmand_admin";
+const USER_COOKIE = "dadban_user";
+const ADMIN_COOKIE = "dadban_admin";
 
-export function middleware(req: NextRequest) {
+export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // ─── Security headers (برای همه‌ی responses) ──────────────────────────

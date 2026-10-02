@@ -69,7 +69,7 @@ export async function GET(req: Request) {
         phone: user.phone,
       },
       seller: {
-        name: "شریف‌مند — پلتفرم خدمات حقوقی",
+        name: "دادبان — پلتفرم خدمات حقوقی",
         address: "تهران، ایران",
         phone: "021-66921500",
       },

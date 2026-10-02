@@ -19,10 +19,13 @@ const nextConfig: NextConfig = {
           ...(process.env.NODE_ENV === "production" ? [{ key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" }] : []),
         ],
       },
-      {
-        source: "/_next/static/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
-      },
+      // هدر کش استاتیک فقط در تولید — در توسعه با رفتار داخلی Next.js تداخل ایجاد می‌کند
+      ...(process.env.NODE_ENV === "production"
+        ? [{
+            source: "/_next/static/:path*",
+            headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+          }]
+        : []),
       {
         source: "/sitemap.xml",
         headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],

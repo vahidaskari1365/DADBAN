@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * sharifmand — SMS Notification Module
+ * dadban — SMS Notification Module
  * ----------------------------------------------------------------------------
  * ارسال پیامک برای:
  *  - تأیید شماره موبایل (OTP)
@@ -177,9 +177,9 @@ export function normalizePhone(phone: string): string | null {
 
 /** قالب‌های پیامک کاوه‌نگار. */
 const KAVEHNEGAR_TEMPLATES: Record<SmsTemplate, string> = {
-  otp: "sharifmand-otp",
-  consultation_reminder: "sharifmand-consultation",
-  case_status: "sharifmand-case",
-  welcome: "sharifmand-welcome",
-  payment_success: "sharifmand-payment",
+  otp: "dadban-otp",
+  consultation_reminder: "dadban-consultation",
+  case_status: "dadban-case",
+  welcome: "dadban-welcome",
+  payment_success: "dadban-payment",
 };

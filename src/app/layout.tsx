@@ -25,7 +25,7 @@ const vazirmatn = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://sharifmand.ir"),
+  metadataBase: new URL("https://dadban.ir"),
   title: {
     default: SITE_TITLE,
     template: `%s | ${SITE_NAME}`,
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   keywords: [
     "وکیل", "مشاوره حقوقی آنلاین", "وکیل خانواده", "وکیل ملکی", "وکیل کیفری",
-    "تنظیم قرارداد", "چک برگشتی", "طلاق", "ثبت شرکت", "مشاوره وکیل", "شریف‌مند",
+    "تنظیم قرارداد", "چک برگشتی", "طلاق", "ثبت شرکت", "مشاوره وکیل", "دادبان",
   ],
   applicationName: SITE_NAME,
   manifest: "/manifest.webmanifest",

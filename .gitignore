@@ -28,3 +28,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# sandbox skills
+/skills
+/worklog.md
+dev.log
+server.log
+/.zscripts
+/Caddyfile
+/mini-services/.gitkeep

@@ -63,7 +63,7 @@ export async function GET() {
     <language>fa-IR</language>
     <pubDate>${pubDate}</pubDate>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
-    <generator>sharifmand</generator>
+    <generator>dadban</generator>
     <atom:link href="${SITE_URL}/knowledge/feed" rel="self" type="application/rss+xml" />
     <image>
       <url>${SITE_URL}/icon-512.png</url>

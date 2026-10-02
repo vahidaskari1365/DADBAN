@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { analyzeLegalQuery, analyzeContract } from "@/lib/legal-engine";
-import { askLLM } from "@/lib/llm";
+import { askLLM, SYSTEM_LEGAL } from "@/lib/llm";
+import { webSearch, type WebSearchResult } from "@/lib/ai";
 import { rateLimit, readJson, text } from "@/lib/api-security";
 
 export const runtime = "nodejs";
@@ -13,6 +14,19 @@ const CONTRACT_PROMPT = `قرارداد زیر را تحلیل کن و نقاط 
 
 `;
 
+/** ساخت پرامپت سیستمی با زمینه‌ی نتایج جستجوی وب (RAG ساده). */
+function systemWithSources(sources: WebSearchResult[]): string {
+  const context = sources
+    .slice(0, 6)
+    .map((s, i) => `[${i + 1}] ${s.name}\n${s.snippet}\nمنبع: ${s.url}`)
+    .join("\n\n");
+  return `${SYSTEM_LEGAL}
+
+اگر نتایج جستجوی وب زیر به سؤال مرتبط است، از آن‌ها استفاده کن و در پایان پاسخ، منابع مرتبط را با شماره [۱] و [۲] ذکر کن. اگر نتیجه‌ای مرتبط نیست، نادیده‌اش بگیر:
+
+${context}`;
+}
+
 export async function POST(req: Request) {
   const body = await readJson(req, 16_384);
   const limited = rateLimit(req, "ai", 15, 60 * 60_000);
@@ -21,6 +35,7 @@ export async function POST(req: Request) {
   const contract = text(body?.contract, 6000);
   const query = text(body?.query, 3000);
   const mode = body?.mode;
+  const useWeb = body?.webSearch === true;
 
   try {
     if (mode === "contract" || contract) {
@@ -32,9 +47,24 @@ export async function POST(req: Request) {
 
     if (!query) return NextResponse.json({ ok: false, error: "لطفاً سؤال خود را بنویسید." }, { status: 400 });
 
-    const llm = await withTimeout(askLLM([{ role: "user", content: query }], 700), 20_000);
-    if (llm) return NextResponse.json({ ok: true, mode: "guide", source: "llm", answer: llm });
-    return NextResponse.json({ ok: true, mode: "guide", source: "local", guidance: analyzeLegalQuery(query) });
+    // حالت جستجوی وب: ابتدا نتایج واقعی گرفته و به زمینه‌ی مدل تزریق می‌شود
+    let sources: { title: string; url: string; host: string; snippet: string }[] = [];
+    let systemPrompt = undefined;
+    if (useWeb) {
+      try {
+        const results = await withTimeout(webSearch(query, 6), 12_000);
+        if (results.length) {
+          sources = results.map((r) => ({ title: r.name, url: r.url, host: r.host_name, snippet: r.snippet }));
+          systemPrompt = systemWithSources(results);
+        }
+      } catch {
+        /* جستجو شکست خورد → پاسخ بدون وب */
+      }
+    }
+
+    const llm = await withTimeout(askLLM([{ role: "user", content: query }], 700, systemPrompt), 25_000);
+    if (llm) return NextResponse.json({ ok: true, mode: "guide", source: "llm", answer: llm, sources });
+    return NextResponse.json({ ok: true, mode: "guide", source: "local", guidance: analyzeLegalQuery(query), sources: [] });
   } catch {
     return NextResponse.json({ ok: false, error: "پاسخ‌گویی در حال حاضر ممکن نیست." }, { status: 503 });
   }

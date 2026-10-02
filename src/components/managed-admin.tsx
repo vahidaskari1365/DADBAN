@@ -25,8 +25,6 @@ export default function ManagedServicesAdmin() {
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const [c, s] = await Promise.all([
         fetch("/api/admin/service-categories").then((r) => r.json()),
@@ -35,6 +33,7 @@ export default function ManagedServicesAdmin() {
       if (!c.ok || !s.ok) throw new Error("خطا در بارگذاری");
       setCategories(c.rows ?? []);
       setServices(s.rows ?? []);
+      setError(null);
     } catch (e: any) {
       setError(e?.message ?? "خطا در بارگذاری");
     } finally {
@@ -43,6 +42,8 @@ export default function ManagedServicesAdmin() {
   }, []);
 
   useEffect(() => {
+    // بارگذاری اولیه از سرور — همه‌ی setStateها پس از await اجرا می‌شوند (غیرهمزمان).
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- false positive روی الگوی fetch-on-mount
     void load();
   }, [load]);
 

@@ -1,7 +1,13 @@
-// Free-LLM provider adapter (awesome-freellm-apis): env-keyed primary, keyless fallback.
-// LLM_API_KEY / LLM_BASE_URL / LLM_MODEL override; otherwise keyless Pollinations.
+// ============================================================
+// دادبان — موتور هوش مصنوعی چند-تأمین‌کننده (Multi-Provider LLM)
+// زنجیره‌ی تأمین:
+//   1) کلید OpenAI-سازگار (ZAI_API_KEY یا LLM_API_KEY) — تولید (api.z.ai پیش‌فرض)
+//   2) z-ai-web-dev-sdk (سندباکس توسعه — بدون نیاز به کلید)
+//   3) Pollinations بدون‌کلید (fallback نهایی)
+// هرگز کلید واقعی در کد ذخیره نمی‌شود؛ همه از Environment Variable می‌آید.
+// ============================================================
 
-const SYSTEM_LEGAL = `تو دستیار حقوقی شریف‌مند هستی — یک وکیل هوشمند فارسی‌زبان.
+const SYSTEM_LEGAL = `تو دستیار حقوقی دادبان هستی — یک دستیار هوشمند حقوقی فارسی‌زبان.
 به سوالات حقوقی کاربر به فارسی روان و طبیعی پاسخ بده؛ مختصر، دقیق و کاربردی (حداکثر ۸-۱۰ خط).
 در پاسخ‌ات حتماً به مواد قانونی مرتبط با موضوع استناد کن: شماره ماده و نام قانون را دقیق بنویس
 (مثلاً «ماده ۱۰۸۲ قانون مدنی» یا «ماده ۲ قانون روابط موجر و مستأجر ۱۳۷۶») و اگر آن ماده تبصره دارد،
@@ -11,22 +17,36 @@ const SYSTEM_LEGAL = `تو دستیار حقوقی شریف‌مند هستی �
 پاسخ را حتماً به زبان فارسی بنویس و از هر کاراکتر غیرفارسی (چینی، کره‌ای، ژاپنی و غیره) خودداری کن.
 اگر پاسخ دقیق نیاز به مطالعه اسناد/قوانین دارد، بگو برای نظر قطعی با وکیل مشورت کند.
 هیچ​وقت خودت را وکیل رسمی معرفی نکن و در پایان در یک جمله یادآوری کن: "این پاسخ جنبه اطلاع‌رسانی دارد و جایگزین مشاوره حقوقی رسمی نیست."`;
+
+export { SYSTEM_LEGAL };
+
 function sanitizePersian(text: string): string {
   return text
     .replace(
-      /[\u0400-\u04ff\u0500-\u052f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\u0400-\u04ff\u0590-\u05ff\u0370-\u03ff\u00c0-\u024f\uff00-\uffef]/g,
+      /[\u0400-\u04ff\u0500-\u052f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\u0590-\u05ff\u0370-\u03ff\u00c0-\u024f\uff00-\uffef]/g,
       "",
     )
     .replace(/[ \t]{2,}/g, " ")
     .trim();
 }
-async function post(base: string, body: unknown, key?: string, timeoutMs = 25000): Promise<string> {
+
+export type LlmMessage = { role: string; content: string };
+
+/** حذف پیام‌های تکراری/خالی و محدود کردن تعداد پیام‌ها برای جلوگیری از سوءاستفاده توکن. */
+function normalizeMessages(messages: LlmMessage[], maxMessages = 16): LlmMessage[] {
+  return messages
+    .filter((m) => m && typeof m.content === "string" && m.content.trim().length > 0)
+    .slice(-maxMessages)
+    .map((m) => ({ role: m.role === "assistant" ? "assistant" : m.role === "system" ? "system" : "user", content: m.content.slice(0, 8000) }));
+}
+
+async function postOpenAiCompatible(base: string, body: unknown, key: string, timeoutMs = 30_000): Promise<string> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(base, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...(key ? { Authorization: `Bearer ${key}` } : {}) },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify(body),
       signal: ctrl.signal,
     });
@@ -40,21 +60,80 @@ async function post(base: string, body: unknown, key?: string, timeoutMs = 25000
   }
 }
 
-export async function askLLM(messages: { role: string; content: string }[], maxTokens = 400): Promise<string | null> {
-  const key = process.env.LLM_API_KEY;
-  const base = process.env.LLM_BASE_URL ?? "https://api.groq.com/openai/v1";
-  const model = process.env.LLM_MODEL ?? "openai/gpt-oss-20b";
-  const all = [{ role: "system", content: SYSTEM_LEGAL }, ...messages];
-  if (key) {
-    try {
-      return sanitizePersian(await post(`${base.replace(/\/$/, "")}/chat/completions`, { model, messages: all, max_tokens: maxTokens }, key));
-    } catch {
-      /* fall through to keyless */
-    }
-  }
+/* ─── 1) تأمین‌کننده HTTP با کلید (تولید — Vercel) ─────────────────────── */
+
+function httpProvider(): { base: string; key: string; model: string } | null {
+  const key = process.env.ZAI_API_KEY || process.env.LLM_API_KEY;
+  if (!key) return null;
+  const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
+  const model = process.env.LLM_MODEL ?? "glm-4.6";
+  return { base: `${base}/chat/completions`, key, model };
+}
+
+async function viaHttp(messages: LlmMessage[], maxTokens: number): Promise<string | null> {
+  const provider = httpProvider();
+  if (!provider) return null;
   try {
-    return sanitizePersian(await post("https://text.pollinations.ai/", { messages: all, model: "openai", max_tokens: maxTokens, seed: 1 }));
+    return sanitizePersian(
+      await postOpenAiCompatible(
+        provider.base,
+        { model: provider.model, messages, max_tokens: maxTokens, temperature: 0.3 },
+        provider.key,
+      ),
+    );
   } catch {
     return null;
   }
+}
+
+/* ─── 2) SDK سندباکس (توسعه — بدون کلید) ──────────────────────────────── */
+
+async function viaSdk(messages: LlmMessage[], _maxTokens: number): Promise<string | null> {
+  try {
+    const mod = (await import("z-ai-web-dev-sdk")) as unknown as { default?: { create: () => Promise<ZaiClient> }; create?: () => Promise<ZaiClient> };
+    const createFn = mod.default?.create ?? mod.create;
+    if (!createFn) return null;
+    const zai = await createFn();
+    // طبق مستندات SDK، پیام system با نقش assistant ارسال می‌شود.
+    const mapped = messages.map((m, i) => (m.role === "system" && i === 0 ? { role: "assistant", content: m.content } : m));
+    const completion = await zai.chat.completions.create({
+      messages: mapped as never,
+      thinking: { type: "disabled" },
+    });
+    const text = completion?.choices?.[0]?.message?.content ?? "";
+    return text ? sanitizePersian(text) : null;
+  } catch {
+    return null;
+  }
+}
+
+interface ZaiClient {
+  chat: { completions: { create: (opts: unknown) => Promise<{ choices?: { message?: { content?: string } }[] }> } };
+}
+
+/* ─── 3) Pollinations بدون‌کلید (fallback نهایی) ──────────────────────── */
+
+async function viaKeyless(messages: LlmMessage[], maxTokens: number): Promise<string | null> {
+  try {
+    const res = await fetch("https://text.pollinations.ai/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages, model: "openai", max_tokens: maxTokens, seed: 1 }),
+      signal: AbortSignal.timeout(25_000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content ?? data?.output_text ?? data?.response ?? "";
+    return text ? sanitizePersian(String(text)) : null;
+  } catch {
+    return null;
+  }
+}
+
+/* ─── API عمومی ────────────────────────────────────────────────────────── */
+
+export async function askLLM(messages: LlmMessage[], maxTokens = 400, systemPrompt = SYSTEM_LEGAL): Promise<string | null> {
+  const all = normalizeMessages([{ role: "system", content: systemPrompt }, ...messages]);
+  // ترتیب امتحان: HTTP با کلید → SDK سندباکس → بدون‌کلید
+  return (await viaHttp(all, maxTokens)) ?? (await viaSdk(all, maxTokens)) ?? (await viaKeyless(all, maxTokens));
 }

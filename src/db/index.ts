@@ -8,6 +8,11 @@ const globalForDb = globalThis as typeof globalThis & {
 
 let noopWarned = false;
 
+/** فقط URLهای PostgreSQL واقعی پذیرفته می‌شوند؛ بقیه (file:، sqlite و…) یعنی بدون دیتابیس. */
+function isPostgresUrl(url: string | undefined): boolean {
+  return !!url && /^postgres(ql)?:\/\//i.test(url);
+}
+
 function createNoopDb(): any {
   // Chainable no-op that resolves every awaited query to [] — lets pages
   // render (with empty DB sections) when DATABASE_URL is not configured,
@@ -28,9 +33,9 @@ function createNoopDb(): any {
 
 function getPool(): Pool {
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
+  if (!isPostgresUrl(databaseUrl)) {
     throw new Error(
-      "DATABASE_URL is required. Add it to your environment variables " +
+      "DATABASE_URL (PostgreSQL) is required. Add it to your environment variables " +
         "(local: .env file — Vercel: Project Settings → Environment Variables) and redeploy.",
     );
   }
@@ -51,11 +56,11 @@ function getPool(): Pool {
 
 function getDb() {
   if (!globalForDb.__arenaNextJsDrizzleDb) {
-    if (!process.env.DATABASE_URL) {
+    if (!isPostgresUrl(process.env.DATABASE_URL)) {
       if (!noopWarned) {
         noopWarned = true;
         console.warn(
-          "[dadban] DATABASE_URL is not set — running in degraded mode (DB sections will be empty).",
+          "[dadban] DATABASE_URL (PostgreSQL) is not set — running in degraded mode (DB sections will be empty).",
         );
       }
       globalForDb.__arenaNextJsDrizzleDb = createNoopDb() as ReturnType<typeof drizzle>;

@@ -73,6 +73,26 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
     []
   );
 
+  /** ساخت اتصال WebRTC — قبل از effect ثبت socket تعریف شده تا hoisting درست باشد. */
+  const createPeerConnection = useCallback(() => {
+    const pc = new RTCPeerConnection({ iceServers });
+    peerConnectionRef.current = pc;
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socketRef.current?.emit("ice-candidate", { roomId, candidate: event.candidate });
+      }
+    };
+
+    pc.ontrack = (event) => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      }
+    };
+
+    return pc;
+  }, [roomId, iceServers]);
+
   // اتصال به signaling server
   useEffect(() => {
     const socket = io("/", {
@@ -139,25 +159,6 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
-
-  const createPeerConnection = useCallback(() => {
-    const pc = new RTCPeerConnection({ iceServers });
-    peerConnectionRef.current = pc;
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        socketRef.current?.emit("ice-candidate", { roomId, candidate: event.candidate });
-      }
-    };
-
-    pc.ontrack = (event) => {
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = event.streams[0];
-      }
-    };
-
-    return pc;
-  }, [roomId, iceServers]);
 
   const startCall = async () => {
     try {

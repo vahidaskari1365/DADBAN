@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * sharifmand — مرکز سئوی مرکزی (Central SEO Hub)
+ * dadban — مرکز سئوی مرکزی (Central SEO Hub)
  * ----------------------------------------------------------------------------
  * همه‌ی schema markup، structured data، و توابع کمکی سئو در این فایل متمرکز شده‌اند.
  *
@@ -71,7 +71,7 @@ export const organizationSchema = {
     addressRegion: "تهران",
   },
   sameAs: [
-    "https://github.com/vahidaskari1365/sharifmand",
+    "https://github.com/vahidaskari1365/DADBAN",
     SEO_BASE,
   ],
   contactPoint: [
@@ -285,6 +285,7 @@ ${SITE_NAME} پلتفرم هوشمند خدمات حقوقی ایران است �
 - مشاوره آنلاین حقوقی (متنی، صوتی، تصویری): ${SEO_BASE}/consultation
 - ثبت پرونده حقوقی: ${SEO_BASE}/case/new
 - تنظیم و بررسی قرارداد: ${SEO_BASE}/contracts
+- مرکز هوش مصنوعی حقوقی (تحلیل سند با عکس، جستجوی وب، استودیوی صدا): ${SEO_BASE}/ai
 - دستیار حقوقی هوش مصنوعی: ${SEO_BASE}/ai-assistant
 - خدمات ثبتی و اداری: ${SEO_BASE}/services
 

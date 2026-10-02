@@ -16,6 +16,16 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
     ],
   },
   {
+    title: "هوش مصنوعی",
+    links: [
+      { label: "مرکز هوش مصنوعی", href: "/ai" },
+      { label: "دستیار حقوقی", href: "/ai-assistant" },
+      { label: "تحلیل سند با عکس", href: "/ai#tools" },
+      { label: "جستجوی وب حقوقی", href: "/ai#tools" },
+      { label: "استودیوی صدا", href: "/ai#tools" },
+    ],
+  },
+  {
     title: "دانش حقوقی",
     links: [
       { label: "مقالات", href: "/knowledge" },
@@ -59,7 +69,7 @@ export function Footer() {
   return (
     <footer className="mt-20 border-t border-border bg-surface">
       <Container className="py-12">
-        <div className="grid gap-10 lg:grid-cols-[1.6fr_repeat(4,1fr)]">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_repeat(5,1fr)]">
           <div>
             <Link
               href="/"

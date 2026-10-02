@@ -3,7 +3,7 @@ import { Icon } from "@/components/icons";
 import { Container, Button } from "@/components/ui";
 
 /**
- * صفحه‌ی ۴۰۴ سفارشی — فارسی RTL با طراحی شریف‌مند.
+ * صفحه‌ی ۴۰۴ سفارشی — فارسی RTL با طراحی دادبان.
  */
 export default function NotFound() {
   return (

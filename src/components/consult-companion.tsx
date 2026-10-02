@@ -76,13 +76,15 @@ const QUICK_ACTIONS = [
   { label: "ثبت پرونده", query: "چطور پرونده حقوقی ثبت کنم؟" },
 ];
 
+const GREETING_OPENED_AT = Date.now(); // یک‌بار در زمان لود ماژول — خارج از رندر کامپوننت
+
 export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content: "سلام! 👋 من «مشاور همراه دادبان» هستم.\n\nهر سوال حقوقی داری بپرس، یا اگه می‌خوای کاری انجام بدی (وکیل پیدا کن، قرارداد بسازی، مشاوره بگیری) راهنماییت می‌کنم.\n\nچطور می‌تونم کمکت کنم؟",
-      timestamp: Date.now(),
+      timestamp: GREETING_OPENED_AT,
     },
   ]);
   const [input, setInput] = useState("");
@@ -102,11 +104,11 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
     }
   }, [messages, loading]);
 
-  // focus روی input هنگام باز شدن
+  // focus روی input هنگام باز شدن (فقط سیستم‌های خارجی را همگام می‌کند)
   useEffect(() => {
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 200);
-      setUnreadCount(0);
+      const t = setTimeout(() => inputRef.current?.focus(), 200);
+      return () => clearTimeout(t);
     }
   }, [open]);
 
@@ -181,7 +183,7 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
       {/* دکمه‌ی شناور (FAB) — در سمت چپ پایین، هماهنگ با پنجره‌ی چت */}
       {!open && !hideFab && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => { setOpen(true); setUnreadCount(0); }}
           aria-label="مشاور همراه"
           className="fixed bottom-24 left-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-lift)] transition-all hover:scale-105 active:scale-95 sm:bottom-6 sm:left-6"
         >

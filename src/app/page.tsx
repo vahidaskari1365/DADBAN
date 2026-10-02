@@ -119,6 +119,40 @@ export default async function HomePage() {
         </Container>
       </section>
 
+      {/* #3.5 — AI Hub banner: مرکز کامل ابزارهای هوش مصنوعی */}
+      <section className="mt-10">
+        <Container>
+          <Reveal>
+            <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-l from-primary-soft via-surface to-accent-soft p-6 sm:p-8">
+              <div aria-hidden className="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
+              <div className="relative flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
+                <div className="max-w-xl">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-bold text-accent">
+                    <Icon name="sparkles" className="h-3.5 w-3.5" /> جدید
+                  </span>
+                  <h3 className="mt-3 text-xl font-black text-foreground sm:text-2xl">
+                    مرکز هوش مصنوعی دادبان راه‌اندازی شد
+                  </h3>
+                  <p className="mt-2 text-sm leading-7 text-muted">
+                    سند حقوقی‌تان را عکس بگیرید و بفرستید، در منابع وب جستجو کنید یا با استودیوی صدا
+                    (متن به گفتار و گفتار به متن) کار کنید — همه با استناد به مواد قانونی.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-foreground-soft">
+                    <span className="rounded-lg border border-border bg-surface px-2.5 py-1">تحلیل سند با عکس</span>
+                    <span className="rounded-lg border border-border bg-surface px-2.5 py-1">جستجوی وب حقوقی</span>
+                    <span className="rounded-lg border border-border bg-surface px-2.5 py-1">متن به گفتار</span>
+                    <span className="rounded-lg border border-border bg-surface px-2.5 py-1">گفتار به متن</span>
+                  </div>
+                </div>
+                <Button href="/ai" size="lg" icon="sparkles" className="shrink-0">
+                  ورود به مرکز هوش مصنوعی
+                </Button>
+              </div>
+            </div>
+          </Reveal>
+        </Container>
+      </section>
+
       {/* Stats — real, DB-derived counters only (part of "rest") */}
       {realStats.length > 0 && (
         <Container>
