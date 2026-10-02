@@ -15,7 +15,7 @@ export default function NewArticlePage() {
     excerpt: "",
     content: "",
     readTime: "5",
-    author: "تیم تحریریه دادپیو",
+    author: "تیم تحریریه دادبان",
     authorRole: "پژوهشگر حقوق",
   });
   const [saving, setSaving] = useState(false);

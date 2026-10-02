@@ -3,9 +3,9 @@ import { getKeywordUniverse, getKeywordLengthDistribution } from "@/lib/keyword-
 import { Container } from "@/components/ui";
 
 export const metadata: Metadata = {
-  title: "Keyword Universe — استراتژی سئو دادپیو",
+  title: "Keyword Universe — استراتژی سئو دادبان",
   description:
-    "نقشه‌ی جامع کلمات کلیدی پلتفرم حقوقی دادپیو: ده‌ها هزار کلمه‌ی long-tail در حوزه‌ی وکالت، مشاوره حقوقی، قرارداد و دعاوی.",
+    "نقشه‌ی جامع کلمات کلیدی پلتفرم حقوقی دادبان: ده‌ها هزار کلمه‌ی long-tail در حوزه‌ی وکالت، مشاوره حقوقی، قرارداد و دعاوی.",
   alternates: { canonical: "/keywords" },
   robots: { index: false, follow: false }, // صفحه‌ی داخلی
 };
@@ -36,7 +36,7 @@ export default async function KeywordsPage({
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Keyword Universe</h1>
         <p className="mt-2 text-sm text-muted">
-          نقشه‌ی جامع کلمات کلیدی پلتفرم حقوقی دادپیو — {all.length.toLocaleString("fa-IR")} کلمه‌ی long-tail.
+          نقشه‌ی جامع کلمات کلیدی پلتفرم حقوقی دادبان — {all.length.toLocaleString("fa-IR")} کلمه‌ی long-tail.
         </p>
       </header>
 

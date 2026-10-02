@@ -70,7 +70,7 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "1080x1920",
         type: "image/jpeg",
         form_factor: "narrow",
-        label: "دادپیو روی موبایل",
+        label: "دادبان روی موبایل",
       },
       // Desktop / tablet (wide)
       {
@@ -78,7 +78,7 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "1920x1080",
         type: "image/jpeg",
         form_factor: "wide",
-        label: "صفحه اصلی دادپیو",
+        label: "صفحه اصلی دادبان",
       },
     ],
   };

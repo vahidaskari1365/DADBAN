@@ -1,5 +1,5 @@
 // ============================================================================
-// دادپیو — Enterprise Data Model (ERD → real Drizzle schema)
+// دادبان — Enterprise Data Model (ERD → real Drizzle schema)
 // ----------------------------------------------------------------------------
 // Implements the modular-monolith architecture as a real PostgreSQL schema.
 // Lives in a dedicated `core` schema namespace so it coexists with the live

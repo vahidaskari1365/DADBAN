@@ -9,11 +9,11 @@ import { OPEN_SOURCE_PROJECTS } from "@/data/ai-resources";
 export const metadata: Metadata = {
   title: "جعبه‌ابزار منبع‌باز هوش مصنوعی",
   description:
-    "یکپارچه‌سازی شش پروژه‌ی منبع‌باز هوش مصنوعی در دادپیو: کاتالوگ APIهای رایگان LLM، ابزارهای وب برای عامل‌ها، کتابخانه مهارت‌ها، آکادمی مهندسی AI، مسیریابی چندتأمین‌کننده و چک‌لیست امنیت عامل.",
+    "یکپارچه‌سازی شش پروژه‌ی منبع‌باز هوش مصنوعی در دادبان: کاتالوگ APIهای رایگان LLM، ابزارهای وب برای عامل‌ها، کتابخانه مهارت‌ها، آکادمی مهندسی AI، مسیریابی چندتأمین‌کننده و چک‌لیست امنیت عامل.",
   alternates: { canonical: "/ai/resources" },
   openGraph: {
     title: `جعبه‌ابزار منبع‌باز هوش مصنوعی | ${SITE_NAME}`,
-    description: "کاتالوگ زنده‌ی APIهای رایگان، ابزارهای وب عامل، مهارت‌ها، آکادمی AI و امنیت عامل — همه در دادپیو.",
+    description: "کاتالوگ زنده‌ی APIهای رایگان، ابزارهای وب عامل، مهارت‌ها، آکادمی AI و امنیت عامل — همه در دادبان.",
   },
 };
 
@@ -28,7 +28,7 @@ export default function AiResourcesPage() {
           <div className="py-12 sm:py-16 lg:py-20">
             <Badge tone="accent" icon="sparkles">شش پروژه‌ی منبع‌باز، یک جعبه‌ابزار</Badge>
             <h1 className="mt-4 max-w-3xl text-3xl font-black leading-[1.25] text-foreground sm:text-4xl lg:text-5xl">
-              جعبه‌ابزار <span className="text-primary">منبع‌باز</span> هوش مصنوعی دادپیو
+              جعبه‌ابزار <span className="text-primary">منبع‌باز</span> هوش مصنوعی دادبان
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-muted sm:text-lg sm:leading-9">
               کاتالوگ زنده‌ی APIهای رایگان، ابزارهای دسترسی وب برای عامل‌ها، کتابخانه‌ی مهارت‌ها، آکادمی آموزش و
@@ -47,7 +47,7 @@ export default function AiResourcesPage() {
         <Container>
           <SectionHeading
             eyebrow="منبع‌های همکار"
-            title="شش مخزن منبع‌باز، یکپارچه در دادپیو"
+            title="شش مخزن منبع‌باز، یکپارچه در دادبان"
             desc="هر مخزن یک لایه از پشته‌ی هوش مصنوعی را پوشش می‌دهد؛ همگی به‌صورت زنده و فارسی در همین صفحه قابل استفاده‌اند."
           />
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -104,7 +104,7 @@ export default function AiResourcesPage() {
               کاتالوگ APIهای رایگان از مخزن عمومی awesome-free-llm-apis استخراج شده و ممکن است شرایط هر تأمین‌کننده تغییر کند —
               پیش از استفاده‌ی تجاری، حتماً شرایط استفاده‌ی خود تأمین‌کننده را بخوانید. ابزارهای این صفحه خروجی اطلاع‌رسانی دارند و
               جایگزین مشاوره‌ی حقوقی رسمی نیستند؛ برای تصمیم‌های مهم با وکلای تأییدشده‌ی{" "}
-              <Link href="/lawyers" className="font-bold text-primary hover:underline">دادپیو</Link> مشورت کنید.
+              <Link href="/lawyers" className="font-bold text-primary hover:underline">دادبان</Link> مشورت کنید.
             </p>
           </div>
         </Container>

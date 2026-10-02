@@ -47,7 +47,7 @@ function getPool(): Pool {
       idleTimeoutMillis: 20_000,
     });
     pool.on("error", (err) => {
-      console.error("[dadpayo] idle db client error:", err);
+      console.error("[dadban] idle db client error:", err);
     });
     globalForDb.__arenaNextJsPostgresqlPool = pool;
   }
@@ -60,7 +60,7 @@ function getDb() {
       if (!noopWarned) {
         noopWarned = true;
         console.warn(
-          "[dadpayo] DATABASE_URL (PostgreSQL) is not set — running in degraded mode (DB sections will be empty).",
+          "[dadban] DATABASE_URL (PostgreSQL) is not set — running in degraded mode (DB sections will be empty).",
         );
       }
       globalForDb.__arenaNextJsDrizzleDb = createNoopDb() as ReturnType<typeof drizzle>;

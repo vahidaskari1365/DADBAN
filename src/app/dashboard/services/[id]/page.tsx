@@ -32,7 +32,7 @@ export default async function MyServiceRequest({ params }: { params: Promise<{ i
       db.select().from(serviceRequestDocs).where(eq(serviceRequestDocs.requestId, id)).orderBy(desc(serviceRequestDocs.createdAt)),
     ]);
   } catch (err) {
-    console.error("[dadpayo] service request detail query failed:", err);
+    console.error("[dadban] service request detail query failed:", err);
   }
 
   const visibleEvents = events.filter((e) => e.visibleToUser);

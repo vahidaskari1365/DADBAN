@@ -2,25 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Icon } from "./icons";
+import { Button } from "./ui";
 import { HeroScene } from "./hero-scene";
+import { LEGAL_TOPICS } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
-import type { IconKey } from "@/lib/data";
-
-/** کارت‌های دسترسی سریع روی هیرو — ۷ مسیر اصلی خدمات دادپیو */
-const QUICK_LINKS: { label: string; icon: IconKey; href: string; accent?: boolean }[] = [
-  { label: "مشاوره متنی", icon: "chat", href: "/consultation?type=chat" },
-  { label: "مشاوره تلفنی", icon: "phone", href: "/consultation?type=voice" },
-  { label: "مشاوره تصویری", icon: "video", href: "/consultation?type=video" },
-  { label: "تنظیم قرارداد", icon: "document", href: "/contracts/builder" },
-  { label: "تنظیم دادخواست", icon: "gavel", href: "/legal-forms" },
-  { label: "بررسی پرونده", icon: "folder", href: "/case/new" },
-  { label: "پیدا کردن وکیل متخصص", icon: "search", href: "/lawyers", accent: true },
-];
 
 export function HomeHero() {
   const router = useRouter();
+  const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -28,123 +18,165 @@ export function HomeHero() {
   }, []);
 
   const go = () => {
-    const q = query.trim();
-    // جستجوی هوشمند → ویزارد ثبت پرونده؛ متن به‌عنوان q پاس داده می‌شود
-    router.push(q ? `/case/new?q=${encodeURIComponent(q)}` : "/case/new");
+    if (query.trim()) {
+      router.push(`/ai-assistant?q=${encodeURIComponent(query.trim())}`);
+      return;
+    }
+    if (selected) {
+      // انتخاب موضوع → شروع مسیر با همان موضوع در موتور تصمیم‌گیری
+      router.push(`/?topic=${encodeURIComponent(selected)}#quickstart`);
+      return;
+    }
+    router.push("/#quickstart");
   };
 
   return (
-    <section className="relative isolate overflow-hidden">
+    <section className="relative isolate flex min-h-[90vh] items-center overflow-hidden pb-16 pt-12 sm:min-h-[88vh]">
       <HeroScene />
 
-      <div className="relative z-10 mx-auto w-full max-w-5xl px-4 pb-16 pt-14 text-center sm:px-6 sm:pt-20 lg:pb-20 lg:pt-24">
-        {/* نشان اعتماد */}
-        <span className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-[rgba(213,168,76,.45)] bg-[rgba(213,168,76,.12)] px-3.5 py-1.5 text-xs font-semibold text-[color:var(--gold)] backdrop-blur">
-          <Icon name="badge" className="h-4 w-4" />
-          پلتفرم حقوقی دادپیو — وکلای پایه یک دادگستری، تأییدشده
+      <div className="relative z-10 mx-auto w-full max-w-3xl px-4 text-center sm:px-6">
+        <span className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3.5 py-1.5 text-xs font-medium text-foreground-soft backdrop-blur">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+          </span>
+          وکیل پایه یک دادگستری با پروانه راستی‌آزمایی‌شده
         </span>
 
-        {/* تیتر اصلی */}
         <h1
-          className="animate-fade-up mt-6 text-balance text-3xl font-black leading-[1.25] tracking-tight text-white sm:text-5xl sm:leading-[1.2]"
+          className="animate-fade-up mt-6 text-balance text-4xl font-extrabold leading-[1.18] tracking-tight text-foreground sm:text-5xl md:text-6xl"
           style={{ animationDelay: "0.08s" }}
         >
-          مشکل حقوقی خود را{" "}
+          مشکل{" "}
           <span className="relative inline-block">
-            <span className="bg-gradient-to-l from-[#e6c26f] via-[#d5a84c] to-[#e6c26f] bg-clip-text text-transparent">
-              توضیح دهید
+            <span className="bg-gradient-to-l from-primary via-accent to-primary bg-clip-text text-transparent">
+              حقوقی‌تان
             </span>
             <svg
-              className="absolute -bottom-2 right-0 h-3 w-full text-[color:var(--gold)]/60"
+              className="absolute -bottom-2 right-0 h-3 w-full text-accent/50"
               viewBox="0 0 200 12"
               preserveAspectRatio="none"
               fill="none"
-              aria-hidden
             >
               <path d="M2 9C40 3 160 3 198 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
             </svg>
-          </span>
+          </span>{" "}
+          چیست؟
         </h1>
 
-        {/* زیرتیتر */}
         <p
-          className="animate-fade-up mx-auto mt-5 max-w-2xl text-sm leading-8 text-white/75 sm:text-base"
+          className="animate-fade-up mx-auto mt-6 max-w-xl text-base leading-8 text-muted sm:text-lg"
           style={{ animationDelay: "0.16s" }}
         >
-          با کمک هوش مصنوعی، مشکل خود را در چند دقیقه توضیح دهید تا به شما مشاوره داده شود و
-          بهترین وکیل به شما معرفی گردد.
+          در چند سؤال کوتاه، مسیر مطمئن برایت را پیدا می‌کنیم — از راهنمایی رایگان تا وکیل متخصص.
+          بدون هزینه پنهان، بدون موظف شدن به ثبت‌نام.
         </p>
 
-        {/* باکس جستجوی بزرگ سفید */}
-        <form
-          className="animate-fade-up mx-auto mt-8 flex max-w-2xl items-center gap-1.5 rounded-2xl bg-white p-2 shadow-[0_20px_50px_-12px_rgba(6,12,27,.6)] sm:gap-2 sm:p-2.5"
-          style={{ animationDelay: "0.22s" }}
-          onSubmit={(e) => {
-            e.preventDefault();
-            go();
-          }}
-          role="search"
+        {/* Primary decision CTAs */}
+        <div
+          className="animate-fade-up mt-7 flex flex-wrap items-center justify-center gap-3"
+          style={{ animationDelay: "0.2s" }}
         >
-          <span className="pr-2 text-muted-soft" aria-hidden>
-            <Icon name="search" className="h-5 w-5" />
-          </span>
-          <label htmlFor="hero-search" className="sr-only">
-            توضیح مشکل حقوقی
-          </label>
-          <input
-            id="hero-search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="مثال: اختلاف ملکی، قرارداد پیش‌فروش یا مشاوره حقوقی..."
-            className="h-11 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-soft sm:text-[15px]"
-          />
-          <button
-            type="submit"
-            className="btn-gold inline-flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl px-4 text-sm font-bold transition-all duration-200 hover:shadow-[0_8px_22px_-6px_rgba(213,168,76,.7)] active:scale-[.97] sm:px-6"
-          >
-            <Icon name="sparkles" className="h-4 w-4" />
-            جستجوی هوشمند
-          </button>
-        </form>
-
-        {/* کمک فوری */}
-        <div className="animate-fade-up mt-4 flex justify-center" style={{ animationDelay: "0.28s" }}>
-          <Link
-            href="/support"
-            className="btn-urgent inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl px-5 text-sm font-bold transition-all duration-200 hover:brightness-110 active:scale-[.97]"
-          >
-            <Icon name="bolt" className="h-4 w-4" />
-            کمک فوری
-          </Link>
+          <Button href="/#quickstart" size="lg" icon="arrow" className="shadow-[var(--shadow-lift)]">
+            شروع مسیر من
+          </Button>
+          <Button href="/lawyers" size="lg" variant="outline" icon="search">
+            مستقیماً وکیل پیدا می‌کنم
+          </Button>
         </div>
 
-        {/* ردیف دسترسی سریع — ۷ کارت شیشه‌ای */}
-        <nav
-          aria-label="دسترسی سریع به خدمات"
-          className="animate-fade-up mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-2.5 sm:grid-cols-4"
-          style={{ animationDelay: "0.34s" }}
+        {/* The main question box */}
+        <div
+          className="animate-fade-up mx-auto mt-9 max-w-2xl rounded-3xl border border-border bg-surface/85 p-5 shadow-[var(--shadow-lift)] backdrop-blur-md sm:p-6"
+          style={{ animationDelay: "0.24s" }}
         >
-          {QUICK_LINKS.map((l) => (
-            <Link
-              key={l.label}
-              href={l.href}
-              className={`group flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-2xl border px-2 py-4 text-center backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--gold)] ${
-                l.accent
-                  ? "border-[rgba(213,168,76,.5)] bg-[rgba(213,168,76,.12)] hover:bg-[rgba(213,168,76,.2)] sm:col-span-2"
-                  : "border-white/15 bg-white/[0.07] hover:border-white/25 hover:bg-white/[0.12]"
-              }`}
-            >
-              <span
-                className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110 ${
-                  l.accent ? "bg-[rgba(213,168,76,.22)] text-[color:var(--gold)]" : "bg-white/10 text-[color:var(--gold)]"
-                }`}
+          <label htmlFor="hero-search" className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
+            <Icon name="sparkles" className="h-5 w-5 text-accent" />
+            برای چه موضوعی به کمک حقوقی نیاز دارید؟
+          </label>
+
+          <div className="flex items-center gap-2 rounded-2xl border border-border-strong bg-background p-1.5 transition-colors focus-within:border-primary">
+            <span className="pr-2 text-muted-soft">
+              <Icon name="search" className="h-5 w-5" />
+            </span>
+            <input
+              id="hero-search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && go()}
+              placeholder="مثلاً: مستأجرم سه ماه اجاره نداده، چه کنم؟"
+              className="h-11 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-soft"
+            />
+            <Button onClick={go} size="sm" icon="chat" className="h-11">
+              بپرس
+            </Button>
+          </div>
+
+          <div className="mt-4">
+            <p className="mb-2 text-xs font-medium text-muted">یا یک موضوع را انتخاب کنید:</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => router.push("/ai-assistant")}
+                className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent-soft px-3 py-1.5 text-xs font-bold text-accent transition-all duration-200 cursor-pointer hover:border-accent/60 hover:bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] hover:shadow-sm"
               >
-                <Icon name={l.icon} className="h-5 w-5" />
-              </span>
-              <span className="text-xs font-bold leading-5 text-white/90">{l.label}</span>
-            </Link>
+                <Icon name="sparkles" className="h-3.5 w-3.5" />
+                دستیار حقوقی
+              </button>
+              {LEGAL_TOPICS.map((t) => {
+                const active = selected === t.label;
+                return (
+                  <button
+                    key={t.label}
+                    type="button"
+                    title={t.hint}
+                    onClick={() => {
+                      setSelected(active ? null : t.label);
+                      setQuery("");
+                    }}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 cursor-pointer ${
+                      active
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-surface text-foreground-soft hover:border-primary/40 hover:bg-primary-soft hover:text-primary"
+                    }`}
+                  >
+                    <Icon name={t.icon} className="h-3.5 w-3.5" />
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {selected && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl bg-primary-soft px-4 py-3 animate-fade-up">
+              <p className="text-sm text-foreground">
+                موضوع انتخاب‌شده: <span className="font-bold text-primary">{selected}</span>
+              </p>
+              <Button onClick={go} size="sm" icon="arrow" className="mr-auto">
+                شروع مسیر با همین موضوع
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Trust row — only claims the product actually backs today */}
+        <div
+          className="animate-fade-up mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted"
+          style={{ animationDelay: "0.32s" }}
+        >
+          {[
+            { icon: "badge", text: "احراز هویت وکلا" },
+            { icon: "lock", text: "محرمانگی اطلاعات" },
+            { icon: "shield", text: "بازگشت وجه طبق سیاست شفاف" },
+            { icon: "balance", text: "تعرفه شفاف پیش از تصمیم" },
+          ].map((t) => (
+            <span key={t.text} className="inline-flex items-center gap-1.5">
+              <Icon name={t.icon as "badge"} className="h-4 w-4 text-accent" />
+              {t.text}
+            </span>
           ))}
-        </nav>
+        </div>
       </div>
     </section>
   );

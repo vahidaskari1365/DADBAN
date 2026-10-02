@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/user-auth";
 import { isOperative } from "@/lib/managed-services";
 import ManagedOperations from "@/components/managed-ops";
 
-export const metadata: Metadata = { title: "پنل عملیات — خدمات و پیگیری‌ها — دادپیو" };
+export const metadata: Metadata = { title: "پنل عملیات — خدمات و پیگیری‌ها — دادبان" };
 export const dynamic = "force-dynamic";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -27,7 +27,7 @@ export default async function ManagePage() {
           <span className="inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
             خدمات و پیگیری‌ها
           </span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-foreground">پنل عملیات دادپیو</h1>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-foreground">پنل عملیات دادبان</h1>
           <p className="mt-2 text-sm text-muted">
             مدیریت درخواست‌های خدمات پیگیری و انجام امور — واگذاری، پیش‌فاکتور، پرداخت و تحویل نتیجه.
           </p>

@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={`${fieldCls} mt-2`}
-                  placeholder="admin@dadpay.io"
+                  placeholder="admin@dadban.ir"
                   required
                 />
               </label>

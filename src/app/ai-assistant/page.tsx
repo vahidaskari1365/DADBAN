@@ -311,13 +311,13 @@ function AIAssistantContent() {
         <Container>
           <div className="mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-              <Icon name="sparkles" className="h-4 w-4" /> دستیار هوش مصنوعی حقوقی دادپیو
+              <Icon name="sparkles" className="h-4 w-4" /> دستیار هوش مصنوعی حقوقی دادبان
             </span>
             <h1 className="mt-4 text-2xl font-extrabold text-foreground sm:text-3xl">
               سؤال حقوقی‌تان را بپرسید یا قراردادتان را تحلیل کنید
             </h1>
             <p className="mt-3 text-sm leading-7 text-muted">
-              دستیار دادپیو موضوع را تشخیص می‌دهد، مراحل و مدارک را توضیح می‌دهد و با استناد به
+              دستیار دادبان موضوع را تشخیص می‌دهد، مراحل و مدارک را توضیح می‌دهد و با استناد به
               مواد و تبصره‌های قانونی مرتبط، شما را به وکیل متخصص وصل می‌کند. هوشمند، سریع و محرمانه.
             </p>
           </div>

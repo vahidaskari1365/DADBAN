@@ -87,7 +87,7 @@ export function nextBestAction(req: Pick<ServiceRequest, "status">): { label: st
       return { label: "پیش‌نویس را تکمیل و ثبت کنید", cta: "ادامه ثبت" };
     case "SUBMITTED":
     case "REVIEWING":
-      return { label: "دادپیو در حال بررسی درخواست شماست", cta: "پیگیری" };
+      return { label: "دادبان در حال بررسی درخواست شماست", cta: "پیگیری" };
     case "AWAITING_DOCUMENTS":
       return { label: "مدارک درخواستی را بارگذاری کنید", cta: "بارگذاری مدارک" };
     case "QUOTED":

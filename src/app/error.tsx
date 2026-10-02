@@ -15,7 +15,7 @@ export default function ErrorPage({
 }) {
   useEffect(() => {
     // Log server-side so runtime errors stay observable in production.
-    console.error("[dadpayo] page error:", error);
+    console.error("[dadban] page error:", error);
   }, [error]);
 
   return (

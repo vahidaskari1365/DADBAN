@@ -68,7 +68,7 @@ export default async function AdminPage() {
     <>
       <PageHero
         badge="Admin · پنل مدیریت"
-        title="داشبورد مدیریت دادپیو"
+        title="داشبورد مدیریت دادبان"
         desc="مدیریت محتوا، داده‌های سایت و آمار بازدید — با ورود امن مدیر."
         breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت" }]}
       >
@@ -132,11 +132,6 @@ export default async function AdminPage() {
                 { label: "مدیریت پرونده‌ها", href: "/admin/cases", icon: "folder" as const },
                 { label: "مدیریت مشاوره‌ها", href: "/admin/consultations", icon: "calendar" as const },
                 { label: "مدیریت تیکت‌ها", href: "/admin/tickets", icon: "mail" as const },
-                { label: "مالی، کمیسیون و تسویه", href: "/admin/finance", icon: "money" as const },
-                { label: "کاربران و وکلا", href: "/admin/users", icon: "user" as const },
-                { label: "تطبیق هوشمند AI", href: "/admin/matching", icon: "sparkles" as const },
-                { label: "تأمین‌کنندگان اعتبار", href: "/admin/providers", icon: "landmark" as const },
-                { label: "تنظیمات پلتفرم", href: "/admin/settings", icon: "lock" as const },
                 { label: "بازگشت به سایت", href: "/", icon: "home" as const },
               ].map((m) => (
                 <Link key={m.label + m.href} href={m.href}>

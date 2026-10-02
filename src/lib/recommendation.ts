@@ -108,7 +108,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     };
     alternative = {
       title: "ثبت پرونده و معرفی وکیل",
-      desc: "پرونده را ثبت کنید تا کارشناسان دادپیو، وکیل مناسب را معرفی کنند.",
+      desc: "پرونده را ثبت کنید تا کارشناسان دادبان، وکیل مناسب را معرفی کنند.",
       href: "/case/new",
       icon: "folder",
     };

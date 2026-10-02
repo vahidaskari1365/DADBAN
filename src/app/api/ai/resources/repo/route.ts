@@ -8,12 +8,12 @@ export const dynamic = "force-dynamic";
  * ابزار «تحلیل مخزن گیت‌هاب» — الهام از Agent-Reach
  * متادیتای مخزن عمومی (ستاره، فورک، زبان، مجوز) + گزیده‌ی README را برمی‌گرداند.
  * امنیت: فقط مخازن عمومی github.com؛ بدون هیچ توکن یا کلیدی.
- * استراتژی دو لایه (الهام از fallback زنجیره‌ی دادپیو):
+ * استراتژی دو لایه (الهام از fallback زنجیره‌ی دادبان):
  *   ۱) REST API رسمی گیت‌هاب — در Vercel و شبکه‌های باز کامل‌ترین داده را می‌دهد
  *   ۲) اسکرپ HTML صفحه‌ی عمومی + raw README — وقتی api.github.com مسدود باشد
  */
 
-const UA = "Mozilla/5.0 (compatible; DadpayoBot/1.0; +https://dadpay.io)";
+const UA = "Mozilla/5.0 (compatible; DadbanBot/1.0; +https://dadban.ir)";
 
 export interface RepoResult {
   fullName: string;

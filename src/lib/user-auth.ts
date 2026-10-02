@@ -24,7 +24,7 @@ function secretOrNull(): string | null {
 export function isUserAuthConfigured(): boolean {
   return secretOrNull() !== null;
 }
-const COOKIE = "dadpayo_user";
+const COOKIE = "dadban_user";
 const TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 export function hashPassword(password: string): string {

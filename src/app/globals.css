@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   دادپیو (Dadban) — Legal Platform Design System
+   دادبان (Dadban) — Legal Platform Design System
    UI/UX Pro Max "Legal / Trust & Authority" pattern
    Light: Navy (trust) + Gold (justice)
    Dark : Premium gray / charcoal (calm, focused)
@@ -21,27 +21,21 @@
   --muted: #5a6b82;
   --muted-soft: #7c8aa0;
 
-  /* Dadpayo palette — navy & gold */
-  --navy: #101b35;
-  --navy-2: #17264a;
-  --cyan: #7fd8ee;
-  --gold: #d5a84c;
-
-  --primary: #17264a;
-  --primary-hover: #101b35;
-  --primary-soft: #e9edf7;
+  --primary: #15365d;
+  --primary-hover: #0f2a48;
+  --primary-soft: #e8eef9;
   --primary-foreground: #ffffff;
 
-  --accent: #d5a84c;
-  --accent-hover: #c2933a;
-  --accent-soft: #faf3e0;
-  --accent-foreground: #231c08;
+  --accent: #b07d12;
+  --accent-hover: #946809;
+  --accent-soft: #f8efd8;
+  --accent-foreground: #2a2005;
 
-  --success: #16875a;
-  --danger: #c74a4a;
+  --success: #1d7a4d;
+  --danger: #b42318;
   --warning: #b54708;
 
-  --ring: #17264a;
+  --ring: #15365d;
   --shadow-color: 16 24 40;
 
   --radius: 16px;
@@ -60,15 +54,10 @@
   --muted: #9b9ba4;
   --muted-soft: #71717b;
 
-  --navy: #0d1526;
-  --navy-2: #14203c;
-  --cyan: #7fd8ee;
-  --gold: #e6b94e;
-
-  --primary: #d5a84c;
-  --primary-hover: #e6b94e;
-  --primary-soft: #262217;
-  --primary-foreground: #131108;
+  --primary: #7aa7f0;
+  --primary-hover: #93baF4;
+  --primary-soft: #23262f;
+  --primary-foreground: #0b0c10;
 
   --accent: #e6b94e;
   --accent-hover: #efca78;
@@ -79,7 +68,7 @@
   --danger: #f87171;
   --warning: #fbbf24;
 
-  --ring: #d5a84c;
+  --ring: #7aa7f0;
   --shadow-color: 0 0 0;
 }
 
@@ -94,11 +83,6 @@
   --color-foreground-soft: var(--foreground-soft);
   --color-muted: var(--muted);
   --color-muted-soft: var(--muted-soft);
-
-  --color-navy: var(--navy);
-  --color-navy-2: var(--navy-2);
-  --color-cyan: var(--cyan);
-  --color-gold: var(--gold);
 
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
@@ -448,74 +432,3 @@ input, select, textarea {
     min-height: 56px;
   }
 }
-
-
-/* ===== Dadpayo signature utilities ===== */
-
-/* Dark navy sidebar (پنل‌های دادپیو) */
-.dp-sidebar {
-  background: linear-gradient(180deg, #101b35 0%, #0b1328 100%);
-  color: #fff;
-}
-.dp-sidebar-item {
-  color: #cbd4e5;
-  transition: background .18s ease, color .18s ease;
-}
-.dp-sidebar-item:hover { background: rgba(127,216,238,.10); color: #fff; }
-.dp-sidebar-item[data-active="true"] {
-  background: rgba(127,216,238,.14);
-  color: #fff;
-  box-shadow: inset -3px 0 0 var(--gold);
-}
-.dp-logo-ring {
-  border: 1px solid rgba(213,168,76,.7);
-  color: var(--gold);
-  background: rgba(213,168,76,.08);
-}
-
-/* Gold CTA */
-.btn-gold {
-  background: linear-gradient(135deg, #e0b65c 0%, #d5a84c 55%, #c3973a 100%);
-  color: #1b2334;
-  box-shadow: 0 6px 18px -6px rgba(213,168,76,.55);
-}
-.btn-gold:hover { filter: brightness(1.06); }
-
-/* Urgent help (کمک فوری) */
-.btn-urgent {
-  background: linear-gradient(135deg, #d95b5b 0%, #c74a4a 100%);
-  color: #fff;
-  box-shadow: 0 6px 18px -6px rgba(199,74,74,.55);
-}
-
-/* Vertical timeline (روند پرونده) */
-.dp-timeline { position: relative; }
-.dp-timeline::before {
-  content: "";
-  position: absolute;
-  right: 11px;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
-  background: var(--surface-3);
-}
-.dp-timeline-dot {
-  position: absolute;
-  right: 3px;
-  top: 4px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--surface);
-  border: 3px solid #b9c5d8;
-}
-.dp-timeline-item.done .dp-timeline-dot { border-color: var(--success); background: var(--success); }
-.dp-timeline-item.doing .dp-timeline-dot { border-color: var(--gold); background: var(--gold); }
-
-/* Horizontal stepper (ثبت پرونده) */
-.dp-stepper-line { height: 2px; background: var(--surface-3); }
-.dp-stepper-line.done { background: var(--success); }
-
-/* Money emphasis */
-.dp-money { font-weight: 700; color: var(--navy-2); }
-.dark .dp-money { color: #e6b94e; }

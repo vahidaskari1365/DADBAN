@@ -99,12 +99,12 @@ export default function ContactPage() {
             <h3 className="font-bold text-foreground">راه‌های ارتباطی</h3>
             <div className="mt-3 space-y-3 text-sm">
               <div className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary"><Icon name="phone" className="h-4 w-4" /></span><div><p className="text-xs text-muted">تلفن پشتیبانی</p><p className="font-bold text-foreground" dir="ltr">۰۲۱-۹۱۰۰۲۰۳۰</p></div></div>
-              <div className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary"><Icon name="mail" className="h-4 w-4" /></span><div><p className="text-xs text-muted">ایمیل</p><p className="font-bold text-foreground" dir="ltr">support@dadpay.io</p></div></div>
+              <div className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary"><Icon name="mail" className="h-4 w-4" /></span><div><p className="text-xs text-muted">ایمیل</p><p className="font-bold text-foreground" dir="ltr">support@dadban.ir</p></div></div>
               <div className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary"><Icon name="clock" className="h-4 w-4" /></span><div><p className="text-xs text-muted">ساعات پاسخگویی</p><p className="font-bold text-foreground">۲۴ ساعته، ۷ روز هفته</p></div></div>
             </div>
           </Card>
           <Card hover={false} className="bg-primary-soft/50">
-            <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft"><Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" /> تمامی گفتگوها و اطلاعات شما در دادپیو محرمانه و رمزنگاری‌شده نگهداری می‌شوند.</p>
+            <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft"><Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" /> تمامی گفتگوها و اطلاعات شما در دادبان محرمانه و رمزنگاری‌شده نگهداری می‌شوند.</p>
           </Card>
         </aside>
       </Container>

@@ -13,7 +13,7 @@ import { getCurrentUser } from "@/lib/user-auth";
 import { StatusBadge, UrgencyBadge } from "@/components/managed";
 import { nextBestAction, faNumSafe } from "@/lib/managed-labels";
 
-export const metadata: Metadata = { title: "خدمات من — دادپیو" };
+export const metadata: Metadata = { title: "خدمات من — دادبان" };
 export const dynamic = "force-dynamic";
 
 export default async function MyServices() {

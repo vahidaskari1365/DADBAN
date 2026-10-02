@@ -1,1 +1,1 @@
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadpay.io";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban.ir";

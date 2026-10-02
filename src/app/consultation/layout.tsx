@@ -17,18 +17,18 @@ export const metadata: Metadata = {
     languages: { "fa-IR": "/consultation", "x-default": "/consultation" },
   },
   openGraph: {
-    title: "مشاوره حقوقی آنلاین | دادپیو",
+    title: "مشاوره حقوقی آنلاین | دادبان",
     description:
       "مشاوره حقوقی آنلاین با وکیل متخصص: متنی، صوتی و تصویری. رزرو نوبت با بهترین وکلای ایران.",
     url: "/consultation",
-    siteName: "دادپیو",
+    siteName: "دادبان",
     locale: "fa_IR",
     type: "website",
     images: [{ url: "/og-default.jpg", width: 1200, height: 630, alt: "مشاوره حقوقی آنلاین" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "مشاوره حقوقی آنلاین | دادپیو",
+    title: "مشاوره حقوقی آنلاین | دادبان",
     description: "مشاوره حقوقی آنلاین با وکیل متخصص: متنی، صوتی و تصویری.",
     images: ["/twitter-card.jpg"],
   },

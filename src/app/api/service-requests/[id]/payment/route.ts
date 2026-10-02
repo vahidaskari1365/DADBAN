@@ -42,7 +42,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const payment = await provider.createPayment({
     reference: reqRow.requestNumber,
     amount,
-    description: `خدمت دادپیو — درخواست ${reqRow.requestNumber}`,
+    description: `خدمت دادبان — درخواست ${reqRow.requestNumber}`,
     orderId: id,
     orderType: "service",
   });

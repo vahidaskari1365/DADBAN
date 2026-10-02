@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       excerpt: String(body.excerpt ?? "").trim(),
       content: String(body.content ?? ""),
       readTime: Number(body.readTime) || 5,
-      author: String(body.author ?? "تیم تحریریه دادپیو").trim(),
+      author: String(body.author ?? "تیم تحریریه دادبان").trim(),
       authorRole: String(body.authorRole ?? "پژوهشگر حقوق").trim(),
     };
     if (!row.slug || !row.title || !row.content) {

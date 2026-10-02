@@ -7,7 +7,7 @@ import { FAQ_ITEMS } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "پشتیبانی و مرکز راهنما",
-  description: "مرکز راهنما، سؤالات متداول و ثبت تیکت پشتیبانی دادپیو.",
+  description: "مرکز راهنما، سؤالات متداول و ثبت تیکت پشتیبانی دادبان.",
   alternates: { canonical: "/support" },
 };
 
@@ -27,7 +27,7 @@ export default function SupportPage() {
       <PageHero
         badge="پشتیبانی"
         title="چگونه می‌توانیم کمکتان کنیم؟"
-        desc="مرکز راهنما، سؤالات متداول و ثبت تیکت؛ تیم پشتیبانی دادپیو ۲۴ ساعته در خدمت شماست."
+        desc="مرکز راهنما، سؤالات متداول و ثبت تیکت؛ تیم پشتیبانی دادبان ۲۴ ساعته در خدمت شماست."
         breadcrumb={[{ label: "خانه", href: "/" }, { label: "پشتیبانی" }]}
       >
         <div className="flex flex-wrap gap-2">

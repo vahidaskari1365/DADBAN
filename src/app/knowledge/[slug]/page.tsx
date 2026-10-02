@@ -21,7 +21,7 @@ export async function generateMetadata({
     const rows = await db.select().from(articles).where(eq(articles.slug, slug)).limit(1);
     a = rows[0];
   } catch (err) {
-    console.error("[dadpayo] article metadata query failed:", err);
+    console.error("[dadban] article metadata query failed:", err);
   }
   if (!a) return { title: "مقاله یافت نشد" };
   return {
@@ -44,7 +44,7 @@ export default async function ArticlePage({
     const rows = await db.select().from(articles).where(eq(articles.slug, slug)).limit(1);
     a = rows[0];
   } catch (err) {
-    console.error("[dadpayo] article page query failed:", err);
+    console.error("[dadban] article page query failed:", err);
   }
   if (!a) notFound();
 
@@ -57,7 +57,7 @@ export default async function ArticlePage({
       .where(eq(articles.category, a.category))
       .then((r) => r.filter((x) => x.slug !== a.slug).slice(0, 3));
   } catch (err) {
-    console.error("[dadpayo] related articles query failed:", err);
+    console.error("[dadban] related articles query failed:", err);
   }
 
   const jsonLd = {
@@ -67,7 +67,7 @@ export default async function ArticlePage({
     description: a.excerpt,
     articleSection: a.category,
     author: { "@type": "Person", name: a.author, jobTitle: a.authorRole },
-    publisher: { "@type": "Organization", name: "دادپیو" },
+    publisher: { "@type": "Organization", name: "دادبان" },
     datePublished: a.publishedAt,
   };
 

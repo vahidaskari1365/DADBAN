@@ -14,8 +14,8 @@ import { NextResponse, type NextRequest } from "next/server";
  *  - کاربر بدون session معتبر نمی‌تونه به dashboard دسترسی پیدا کنه
  */
 
-const USER_COOKIE = "dadpayo_user";
-const ADMIN_COOKIE = "dadpayo_admin";
+const USER_COOKIE = "dadban_user";
+const ADMIN_COOKIE = "dadban_admin";
 
 export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

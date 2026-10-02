@@ -37,7 +37,7 @@ export default function LoginPage() {
   const fieldCls = "h-11 w-full rounded-xl border border-border-strong bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-primary";
   return (
     <>
-      <PageHero badge="ورود" title="به دادپیو خوش آمدید" desc="برای دسترسی به پرونده‌ها، مشاوره‌ها و اسناد خود وارد شوید." breadcrumb={[{ label: "خانه", href: "/" }, { label: "ورود" }]} />
+      <PageHero badge="ورود" title="به دادبان خوش آمدید" desc="برای دسترسی به پرونده‌ها، مشاوره‌ها و اسناد خود وارد شوید." breadcrumb={[{ label: "خانه", href: "/" }, { label: "ورود" }]} />
       <Container className="py-12">
         <div className="mx-auto max-w-md">
           <Card hover={false}>

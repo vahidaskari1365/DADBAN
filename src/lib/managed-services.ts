@@ -265,7 +265,7 @@ export async function getServiceBySlug(slug: string) {
     const [svc] = await db.select().from(managedServices).where(eq(managedServices.slug, slug)).limit(1);
     if (svc) return svc;
   } catch (err) {
-    console.error("[dadpayo] getServiceBySlug failed:", err);
+    console.error("[dadban] getServiceBySlug failed:", err);
   }
   const fallback = catalogServiceBySlug(slug);
   return fallback ? catalogToManaged(fallback) : null;

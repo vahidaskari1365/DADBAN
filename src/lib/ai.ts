@@ -1,5 +1,5 @@
 // ============================================================
-// دادپیو — کتابخانه‌ی مرکزی قابلیت‌های هوش مصنوعی (فقط سمت سرور)
+// دادبان — کتابخانه‌ی مرکزی قابلیت‌های هوش مصنوعی (فقط سمت سرور)
 // قابلیت‌ها: بینایی ماشین (VLM)، گفتار به متن (ASR)، متن به گفتار (TTS)،
 // جستجوی وب (web_search) — همه از طریق z-ai-web-dev-sdk
 // ============================================================
@@ -29,12 +29,12 @@ type ZaiInstance = {
   };
 };
 
-const globalForAi = globalThis as typeof globalThis & { __dadpayoZai?: Promise<ZaiInstance> };
+const globalForAi = globalThis as typeof globalThis & { __dadbanZai?: Promise<ZaiInstance> };
 
 /** نمونه‌ی Singleton از SDK — یک‌بار ساخته می‌شود و در کل عمر پروسه استفاده می‌شود. */
 export async function getZai(): Promise<ZaiInstance> {
-  if (!globalForAi.__dadpayoZai) {
-    globalForAi.__dadpayoZai = (async () => {
+  if (!globalForAi.__dadbanZai) {
+    globalForAi.__dadbanZai = (async () => {
       const mod = (await import("z-ai-web-dev-sdk")) as unknown as {
         default?: { create: () => Promise<ZaiInstance> };
         create?: () => Promise<ZaiInstance>;
@@ -43,11 +43,11 @@ export async function getZai(): Promise<ZaiInstance> {
       if (!createFn) throw new Error("z-ai-web-dev-sdk is unavailable");
       return createFn();
     })().catch((err) => {
-      globalForAi.__dadpayoZai = undefined;
+      globalForAi.__dadbanZai = undefined;
       throw err;
     });
   }
-  return globalForAi.__dadpayoZai;
+  return globalForAi.__dadbanZai;
 }
 
 /** آیا قابلیت‌های SDK در دسترس هستند؟ (برای نمایش/مخفی کردن UI) */

@@ -9,11 +9,11 @@ import type { IconKey } from "@/lib/data";
 export const metadata: Metadata = {
   title: "مرکز هوش مصنوعی حقوقی",
   description:
-    "ابزارهای هوش مصنوعی دادپیو: دستیار حقوقی هوشمند، تحلیل اسناد و قرارداد با عکس، جستجوی وب حقوقی و استودیوی صدا (متن به گفتار و گفتار به متن).",
+    "ابزارهای هوش مصنوعی دادبان: دستیار حقوقی هوشمند، تحلیل اسناد و قرارداد با عکس، جستجوی وب حقوقی و استودیوی صدا (متن به گفتار و گفتار به متن).",
   alternates: { canonical: "/ai" },
   openGraph: {
     title: `مرکز هوش مصنوعی حقوقی | ${SITE_NAME}`,
-    description: "تحلیل سند با عکس، جستجوی وب حقوقی، دستیار هوشمند و ابزارهای صوتی — همه در دادپیو.",
+    description: "تحلیل سند با عکس، جستجوی وب حقوقی، دستیار هوشمند و ابزارهای صوتی — همه در دادبان.",
   },
 };
 
@@ -53,11 +53,11 @@ export default function AiHubPage() {
             <div>
               <Badge tone="accent" icon="sparkles">هوش مصنوعی حقوقی نسل جدید</Badge>
               <h1 className="mt-4 text-3xl font-black leading-[1.25] text-foreground sm:text-4xl lg:text-5xl">
-                مرکز هوش مصنوعی <span className="text-primary">دادپیو</span>
+                مرکز هوش مصنوعی <span className="text-primary">دادبان</span>
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-8 text-muted sm:text-lg sm:leading-9">
                 سند حقوقی‌تان را عکس بگیرید و بفرستید، سؤال خود را بپرسید یا با صدا صحبت کنید —
-                هوش مصنوعی دادپیو با استناد به مواد قانونی، شما را راهنمایی می‌کند.
+                هوش مصنوعی دادبان با استناد به مواد قانونی، شما را راهنمایی می‌کند.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Button href="/ai-assistant" size="lg" icon="chat">شروع گفتگو با دستیار</Button>
@@ -68,7 +68,7 @@ export default function AiHubPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/ai-hero.jpg"
-                alt="ترازوی عدالت در هم‌آمیخته با هوش مصنوعی — نماد مرکز هوش مصنوعی دادپیو"
+                alt="ترازوی عدالت در هم‌آمیخته با هوش مصنوعی — نماد مرکز هوش مصنوعی دادبان"
                 className="w-full rounded-3xl border border-border shadow-[var(--shadow-lift)]"
                 loading="eager"
               />
@@ -132,7 +132,7 @@ export default function AiHubPage() {
                 </h3>
                 <p className="mt-1.5 max-w-2xl text-sm leading-7 text-muted">
                   کاتالوگ زنده‌ی ۱۱۸ مدل رایگان از ۱۶ تأمین‌کننده، خواندن صفحه وب و تحلیل مخزن گیت‌هاب،
-                  ۳۱ مهارت عامل، آکادمی مهندسی AI و تست سلامت دروازه‌ی مسیریابی دادپیو.
+                  ۳۱ مهارت عامل، آکادمی مهندسی AI و تست سلامت دروازه‌ی مسیریابی دادبان.
                 </p>
               </div>
               <span className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-primary">
@@ -163,8 +163,8 @@ export default function AiHubPage() {
           <div className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4">
             <Icon name="alert" className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
             <p className="text-sm leading-7 text-foreground-soft">
-              خروجی ابزارهای هوش مصنوعی دادپیو جنبه اطلاع‌رسانی و راهنمایی اولیه دارد و جایگزین مشاوره، وکالت یا نظر قطعی وکیل رسمی نیست.
-              برای تصمیم‌های مهم حقوقی، با وکلای تأییدشده‌ی <Link href="/lawyers" className="font-bold text-primary hover:underline">دادپیو</Link> مشورت کنید.
+              خروجی ابزارهای هوش مصنوعی دادبان جنبه اطلاع‌رسانی و راهنمایی اولیه دارد و جایگزین مشاوره، وکالت یا نظر قطعی وکیل رسمی نیست.
+              برای تصمیم‌های مهم حقوقی، با وکلای تأییدشده‌ی <Link href="/lawyers" className="font-bold text-primary hover:underline">دادبان</Link> مشورت کنید.
             </p>
           </div>
         </Container>
