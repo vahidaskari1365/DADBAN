@@ -100,11 +100,19 @@ async function postOpenAiCompatible(
   let text = "";
   try {
     const data = JSON.parse(raw) as {
-      choices?: { message?: { content?: string } }[];
+      choices?: { message?: { content?: string | null } }[];
       output_text?: string;
       response?: string;
     };
     text = data?.choices?.[0]?.message?.content ?? data?.output_text ?? data?.response ?? "";
+    // برخی گیت‌وی‌ها (مثل atria) پاسخ را دوباره-JSON برمی‌گردانند — یک بار باز کردن
+    if (typeof text === "string" && text.trim().startsWith("{")) {
+      try {
+        const inner = JSON.parse(text) as { choices?: { message?: { content?: string | null } }[] };
+        const innerContent = inner?.choices?.[0]?.message?.content;
+        if (typeof innerContent === "string") text = innerContent;
+      } catch { /* متن عادی بود */ }
+    }
   } catch {
     text = raw; // پاسخ متنی خام (مثل pollinations متن ساده برمی‌گرداند)
   }
@@ -135,9 +143,20 @@ function parseKeysJsonProviders(): Provider[] {
   }
 }
 
-/** 2-4) کلیدهای env — z.ai / gemini / openrouter / groq */
+/** 2-4) کلیدهای env — atria (اول زنجیره برای همه چت‌ها) / z.ai / gemini / openrouter / groq */
 function keyedEnvProviders(): Provider[] {
   const out: Provider[] = [];
+  // آتریا — گیت‌وی اصلی برای همه چت‌ها؛ مدل‌های گران‌تر فقط به‌عنوان پشتیبان مصرف می‌شوند
+  if (process.env.ATRIA_API_KEY) {
+    out.push({
+      id: "atria",
+      base: `${(process.env.ATRIA_BASE_URL ?? "https://api.atria-asi.ai/v1").replace(/\/$/, "")}/chat/completions`,
+      key: process.env.ATRIA_API_KEY,
+      model: process.env.ATRIA_MODEL ?? "Atria-Dawn-Preview",
+      timeoutMs: 25_000,
+      group: "keyed",
+    });
+  }
   const key = process.env.ZAI_API_KEY || process.env.LLM_API_KEY;
   if (key) {
     const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
@@ -252,8 +271,8 @@ async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: numbe
     p.id === "pollinations-post"
       ? { messages, model: "openai", max_tokens: maxTokens, seed: 1, referrer: "dadban" }
       : { model: p.model, messages, max_tokens: maxTokens, temperature: 0.3 };
-  // مدل‌های GLM-4.5+ تفکر زنجیره‌ای دارند؛ غیرفعال‌سازی برای پاسخ مستقیم و جلوگیری از هدررفت توکن
-  if (p.base.includes("api.z.ai") || p.base.includes("bigmodel.cn")) bodyObj.thinking = { type: "disabled" };
+  // مدل‌های GLM-4.5+ و آتریا تفکر زنجیره‌ای دارند؛ غیرفعال‌سازی برای پاسخ مستقیم و جلوگیری از هدررفت توکن
+  if (p.base.includes("api.z.ai") || p.base.includes("bigmodel.cn") || p.base.includes("atria-asi.ai")) bodyObj.thinking = { type: "disabled" };
   const body = bodyObj;
   const extra: Record<string, string> = {};
   if (p.id === "openrouter") {
