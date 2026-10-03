@@ -422,6 +422,8 @@ export const cases = pgTable("cases", {
   city: text("city").notNull(),
   stage: text("stage").notNull().default("ثبت اولیه"),
   budget: text("budget"),
+  /** درگاه پرداخت انتخابی موکل در صفحه /case/pay */
+  paymentGateway: text("payment_gateway"),
   contactName: text("contact_name").notNull(),
   contactPhone: text("contact_phone").notNull(),
   status: caseStatus("status").notNull().default("new"),

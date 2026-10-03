@@ -6,22 +6,16 @@ import { Button } from "./ui";
 import { Icon } from "./icons";
 import { LEGAL_TOPICS, ALL_PROVINCES, faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
-import { buildRecommendation, type HelpType, type Recommendation } from "@/lib/recommendation";
+import { buildFunnelOptions, saveFunnelSelections, type FunnelRecommendation, type RecommendationOption } from "@/lib/recommendation";
 import { trackEvent } from "@/lib/analytics";
 
 export const STAGES = ["هنوز اقدامی نکرده‌ام", "اظهارنامه/اخطار داده‌ام", "در دادگاه/دادسراست", "رأی صادر شده", "مرحله اجرا"];
-export const HELPS: { key: HelpType; label: string; icon: IconKey }[] = [
-  { key: "consult", label: "مشاوره و راهنمایی", icon: "chat" },
-  { key: "lawyer", label: "استخدام وکیل", icon: "user" },
-  { key: "doc", label: "تنظیم سند/قرارداد", icon: "document" },
-];
-const TOTAL = 4;
+const TOTAL = 3;
 
 const STEP_TITLES = [
   "موضوع پرونده شما چیست؟",
   "پرونده در چه مرحله‌ای است؟",
   "در کدام استان هستید؟",
-  "چه کمکی می‌خواهید؟",
 ];
 
 function OptionCard({
@@ -51,7 +45,7 @@ function OptionCard({
   );
 }
 
-export function ResultCard({ label, option, tone }: { label: string; option: Recommendation["primary"]; tone: "primary" | "neutral" | "accent" }) {
+export function ResultCard({ label, option, tone }: { label: string; option: RecommendationOption; tone: "primary" | "neutral" | "accent" }) {
   const styles = {
     primary: "border-primary bg-primary-soft/40 ring-1 ring-primary/30",
     neutral: "border-border",
@@ -79,12 +73,11 @@ function QuickStartInner() {
   const [topic, setTopic] = useState<string | null>(initialTopic && LEGAL_TOPICS.some((t) => t.label === initialTopic) ? initialTopic : null);
   const [stage, setStage] = useState<string | null>(null);
   const [province, setProvince] = useState<string | null>(null);
-  const [help, setHelp] = useState<HelpType | null>(null);
   const [started, setStarted] = useState(false);
   const [done, setDone] = useState(false);
 
   const canNext =
-    step === 0 ? topic !== null : step === 1 ? stage !== null : step === 2 ? province !== null : help !== null;
+    step === 0 ? topic !== null : step === 1 ? stage !== null : province !== null;
 
   const goNext = () => {
     if (!started) {
@@ -94,6 +87,8 @@ function QuickStartInner() {
     if (step < TOTAL - 1) {
       setStep((s) => s + 1);
     } else {
+      // پایان فانل — انتخاب‌ها ذخیره می‌شود تا فرم «ثبت پرونده» خودکار پر شود
+      if (topic && stage && province) saveFunnelSelections({ topic, stage, province });
       trackEvent("quickstart_completed");
       setDone(true);
     }
@@ -104,14 +99,13 @@ function QuickStartInner() {
     setTopic(null);
     setStage(null);
     setProvince(null);
-    setHelp(null);
     setDone(false);
     setStarted(false);
   };
 
-  const rec: Recommendation | null =
-    done && topic && stage && province && help
-      ? buildRecommendation({ topic, stage, city: province, help })
+  const rec: FunnelRecommendation | null =
+    done && topic && stage && province
+      ? buildFunnelOptions({ topic, stage, city: province })
       : null;
 
   return (
@@ -125,11 +119,11 @@ function QuickStartInner() {
             </span>
             <h3 className="mt-5 text-2xl font-bold leading-snug">مسیر مناسب شما را مشخص می‌کنیم</h3>
             <p className="mt-3 text-sm leading-7 text-white/80">
-              به چند سؤال کوتاه پاسخ دهید؛ یک پیشنهاد اولیهٔ شفاف با دلیل، یک گزینه جایگزین و یک
-              مسیر رایگان دریافت می‌کنید.
+              به چند سؤال کوتاه پاسخ دهید؛ سه مسیر پیشنهادی شفاف با دلیل دریافت می‌کنید و
+              انتخاب‌هایتان در فرم بعدی خودکار پر می‌شود.
             </p>
             <ul className="mt-5 space-y-2 text-xs text-white/75">
-              {["پیشنهاد اولیه با دلیل روشن", "گزینه جایگزین", "مسیر بدون هزینه"].map((t) => (
+              {["سه مسیر پیشنهادی با دلیل روشن", "انتخاب‌های شما ذخیره می‌شود", "بدون پر کردن مجدد فرم"].map((t) => (
                 <li key={t} className="flex items-center gap-2">
                   <Icon name="check" className="h-3.5 w-3.5 text-accent" />
                   {t}
@@ -203,14 +197,17 @@ function QuickStartInner() {
                         onChange={(e) => {
                           const v = e.target.value;
                           setProvince(v || null);
-                          // انتخاب استان → رفتن خودکار به مرحله بعد
+                          // انتخاب استان → پایان فانل و نمایش سه گزینه
+                          // (ذخیره مستقیم با v — state در همان رویداد هنوز به‌روز نشده)
                           if (v) {
                             try {
                               window.localStorage.setItem("dadban_province", v);
                             } catch {
                               /* حافظه محلی در دسترس نیست */
                             }
-                            goNext();
+                            if (topic && stage) saveFunnelSelections({ topic, stage, province: v });
+                            trackEvent("quickstart_completed");
+                            setDone(true);
                           }
                         }}
                         aria-label="انتخاب استان"
@@ -232,14 +229,6 @@ function QuickStartInner() {
                     <p className="mt-2 text-[11px] text-muted">
                       همه ۳۱ استان ایران در فهرست است — استان محل سکونت یا اقامت فعلی خود را انتخاب کنید.
                     </p>
-                  </div>
-                )}
-
-                {step === 3 && (
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    {HELPS.map((h) => (
-                      <OptionCard key={h.key} label={h.label} icon={h.icon} active={help === h.key} onClick={() => setHelp(h.key)} big />
-                    ))}
                   </div>
                 )}
               </div>
@@ -278,12 +267,10 @@ function QuickStartInner() {
                 </ul>
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <ResultCard label="پیشنهاد اصلی" option={rec.primary} tone="primary" />
-                <ResultCard label="جایگزین" option={rec.alternative} tone="neutral" />
-              </div>
-              <div className="mt-3">
-                <ResultCard label="مسیر رایگان" option={rec.free} tone="accent" />
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                {rec.options.map((o, i) => (
+                  <ResultCard key={o.key} label={`گزینه ${faNum(i + 1)}`} option={o} tone={i === 0 ? "primary" : i === 1 ? "neutral" : "accent"} />
+                ))}
               </div>
 
               <button

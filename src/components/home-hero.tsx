@@ -5,28 +5,26 @@ import { useRouter } from "next/navigation";
 import { Icon } from "./icons";
 import { Button } from "./ui";
 import { HeroScene } from "./hero-scene";
-import { LEGAL_TOPICS, ALL_PROVINCES, type IconKey } from "@/lib/data";
+import { LEGAL_TOPICS, ALL_PROVINCES, faNum, type IconKey } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
-import { buildRecommendation, type HelpType } from "@/lib/recommendation";
-import { STAGES, HELPS, ResultCard } from "./quick-start";
+import { buildFunnelOptions, saveFunnelSelections, type FunnelRecommendation } from "@/lib/recommendation";
+import { STAGES, ResultCard } from "./quick-start";
 
 /* فانل درجایی هیرو — پس از انتخاب موضوع، مراحل بعدی همین‌جا ادامه می‌یابد (بدون پرش به پایین صفحه) */
 const FSTEP_TITLES = [
   "",
   "پرونده در چه مرحله‌ای است؟",
   "در کدام استان هستید؟",
-  "چه کمکی می‌خواهید؟",
 ];
-const FUNNEL_TOTAL = 3; // مرحله/استان/کمک — انتخاب موضوع گام صفر است؛ گام «توضیح اختیاری» طبق درخواست کاربر حذف شد
+const FUNNEL_TOTAL = 2; // مرحله/استان — انتخاب موضوع گام صفر است؛ پس از استان، سه گزینه نهایی نمایش داده می‌شود
 
 export function HomeHero() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [fstep, setFstep] = useState(0); // 0=انتخاب موضوع، 1..3 مراحل، 4=پیشنهاد
+  const [fstep, setFstep] = useState(0); // 0=انتخاب موضوع، 1..2 مراحل، 3=پیشنهاد سه‌گزینه‌ای
   const [topic, setTopic] = useState<string | null>(null);
   const [stage, setStage] = useState<string | null>(null);
   const [province, setProvince] = useState<string | null>(null);
-  const [help, setHelp] = useState<HelpType | null>(null);
   const [started, setStarted] = useState(false);
 
   useEffect(() => {
@@ -52,14 +50,7 @@ export function HomeHero() {
     setTopic(null);
     setStage(null);
     setProvince(null);
-    setHelp(null);
     setStarted(false);
-  };
-
-  const finish = (h: HelpType) => {
-    setHelp(h);
-    setFstep(4);
-    trackEvent("quickstart_completed");
   };
 
   const back = () => {
@@ -72,9 +63,9 @@ export function HomeHero() {
     if (q) router.push(`/ai-assistant?q=${encodeURIComponent(q)}`);
   };
 
-  const rec =
-    fstep === 4 && topic && stage && province && help
-      ? buildRecommendation({ topic, stage, city: province, help })
+  const rec: FunnelRecommendation | null =
+    fstep === 3 && topic && stage && province
+      ? buildFunnelOptions({ topic, stage, city: province })
       : null;
 
   return (
@@ -208,14 +199,14 @@ export function HomeHero() {
                     <span
                       key={i}
                       className={`h-1.5 w-6 rounded-full transition-all duration-300 ${
-                        fstep === 4 || i < fstep ? "bg-accent" : "bg-border"
+                        fstep === 3 || i < fstep ? "bg-accent" : "bg-border"
                       }`}
                     />
                   ))}
                 </div>
               </div>
 
-              {fstep <= 3 && (
+              {fstep <= 2 && (
                 <h4 className="mt-4 text-base font-bold text-foreground">{FSTEP_TITLES[fstep]}</h4>
               )}
 
@@ -256,6 +247,9 @@ export function HomeHero() {
                             } catch {
                               /* حافظه محلی در دسترس نیست */
                             }
+                            // پایان فانل — ذخیره انتخاب‌ها و نمایش سه گزینه
+                            saveFunnelSelections({ topic: topic ?? "", stage: stage ?? "", province: v });
+                            trackEvent("quickstart_completed");
                             setFstep(3);
                           }
                         }}
@@ -278,23 +272,7 @@ export function HomeHero() {
                   </div>
                 )}
 
-                {fstep === 3 && (
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    {HELPS.map((h) => (
-                      <button
-                        key={h.key}
-                        type="button"
-                        onClick={() => finish(h.key)}
-                        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-border px-4 py-5 text-center text-sm font-medium text-foreground-soft transition-all hover:border-primary/40 hover:bg-primary-soft hover:text-primary"
-                      >
-                        <Icon name={h.icon as IconKey} className="h-6 w-6" />
-                        {h.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {fstep === 4 && rec && (
+                {fstep === 3 && rec && (
                   <div className="animate-fade-up">
                     <div className="flex items-center gap-2">
                       <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-success/15 text-success">
@@ -311,12 +289,10 @@ export function HomeHero() {
                         </li>
                       ))}
                     </ul>
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      <ResultCard label="پیشنهاد اصلی" option={rec.primary} tone="primary" />
-                      <ResultCard label="جایگزین" option={rec.alternative} tone="neutral" />
-                    </div>
-                    <div className="mt-3">
-                      <ResultCard label="مسیر رایگان" option={rec.free} tone="accent" />
+                    <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                      {rec.options.map((o, i) => (
+                        <ResultCard key={o.key} label={`گزینه ${faNum(i + 1)}`} option={o} tone={i === 0 ? "primary" : i === 1 ? "neutral" : "accent"} />
+                      ))}
                     </div>
                     <button
                       type="button"
@@ -329,7 +305,7 @@ export function HomeHero() {
                 )}
               </div>
 
-              {fstep <= 3 && (
+              {fstep <= 2 && (
                 <div className="mt-4">
                   <button
                     type="button"

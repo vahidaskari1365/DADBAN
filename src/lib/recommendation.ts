@@ -1,6 +1,6 @@
 // Deterministic, explainable recommendation engine (QuickStart → Next Best Action).
-// No AI required: maps (topic, stage, city, helpType) to an actionable,
-// transparent recommendation plus an alternative and a free option.
+// No AI required: maps (topic, stage, city) to THREE actionable paths,
+// transparent reasons and pre-filled funnel context for the case form.
 
 import type { IconKey } from "./data";
 
@@ -65,8 +65,34 @@ const lawyersHref = (specialty: string | null, city?: string) => {
   return `/lawyers${qs ? `?${qs}` : ""}`;
 };
 
-export function buildRecommendation(input: RecommendationInput): Recommendation {
-  const { topic, stage, city, help } = input;
+/** افزودن زمینه‌ی فانل (موضوع/مرحله/استان) به هر لینک — برای prefill فرم پرونده */
+const withFunnelParams = (href: string, input: { topic: string; stage: string; city: string }): string => {
+  const params = new URLSearchParams();
+  params.set("topic", input.topic);
+  params.set("stage", input.stage);
+  if (input.city) params.set("province", input.city);
+  const sep = href.includes("?") ? "&" : "?";
+  return `${href}${sep}${params.toString()}`;
+};
+
+export interface FunnelOption extends RecommendationOption {
+  key: HelpType;
+}
+
+export interface FunnelRecommendation {
+  specialty: string | null;
+  reasons: string[];
+  nextStep: string;
+  /** سه مسیر: استخدام وکیل / مشاوره / تنظیم سند */
+  options: FunnelOption[];
+}
+
+/**
+ * پیشنهاد پس از انتخاب موضوع + مرحله + استان — سه گزینه‌ی نهایی.
+ * استفاده در فانل هیرو و ویزارد «شروع مسیر من».
+ */
+export function buildFunnelOptions(input: { topic: string; stage: string; city: string }): FunnelRecommendation {
+  const { topic, stage, city } = input;
   const specialty = TOPIC_SPECIALTY[topic] ?? null;
   const inCourt = COURT_STAGES.has(stage);
 
@@ -76,77 +102,47 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   if (city) reasons.push(`استان شما: ${city}.`);
   if (inCourt) reasons.push("در این مرحله، حضور وکیل متخصص معمولاً تعیین‌کننده است.");
 
-  const q = encodeURIComponent(topic ? `مشکل ${topic} (مرحله: ${stage})` : "مشکل حقوقی");
-  const freeHref = city ? `/ai-assistant?q=${q}&province=${encodeURIComponent(city)}` : `/ai-assistant?q=${q}`;
+  const lawyerOption: FunnelOption = {
+    key: "lawyer",
+    title: specialty ? `استخدام وکیل متخصص ${specialty}` : "استخدام وکیل متخصص",
+    desc: city
+      ? `وکلای تأییدشده ${specialty ?? ""} در ${city} را ببینید و درخواست وکالت ثبت کنید.`
+      : "از میان وکلای تأییدشده با پروانه معتبر، وکیل پرونده‌تان را انتخاب کنید.",
+    href: withFunnelParams(lawyersHref(specialty, city), input),
+    icon: "user",
+  };
 
-  // خروجی بر اساس نوع کمک درخواستی
-  let primary: RecommendationOption;
-  let alternative: RecommendationOption;
-  let nextStep: string;
+  const consultOption: FunnelOption = {
+    key: "consult",
+    title: specialty ? `مشاوره با وکیل متخصص ${specialty}` : "مشاوره حقوقی با وکیل",
+    desc: "در یک جلسه کوتاه، مسیر قانونی، هزینه‌ها و ریسک‌های پرونده شما روشن می‌شود.",
+    href: withFunnelParams("/consultation", input),
+    icon: "chat",
+  };
 
-  if (help === "doc") {
-    primary = {
-      title: "تنظیم سند حقوقی با قراردادساز",
-      desc: "قرارداد، دادخواست یا شکواییه خود را گام‌به‌گام بسازید و برای بازبینی نهایی به وکیل بسپارید.",
-      href: "/contracts",
-      icon: "document",
-    };
-    alternative = {
-      title: "بررسی و بازبینی توسط وکیل متخصص",
-      desc: "سند فعلی‌تان را تحلیل کنید و بندهای پرریسک را شناسایی کنید.",
-      href: "/contracts/review",
-      icon: "file",
-    };
-    nextStep = "قدم بعدی پیشنهادی: ساخت یا بررسی سند موردنیاز شما.";
-  } else if (help === "lawyer" || inCourt) {
-    primary = {
-      title: specialty ? `پیدا کردن وکیل متخصص ${specialty}` : "پیدا کردن وکیل متخصص",
-      desc: city
-        ? `وکلای تأییدشده ${specialty ?? ""} در ${city} را ببینید و مشاوره رزرو کنید.`
-        : "از میان وکلای تأییدشده با پروانه معتبر انتخاب کنید.",
-      href: lawyersHref(specialty, city),
-      icon: "user",
-    };
-    alternative = {
-      title: "ثبت پرونده و معرفی وکیل",
-      desc: "پرونده را ثبت کنید تا کارشناسان دادبان، وکیل مناسب را معرفی کنند.",
-      href: "/case/new",
-      icon: "folder",
-    };
-    nextStep = "قدم بعدی پیشنهادی: رزرو مشاوره ۳۰ دقیقه‌ای با وکیل متخصص.";
-  } else {
-    // مشاوره و راهنمایی
-    primary = {
-      title: specialty ? `مشاوره با وکیل متخصص ${specialty}` : "مشاوره با وکیل متخصص",
-      desc: "در یک جلسه کوتاه، مسیر قانونی، هزینه‌ها و ریسک‌های پرونده شما روشن می‌شود.",
-      href: "/consultation",
-      icon: "chat",
-    };
-    alternative = {
-      title: specialty ? `مشاهده وکلای متخصص ${specialty}` : "مشاهده وکلای متخصص",
-      desc: "پروفایل، تعرفه و نظرات وکلا را مقایسه و مستقیم انتخاب کنید.",
-      href: lawyersHref(specialty, city),
-      icon: "search",
-    };
-    nextStep = "قدم بعدی پیشنهادی: رزرو مشاوره برای شفاف شدن مسیر.";
-  }
-
-  const freeDescription =
-    help === "doc"
-      ? "پاسخ اولیه و نکات مهم درباره سند موردنظر را از دستیار حقوقی بگیرید."
-      : "مراحل، مدارک لازم و ریسک‌ها را بدون هزینه مرور کنید؛ پاسخ‌ها راهنمای اولیه‌اند.";
+  const docOption: FunnelOption = {
+    key: "doc",
+    title: "تنظیم سند و قرارداد",
+    desc: "قرارداد، دادخواست یا شکواییه خود را گام‌به‌گام بسازید یا با هوش مصنوعی بررسی کنید.",
+    href: withFunnelParams("/contracts", input),
+    icon: "document",
+  };
 
   return {
-    primary,
-    alternative,
-    free: {
-      title: "راهنمای رایگان با دستیار حقوقی",
-      desc: freeDescription,
-      href: freeHref,
-      icon: "sparkles",
-    },
     specialty,
     reasons,
-    nextStep,
+    nextStep: inCourt
+      ? "پرونده شما در مرحله دادرسی است — پیشنهاد ما شروع با وکیل متخصص است."
+      : "یکی از مسیرهای زیر را انتخاب کنید؛ انتخاب‌های شما ذخیره می‌شود تا فرم‌ها خودکار پر شوند.",
+    options: [lawyerOption, consultOption, docOption],
   };
+}
+
+/** ذخیره‌ی انتخاب‌های فانل — فرم «ثبت پرونده» با همین اطلاعات خودکار پر می‌شود. */
+export function saveFunnelSelections(input: { topic: string; stage: string; province: string }): void {
+  try {
+    window.localStorage.setItem("dadban_funnel", JSON.stringify({ ...input, at: Date.now() }));
+  } catch {
+    /* حافظه محلی در دسترس نیست */
+  }
 }
