@@ -96,14 +96,20 @@ async function postOpenAiCompatible(
     signal: AbortSignal.timeout(timeoutMs),
   });
   if (!res.ok) throw new Error(`llm http ${res.status}`);
-  const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-    output_text?: string;
-    response?: string;
-  };
-  const text = data?.choices?.[0]?.message?.content ?? data?.output_text ?? data?.response ?? "";
-  if (!text) throw new Error("llm empty");
-  return text;
+  const raw = await res.text();
+  let text = "";
+  try {
+    const data = JSON.parse(raw) as {
+      choices?: { message?: { content?: string } }[];
+      output_text?: string;
+      response?: string;
+    };
+    text = data?.choices?.[0]?.message?.content ?? data?.output_text ?? data?.response ?? "";
+  } catch {
+    text = raw; // پاسخ متنی خام (مثل pollinations متن ساده برمی‌گرداند)
+  }
+  if (!text || !String(text).trim()) throw new Error("llm empty");
+  return String(text);
 }
 
 /** 1) زنجیره کلیدهای مالک — همان فرمت LLM_KEYS_JSON پروژه homeino1 */
@@ -136,10 +142,9 @@ function keyedEnvProviders(): Provider[] {
   if (key) {
     const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
     const model = process.env.LLM_MODEL ?? "glm-4.6";
+    // مدل همیشه‌رایگان اول (پایدار و بدون نیاز به شارژ)؛ مدل پولی به‌عنوان ارتقا اگر سهمیه داشت
+    out.push({ id: "zai-free", base: `${base}/chat/completions`, key, model: "glm-4.5-flash", timeoutMs: 22_000, group: "keyed" });
     out.push({ id: "zai", base: `${base}/chat/completions`, key, model, timeoutMs: 22_000, group: "keyed" });
-    // self-heal: مدل‌های همیشه‌رایگان روی همان کلید (اگر مدل اصلی پولی/ناموجود باشد)
-    out.push({ id: "zai-free47", base: `${base}/chat/completions`, key, model: "glm-4.7-flash", timeoutMs: 22_000, group: "keyed" });
-    out.push({ id: "zai-free45", base: `${base}/chat/completions`, key, model: "glm-4.5-flash", timeoutMs: 22_000, group: "keyed" });
   }
   if (process.env.GEMINI_API_KEY) {
     out.push({
@@ -184,11 +189,9 @@ function keyedEnvProviders(): Provider[] {
 /** 6) بدون‌کلید — فقط برای اضطرار؛ در Vercel ممکن است بلاک باشند */
 function keylessProviders(): Provider[] {
   return [
-    { id: "llm7", base: "https://api.llm7.io/v1/chat/completions", key: "unused", model: "gpt-4o-mini", timeoutMs: 9_000, group: "keyless" },
+    { id: "llm7-glm", base: "https://api.llm7.io/v1/chat/completions", key: "unused", model: "GLM-5.3-Flash", timeoutMs: 12_000, group: "keyless" },
     { id: "pollinations-post", base: "https://text.pollinations.ai/", model: "openai", timeoutMs: 9_000, group: "keyless" },
     { id: "pollinations-get", base: "https://text.pollinations.ai/", model: "openai", timeoutMs: 8_000, group: "keyless" },
-    { id: "hackclub", base: "https://ai.hackclub.com/chat/completions", model: "-", timeoutMs: 9_000, group: "keyless" },
-    { id: "freellmapi", base: "https://api.freellmapi.com/v1/chat/completions", key: "unused", model: "auto", timeoutMs: 9_000, group: "keyless" },
   ];
 }
 
@@ -245,12 +248,13 @@ interface ZaiClient {
 async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: number): Promise<string> {
   if (p.group === "sdk") return (await viaSdk(messages)) ?? "";
   if (p.id === "pollinations-get") return (await pollinationsGet(messages)) ?? "";
-  const body =
-    p.id === "hackclub"
-      ? { messages }
-      : p.id === "pollinations-post"
-        ? { messages, model: "openai", max_tokens: maxTokens, seed: 1, referrer: "dadban" }
-        : { model: p.model, messages, max_tokens: maxTokens, temperature: 0.3 };
+  const bodyObj: Record<string, unknown> =
+    p.id === "pollinations-post"
+      ? { messages, model: "openai", max_tokens: maxTokens, seed: 1, referrer: "dadban" }
+      : { model: p.model, messages, max_tokens: maxTokens, temperature: 0.3 };
+  // مدل‌های GLM-4.5+ تفکر زنجیره‌ای دارند؛ غیرفعال‌سازی برای پاسخ مستقیم و جلوگیری از هدررفت توکن
+  if (p.base.includes("api.z.ai") || p.base.includes("bigmodel.cn")) bodyObj.thinking = { type: "disabled" };
+  const body = bodyObj;
   const extra: Record<string, string> = {};
   if (p.id === "openrouter") {
     extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
@@ -293,7 +297,6 @@ export async function askLLM(messages: LlmMessage[], maxTokens = 400, systemProm
   let keylessTried = 0;
   for (const p of ordered) {
     if (p.group === "keyless" && ++keylessTried > 3) break; // بودجه زمانی درخواست
-    const t0 = Date.now();
     try {
       const text = await runProvider(p, all, p.maxTokens ?? maxTokens);
       if (text && text.trim().length > 1) {
@@ -304,7 +307,6 @@ export async function askLLM(messages: LlmMessage[], maxTokens = 400, systemProm
     } catch {
       markFail(p.id);
     }
-    void t0;
   }
   return null;
 }
@@ -320,7 +322,7 @@ export async function llmProbe(): Promise<ProbeRow[]> {
   for (const p of chain) {
     const t0 = Date.now();
     try {
-      const text = await runProvider(p, msgs, 16);
+      const text = await runProvider(p, msgs, 64);
       out.push({ id: p.id, model: p.model, ok: !!text && text.trim().length > 0, ms: Date.now() - t0, info: text ? `len=${text.trim().length}` : "پاسخ خالی" });
     } catch (e) {
       out.push({ id: p.id, model: p.model, ok: false, ms: Date.now() - t0, info: String((e as Error)?.message ?? e).slice(0, 80) });
