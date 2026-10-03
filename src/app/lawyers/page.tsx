@@ -8,7 +8,7 @@ import { LawyerCard } from "@/components/lawyer-card";
 import { LawyerFilters } from "@/components/lawyer-filters";
 import { LawyerDiscovery } from "@/components/amazon/recently-viewed";
 import { StickyCta } from "@/components/amazon/sticky-cta";
-import { SPECIALTIES, ALL_CITIES, ALL_PROVINCES, LOCATIONS, faNum } from "@/lib/data";
+import { LOCATIONS, faNum } from "@/lib/data";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -141,58 +141,6 @@ export default async function LawyersPage({
         label="پرونده‌ات را ثبت کن"
         sub="ارزیابی اولیه • محرمانگی کامل • بدون هزینه اولیه"
       />
-
-      {/* SEO: specialties */}
-      <section id="specialties" className="mt-8 scroll-mt-24 border-t border-border py-12">
-        <Container>
-          <h2 className="text-xl font-bold text-foreground">وکیل بر اساس حوزه تخصص</h2>
-          <p className="mt-2 text-sm text-muted">وکلای متخصص هر حوزه حقوقی را انتخاب کنید.</p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {SPECIALTIES.map((s) => (
-              <a
-                key={s}
-                href={`/lawyers?sp=${encodeURIComponent(s)}`}
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground-soft transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary card-shadow"
-              >
-                <Icon name="scale" className="h-4 w-4 text-accent" />
-                وکیل {s}
-              </a>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* SEO: cities */}
-      <section id="cities" className="scroll-mt-24 border-t border-border py-12">
-        <Container>
-          <h2 className="text-xl font-bold text-foreground">وکیل بر اساس استان و شهر</h2>
-          <p className="mt-2 text-sm text-muted">وکلای شهر خود را پیدا کنید.</p>
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {ALL_PROVINCES.map((p) => (
-              <div key={p} className="rounded-2xl border border-border bg-surface p-4">
-                <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
-                  <Icon name="location" className="h-4 w-4 text-primary" />
-                  استان {p}
-                </h3>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {ALL_CITIES.filter(() => true).slice(0, 0)}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {ALL_CITIES.map((c) => (
-              <a
-                key={c}
-                href={`/lawyers?city=${encodeURIComponent(c)}`}
-                className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground-soft transition-colors hover:bg-primary-soft hover:text-primary"
-              >
-                وکیل در {c}
-              </a>
-            ))}
-          </div>
-        </Container>
-      </section>
 
       <Container className="py-12">
         <div className="rounded-3xl border border-border bg-surface p-8 text-center card-shadow">

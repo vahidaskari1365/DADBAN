@@ -148,7 +148,6 @@ export const NAV: {
       { label: "وکلای خانواده", href: "/lawyers?sp=خانواده", desc: "طلاق، مهریه، حضانت" },
       { label: "وکلای ملکی", href: "/lawyers?sp=ملک", desc: "تخلیه، سند، تصرف" },
       { label: "وکلای کیفری", href: "/lawyers?sp=کیفری", desc: "دفاع کیفری" },
-      { label: "وکلا بر اساس شهر", href: "/lawyers#cities", desc: "وکلای شهر شما" },
     ],
   },
   {
