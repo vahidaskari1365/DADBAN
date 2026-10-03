@@ -95,7 +95,11 @@ async function postOpenAiCompatible(
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(timeoutMs),
   });
-  if (!res.ok) throw new Error(`llm http ${res.status}`);
+  if (!res.ok) {
+    let hint = "";
+    try { hint = (await res.text()).slice(0, 140); } catch { /* بدون بدنه */ }
+    throw new Error(`llm http ${res.status}${hint ? ` :: ${hint}` : ""}`);
+  }
   const raw = await res.text();
   let text = "";
   try {
@@ -362,6 +366,8 @@ function visionProviders(): Provider[] {
     // ۱) پایه‌ی کنونیکال z.ai — مستقل از LLM_BASE_URL (اگر پایه‌ی سفارشی مدل vision نداشته باشد)
     push("zai-vision", canonical, process.env.VISION_MODEL ?? "glm-4.5v", 16_000);
     push("zai-vision", canonical, "glm-4.1v-thinking-flash", 16_000);
+    push("zai-vision", canonical, "glm-4v-flash", 16_000);
+    push("zai-vision", canonical, "glm-4v-plus-0111", 16_000);
     // ۲) پایه‌ی سفارشی (در صورت متفاوت بودن)
     if (custom && `${custom}/chat/completions` !== canonical) {
       push("zai-vision-custom", `${custom}/chat/completions`, process.env.VISION_MODEL ?? "glm-4.5v", 16_000);
@@ -402,32 +408,45 @@ export async function askVisionLLM(prompt: string, imageData: string, maxTokens 
   const t0 = Date.now();
   for (const p of visionProviders()) {
     if (Date.now() - t0 > 42_000) { errors.push("deadline"); break; } // بودجه زمانی — مسیر maxDuration=60 امن بماند
+    const body: Record<string, unknown> = {
+      model: p.model,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            { type: "image_url", image_url: { url: imageData } },
+          ],
+        },
+      ],
+      max_tokens: maxTokens,
+      temperature: 0.1,
+    };
+    if (p.model === "glm-4.5v" && p.base.includes("api.z.ai")) body.thinking = { type: "disabled" };
+    const extra: Record<string, string> = {};
+    if (p.id === "openrouter-vision") {
+      extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
+      extra["X-Title"] = "DADBAN";
+    }
     try {
-      const body: Record<string, unknown> = {
-        model: p.model,
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              { type: "image_url", image_url: { url: imageData } },
-            ],
-          },
-        ],
-        max_tokens: maxTokens,
-        temperature: 0.1,
-      };
-      if (p.base.includes("api.z.ai") || p.base.includes("bigmodel.cn")) body.thinking = { type: "disabled" };
-      const extra: Record<string, string> = {};
-      if (p.id === "openrouter-vision") {
-        extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
-        extra["X-Title"] = "DADBAN";
-      }
       const text = await postOpenAiCompatible(p.base, body, p.key, p.timeoutMs, extra);
       if (text && text.trim().length > 20) return { text: text.trim(), errors };
       errors.push(`${p.id}/${p.model}: empty`);
     } catch (e) {
-      errors.push(`${p.id}/${p.model}: ${String((e as Error)?.message ?? e).slice(0, 90)}`);
+      const msg = String((e as Error)?.message ?? e).slice(0, 90);
+      // 429 ممکن است موقتی (RPM) باشد — یک‌بار با تأخیر تلاش مجدد
+      if (msg.includes("http 429") && Date.now() - t0 < 34_000) {
+        await new Promise((r) => setTimeout(r, 4_000));
+        try {
+          const text = await postOpenAiCompatible(p.base, body, p.key, p.timeoutMs, extra);
+          if (text && text.trim().length > 20) return { text: text.trim(), errors };
+          errors.push(`${p.id}/${p.model}: empty(retry)`);
+        } catch (e2) {
+          errors.push(`${p.id}/${p.model}: ${String((e2 as Error)?.message ?? e2).slice(0, 90)}(retry)`);
+        }
+      } else {
+        errors.push(`${p.id}/${p.model}: ${msg}`);
+      }
     }
   }
   return { text: null, errors };
