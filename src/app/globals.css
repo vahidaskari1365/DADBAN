@@ -443,3 +443,95 @@ input, select, textarea {
     min-height: 56px;
   }
 }
+
+/* ============================================================
+   Auth pages — modern aurora / conic border / marquee / spotlight
+   ============================================================ */
+
+/* اورورای متحرک — لکه‌های نوری آرام */
+@keyframes auth-aurora-a {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-70px, 45px) scale(1.18); }
+  100% { transform: translate(35px, -35px) scale(0.94); }
+}
+@keyframes auth-aurora-b {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(60px, -50px) scale(1.12); }
+  100% { transform: translate(-40px, 35px) scale(1.04); }
+}
+.auth-aurora-a {
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--primary) 30%, transparent), transparent 72%);
+  filter: blur(60px);
+  animation: auth-aurora-a 16s ease-in-out infinite alternate;
+}
+.auth-aurora-b {
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--accent) 34%, transparent), transparent 72%);
+  filter: blur(70px);
+  animation: auth-aurora-b 20s ease-in-out infinite alternate;
+}
+
+/* حاشیه گرادیانی چرخان (کنیک) دور کارت فرم */
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+.auth-spin-layer {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in oklab, var(--primary) 80%, transparent) 55deg,
+    color-mix(in oklab, var(--accent) 85%, transparent) 118deg,
+    transparent 178deg,
+    transparent 360deg
+  );
+  animation: auth-spin 7s linear infinite;
+}
+
+/* شناوری آرام لوگو */
+@keyframes auth-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.auth-float { animation: auth-float 7s ease-in-out infinite; }
+
+/* مارکی بی‌نهایت تخصص‌ها (RTL-safe: track با dir=ltr) */
+@keyframes auth-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.auth-marquee { animation: auth-marquee 32s linear infinite; }
+.auth-marquee:hover { animation-play-state: paused; }
+.auth-marquee-mask {
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* بافت نویز ظریف برای عمق */
+.auth-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity: 0.05;
+}
+
+/* اسپات‌لایت دنبال‌کننده موس — متغیرهای --mx/--my از JS ست می‌شوند */
+.auth-spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    440px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in oklab, var(--accent) 13%, transparent),
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.auth-spotlight:hover::after { opacity: 1; }
+
+/* گرید دو ستونی صفحه ورود — minmax(0,fr) برای جلوگیری از انفجار ستون با w-max */
+.auth-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 64rem) {
+  .auth-grid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  }
+}

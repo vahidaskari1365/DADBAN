@@ -3,114 +3,135 @@ import Link from "next/link";
 import { Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { AuthPanel } from "@/components/auth-panel";
+import { SpotlightCard } from "@/components/spotlight-card";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/brand";
+import { SPECIALTIES } from "@/lib/data";
 
-const FEATURES = [
-  {
-    icon: "badge" as const,
-    title: "وکلای احراز هویت‌شده",
-    desc: "هویت و پروانه پایه یک همه وکلا توسط کارشناسان راستی‌آزمایی می‌شود.",
-  },
-  {
-    icon: "folder" as const,
-    title: "پیگیری شفاف پرونده",
-    desc: "مراحل پرونده، اسناد و جلسات؛ همه‌چیز در پنل شخصی شما.",
-  },
-  {
-    icon: "sparkles" as const,
-    title: "دستیار حقوقی هوشمند",
-    desc: "پاسخ سریع ۲۴ ساعته با استناد به قوانین و مقررات.",
-  },
+const TRUST = [
+  { icon: "badge" as const, label: "وکلای احراز هویت‌شده" },
+  { icon: "chat" as const, label: "پشتیبانی ۲۴/۷" },
+  { icon: "sparkles" as const, label: "دستیار حقوقی هوشمند" },
 ];
 
 /**
- * قالب مشترک صفحات ورود / ثبت‌نام — سراسرصفحه، با لوگو و پنل تب‌دار
+ * قالب مشترک صفحات ورود / ثبت‌نام — سبک مدرن ۲۰۲۵:
+ * اورورای متحرک، حاشیه گرادیانی چرخان، مارکی تخصص‌ها و اسپات‌لایت موس
  */
 export function AuthPage({ mode }: { mode: "login" | "register" }) {
-  const heading =
-    mode === "login"
-      ? { title: "به خانواده دادبان خوش آمدید", sub: "حساب خود را وارد کنید تا مسیر حقوقی‌تان را با خیال آسوده ادامه دهید." }
-      : { title: "حقوق شما، مسیر روشن", sub: "ثبت‌نام رایگان در دقیقه‌ای کوتاه؛ پرونده‌تان را هوشمند پیش ببرید." };
-
   return (
     <main className="relative overflow-hidden">
-      {/* ── پس‌زمینه امبیِنت: هاله‌های رنگی + شبکه نقطه‌ای ── */}
+      {/* ── پس‌زمینه: اورورای متحرک + نویز + شبکه نقطه‌ای ── */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 right-[8%] h-[26rem] w-[26rem] rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute top-1/4 -left-28 h-80 w-80 rounded-full bg-accent/10 blur-3xl" />
-        <div className="absolute bottom-[-6rem] right-[38%] h-96 w-96 rounded-full bg-accent-soft/70 blur-3xl" />
+        <div className="auth-aurora-a absolute -top-32 right-[4%] h-[30rem] w-[30rem]" />
+        <div className="auth-aurora-b absolute top-1/3 -left-36 h-[27rem] w-[27rem]" />
+        <div className="auth-aurora-a absolute bottom-[-9rem] right-[40%] h-[23rem] w-[23rem] [animation-delay:-6s]" />
         <div
-          className="absolute inset-0 opacity-40"
+          className="absolute inset-0 opacity-30"
           style={{
-            backgroundImage: "radial-gradient(circle at 1px 1px, var(--border-strong, var(--border)) 1px, transparent 0)",
-            backgroundSize: "26px 26px",
-            maskImage: "radial-gradient(ellipse 90% 70% at 50% 0%, black, transparent)",
-            WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 0%, black, transparent)",
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, var(--border-strong, var(--border)) 1px, transparent 0)",
+            backgroundSize: "28px 28px",
+            maskImage: "radial-gradient(ellipse 85% 65% at 50% 0%, black, transparent)",
+            WebkitMaskImage: "radial-gradient(ellipse 85% 65% at 50% 0%, black, transparent)",
           }}
         />
+        <div className="auth-noise absolute inset-0" />
       </div>
 
-      <Container className="relative grid items-center gap-10 py-12 pb-32 lg:min-h-[calc(100svh-4.5rem)] lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-14">
-        {/* ── سمت برند: لوگو + ارزش‌ها ── */}
-        <div className="flex flex-col items-center text-center lg:items-start lg:text-right">
-          <div className="relative">
-            <div aria-hidden className="absolute -inset-8 rounded-[3.5rem] bg-accent/15 blur-2xl" />
-            <div className="relative w-44 rounded-[2.25rem] bg-white p-3.5 shadow-2xl ring-1 ring-black/5 animate-scale-in sm:w-56 lg:w-64">
-              <Image
-                src="/logo1.png"
-                alt={`لوگوی ${SITE_NAME}`}
-                width={512}
-                height={512}
-                priority
-                sizes="(min-width: 1024px) 256px, (min-width: 640px) 224px, 176px"
-                className="h-auto w-full rounded-[1.75rem]"
-              />
+      <Container className="relative grid items-center gap-10 py-10 pb-32 lg:min-h-[calc(100svh-4.5rem)] lg:gap-14 auth-grid lg:py-14">
+        {/* ── سمت برند: لوگوی شناور + تایپوگرافی درشت + اعتماد + مارکی ── */}
+        <div className="flex min-w-0 flex-col items-center text-center lg:items-start lg:text-right">
+          <div className="auth-float relative">
+            <div aria-hidden className="auth-aurora-b absolute -inset-12" />
+            <div className="relative rounded-[2.5rem] bg-gradient-to-b from-border-strong to-border p-px shadow-[var(--shadow-lift)]">
+              <div className="rounded-[calc(2.5rem-1px)] bg-white p-3.5 ring-1 ring-black/10">
+                <Image
+                  src="/logo1.png"
+                  alt={`لوگوی ${SITE_NAME}`}
+                  width={512}
+                  height={512}
+                  priority
+                  sizes="(min-width: 1024px) 256px, (min-width: 640px) 224px, 176px"
+                  className="h-auto w-full rounded-[1.75rem]"
+                />
+              </div>
             </div>
           </div>
 
-          <h1 className="mt-8 max-w-lg text-2xl font-black leading-[1.5] text-foreground sm:text-3xl sm:leading-[1.5]">
-            {heading.title.includes("دادبان") ? (
-              <>
-                {heading.title.split("دادبان")[0]}
-                <span className="text-accent">دادبان</span>
-                {heading.title.split("دادبان")[1]}
-              </>
-            ) : (
-              heading.title
-            )}
+          <h1 className="mt-9 max-w-xl text-[1.7rem] font-black leading-[1.45] tracking-tight text-foreground sm:text-4xl sm:leading-[1.4] lg:text-[2.5rem] lg:leading-[1.35]">
+            حقوق شما،{" "}
+            <span className="bg-gradient-to-l from-primary via-accent to-accent bg-clip-text text-transparent">
+              مسیر روشنی
+            </span>{" "}
+            دارد
           </h1>
-          <p className="mt-3 max-w-md text-sm leading-7 text-muted">{heading.sub}</p>
+          <p className="mt-4 max-w-md text-sm leading-7 text-muted sm:text-base sm:leading-8">
+            با یک حساب دادبان؛ وکیل متخصص، پیگیری شفاف پرونده و دستیار حقوقی هوشمند — همه در یک‌جا.
+          </p>
           <p className="sr-only">{SITE_TAGLINE}</p>
 
-          <ul className="mt-8 hidden w-full max-w-md flex-col gap-3 lg:flex">
-            {FEATURES.map((f) => (
+          {/* چیپ‌های اعتماد */}
+          <ul className="mt-7 flex flex-wrap items-center justify-center gap-2.5 lg:justify-start">
+            {TRUST.map((t, i) => (
               <li
-                key={f.title}
-                className="flex items-center gap-3.5 rounded-2xl border border-border bg-surface/70 px-4 py-3 backdrop-blur-sm transition-colors hover:border-primary/30"
+                key={t.label}
+                className="animate-fade-up flex items-center gap-2 rounded-full border border-border bg-surface/80 px-4 py-2.5 text-xs font-extrabold text-foreground-soft shadow-sm backdrop-blur transition-colors hover:border-accent/40"
+                style={{ animationDelay: `${0.15 + i * 0.1}s` }}
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-                  <Icon name={f.icon} className="h-5 w-5" />
-                </span>
-                <span className="flex flex-col text-right">
-                  <span className="text-sm font-bold text-foreground">{f.title}</span>
-                  <span className="mt-0.5 text-xs leading-6 text-muted">{f.desc}</span>
-                </span>
+                <Icon name={t.icon} className="h-4 w-4 text-accent" />
+                {t.label}
               </li>
             ))}
           </ul>
-        </div>
 
-        {/* ── سمت فرم: کارت شیشه‌ای ── */}
-        <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-          <div aria-hidden className="absolute -inset-3 rounded-[2.5rem] bg-gradient-to-b from-primary/10 via-transparent to-accent/10 blur-xl" />
-          <div className="relative rounded-3xl border border-border bg-surface/85 p-6 shadow-[var(--shadow-lift)] backdrop-blur-xl sm:p-8">
-            <AuthPanel initialMode={mode} />
-            <p className="mt-5 rounded-xl bg-surface-2/60 p-3 text-center text-[10px] leading-5 text-muted">
-              با ورود یا ثبت‌نام، <Link href="/legal/terms" className="font-bold text-primary hover:underline">قوانین و مقررات</Link> و{" "}
-              <Link href="/legal/privacy" className="font-bold text-primary hover:underline">حریم خصوصی</Link> دادبان را می‌پذیرید.
+          {/* مارکی بی‌نهایت تخصص‌ها */}
+          <div className="mt-8 w-full max-w-md lg:max-w-none">
+            <p className="mb-3 text-[11px] font-bold text-muted-soft">
+              وکیل متخصص، در هر حوزه‌ای که فکرش را بکنید
             </p>
+            <div className="auth-marquee-mask overflow-hidden" dir="ltr">
+              <div className="auth-marquee flex w-max items-center gap-2.5 py-1">
+                {[...SPECIALTIES, ...SPECIALTIES].map((s, i) => (
+                  <span
+                    key={`${s}-${i}`}
+                    aria-hidden={i >= SPECIALTIES.length}
+                    className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-surface/60 px-3.5 py-1.5 text-[11px] font-bold text-muted backdrop-blur transition-colors hover:border-accent/40 hover:text-foreground"
+                  >
+                    <Icon name="gavel" className="h-3 w-3 text-accent/70" />
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* ── سمت فرم: کارت شیشه‌ای با حاشیه گرادیانی چرخان + اسپات‌لایت ── */}
+        <SpotlightCard className="auth-spotlight relative mx-auto min-w-0 w-full max-w-md rounded-[28px] lg:max-w-none">
+          <div className="relative overflow-hidden rounded-[28px] p-px">
+            {/* حاشیه استاتیک پایه + لایه کنیک چرخان روی آن */}
+            <div aria-hidden className="absolute inset-0 bg-border" />
+            <div aria-hidden className="absolute inset-0 grid place-items-center">
+              <div className="auth-spin-layer aspect-square w-[280%]" />
+            </div>
+
+            {/* بدنه شیشه‌ای کارت */}
+            <div className="relative rounded-[27px] bg-surface/85 p-6 shadow-[var(--shadow-lift)] backdrop-blur-2xl sm:p-8">
+              <AuthPanel initialMode={mode} />
+              <p className="mt-5 rounded-2xl border border-border bg-surface-2/50 p-3 text-center text-[10px] leading-5 text-muted">
+                با ورود یا ثبت‌نام،{" "}
+                <Link href="/legal/terms" className="font-bold text-primary hover:underline">
+                  قوانین و مقررات
+                </Link>{" "}
+                و{" "}
+                <Link href="/legal/privacy" className="font-bold text-primary hover:underline">
+                  حریم خصوصی
+                </Link>{" "}
+                دادبان را می‌پذیرید.
+              </p>
+            </div>
+          </div>
+        </SpotlightCard>
       </Container>
     </main>
   );
