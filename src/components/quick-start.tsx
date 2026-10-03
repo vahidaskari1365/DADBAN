@@ -102,7 +102,6 @@ function QuickStartInner() {
   const reset = () => {
     setStep(0);
     setTopic(null);
-    setDescription("");
     setStage(null);
     setProvince(null);
     setHelp(null);
