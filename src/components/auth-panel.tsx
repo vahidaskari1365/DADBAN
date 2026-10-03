@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -37,7 +36,6 @@ export function AuthPanel({
   initialTab?: Tab;
   initialMode?: Mode;
 }) {
-  const router = useRouter();
   const [tab, setTab] = useState<Tab>(initialTab);
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState("");
@@ -75,6 +73,11 @@ export function AuthPanel({
     return wanted && wanted.startsWith("/") && !wanted.startsWith("//") ? wanted : null;
   };
 
+  /** بعد از احراز هویت، ناوبری کامل (نه SPA) تا کوکی سشن حتماً در درخواست RSC داشبورد اعمال شود */
+  const hardNavigate = (target: string) => {
+    window.location.assign(target);
+  };
+
   const submitLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const id = toEnDigits(identifier).trim();
@@ -96,8 +99,7 @@ export function AuthPanel({
           setLoading(false);
           return;
         }
-        router.push(safeRedirect() ?? (data.user?.role === "lawyer" ? "/dashboard/lawyer" : "/dashboard/client"));
-        router.refresh();
+        hardNavigate(safeRedirect() ?? (data.user?.role === "lawyer" ? "/dashboard/lawyer" : "/dashboard/client"));
         return; // در حال هدایت — لودینگ باقی می‌ماند
       }
       setError(data.error ?? "خطا در ورود");
@@ -136,11 +138,10 @@ export function AuthPanel({
           body: JSON.stringify({ identifier: mobile, password }),
         });
         if (login.ok) {
-          router.push(safeRedirect() ?? "/dashboard/client");
-          router.refresh();
+          hardNavigate(safeRedirect() ?? "/dashboard/client");
           return;
         }
-        router.push("/login");
+        hardNavigate("/login");
         return;
       }
       setError(data.error ?? "خطا در ثبت‌نام");
