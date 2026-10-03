@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
     return [
       // مرکز هوش مصنوعی حذف شد — ریدایرکت دائمی برای حفظ سئو و لینک‌های قدیمی
       { source: "/ai", destination: "/ai-assistant", permanent: true },
+      // صفحه‌ی جعبه‌ابزار منبع‌باز حذف شد — ریدایرکت دائمی به دستیار
+      { source: "/ai/resources", destination: "/ai-assistant", permanent: true },
     ];
   },
   async headers() {

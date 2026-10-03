@@ -156,7 +156,6 @@ export const NAV: {
     href: "/ai-assistant",
     children: [
       { label: "دستیار حقوقی هوشمند", href: "/ai-assistant", desc: "راهنمای حقوقی با استناد قانونی" },
-      { label: "جعبه‌ابزار منبع‌باز", href: "/ai/resources", desc: "کاتالوگ API رایگان، مهارت‌ها و آکادمی AI" },
       { label: "تحلیل قرارداد", href: "/contracts/review", desc: "بندهای پرریسک" },
       { label: "قراردادساز", href: "/contracts/builder", desc: "ساخت قرارداد گام‌به‌گام" },
       { label: "فرم‌های حقوقی", href: "/legal-forms", desc: "دادخواست، شکواییه، اظهارنامه" },
