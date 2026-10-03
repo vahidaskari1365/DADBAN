@@ -6,6 +6,7 @@ import { Container, Button, Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { CONSULTATION_TYPES, faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
+import { JalaliDatePicker } from "@/components/jalali-date-picker";
 import { trackEvent } from "@/lib/analytics";
 import { FaqAccordion } from "@/components/amazon/faq-accordion";
 import { TrustLine } from "@/components/amazon/trust-line";
@@ -298,10 +299,10 @@ function ConsultationContent() {
               ))}
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-muted">تاریخ</span>
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={fieldCls} />
-              </label>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold text-muted">تاریخ (شمسی)</span>
+                <JalaliDatePicker value={date} onChange={setDate} />
+              </div>
               {!lawyerSlug ? (
                 <label className="flex flex-col gap-1.5">
                   <span className="text-xs font-semibold text-muted">ساعت پیشنهادی (اختیاری)</span>

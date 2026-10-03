@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { consultations, lawyers, lawyerAvailability, payments } from "@/db/schema";
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { faNum } from "@/lib/data";
+import { formatJalaliLong } from "@/lib/jalali";
 import { randomBytes } from "crypto";
 import { phone as normalizePhone, rateLimit, readJson, text, validPhone } from "@/lib/api-security";
 import { computeSlots, parseTehranDay } from "@/lib/availability";
@@ -192,7 +193,7 @@ export async function POST(req: Request) {
 
   const slotLabel =
     startsAt && date
-      ? `${date} — ساعت ${new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tehran" }).format(startsAt)}`
+      ? `${formatJalaliLong(`${date}T12:00:00Z`)} — ساعت ${new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tehran" }).format(startsAt)}`
       : null;
 
   return NextResponse.json({
