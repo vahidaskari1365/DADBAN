@@ -15,12 +15,11 @@ export const HELPS: { key: HelpType; label: string; icon: IconKey }[] = [
   { key: "lawyer", label: "استخدام وکیل", icon: "user" },
   { key: "doc", label: "تنظیم سند/قرارداد", icon: "document" },
 ];
-const TOTAL = 5;
+const TOTAL = 4;
 
 const STEP_TITLES = [
   "موضوع پرونده شما چیست؟",
   "پرونده در چه مرحله‌ای است؟",
-  "یک‌خطی مشکل‌تان را بنویسید (اختیاری)",
   "در کدام استان هستید؟",
   "چه کمکی می‌خواهید؟",
 ];
@@ -78,7 +77,6 @@ function QuickStartInner() {
   const initialTopic = search.get("topic");
   const [step, setStep] = useState(0);
   const [topic, setTopic] = useState<string | null>(initialTopic && LEGAL_TOPICS.some((t) => t.label === initialTopic) ? initialTopic : null);
-  const [description, setDescription] = useState("");
   const [stage, setStage] = useState<string | null>(null);
   const [province, setProvince] = useState<string | null>(null);
   const [help, setHelp] = useState<HelpType | null>(null);
@@ -86,7 +84,7 @@ function QuickStartInner() {
   const [done, setDone] = useState(false);
 
   const canNext =
-    step === 0 ? topic !== null : step === 1 ? stage !== null : step === 2 ? true : step === 3 ? province !== null : help !== null;
+    step === 0 ? topic !== null : step === 1 ? stage !== null : step === 2 ? province !== null : help !== null;
 
   const goNext = () => {
     if (!started) {
@@ -114,7 +112,7 @@ function QuickStartInner() {
 
   const rec: Recommendation | null =
     done && topic && stage && province && help
-      ? buildRecommendation({ topic, description, stage, city: province, help })
+      ? buildRecommendation({ topic, stage, city: province, help })
       : null;
 
   return (
@@ -197,20 +195,6 @@ function QuickStartInner() {
 
                 {step === 2 && (
                   <div>
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={3}
-                      maxLength={500}
-                      placeholder="مثلاً: مستأجرم سه ماه اجاره نداده و در قرارداد شرط تخلیه دارم…"
-                      className="w-full resize-y rounded-xl border border-border-strong bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
-                    />
-                    <p className="mt-1.5 text-[11px] text-muted">اختیاری — فقط برای دقیق‌تر شدن هدایت استفاده می‌شود.</p>
-                  </div>
-                )}
-
-                {step === 3 && (
-                  <div>
                     <div className="relative">
                       <span className="pointer-events-none absolute right-3.5 top-1/2 z-10 -translate-y-1/2 text-muted-soft">
                         <Icon name="location" className="h-5 w-5" />
@@ -252,7 +236,7 @@ function QuickStartInner() {
                   </div>
                 )}
 
-                {step === 4 && (
+                {step === 3 && (
                   <div className="grid gap-2 sm:grid-cols-3">
                     {HELPS.map((h) => (
                       <OptionCard key={h.key} label={h.label} icon={h.icon} active={help === h.key} onClick={() => setHelp(h.key)} big />
@@ -270,7 +254,7 @@ function QuickStartInner() {
                   → قبلی
                 </button>
                 <Button onClick={goNext} disabled={!canNext} icon="arrow">
-                  {step === TOTAL - 1 ? "دیدن پیشنهاد" : step === 2 ? (description.trim() ? "ادامه" : "ادامه بدون شرح") : "ادامه"}
+                  {step === TOTAL - 1 ? "دیدن پیشنهاد" : "ادامه"}
                 </Button>
               </div>
             </div>

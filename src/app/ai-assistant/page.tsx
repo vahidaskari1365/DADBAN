@@ -224,6 +224,9 @@ function ContractView({ findings, riskScore }: { findings: ClauseFinding[]; risk
   );
 }
 
+const CONTRACT_MAX_MB = 5;
+const CONTRACT_ACCEPT = ".txt,.md,.csv,.docx,.pdf,.png,.jpg,.jpeg,.webp,image/*";
+
 function AIAssistantContent() {
   const search = useSearchParams();
   const [tab, setTab] = useState<"guide" | "contract">(search.get("tab") === "contract" ? "contract" : "guide");
@@ -243,6 +246,9 @@ function AIAssistantContent() {
   const [contractResult, setContractResult] = useState<{ findings: ClauseFinding[]; riskScore: number } | null>(null);
   const [contractAnalysis, setContractAnalysis] = useState<string | null>(null);
   const [contractError, setContractError] = useState<string | null>(null);
+  const [contractFile, setContractFile] = useState<File | null>(null);
+  const [contractDrag, setContractDrag] = useState(false);
+  const contractInputRef = useRef<HTMLInputElement>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -304,25 +310,44 @@ function AIAssistantContent() {
     }
   };
 
+  const pickContractFile = (f: File | undefined | null) => {
+    if (!f) return;
+    if (f.size > CONTRACT_MAX_MB * 1024 * 1024) {
+      setContractError(`حجم فایل باید کمتر از ${CONTRACT_MAX_MB} مگابایت باشد.`);
+      return;
+    }
+    setContractError(null);
+    setContractResult(null);
+    setContractAnalysis(null);
+    setContractFile(f);
+  };
+
   const analyze = async () => {
-    if (!contractText.trim()) return;
+    if (contractLoading || (!contractFile && !contractText.trim())) return;
     setContractLoading(true);
     setContractError(null);
     setContractResult(null);
     setContractAnalysis(null);
     try {
-      const res = await fetch("/api/ai-assistant", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "contract", contract: contractText }),
-      });
+      let res: Response;
+      if (contractFile) {
+        // آپلود فایل/عکس قرارداد — استخراج متن (و OCR عکس) سمت سرور
+        const fd = new FormData();
+        fd.append("file", contractFile);
+        fd.append("mode", "contract");
+        res = await fetch("/api/ai-assistant", { method: "POST", body: fd });
+      } else {
+        res = await fetch("/api/ai-assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode: "contract", contract: contractText }),
+        });
+      }
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
-      if (data.analysis) {
-        setContractAnalysis(data.analysis);
-      } else {
-        setContractResult({ findings: data.findings, riskScore: data.riskScore });
-      }
+      // آمار/ریسک محلی همیشه هست؛ متن تحلیل هوش مصنوعی در صورت موفقیت اضافه می‌شود
+      setContractResult({ findings: data.findings ?? [], riskScore: data.riskScore ?? 0 });
+      if (data.analysis) setContractAnalysis(data.analysis);
     } catch (e) {
       setContractError(e instanceof Error ? e.message : "خطا در تحلیل");
     } finally {
@@ -483,8 +508,61 @@ function AIAssistantContent() {
           ) : (
             <div className="space-y-6">
               <Card hover={false} className="space-y-3">
+                {/* بارگذاری فایل/عکس قرارداد — drag & drop + انتخاب فایل */}
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setContractDrag(true); }}
+                  onDragLeave={() => setContractDrag(false)}
+                  onDrop={(e) => { e.preventDefault(); setContractDrag(false); pickContractFile(e.dataTransfer.files?.[0]); }}
+                  className={`rounded-2xl border-2 border-dashed p-4 text-center transition-colors ${contractDrag ? "border-primary bg-primary-soft/40" : "border-border bg-surface-2/40"}`}
+                >
+                  <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                    <Icon name="document" className="h-5 w-5" />
+                  </span>
+                  <p className="mt-2 text-sm font-bold text-foreground">بارگذاری متن قرارداد</p>
+                  <p className="mt-1 text-xs text-muted">PDF، Word (docx)، متن ساده یا عکس قرارداد — حتی عکس؛ متن آن با هوش مصنوعی خوانده می‌شود (حداکثر {CONTRACT_MAX_MB} مگابایت)</p>
+                  <button
+                    type="button"
+                    onClick={() => contractInputRef.current?.click()}
+                    className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-2 text-sm font-bold text-foreground transition-all hover:border-primary/40 hover:bg-primary-soft hover:text-primary"
+                  >
+                    <Icon name="file" className="h-4 w-4" />
+                    انتخاب فایل از دستگاه
+                  </button>
+                  <input
+                    ref={contractInputRef}
+                    type="file"
+                    accept={CONTRACT_ACCEPT}
+                    className="hidden"
+                    aria-label="آپلود فایل قرارداد"
+                    onChange={(e) => {
+                      pickContractFile(e.target.files?.[0]);
+                      e.target.value = "";
+                    }}
+                  />
+                </div>
+
+                {contractFile && (
+                  <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary-soft/30 px-4 py-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                      <Icon name="document" className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1 text-right">
+                      <p className="truncate text-sm font-bold text-foreground">{contractFile.name}</p>
+                      <p className="text-xs text-muted">{(contractFile.size / 1024).toFixed(0)} کیلوبایت</p>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="حذف فایل"
+                      onClick={() => setContractFile(null)}
+                      className="cursor-pointer rounded-lg p-1.5 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
+                    >
+                      <Icon name="x" className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+
                 <label htmlFor="contract-input" className="text-sm font-bold text-foreground">
-                  متن قرارداد را درج کنید (یا کپی پیست کنید)
+                  یا متن قرارداد را درج کنید (کپی/پیست)
                 </label>
                 <textarea
                   id="contract-input"
@@ -495,9 +573,23 @@ function AIAssistantContent() {
                   className="w-full resize-y rounded-xl border border-border-strong bg-background p-3 text-sm leading-7 text-foreground outline-none transition-colors focus:border-primary"
                 />
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-muted">{contractText.length} کاراکتر</p>
-                  <Button onClick={analyze} disabled={contractLoading || !contractText.trim()} icon="file">
-                    {contractLoading ? "در حال تحلیل…" : "تحلیل قرارداد"}
+                  <p className="text-xs text-muted">
+                    {contractFile
+                      ? contractFile.type.startsWith("image/")
+                        ? "عکس آماده خواندن و تحلیل است"
+                        : "فایل انتخاب‌شده آماده تحلیل است"
+                      : `${contractText.length} کاراکتر`}
+                  </p>
+                  <Button onClick={analyze} disabled={contractLoading || (!contractFile && !contractText.trim())} icon="file">
+                    {contractLoading
+                      ? contractFile && contractFile.type.startsWith("image/")
+                        ? "در حال خواندن عکس و تحلیل…"
+                        : "در حال تحلیل…"
+                      : contractFile
+                        ? contractFile.type.startsWith("image/")
+                          ? "تحلیل عکس قرارداد"
+                          : "تحلیل فایل قرارداد"
+                        : "تحلیل قرارداد"}
                   </Button>
                 </div>
               </Card>
@@ -531,7 +623,7 @@ function AIAssistantContent() {
 
               {!contractResult && !contractAnalysis && !contractLoading && (
                 <div className="rounded-2xl border border-dashed border-border bg-surface-2/50 p-6 text-center text-sm text-muted">
-                  متن قرارداد را وارد کنید تا تحلیل هوشمند بندهای پرریسک، جریمه‌ها و ابهامات نمایش داده شود.
+                  متن قرارداد را وارد کنید یا فایل/عکس قرارداد را بارگذاری کنید تا تحلیل هوشمند بندهای پرریسک، جریمه‌ها و ابهامات نمایش داده شود.
                 </div>
               )}
             </div>

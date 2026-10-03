@@ -9,7 +9,7 @@ interface Finding { type: "risk" | "info"; label: string; detail: string }
 interface ReviewResult { analysis?: string | null; findings: Finding[]; riskScore: number }
 
 const MAX_MB = 5;
-const ACCEPT = ".txt,.md,.csv,.docx,.pdf";
+const ACCEPT = ".txt,.md,.csv,.docx,.pdf,.png,.jpg,.jpeg,.webp,image/*";
 
 export default function ContractReviewPage() {
   const [text, setText] = useState("");
@@ -20,6 +20,7 @@ export default function ContractReviewPage() {
   const [result, setResult] = useState<ReviewResult | null>(null);
   const [sourceName, setSourceName] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isImg = !!file && file.type.startsWith("image/");
 
   const pickFile = (f: File | undefined | null) => {
     if (!f) return;
@@ -67,7 +68,7 @@ export default function ContractReviewPage() {
 
   return (
     <>
-      <PageHero badge="بررسی قرارداد" title="قرارداد خود را هوشمندانه تحلیل کنید" desc="فایل قرارداد را آپلود کنید یا متن آن را درج کنید تا بندهای پرریسک، جریمه‌ها، تعهدات و ابهامات شناسایی شوند. سپس برای دقت نهایی، وکیل آن را بررسی می‌کند." breadcrumb={[{ label: "خانه", href: "/" }, { label: "قراردادها", href: "/contracts" }, { label: "بررسی قرارداد" }]} />
+      <PageHero badge="بررسی قرارداد" title="قرارداد خود را هوشمندانه تحلیل کنید" desc="فایل یا عکس قرارداد را آپلود کنید یا متن آن را درج کنید تا بندهای پرریسک، جریمه‌ها، تعهدات و ابهامات شناسایی شوند — حتی عکس قرارداد؛ متنش با هوش مصنوعی خوانده می‌شود. برای دقت نهایی، وکیل آن را بررسی می‌کند." breadcrumb={[{ label: "خانه", href: "/" }, { label: "قراردادها", href: "/contracts" }, { label: "بررسی قرارداد" }]} />
 
       <Container className="py-12">
         <div className="mx-auto max-w-3xl space-y-6">
@@ -91,8 +92,9 @@ export default function ContractReviewPage() {
               </span>
               <p className="mt-2 text-sm font-bold text-foreground">فایل قرارداد را اینجا رها کنید</p>
               <p className="mt-1 text-xs text-muted">
-                فرمت‌های مجاز: PDF، Word (docx)، متن ساده — حداکثر {MAX_MB} مگابایت
+                فرمت‌های مجاز: PDF، Word (docx)، متن ساده یا عکس قرارداد — حداکثر {MAX_MB} مگابایت
               </p>
+              <p className="mt-1 text-xs font-medium text-primary">عکس قرارداد هم قبول است — متن آن با هوش مصنوعی خوانده می‌شود.</p>
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
@@ -146,8 +148,8 @@ export default function ContractReviewPage() {
             <label htmlFor="cr" className="sr-only">متن قرارداد</label>
             <textarea id="cr" value={text} onChange={(e) => setText(e.target.value)} rows={9} placeholder="متن قرارداد خود را اینجا قرار دهید…" className="w-full resize-y rounded-xl border border-border-strong bg-background p-3 text-sm leading-7 text-foreground outline-none transition-colors focus:border-primary" />
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">{file ? "فایل انتخاب‌شده آماده تحلیل است" : `${text.length} کاراکتر`}</span>
-              <Button onClick={analyze} disabled={loading || (!file && !text.trim())} icon="file">{loading ? (file ? "در حال تحلیل فایل…" : "در حال تحلیل…") : file ? "تحلیل فایل قرارداد" : "تحلیل قرارداد"}</Button>
+              <span className="text-xs text-muted">{file ? (isImg ? "عکس انتخاب‌شده آماده تحلیل است" : "فایل انتخاب‌شده آماده تحلیل است") : `${text.length} کاراکتر`}</span>
+              <Button onClick={analyze} disabled={loading || (!file && !text.trim())} icon="file">{loading ? (isImg ? "در حال خواندن عکس و تحلیل…" : file ? "در حال تحلیل فایل…" : "در حال تحلیل…") : isImg ? "تحلیل عکس قرارداد" : file ? "تحلیل فایل قرارداد" : "تحلیل قرارداد"}</Button>
             </div>
           </Card>
 

@@ -343,6 +343,79 @@ export async function askLLM(messages: LlmMessage[], maxTokens = 400, systemProm
   return null;
 }
 
+/* ─── بینایی ماشین (OCR تصویر قرارداد) ────────────────────────────────── */
+
+/** ارائه‌دهنده‌های دارای قابلیت بینایی (vision) برای خواندن متن از تصویر */
+function visionProviders(): Provider[] {
+  const out: Provider[] = [];
+  const key = process.env.ZAI_API_KEY || process.env.LLM_API_KEY;
+  if (key) {
+    const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
+    out.push({ id: "zai-vision", base: `${base}/chat/completions`, key, model: process.env.VISION_MODEL ?? "glm-4.5v", timeoutMs: 28_000, group: "keyed" });
+  }
+  if (process.env.GEMINI_API_KEY) {
+    out.push({
+      id: "gemini-vision",
+      base: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      key: process.env.GEMINI_API_KEY,
+      model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash",
+      timeoutMs: 28_000,
+      group: "keyed",
+    });
+  }
+  if (process.env.OPENROUTER_API_KEY) {
+    out.push({
+      id: "openrouter-vision",
+      base: "https://openrouter.ai/api/v1/chat/completions",
+      key: process.env.OPENROUTER_API_KEY,
+      model: process.env.OPENROUTER_VISION_MODEL ?? "google/gemini-2.0-flash-exp:free",
+      timeoutMs: 25_000,
+      group: "keyed",
+    });
+  }
+  return out;
+}
+
+/**
+ * استخراج متن از تصویر قرارداد با مدل بینایی (OCR هوشمند).
+ * imageData باید Data URL کامل باشد (data:image/png;base64,...)
+ * خروجی: متن استخراج‌شده یا null در صورت شکست همه ارائه‌دهنده‌ها.
+ */
+export async function askVisionLLM(prompt: string, imageData: string, maxTokens = 4000): Promise<string | null> {
+  const t0 = Date.now();
+  for (const p of visionProviders()) {
+    if (Date.now() - t0 > 40_000) break; // بودجه زمانی کل — مسیر maxDuration=60 امن بماند
+    try {
+      const body: Record<string, unknown> = {
+        model: p.model,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: imageData } },
+            ],
+          },
+        ],
+        max_tokens: maxTokens,
+        temperature: 0.1,
+      };
+      if (p.base.includes("api.z.ai") || p.base.includes("bigmodel.cn")) body.thinking = { type: "disabled" };
+      const extra: Record<string, string> = {};
+      if (p.id === "openrouter-vision") {
+        extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
+        extra["X-Title"] = "DADBAN";
+      }
+      const text = await postOpenAiCompatible(p.base, body, p.key, p.timeoutMs, extra);
+      if (text && text.trim().length > 20) return text.trim();
+    } catch {
+      /* ارائه‌دهنده بعدی */
+    }
+  }
+  return null;
+}
+
+
 /* ─── تشخیص سلامت (برای /api/ai/llm-health) — هرگز کلید برنمی‌گرداند ───── */
 
 export type ProbeRow = { id: string; model: string; ok: boolean; ms: number; info: string };

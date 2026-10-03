@@ -7,7 +7,7 @@ import { extractContractFile } from "@/lib/extract-text";
 import { detectSpecialtiesFromMessage, detectProvinceFromMessage, matchLawyers, TOPIC_SPECIALTIES, type MatchedLawyer } from "@/lib/lawyer-match";
 
 export const runtime = "nodejs";
-export const maxDuration = 30; // Vercel fluid — زمان کافی برای زنجیره fallback
+export const maxDuration = 60; // Vercel fluid — بودجه کافی برای OCR عکس + زنجیره fallback
 
 const withTimeout = <T,>(task: Promise<T>, ms: number) =>
   Promise.race<T>([task, new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))]);

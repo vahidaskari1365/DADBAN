@@ -14,19 +14,17 @@ import { STAGES, HELPS, ResultCard } from "./quick-start";
 const FSTEP_TITLES = [
   "",
   "پرونده در چه مرحله‌ای است؟",
-  "یک‌خطی مشکل‌تان را بنویسید (اختیاری)",
   "در کدام استان هستید؟",
   "چه کمکی می‌خواهید؟",
 ];
-const FUNNEL_TOTAL = 4; // مرحله/توضیح/استان/کمک — انتخاب موضوع گام صفر است
+const FUNNEL_TOTAL = 3; // مرحله/استان/کمک — انتخاب موضوع گام صفر است؛ گام «توضیح اختیاری» طبق درخواست کاربر حذف شد
 
 export function HomeHero() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [fstep, setFstep] = useState(0); // 0=انتخاب موضوع، 1..4 مراحل، 5=پیشنهاد
+  const [fstep, setFstep] = useState(0); // 0=انتخاب موضوع، 1..3 مراحل، 4=پیشنهاد
   const [topic, setTopic] = useState<string | null>(null);
   const [stage, setStage] = useState<string | null>(null);
-  const [description, setDescription] = useState("");
   const [province, setProvince] = useState<string | null>(null);
   const [help, setHelp] = useState<HelpType | null>(null);
   const [started, setStarted] = useState(false);
@@ -53,7 +51,6 @@ export function HomeHero() {
     setFstep(0);
     setTopic(null);
     setStage(null);
-    setDescription("");
     setProvince(null);
     setHelp(null);
     setStarted(false);
@@ -61,7 +58,7 @@ export function HomeHero() {
 
   const finish = (h: HelpType) => {
     setHelp(h);
-    setFstep(5);
+    setFstep(4);
     trackEvent("quickstart_completed");
   };
 
@@ -76,8 +73,8 @@ export function HomeHero() {
   };
 
   const rec =
-    fstep === 5 && topic && stage && province && help
-      ? buildRecommendation({ topic, description, stage, city: province, help })
+    fstep === 4 && topic && stage && province && help
+      ? buildRecommendation({ topic, stage, city: province, help })
       : null;
 
   return (
@@ -211,14 +208,14 @@ export function HomeHero() {
                     <span
                       key={i}
                       className={`h-1.5 w-6 rounded-full transition-all duration-300 ${
-                        fstep === 5 || i < fstep ? "bg-accent" : "bg-border"
+                        fstep === 4 || i < fstep ? "bg-accent" : "bg-border"
                       }`}
                     />
                   ))}
                 </div>
               </div>
 
-              {fstep <= 4 && (
+              {fstep <= 3 && (
                 <h4 className="mt-4 text-base font-bold text-foreground">{FSTEP_TITLES[fstep]}</h4>
               )}
 
@@ -244,25 +241,6 @@ export function HomeHero() {
 
                 {fstep === 2 && (
                   <div>
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={3}
-                      maxLength={500}
-                      placeholder="مثلاً: مستأجرم سه ماه اجاره نداده و در قرارداد شرط تخلیه دارم…"
-                      className="w-full resize-y rounded-xl border border-border-strong bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
-                    />
-                    <div className="mt-2 flex items-center justify-between">
-                      <p className="text-[11px] text-muted">اختیاری — برای هدایت دقیق‌تر.</p>
-                      <Button onClick={() => setFstep(3)} size="sm" icon="arrow">
-                        {description.trim() ? "ادامه" : "ادامه بدون شرح"}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {fstep === 3 && (
-                  <div>
                     <div className="relative">
                       <span className="pointer-events-none absolute right-3.5 top-1/2 z-10 -translate-y-1/2 text-muted-soft">
                         <Icon name="location" className="h-5 w-5" />
@@ -278,7 +256,7 @@ export function HomeHero() {
                             } catch {
                               /* حافظه محلی در دسترس نیست */
                             }
-                            setFstep(4);
+                            setFstep(3);
                           }
                         }}
                         aria-label="انتخاب استان"
@@ -300,7 +278,7 @@ export function HomeHero() {
                   </div>
                 )}
 
-                {fstep === 4 && (
+                {fstep === 3 && (
                   <div className="grid gap-2 sm:grid-cols-3">
                     {HELPS.map((h) => (
                       <button
@@ -316,7 +294,7 @@ export function HomeHero() {
                   </div>
                 )}
 
-                {fstep === 5 && rec && (
+                {fstep === 4 && rec && (
                   <div className="animate-fade-up">
                     <div className="flex items-center gap-2">
                       <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-success/15 text-success">
@@ -351,7 +329,7 @@ export function HomeHero() {
                 )}
               </div>
 
-              {fstep <= 4 && (
+              {fstep <= 3 && (
                 <div className="mt-4">
                   <button
                     type="button"
