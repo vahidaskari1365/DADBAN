@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   compress: true,
+  async redirects() {
+    return [
+      // مرکز هوش مصنوعی حذف شد — ریدایرکت دائمی برای حفظ سئو و لینک‌های قدیمی
+      { source: "/ai", destination: "/ai-assistant", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

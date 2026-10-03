@@ -6,7 +6,7 @@ export type IconKey =
   | "stamp" | "family" | "home" | "shield" | "building" | "truck" | "calculator"
   | "book" | "balance" | "lock" | "chat" | "phone" | "user" | "sparkles"
   | "check" | "clock" | "star" | "badge" | "bolt" | "document" | "landmark"
-  | "money" | "alert" | "scale" | "briefcase" | "id" | "arrow" | "chevron" | "plus" | "filter" | "x" | "send" | "menu" | "location";
+  | "money" | "alert" | "scale" | "briefcase" | "id" | "arrow" | "chevron" | "plus" | "filter" | "x" | "send" | "menu" | "location" | "share" | "quote" | "link";
 
 /* ---------------- Legal topics (hero selector) ---------------- */
 export const LEGAL_TOPICS: { label: string; icon: IconKey; hint: string }[] = [
@@ -153,12 +153,10 @@ export const NAV: {
   },
   {
     label: "ابزارها",
-    href: "/ai",
+    href: "/ai-assistant",
     children: [
-      { label: "مرکز هوش مصنوعی", href: "/ai", desc: "تحلیل سند، جستجوی وب و استودیوی صدا" },
+      { label: "دستیار حقوقی هوشمند", href: "/ai-assistant", desc: "راهنمای حقوقی با استناد قانونی" },
       { label: "جعبه‌ابزار منبع‌باز", href: "/ai/resources", desc: "کاتالوگ API رایگان، مهارت‌ها و آکادمی AI" },
-      { label: "دستیار حقوقی", href: "/ai-assistant", desc: "راهنمای حقوقی هوشمند" },
-      { label: "تحلیل سند با عکس", href: "/ai", desc: "عکس سند را بفرست، تحلیل بگیر" },
       { label: "تحلیل قرارداد", href: "/contracts/review", desc: "بندهای پرریسک" },
       { label: "قراردادساز", href: "/contracts/builder", desc: "ساخت قرارداد گام‌به‌گام" },
       { label: "فرم‌های حقوقی", href: "/legal-forms", desc: "دادخواست، شکواییه، اظهارنامه" },
@@ -177,7 +175,7 @@ export const NAV: {
   },
   { label: "برای کسب‌وکارها", href: "/business" },
   { label: "پیگیری پرونده", href: "/track-case" },
-  { label: "هوش مصنوعی", href: "/ai", ai: true },
+  { label: "دستیار هوشمند", href: "/ai-assistant", ai: true },
 ];
 
 /* ---------------- Contract categories ---------------- */

@@ -36,7 +36,7 @@ export default function AiResourcesPage() {
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button href="#toolbox" size="lg" icon="bolt">مشاهده‌ی ابزارها</Button>
-              <Button href="/ai" variant="outline" size="lg" icon="sparkles">مرکز هوش مصنوعی</Button>
+              <Button href="/ai-assistant" variant="outline" size="lg" icon="sparkles">دستیار حقوقی هوشمند</Button>
             </div>
           </div>
         </Container>
