@@ -19,8 +19,8 @@ const TOTAL = 5;
 
 const STEP_TITLES = [
   "موضوع پرونده شما چیست؟",
-  "یک‌خطی مشکل‌تان را بنویسید (اختیاری)",
   "پرونده در چه مرحله‌ای است؟",
+  "یک‌خطی مشکل‌تان را بنویسید (اختیاری)",
   "در کدام استان هستید؟",
   "چه کمکی می‌خواهید؟",
 ];
@@ -86,7 +86,7 @@ function QuickStartInner() {
   const [done, setDone] = useState(false);
 
   const canNext =
-    step === 0 ? topic !== null : step === 1 ? true : step === 2 ? stage !== null : step === 3 ? province !== null : help !== null;
+    step === 0 ? topic !== null : step === 1 ? stage !== null : step === 2 ? true : step === 3 ? province !== null : help !== null;
 
   const goNext = () => {
     if (!started) {
@@ -188,6 +188,14 @@ function QuickStartInner() {
                 )}
 
                 {step === 1 && (
+                  <div className="flex flex-col gap-2">
+                    {STAGES.map((s) => (
+                      <OptionCard key={s} label={s} active={stage === s} onClick={() => setStage(s)} icon={stage === s ? "check" : undefined} />
+                    ))}
+                  </div>
+                )}
+
+                {step === 2 && (
                   <div>
                     <textarea
                       value={description}
@@ -198,14 +206,6 @@ function QuickStartInner() {
                       className="w-full resize-y rounded-xl border border-border-strong bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
                     />
                     <p className="mt-1.5 text-[11px] text-muted">اختیاری — فقط برای دقیق‌تر شدن هدایت استفاده می‌شود.</p>
-                  </div>
-                )}
-
-                {step === 2 && (
-                  <div className="flex flex-col gap-2">
-                    {STAGES.map((s) => (
-                      <OptionCard key={s} label={s} active={stage === s} onClick={() => setStage(s)} icon={stage === s ? "check" : undefined} />
-                    ))}
                   </div>
                 )}
 
@@ -270,7 +270,7 @@ function QuickStartInner() {
                   → قبلی
                 </button>
                 <Button onClick={goNext} disabled={!canNext} icon="arrow">
-                  {step === TOTAL - 1 ? "دیدن پیشنهاد" : step === 1 ? (description.trim() ? "ادامه" : "ادامه بدون شرح") : "ادامه"}
+                  {step === TOTAL - 1 ? "دیدن پیشنهاد" : step === 2 ? (description.trim() ? "ادامه" : "ادامه بدون شرح") : "ادامه"}
                 </Button>
               </div>
             </div>
