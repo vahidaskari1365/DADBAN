@@ -47,8 +47,7 @@ async function ocrContractImage(buf: Buffer, mime: string): Promise<string> {
     if ((r2.text ?? "").length > best.length) best = r2.text ?? "";
   }
   if (!best || best.length < 80) {
-    const dbg = r1.errors.join(" | ").slice(0, 240);
-    throw new Error("خواندن متن از تصویر ممکن نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر پایین بچسبانید." + (dbg ? ` [dbg: ${dbg}]` : ""));
+    throw new Error("خواندن متن از تصویر در حال حاضر ممکن نشد؛ لطفاً متن قرارداد را در کادر پایین بچسبانید یا فایل PDF/Word آپلود کنید.");
   }
   return best;
 }

@@ -8,6 +8,7 @@ import { LawyerPicksFlow } from "@/components/ai/lawyer-picks";
 import type { LegalGuidance } from "@/lib/legal-engine";
 import type { MatchedLawyer } from "@/lib/lawyer-match";
 import type { IconKey } from "@/lib/data";
+import { ocrImageFileClient } from "@/lib/ocr-client";
 
 interface ClauseFinding {
   type: "risk" | "info";
@@ -249,6 +250,7 @@ function AIAssistantContent() {
   const [contractFile, setContractFile] = useState<File | null>(null);
   const [contractDrag, setContractDrag] = useState(false);
   const contractInputRef = useRef<HTMLInputElement>(null);
+  const [contractOcr, setContractOcr] = useState<number | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -310,39 +312,13 @@ function AIAssistantContent() {
     }
   };
 
-  const pickContractFile = (f: File | undefined | null) => {
-    if (!f) return;
-    if (f.size > CONTRACT_MAX_MB * 1024 * 1024) {
-      setContractError(`حجم فایل باید کمتر از ${CONTRACT_MAX_MB} مگابایت باشد.`);
-      return;
-    }
-    setContractError(null);
-    setContractResult(null);
-    setContractAnalysis(null);
-    setContractFile(f);
-  };
-
-  const analyze = async () => {
-    if (contractLoading || (!contractFile && !contractText.trim())) return;
+  const runContractRequest = async (url: string, init: RequestInit) => {
     setContractLoading(true);
     setContractError(null);
     setContractResult(null);
     setContractAnalysis(null);
     try {
-      let res: Response;
-      if (contractFile) {
-        // آپلود فایل/عکس قرارداد — استخراج متن (و OCR عکس) سمت سرور
-        const fd = new FormData();
-        fd.append("file", contractFile);
-        fd.append("mode", "contract");
-        res = await fetch("/api/ai-assistant", { method: "POST", body: fd });
-      } else {
-        res = await fetch("/api/ai-assistant", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode: "contract", contract: contractText }),
-        });
-      }
+      const res = await fetch(url, init);
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
       // آمار/ریسک محلی همیشه هست؛ متن تحلیل هوش مصنوعی در صورت موفقیت اضافه می‌شود
@@ -352,6 +328,64 @@ function AIAssistantContent() {
       setContractError(e instanceof Error ? e.message : "خطا در تحلیل");
     } finally {
       setContractLoading(false);
+    }
+  };
+
+  // عکس قرارداد → OCR در مرورگر (tesseract.js فارسی+انگلیسی) → متن در کادر → تحلیل خودکار
+  const ocrImageFile = async (f: File) => {
+    setContractFile(f);
+    setContractOcr(0);
+    try {
+      const txt = await ocrImageFileClient(f, (pct) => setContractOcr(pct));
+      setContractOcr(null);
+      setContractFile(null);
+      if (txt.length < 30) {
+        throw new Error("متنی از این عکس خوانده نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر بچسبانید.");
+      }
+      const clipped = txt.slice(0, 6000);
+      setContractText(clipped);
+      await runContractRequest("/api/ai-assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "contract", contract: clipped }),
+      });
+    } catch (e) {
+      setContractOcr(null);
+      setContractFile(null);
+      setContractError(e instanceof Error ? e.message : "خواندن متن از عکس ممکن نشد.");
+    }
+  };
+
+  const pickContractFile = (f: File | undefined | null) => {
+    if (!f) return;
+    if (f.size > CONTRACT_MAX_MB * 1024 * 1024) {
+      setContractError(`حجم فایل باید کمتر از ${CONTRACT_MAX_MB} مگابایت باشد.`);
+      return;
+    }
+    setContractError(null);
+    setContractResult(null);
+    setContractAnalysis(null);
+    // عکس → OCR در مرورگر؛ فایل سند (PDF/Word/متن) → آپلود به سرور
+    if (f.type.startsWith("image/")) {
+      void ocrImageFile(f);
+      return;
+    }
+    setContractFile(f);
+  };
+
+  const analyze = async () => {
+    if (contractLoading || (!contractFile && !contractText.trim())) return;
+    if (contractFile) {
+      const fd = new FormData();
+      fd.append("file", contractFile);
+      fd.append("mode", "contract");
+      await runContractRequest("/api/ai-assistant", { method: "POST", body: fd });
+    } else {
+      await runContractRequest("/api/ai-assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "contract", contract: contractText }),
+      });
     }
   };
 
@@ -540,6 +574,16 @@ function AIAssistantContent() {
                     }}
                   />
                 </div>
+
+                {contractOcr !== null && (
+                  <div className="rounded-xl border border-accent/30 bg-accent-soft/30 px-4 py-3 text-center">
+                    <p className="text-sm font-bold text-accent">در حال خواندن متن عکس با هوش مصنوعی… {contractOcr}٪</p>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
+                      <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(5, contractOcr)}%` }} />
+                    </div>
+                  </div>
+                )}
+
 
                 {contractFile && (
                   <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary-soft/30 px-4 py-3">

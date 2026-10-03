@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { ocrImageFileClient } from "@/lib/ocr-client";
 
 interface Finding { type: "risk" | "info"; label: string; detail: string }
 interface ReviewResult { analysis?: string | null; findings: Finding[]; riskScore: number }
@@ -21,6 +22,51 @@ export default function ContractReviewPage() {
   const [sourceName, setSourceName] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isImg = !!file && file.type.startsWith("image/");
+  const [ocrPct, setOcrPct] = useState<number | null>(null);
+
+  const runRequest = async (init: RequestInit) => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    setSourceName(null);
+    try {
+      const res = await fetch("/api/ai-assistant", init);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      // پاسخ همیشه شامل findings/riskScore است؛ در حالت هوش مصنوعی متن تحلیل با استناد قانونی هم می‌آید
+      setResult({ analysis: data.analysis ?? null, findings: data.findings ?? [], riskScore: data.riskScore ?? 0 });
+      setSourceName(typeof data.fileName === "string" ? data.fileName : null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "خطا در تحلیل");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // عکس قرارداد → OCR در مرورگر (فارسی+انگلیسی) → متن در کادر → تحلیل خودکار
+  const ocrImageFile = async (f: File) => {
+    setFile(f);
+    setOcrPct(0);
+    try {
+      const txt = await ocrImageFileClient(f, (pct) => setOcrPct(pct));
+      setOcrPct(null);
+      setFile(null);
+      if (txt.length < 30) {
+        throw new Error("متنی از این عکس خوانده نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر بچسبانید.");
+      }
+      const clipped = txt.slice(0, 6000);
+      setText(clipped);
+      await runRequest({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "contract", contract: clipped }),
+      });
+    } catch (e) {
+      setOcrPct(null);
+      setFile(null);
+      setError(e instanceof Error ? e.message : "خواندن متن از عکس ممکن نشد.");
+    }
+  };
 
   const pickFile = (f: File | undefined | null) => {
     if (!f) return;
@@ -31,38 +77,27 @@ export default function ContractReviewPage() {
     setError(null);
     setResult(null);
     setSourceName(null);
+    // عکس → OCR در مرورگر؛ فایل سند (PDF/Word/متن) → آپلود به سرور
+    if (f.type.startsWith("image/")) {
+      void ocrImageFile(f);
+      return;
+    }
     setFile(f);
   };
 
   const analyze = async () => {
     if (loading || (!file && !text.trim())) return;
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    setSourceName(null);
-    try {
-      let res: Response;
-      if (file) {
-        const fd = new FormData();
-        fd.append("file", file);
-        fd.append("mode", "contract");
-        res = await fetch("/api/ai-assistant", { method: "POST", body: fd });
-      } else {
-        res = await fetch("/api/ai-assistant", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode: "contract", contract: text }),
-        });
-      }
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error);
-      // پاسخ همیشه شامل findings/riskScore است؛ در حالت هوش مصنوعی متن تحلیل با استناد قانونی هم می‌آید
-      setResult({ analysis: data.analysis ?? null, findings: data.findings ?? [], riskScore: data.riskScore ?? 0 });
-      setSourceName(typeof data.fileName === "string" ? data.fileName : null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "خطا در تحلیل");
-    } finally {
-      setLoading(false);
+    if (file) {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("mode", "contract");
+      await runRequest({ method: "POST", body: fd });
+    } else {
+      await runRequest({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "contract", contract: text }),
+      });
     }
   };
 
@@ -115,6 +150,16 @@ export default function ContractReviewPage() {
                 }}
               />
             </div>
+
+            {ocrPct !== null && (
+              <div className="rounded-xl border border-accent/30 bg-accent-soft/30 px-4 py-3 text-center">
+                <p className="text-sm font-bold text-accent">در حال خواندن متن عکس با هوش مصنوعی… {ocrPct}٪</p>
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
+                  <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(5, ocrPct)}%` }} />
+                </div>
+              </div>
+            )}
+
 
             {file && (
               <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary-soft/30 px-4 py-3">

@@ -360,20 +360,6 @@ function visionProviders(): Provider[] {
     seen.add(k);
     out.push({ id, base, key, model, timeoutMs, group: "keyed" });
   };
-  // دروازه‌ی داخلی z.ai — همان مسیر SDK؛ پیکربندی از env (برای جایی که فایل config وجود ندارد)
-  const internalRaw = process.env.ZAI_INTERNAL_JSON;
-  if (internalRaw) {
-    try {
-      const cfg = JSON.parse(internalRaw) as { token?: string; apiKey?: string };
-      if (cfg.token) {
-        const base = `${(process.env.ZAI_INTERNAL_BASE ?? "https://internal-api.z.ai/v1").replace(/\/$/, "")}/chat/completions/vision`;
-        if (!seen.has(`${base}|internal`)) {
-          seen.add(`${base}|internal`);
-          out.push({ id: "zai-internal-vision", base, key: cfg.apiKey || "Z.ai", model: "-", timeoutMs: 30_000, group: "keyed" });
-        }
-      }
-    } catch { /* پیکربندی نامعتبر */ }
-  }
   if (key) {
     const canonical = "https://api.z.ai/api/paas/v4/chat/completions";
     const custom = (process.env.LLM_BASE_URL ?? "").replace(/\/$/, "");
@@ -431,26 +417,12 @@ export async function askVisionLLM(prompt: string, imageData: string, maxTokens 
         ],
       },
     ];
-    const isInternal = p.id === "zai-internal-vision";
-    // دروازه‌ی داخلی مدلِ صریح نمی‌خواهد — فقط messages + thinking (شکل SDK)
-    const body: Record<string, unknown> = isInternal
-      ? { messages, thinking: { type: "disabled" } }
-      : { model: p.model, messages, max_tokens: maxTokens, temperature: 0.1 };
-    if (!isInternal && p.model === "glm-4.5v" && p.base.includes("api.z.ai")) body.thinking = { type: "disabled" };
+    const body: Record<string, unknown> = { model: p.model, messages, max_tokens: maxTokens, temperature: 0.1 };
+    if (p.model === "glm-4.5v" && p.base.includes("api.z.ai")) body.thinking = { type: "disabled" };
     const extra: Record<string, string> = {};
     if (p.id === "openrouter-vision") {
       extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
       extra["X-Title"] = "DADBAN";
-    }
-    if (isInternal) {
-      try {
-        const cfg = JSON.parse(process.env.ZAI_INTERNAL_JSON ?? "{}") as { chatId?: string; userId?: string };
-        extra["X-Z-AI-From"] = "Z";
-        if (cfg.chatId) extra["X-Chat-Id"] = cfg.chatId;
-        if (cfg.userId) extra["X-User-Id"] = cfg.userId;
-        const tok = (JSON.parse(process.env.ZAI_INTERNAL_JSON ?? "{}") as { token?: string }).token;
-        if (tok) extra["X-Token"] = tok;
-      } catch { /* بدون هدر اضافی */ }
     }
     try {
       const text = await postOpenAiCompatible(p.base, body, p.key, p.timeoutMs, extra);
