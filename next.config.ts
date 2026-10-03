@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   // کتابخانه‌های استخراج متن فایل‌های قرارداد — باندل نشوند (سازگاری بهتر با serverless)
-  serverExternalPackages: ["pdf-parse", "mammoth"],
+  serverExternalPackages: ["mammoth"],
   async redirects() {
     return [
       // مرکز هوش مصنوعی حذف شد — ریدایرکت دائمی برای حفظ سئو و لینک‌های قدیمی
