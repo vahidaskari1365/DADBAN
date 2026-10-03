@@ -54,26 +54,17 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
         {/* ── سمت برند: لوگو + ارزش‌ها ── */}
         <div className="flex flex-col items-center text-center lg:items-start lg:text-right">
           <div className="relative">
-            <div aria-hidden className="absolute -inset-7 rounded-[3rem] bg-accent/15 blur-2xl" />
-            <div className="relative w-36 rounded-[2rem] bg-white p-3 shadow-2xl ring-1 ring-black/5 animate-scale-in sm:w-44 lg:w-48">
+            <div aria-hidden className="absolute -inset-8 rounded-[3.5rem] bg-accent/15 blur-2xl" />
+            <div className="relative w-44 rounded-[2.25rem] bg-white p-3.5 shadow-2xl ring-1 ring-black/5 animate-scale-in sm:w-56 lg:w-64">
               <Image
                 src="/logo1.png"
                 alt={`لوگوی ${SITE_NAME}`}
                 width={512}
                 height={512}
                 priority
-                sizes="(min-width: 1024px) 192px, (min-width: 640px) 176px, 144px"
-                className="h-auto w-full rounded-[1.5rem]"
+                sizes="(min-width: 1024px) 256px, (min-width: 640px) 224px, 176px"
+                className="h-auto w-full rounded-[1.75rem]"
               />
-            </div>
-            {/* بج‌های شناور */}
-            <div className="absolute -right-4 top-5 hidden items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-[10px] font-extrabold text-primary shadow-lg ring-1 ring-border animate-fade-in sm:flex [animation-delay:.2s]">
-              <Icon name="badge" className="h-3.5 w-3.5 text-accent" />
-              احراز هویت‌شده
-            </div>
-            <div className="absolute -left-5 bottom-7 hidden items-center gap-1.5 rounded-full bg-surface px-3 py-1.5 text-[10px] font-extrabold text-primary shadow-lg ring-1 ring-border animate-fade-in sm:flex [animation-delay:.35s]">
-              <Icon name="clock" className="h-3.5 w-3.5 text-accent" />
-              پشتیبانی ۲۴/۷
             </div>
           </div>
 
