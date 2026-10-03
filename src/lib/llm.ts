@@ -349,9 +349,33 @@ export async function askLLM(messages: LlmMessage[], maxTokens = 400, systemProm
 function visionProviders(): Provider[] {
   const out: Provider[] = [];
   const key = process.env.ZAI_API_KEY || process.env.LLM_API_KEY;
+  const seen = new Set<string>();
+  const push = (id: string, base: string, model: string, timeoutMs: number) => {
+    const k = `${base}|${model}`;
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push({ id, base, key, model, timeoutMs, group: "keyed" });
+  };
   if (key) {
-    const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
-    out.push({ id: "zai-vision", base: `${base}/chat/completions`, key, model: process.env.VISION_MODEL ?? "glm-4.5v", timeoutMs: 28_000, group: "keyed" });
+    const canonical = "https://api.z.ai/api/paas/v4/chat/completions";
+    const custom = (process.env.LLM_BASE_URL ?? "").replace(/\/$/, "");
+    // ۱) پایه‌ی کنونیکال z.ai — مستقل از LLM_BASE_URL (اگر پایه‌ی سفارشی مدل vision نداشته باشد)
+    push("zai-vision", canonical, process.env.VISION_MODEL ?? "glm-4.5v", 16_000);
+    push("zai-vision", canonical, "glm-4.1v-thinking-flash", 16_000);
+    // ۲) پایه‌ی سفارشی (در صورت متفاوت بودن)
+    if (custom && `${custom}/chat/completions` !== canonical) {
+      push("zai-vision-custom", `${custom}/chat/completions`, process.env.VISION_MODEL ?? "glm-4.5v", 16_000);
+    }
+  }
+  if (process.env.ATRIA_API_KEY) {
+    out.push({
+      id: "atria-vision",
+      base: `${(process.env.ATRIA_BASE_URL ?? "https://api.atria-asi.ai/v1").replace(/\/$/, "")}/chat/completions`,
+      key: process.env.ATRIA_API_KEY,
+      model: process.env.ATRIA_MODEL ?? "Atria-Dawn-Preview",
+      timeoutMs: 16_000,
+      group: "keyed",
+    });
   }
   if (process.env.GEMINI_API_KEY) {
     out.push({
@@ -359,7 +383,7 @@ function visionProviders(): Provider[] {
       base: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
       key: process.env.GEMINI_API_KEY,
       model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash",
-      timeoutMs: 28_000,
+      timeoutMs: 16_000,
       group: "keyed",
     });
   }
@@ -369,22 +393,25 @@ function visionProviders(): Provider[] {
       base: "https://openrouter.ai/api/v1/chat/completions",
       key: process.env.OPENROUTER_API_KEY,
       model: process.env.OPENROUTER_VISION_MODEL ?? "google/gemini-2.0-flash-exp:free",
-      timeoutMs: 25_000,
+      timeoutMs: 16_000,
       group: "keyed",
     });
   }
   return out;
 }
 
+export type VisionResult = { text: string | null; errors: string[] };
+
 /**
  * استخراج متن از تصویر قرارداد با مدل بینایی (OCR هوشمند).
  * imageData باید Data URL کامل باشد (data:image/png;base64,...)
- * خروجی: متن استخراج‌شده یا null در صورت شکست همه ارائه‌دهنده‌ها.
+ * خروجی: متن استخراج‌شده یا null به‌همراه فهرست خطاهای هر ارائه‌دهنده (برای تشخیص).
  */
-export async function askVisionLLM(prompt: string, imageData: string, maxTokens = 4000): Promise<string | null> {
+export async function askVisionLLM(prompt: string, imageData: string, maxTokens = 4000): Promise<VisionResult> {
+  const errors: string[] = [];
   const t0 = Date.now();
   for (const p of visionProviders()) {
-    if (Date.now() - t0 > 40_000) break; // بودجه زمانی کل — مسیر maxDuration=60 امن بماند
+    if (Date.now() - t0 > 42_000) { errors.push("deadline"); break; } // بودجه زمانی — مسیر maxDuration=60 امن بماند
     try {
       const body: Record<string, unknown> = {
         model: p.model,
@@ -407,14 +434,14 @@ export async function askVisionLLM(prompt: string, imageData: string, maxTokens 
         extra["X-Title"] = "DADBAN";
       }
       const text = await postOpenAiCompatible(p.base, body, p.key, p.timeoutMs, extra);
-      if (text && text.trim().length > 20) return text.trim();
-    } catch {
-      /* ارائه‌دهنده بعدی */
+      if (text && text.trim().length > 20) return { text: text.trim(), errors };
+      errors.push(`${p.id}/${p.model}: empty`);
+    } catch (e) {
+      errors.push(`${p.id}/${p.model}: ${String((e as Error)?.message ?? e).slice(0, 90)}`);
     }
   }
-  return null;
+  return { text: null, errors };
 }
-
 
 /* ─── تشخیص سلامت (برای /api/ai/llm-health) — هرگز کلید برنمی‌گرداند ───── */
 

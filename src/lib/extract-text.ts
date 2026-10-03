@@ -35,15 +35,17 @@ function imageMimeOf(name: string, file: File): string | null | "unsupported" {
 /** خواندن متن از عکس قرارداد با مدل بینایی (GLM-4.5V → Gemini → OpenRouter) */
 async function ocrContractImage(buf: Buffer, mime: string): Promise<string> {
   const dataUrl = `data:${mime};base64,${buf.toString("base64")}`;
-  const text = await askVisionLLM(
+  const r = await askVisionLLM(
     "این تصویر مربوط به یک قرارداد یا سند حقوقی است. تمام متن قابل مشاهده در تصویر را دقیق و کامل استخراج کن (فارسی یا هر زبان دیگر). فقط متن استخراج‌شده را بازگردان — بدون هیچ توضیح، مقدمه یا جمع‌بندی. اگر بخشی ناخوانا است همان بخش را با [ناخوانا] مشخص کن.",
     dataUrl,
     4000,
   );
-  if (!text) {
-    throw new Error("خواندن متن از تصویر ممکن نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر پایین بچسبانید.");
+  if (!r.text) {
+    // TODO(debug): جزئیات خطای ارائه‌دهنده‌ها موقتاً برای تشخیص نمایش داده می‌شود
+    const dbg = r.errors.join(" | ").slice(0, 240);
+    throw new Error("خواندن متن از تصویر ممکن نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر پایین بچسبانید." + (dbg ? ` [dbg: ${dbg}]` : ""));
   }
-  return text;
+  return r.text;
 }
 
 /**
