@@ -186,7 +186,7 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
             // سمت موکل offer می‌فرستد؛ وکیل پاسخ می‌دهد
             try {
               const pc = ensurePeerConnection();
-              await pc.setRemoteDescription(new RTCSessionDescription((row.payload as { type: string; sdp: string })));
+              await pc.setRemoteDescription(new RTCSessionDescription(row.payload as { type: RTCSdpType; sdp: string }));
               await flushPendingIce();
               const stream = await getLocalStream().catch(() => null);
               if (stream) {
@@ -209,7 +209,7 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
             try {
               const pc = pcRef.current;
               if (pc && pc.signalingState === "have-local-offer") {
-                await pc.setRemoteDescription(new RTCSessionDescription((row.payload as { type: string; sdp: string })));
+                await pc.setRemoteDescription(new RTCSessionDescription(row.payload as { type: RTCSdpType; sdp: string }));
                 await flushPendingIce();
               }
             } catch {
