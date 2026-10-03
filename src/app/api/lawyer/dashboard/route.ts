@@ -16,6 +16,10 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ ok: false, error: "احراز هویت نشده" }, { status: 401 });
   }
+  // فقط نقش وکیل به آمار داشبورد وکیل دسترسی دارد
+  if (user.role !== "lawyer") {
+    return NextResponse.json({ ok: false, error: "دسترسی فقط برای وکلای تأییدشده" }, { status: 403 });
+  }
 
   const log = logger.child({ module: "lawyer-dashboard", userId: user.id });
 

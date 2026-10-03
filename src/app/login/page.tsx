@@ -23,7 +23,10 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok && data.ok) {
-        router.push(data.user.role === "lawyer" ? "/dashboard/lawyer" : "/dashboard/client");
+        // بازگشت به مسیر درخواستی (?redirect=) — فقط مسیر داخلی امن
+        const wanted = new URLSearchParams(window.location.search).get("redirect");
+        const safeRedirect = wanted && wanted.startsWith("/") && !wanted.startsWith("//") ? wanted : null;
+        router.push(safeRedirect ?? (data.user.role === "lawyer" ? "/dashboard/lawyer" : "/dashboard/client"));
         router.refresh();
       } else {
         setError(data.error ?? "خطا در ورود");

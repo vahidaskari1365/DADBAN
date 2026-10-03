@@ -9,13 +9,16 @@
 
 const SYSTEM_LEGAL = `تو دستیار حقوقی دادبان هستی — یک دستیار هوشمند حقوقی فارسی‌زبان.
 به سوالات حقوقی کاربر به فارسی روان و طبیعی پاسخ بده؛ مختصر، دقیق و کاربردی (حداکثر ۸-۱۰ خط).
-در پاسخ‌ات حتماً به مواد قانونی مرتبط با موضوع استناد کن: شماره ماده و نام قانون را دقیق بنویس
-(مثلاً «ماده ۱۰۸۲ قانون مدنی» یا «ماده ۲ قانون روابط موجر و مستأجر ۱۳۷۶») و اگر آن ماده تبصره دارد،
-خلاصه تبصره را هم ذکر کن (مثلاً «تبصره ماده ۱۰۸۲ قانون مدنی مقرر می‌دارد…»).
-مهم‌ترین مواد مرتبط را بیاور و اگر موضوع به قانون خاصی مربوط است (قانون صدور چک، قانون کار،
-قانون حمایت خانواده، قانون مجازات اسلامی و…)، حتماً به آن استناد کن.
-پاسخ را حتماً به زبان فارسی بنویس و از هر کاراکتر غیرفارسی (چینی، کره‌ای، ژاپنی و غیره) خودداری کن.
+در پاسخ‌ات به مواد قانونی مرتبط استناد کن، اما فقط به موادی که از وجود و شماره‌ی آن‌ها مطمئن هستی.
+هرگز ماده، تبصره یا متن قانونی‌ای که وجود ندارد نساز؛ اگر شماره‌ی دقیق ماده را نمی‌دانی، بدون شماره
+فقط به نام قانون و موضوع ارجاع بده (مثلاً «طبق قانون حمایت خانواده ۱۳۹۱…»).
+نکته‌های مرجع: قانون حمایت خانواده ۱۳۹۱ در حضانت، معیار «مصلحت فرزند» را ملاک قرار داده است
+(سن ثابت ملاک نیست)؛ مهریه عندالاستطاعه بر اساس ماده ۱۰۸۲ قانون مدنی و تبصره آن است؛
+کلاهبرداری رایانه‌ای در ماده ۷۵۰ قانون مجازات اسلامی (بند الف تبصره ۱ ماده ۲) جرم‌انگاری شده است؛
+قانون صدور چک برای چک برگشتی و قانون کار ۱۳۶۹ (مواد ۲۷ و بعد) برای اخراج کارگر ملاک است.
 اگر پاسخ دقیق نیاز به مطالعه اسناد/قوانین دارد، بگو برای نظر قطعی با وکیل مشورت کند.
+پاسخ را حتماً فقط با الفبای فارسی بنویس و از هر کاراکتر یا کلمه‌ی غیرفارسی (لاتین، چینی، کره‌ای،
+ژاپنی، روسی و غیره) داخل جمله‌ها جداً خودداری کن.
 هیچ​وقت خودت را وکیل رسمی معرفی نکن و در پایان در یک جمله یادآوری کن: "این پاسخ جنبه اطلاع‌رسانی دارد و جایگزین مشاوره حقوقی رسمی نیست."`;
 
 export { SYSTEM_LEGAL };
@@ -26,6 +29,9 @@ function sanitizePersian(text: string): string {
       /[\u0400-\u04ff\u0500-\u052f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\u0590-\u05ff\u0370-\u03ff\u00c0-\u024f\uff00-\uffef]/g,
       "",
     )
+    // حذف خرده‌حروف لاتین چسبیده به کلمات فارسی (مثل «حضunft» ناشی از خروجی مخلوط مدل)
+    .replace(/(?<=[\u0600-\u06FF])[A-Za-z]+/g, "")
+    .replace(/[A-Za-z]+(?=[\u0600-\u06FF])/g, "")
     .replace(/[ \t]{2,}/g, " ")
     .trim();
 }
@@ -119,8 +125,8 @@ async function pollinationsPost(messages: LlmMessage[], maxTokens: number): Prom
     const res = await fetch("https://text.pollinations.ai/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, model: "openai", max_tokens: maxTokens, seed: 1 }),
-      signal: AbortSignal.timeout(14_000),
+      body: JSON.stringify({ messages, model: "openai", max_tokens: maxTokens, seed: 1, referrer: "dadban" }),
+      signal: AbortSignal.timeout(9_000),
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -142,8 +148,8 @@ async function pollinationsGet(messages: LlmMessage[]): Promise<string | null> {
     const sys = messages.find((m) => m.role === "system")?.content ?? "";
     const url =
       `https://text.pollinations.ai/${encodeURIComponent(prompt)}` +
-      `?model=openai${sys ? `&system=${encodeURIComponent(sys.slice(0, 1200))}` : ""}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(12_000) });
+      `?model=openai&referrer=dadban${sys ? `&system=${encodeURIComponent(sys.slice(0, 1200))}` : ""}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
     if (!res.ok) return null;
     const text = await res.text();
     return text ? sanitizePersian(text) : null;
@@ -152,8 +158,31 @@ async function pollinationsGet(messages: LlmMessage[]): Promise<string | null> {
   }
 }
 
+/* ─── 4) تأمین‌کننده‌ی بدون‌کلید دوم (fallback اضطراری روی Vercel) ─────── */
+
+async function hackClubPost(messages: LlmMessage[]): Promise<string | null> {
+  try {
+    const res = await fetch("https://ai.hackclub.com/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages }),
+      signal: AbortSignal.timeout(8_000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content ?? "";
+    return text ? sanitizePersian(String(text)) : null;
+  } catch {
+    return null;
+  }
+}
+
 async function viaKeyless(messages: LlmMessage[], maxTokens: number): Promise<string | null> {
-  return (await pollinationsPost(messages, maxTokens)) ?? (await pollinationsGet(messages));
+  return (
+    (await pollinationsPost(messages, maxTokens)) ??
+    (await pollinationsGet(messages)) ??
+    (await hackClubPost(messages))
+  );
 }
 
 /* ─── API عمومی ────────────────────────────────────────────────────────── */

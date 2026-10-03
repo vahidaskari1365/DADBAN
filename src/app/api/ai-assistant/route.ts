@@ -6,6 +6,7 @@ import { rateLimit, readJson, text } from "@/lib/api-security";
 import { detectSpecialtiesFromMessage, detectProvinceFromMessage, matchLawyers, TOPIC_SPECIALTIES, type MatchedLawyer } from "@/lib/lawyer-match";
 
 export const runtime = "nodejs";
+export const maxDuration = 30; // Vercel fluid — زمان کافی برای زنجیره fallback
 
 const withTimeout = <T,>(task: Promise<T>, ms: number) =>
   Promise.race<T>([task, new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))]);
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
   try {
     if (mode === "contract" || contract) {
       if (!contract) return NextResponse.json({ ok: false, error: "متن قرارداد معتبر نیست." }, { status: 400 });
-      const llm = await withTimeout(askLLM([{ role: "user", content: `${CONTRACT_PROMPT}${contract}` }], 700), 20_000);
+      const llm = await withTimeout(askLLM([{ role: "user", content: `${CONTRACT_PROMPT}${contract}` }], 700), 27_000);
       if (llm) return NextResponse.json({ ok: true, mode: "contract", source: "llm", analysis: llm });
       return NextResponse.json({ ok: true, mode: "contract", source: "local", ...analyzeContract(contract) });
     }
@@ -65,7 +66,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const llm = await withTimeout(askLLM([{ role: "user", content: query }], 700, systemPrompt), 25_000);
+    const llm = await withTimeout(askLLM([{ role: "user", content: query }], 700, systemPrompt), 27_000);
 
     // پیشنهاد وکیل بر اساس مشکل کاربر (۱۰ وکیل هم‌تخصص از دیتابیس واقعی)
     let lawyerMatch: { topic: string | null; specialties: string[]; province: string | null; lawyers: MatchedLawyer[] } | undefined;

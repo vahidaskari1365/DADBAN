@@ -163,6 +163,7 @@ function toMatched(row: LawyerPublicRow): MatchedLawyer {
 /**
  * fallback درون‌حافظه‌ای از کاتالوگ رسمی وکلا (همان دیتای seed دیتابیس) —
  * وقتی دسترسی به دیتابیس ممکن نیست (مثلاً dev محلی یا اختلاط لحظه‌ای). دیتا واقعی است.
+ * رتبه‌بندی: هم‌تخصص (استان کاربر → سایر) سپس سایر وکلا — تخصص مهم‌تر از استان است.
  */
 function seedFallback(specialties: string[], limit: number, province?: string | null): MatchedLawyer[] {
   const pool = lawyerData.map((l, i) => ({
@@ -171,12 +172,13 @@ function seedFallback(specialties: string[], limit: number, province?: string | 
     photoUrl: `/lawyers/${l.slug}.jpg`,
   }));
   const provCities = province ? new Set(LOCATIONS.find((l) => l.province === province)?.cities ?? []) : null;
-  const inProv = provCities ? pool.filter((l) => provCities.has(l.city)) : [];
-  const outProv = provCities ? pool.filter((l) => !provCities.has(l.city)) : pool;
-  const ranked = [
-    ...interleave(inProv, specialties, inProv.length),
-    ...interleave(outProv, specialties, outProv.length),
-  ];
+  const inProv = (l: { city: string }) => (provCities ? provCities.has(l.city) : false);
+  const inSp = (l: { specialties: string[] }) => l.specialties.some((s) => specialties.includes(s));
+  // امتیاز: تخصص+استان=۰، فقط تخصص=۱، فقط استان=۲، هیچ‌کدام=۳
+  const score = (l: { city: string; specialties: string[] }) => (inSp(l) ? 0 : 2) + (inProv(l) ? 0 : 1);
+  const ranked = pool.sort(
+    (a, b) => score(a) - score(b) || b.rating - a.rating || b.reviewCount - a.reviewCount,
+  );
   return ranked.slice(0, limit).map((l) => toMatched(l as unknown as LawyerPublicRow));
 }
 
@@ -244,10 +246,12 @@ export async function matchLawyers(
       ]);
       if (provRows.length + otherRows.length > 0) {
         const inSp = (r: { specialties: string[] }) => r.specialties.some((s) => specialties.includes(s));
+        // رتبه‌بندی تخصص‌محور: هم‌تخصصِ استان → هم‌تخصصِ سایر استان‌ها → بقیه‌ی استان → بقیه.
+        // این‌طور وکیلِ غیرمرتبطِ هم‌استان، وکیلِ متخصصِ سایر استان را زیر نمی‌برد.
         const ranked = [
           ...provRows.filter(inSp),
-          ...provRows.filter((r) => !inSp(r)),
           ...otherRows.filter(inSp),
+          ...provRows.filter((r) => !inSp(r)),
           ...otherRows.filter((r) => !inSp(r)),
         ].slice(0, limit);
         return ranked.map(toMatched);

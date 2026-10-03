@@ -15,8 +15,12 @@ export async function POST(req: Request) {
   try { await ensureProfileSchema(); } catch { /* migration best-effort */ }
   if (!identifier || !password || password.length > 1024) return NextResponse.json({ ok: false, error: "اطلاعات ورود صحیح نیست." }, { status: 400 });
   try {
-    const normalizedPhone = identifier.replace(/[^\d]/g, "");
-    const [user] = await db.select().from(users).where(normalizedPhone ? eq(users.phone, normalizedPhone) : eq(users.email, identifier)).limit(1);
+    // تشخیص نوع شناسه: ایمیل (حاوی @) از شماره موبایل جدا می‌شود تا
+    // ایمیل‌های دارای رقم (مثل ali90@…) به‌اشتباه به‌عنوان شماره پرس‌وجو نشوند.
+    const raw = identifier.trim();
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw);
+    const normalizedPhone = isEmail ? "" : raw.replace(/[^\d]/g, "");
+    const [user] = await db.select().from(users).where(isEmail ? eq(users.email, raw) : eq(users.phone, normalizedPhone)).limit(1);
     if (!user || !verifyPassword(password, user.passwordHash)) return NextResponse.json({ ok: false, error: "اطلاعات ورود صحیح نیست." }, { status: 401 });
     const store = await cookies(); store.set(userCookieName(), signUserSession(user.id, user.role), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 30 });
     return NextResponse.json({ ok: true, user: { id: user.id, name: user.name, role: user.role } });

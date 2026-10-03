@@ -406,3 +406,21 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
     return { seeded: false, counts: getCounts() };
   }
 }
+
+/** جدول سیگنالینگ مشاوره زنده — best-effort روی دیتابیس واقعی. */
+let signalSchemaReady = false;
+export async function ensureSignalSchema(): Promise<void> {
+  if (signalSchemaReady) return;
+  const stmts = [
+    `CREATE TABLE IF NOT EXISTS consultation_signals (id SERIAL PRIMARY KEY, room TEXT NOT NULL, client_id TEXT NOT NULL, sender TEXT NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL DEFAULT '', created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS consultation_signals_room_idx ON consultation_signals (room, id)`,
+  ];
+  for (const stmt of stmts) {
+    try {
+      await db.execute(sql.raw(stmt));
+    } catch {
+      /* non-fatal */
+    }
+  }
+  signalSchemaReady = true;
+}

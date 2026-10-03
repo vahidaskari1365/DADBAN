@@ -587,3 +587,22 @@ export const documents = pgTable("app_documents", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 export type Document = typeof documents.$inferSelect;
+
+/* ------------------------------ Consultation signaling (text/voice/video) ------------------------------ */
+
+/**
+ * پیام‌های سیگنالینگ مشاوره زنده (offer/answer/ICE) و چت متنی.
+ * معماری بدون WebSocket — از طریق HTTP polling روی همان دامنه کار می‌کند
+ * (سازگار با Vercel serverless و بدون نیاز به سرویس جانبی).
+ * سیگنال‌های موقت پس از ۱۰ دقیقه و چت‌ها پس از ۲۴ ساعت پاک می‌شوند.
+ */
+export const consultationSignals = pgTable("consultation_signals", {
+  id: serial("id").primaryKey(),
+  room: text("room").notNull(),
+  clientId: text("client_id").notNull(),
+  sender: text("sender").notNull(),
+  kind: text("kind").notNull(), // join | offer | answer | ice | chat | typing | leave
+  payload: text("payload").notNull().default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type ConsultationSignal = typeof consultationSignals.$inferSelect;

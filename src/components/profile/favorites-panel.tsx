@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Icon } from "@/components/icons";
@@ -30,19 +30,21 @@ export function FavoritesPanel() {
   const [items, setItems] = useState<FavLawyer[] | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch("/api/favorites", { cache: "no-store" });
-      const data = (await res.json()) as { ok: boolean; favorites?: FavLawyer[] };
-      setItems(data.ok ? (data.favorites ?? []) : []);
-    } catch {
-      setItems([]);
-    }
-  }, []);
-
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/favorites", { cache: "no-store" });
+        const data = (await res.json()) as { ok: boolean; favorites?: FavLawyer[] };
+        if (!cancelled) setItems(data.ok ? (data.favorites ?? []) : []);
+      } catch {
+        if (!cancelled) setItems([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function remove(id: number) {
     setBusyId(id);

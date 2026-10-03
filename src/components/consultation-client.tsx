@@ -1,23 +1,45 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { io, Socket } from "socket.io-client";
 import { formatJalaliTime } from "@/lib/jalali";
 import { Icon } from "@/components/icons";
 
 /**
- * کامپوننت مشاوره تصویری + متنی real-time با WebRTC.
+ * کامپوننت مشاوره تصویری + صوتی + متنی real-time.
  *
- * نحوه کار:
- * 1. هر دو طرف (موکل و وکیل) وارد یک room می‌شن با roomId یکسان
- * 2. Signaling از طریق socket.io mini-service روی پورت 3003
- * 3. WebRTC برای ویدیو/صدا peer-to-peer (بدون نرم‌افزار واسط)
- * 4. چت متنی هم از طریق socket.io real-time
- *
- * توجه: اتصال به signaling server از طریق Caddy gateway با XTransformPort=3003
+ * معماری (بدون نیاز به WebSocket — سازگار با Vercel):
+ * 1. هر دو طرف (موکل و وکیل) یک «کد مشاوره» یکسان وارد می‌کنند.
+ * 2. سیگنالینگ WebRTC (offer/answer/ICE) و چت متنی از طریق
+ *    /api/consultations/signal روی همان دامنه (HTTP polling) رد و بدل می‌شود.
+ * 3. صدا/ویدیو پس از برقراری، مستقیم P2P با WebRTC است (DTLS/SRTP رمزنگاری‌شده).
+ * 4. STUN گوگل/کلافلیر + TURN عمومی openrelay برای عبور از NAT محدود ایران.
+ * 5. چت متنی روی سرور ۲۴ ساعت ماندگار است (تاریخچه جلسه).
  */
 
-const SIGNALING_PORT = 3003;
+/** سرورهای ICE — STUN + TURN عمومی برای عبور از NAT محدود ایران */
+const ICE_SERVERS: RTCIceServer[] = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:stun.cloudflare.com:3478" },
+  {
+    urls: ["turn:openrelay.metered.ca:80", "turn:openrelay.metered.ca:443", "turn:openrelay.metered.ca:443?transport=tcp"],
+    username: "openrelayproject",
+    credential: "openrelayproject",
+  },
+];
+
+const POLL_MS = 1300;
+const HEARTBEAT_MS = 8000;
+
+type SignalKind = "join" | "offer" | "answer" | "ice" | "chat" | "typing" | "leave";
+
+interface SignalRow {
+  id: number;
+  clientId: string;
+  sender: string;
+  kind: SignalKind;
+  payload: unknown;
+  at: string;
+}
 
 interface ChatMessage {
   sender: string;
@@ -33,8 +55,8 @@ interface ConsultationClientProps {
 }
 
 export function ConsultationClient({ roomId, role, name }: ConsultationClientProps) {
-  const [connected, setConnected] = useState(false);
   const [peerReady, setPeerReady] = useState(false);
+  const [remoteName, setRemoteName] = useState<string | null>(null);
   const [inCall, setInCall] = useState(false);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
@@ -42,115 +64,223 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
   const [chatInput, setChatInput] = useState("");
   const [peerTyping, setPeerTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState("در حال اتصال...");
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const socketRef = useRef<Socket | null>(null);
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const clientIdRef = useRef<string>("");
+  const lastIdRef = useRef(0);
+  const pcRefBusy = useRef(false);
+  const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
+  const pollFailRef = useRef(0);
+  const lastTypingSentRef = useRef(0);
 
-  const iceServers: RTCIceServer[] = useMemo(
-    () => {
-      const servers: RTCIceServer[] = [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" },
-      ];
-      // TURN server (برای عبور از NAT restrictive مثل ایران)
-      // در صورت تنظیم env، فعال می‌شه
-      const turnUrl = process.env.NEXT_PUBLIC_TURN_URL;
-      const turnUser = process.env.NEXT_PUBLIC_TURN_USER;
-      const turnPass = process.env.NEXT_PUBLIC_TURN_PASS;
-      if (turnUrl && turnUser && turnPass) {
-        servers.push({
-          urls: turnUrl,
-          username: turnUser,
-          credential: turnPass,
+  const iceServers = useMemo(() => ICE_SERVERS, []);
+
+  const send = useCallback(
+    async (kind: SignalKind, payload: unknown) => {
+      try {
+        await fetch("/api/consultations/signal", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ room: roomId, clientId: clientIdRef.current, sender: name, kind, payload }),
+          keepalive: kind === "leave",
         });
+      } catch {
+        /* خطای شبکه — چرخه بعدی دوباره تلاش می‌شود */
       }
-      return servers;
     },
-    []
+    [roomId, name],
   );
 
-  /** ساخت اتصال WebRTC — قبل از effect ثبت socket تعریف شده تا hoisting درست باشد. */
-  const createPeerConnection = useCallback(() => {
+  /** دریافت استریم محلی با کاهش تدریجی: ویدیو+صدا → فقط صدا */
+  const getLocalStream = useCallback(async (): Promise<MediaStream> => {
+    try {
+      return await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    } catch {
+      return await navigator.mediaDevices.getUserMedia({ audio: true });
+    }
+  }, []);
+
+  /** ساخت اتصال WebRTC و پردازش offer/answer از طرف مقابل */
+  const ensurePeerConnection = useCallback((): RTCPeerConnection => {
+    if (pcRef.current) return pcRef.current;
     const pc = new RTCPeerConnection({ iceServers });
-    peerConnectionRef.current = pc;
+    pcRef.current = pc;
 
     pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        socketRef.current?.emit("ice-candidate", { roomId, candidate: event.candidate });
-      }
+      if (event.candidate) void send("ice", event.candidate.toJSON());
     };
-
     pc.ontrack = (event) => {
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = event.streams[0];
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = event.streams[0];
+    };
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === "connected") setStatus("تماس برقرار است");
+      if (pc.connectionState === "failed" || pc.connectionState === "closed") {
+        setInCall(false);
+        setStatus("تماس قطع شد");
       }
     };
-
     return pc;
-  }, [roomId, iceServers]);
+  }, [iceServers, send]);
 
-  // اتصال به signaling server
-  useEffect(() => {
-    const socket = io("/", {
-      path: "/",
-      query: { XTransformPort: SIGNALING_PORT },
-      transports: ["websocket"],
-    });
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
-      setConnected(true);
-      socket.emit("join-room", { roomId, role, name });
-    });
-
-    socket.on("disconnect", () => setConnected(false));
-    socket.on("connect_error", () => setError("اتصال به سرور ناموفق بود"));
-
-    socket.on("peer-ready", () => setPeerReady(true));
-    socket.on("room-update", (data: { peers: { role: string; name?: string }[] }) => {
-      if (data.peers.length === 2) setPeerReady(true);
-    });
-
-    socket.on("peer-left", () => {
-      setPeerReady(false);
-      setInCall(false);
-      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
-    });
-
-    socket.on("offer", async (data: { sdp: any; from: string }) => {
-      if (!peerConnectionRef.current) {
-        createPeerConnection();
+  const flushPendingIce = useCallback(async () => {
+    const pc = pcRef.current;
+    if (!pc) return;
+    const queued = pendingIceRef.current;
+    pendingIceRef.current = [];
+    for (const c of queued) {
+      try {
+        await pc.addIceCandidate(c);
+      } catch {
+        /* candidate نامعتبر */
       }
-      await peerConnectionRef.current?.setRemoteDescription(data.sdp);
-      const answer = await peerConnectionRef.current?.createAnswer();
-      await peerConnectionRef.current?.setLocalDescription(answer);
-      socket.emit("answer", { roomId, sdp: answer });
-    });
+    }
+  }, []);
 
-    socket.on("answer", async (data: { sdp: any }) => {
-      await peerConnectionRef.current?.setRemoteDescription(data.sdp);
-    });
+  /** پردازش سیگنال‌های دریافتی از طرف مقابل */
+  const handleSignals = useCallback(
+    async (rows: SignalRow[]) => {
+      for (const row of rows) {
+        if (row.clientId === clientIdRef.current) continue; // پیام خودمان — نمایش داده شده
+        setPeerReady(true);
+        if (row.sender) setRemoteName(row.sender);
 
-    socket.on("ice-candidate", async (data: { candidate: any }) => {
-      await peerConnectionRef.current?.addIceCandidate(data.candidate);
-    });
+        switch (row.kind) {
+          case "chat": {
+            const p = row.payload as { message?: string; timestamp?: string } | null;
+            const msg = String(p?.message ?? "").slice(0, 4000);
+            if (msg) {
+              setChatMessages((prev) => [
+                ...prev,
+                { sender: row.sender, message: msg, timestamp: String(p?.timestamp ?? row.at), isOwn: false },
+              ]);
+              setPeerTyping(false);
+            }
+            break;
+          }
+          case "typing": {
+            setPeerTyping(Boolean((row.payload as { isTyping?: boolean })?.isTyping));
+            break;
+          }
+          case "join": {
+            break;
+          }
+          case "leave": {
+            setPeerReady(false);
+            setInCall(false);
+            setRemoteName(null);
+            setStatus("طرف مقابل خارج شد");
+            localStreamRef.current?.getTracks().forEach((t) => t.stop());
+            localStreamRef.current = null;
+            pcRef.current?.close();
+            pcRef.current = null;
+            if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+            if (localVideoRef.current) localVideoRef.current.srcObject = null;
+            break;
+          }
+          case "offer": {
+            // سمت موکل offer می‌فرستد؛ وکیل پاسخ می‌دهد
+            try {
+              const pc = ensurePeerConnection();
+              await pc.setRemoteDescription(new RTCSessionDescription((row.payload as { type: string; sdp: string })));
+              await flushPendingIce();
+              const stream = await getLocalStream().catch(() => null);
+              if (stream) {
+                localStreamRef.current = stream;
+                if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+                stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+                setInCall(true);
+              } else {
+                setInCall(true); // بدون میکروفون — فقط شنونده
+              }
+              const answer = await pc.createAnswer();
+              await pc.setLocalDescription(answer);
+              await send("answer", { type: answer.type, sdp: answer.sdp });
+            } catch {
+              setError("برقراری تماس ناموفق بود.");
+            }
+            break;
+          }
+          case "answer": {
+            try {
+              const pc = pcRef.current;
+              if (pc && pc.signalingState === "have-local-offer") {
+                await pc.setRemoteDescription(new RTCSessionDescription((row.payload as { type: string; sdp: string })));
+                await flushPendingIce();
+              }
+            } catch {
+              /* ignore */
+            }
+            break;
+          }
+          case "ice": {
+            const cand = row.payload as RTCIceCandidateInit | null;
+            if (!cand) break;
+            try {
+              const pc = pcRef.current;
+              if (pc && pc.remoteDescription) {
+                await pc.addIceCandidate(cand);
+              } else {
+                pendingIceRef.current.push(cand); // قبل از رسیدن offer/answer
+              }
+            } catch {
+              /* candidate نامعتبر */
+            }
+            break;
+          }
+        }
+      }
+    },
+    [ensurePeerConnection, flushPendingIce, getLocalStream, send],
+  );
 
-    socket.on("chat-message", (data: { message: string; sender: string; timestamp: string }) => {
-      setChatMessages((prev) => [...prev, { ...data, isOwn: false }]);
-    });
+  // راه‌اندازی جلسه — polling + heartbeat
+  useEffect(() => {
+    if (!roomId || !name) return;
+    let disposed = false;
+    clientIdRef.current =
+      typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `c-${Date.now()}-${Math.random()}`;
 
-    socket.on("peer-typing", (data: { isTyping: boolean }) => {
-      setPeerTyping(data.isTyping);
-    });
+    void send("join", { role });
+
+    const poll = setInterval(async () => {
+      if (disposed) return;
+      try {
+        const res = await fetch(`/api/consultations/signal?room=${encodeURIComponent(roomId)}&since=${lastIdRef.current}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("poll failed");
+        const data = (await res.json()) as { ok: boolean; signals?: SignalRow[] };
+        pollFailRef.current = 0;
+        if (!data.ok || !data.signals?.length) return;
+        for (const s of data.signals) {
+          if (s.id > lastIdRef.current) lastIdRef.current = s.id;
+        }
+        await handleSignals(data.signals);
+      } catch {
+        pollFailRef.current += 1;
+        if (pollFailRef.current >= 3) {
+          setStatus("ارتباط با سرور مشاوره برقرار نشد");
+        }
+      }
+    }, POLL_MS);
+
+    const heartbeat = setInterval(() => {
+      if (!disposed) void send("join", { role });
+    }, HEARTBEAT_MS);
 
     return () => {
-      socket.disconnect();
+      disposed = true;
+      clearInterval(poll);
+      clearInterval(heartbeat);
+      void send("leave", { role });
       localStreamRef.current?.getTracks().forEach((t) => t.stop());
-      peerConnectionRef.current?.close();
+      pcRef.current?.close();
+      pcRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, role, name]);
@@ -160,33 +290,35 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
+  /** موکل تماس را شروع می‌کند (offer) — وکیل خودکار پاسخ می‌دهد */
   const startCall = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
+      const stream = await getLocalStream();
       localStreamRef.current = stream;
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
 
-      const pc = createPeerConnection();
+      const pc = ensurePeerConnection();
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      socketRef.current?.emit("offer", { roomId, sdp: offer });
+      await send("offer", { type: offer.type, sdp: offer.sdp });
       setInCall(true);
-    } catch (err) {
+      setStatus("در حال برقراری تماس...");
+    } catch {
       setError("دسترسی به دوربین/میکروفون ممکن نیست. لطفاً اجازه دسترسی بدهید.");
     }
   };
 
   const endCall = () => {
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
-    peerConnectionRef.current?.close();
-    peerConnectionRef.current = null;
+    localStreamRef.current = null;
+    pcRef.current?.close();
+    pcRef.current = null;
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+    if (localVideoRef.current) localVideoRef.current.srcObject = null;
     setInCall(false);
-    socketRef.current?.emit("leave-room", { roomId });
+    setStatus(remoteName ? "متصل" : "در انتظار طرف مقابل...");
   };
 
   const toggleMic = () => {
@@ -206,20 +338,23 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
   };
 
   const sendChat = () => {
-    if (!chatInput.trim() || !socketRef.current) return;
     const msg = chatInput.trim();
-    socketRef.current.emit("chat-message", { roomId, message: msg, sender: name });
-    setChatMessages((prev) => [
-      ...prev,
-      { sender: name, message: msg, timestamp: new Date().toISOString(), isOwn: true },
-    ]);
+    if (!msg || !peerReady) return;
+    const timestamp = new Date().toISOString();
+    void send("chat", { message: msg, timestamp });
+    setChatMessages((prev) => [...prev, { sender: name, message: msg, timestamp, isOwn: true }]);
     setChatInput("");
-    socketRef.current.emit("typing", { roomId, isTyping: false });
+    lastTypingSentRef.current = 0;
+    void send("typing", { isTyping: false });
   };
 
   const onChatInput = (val: string) => {
     setChatInput(val);
-    socketRef.current?.emit("typing", { roomId, isTyping: val.length > 0 });
+    const now = Date.now();
+    if (now - lastTypingSentRef.current > 2500) {
+      lastTypingSentRef.current = now;
+      void send("typing", { isTyping: val.length > 0 });
+    }
   };
 
   return (
@@ -227,7 +362,7 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
       {/* بخش ویدیو */}
       <div className="lg:col-span-2">
         <div className="relative aspect-video overflow-hidden rounded-2xl border border-border bg-black">
-          {/* ویدیوی远程 (وکیل/موکل طرف مقابل) */}
+          {/* ویدیوی طرف مقابل (وکیل/موکل) */}
           <video
             ref={remoteVideoRef}
             autoPlay
@@ -235,10 +370,13 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
             className="h-full w-full object-cover"
             style={{ transform: "scaleX(-1)" }}
           />
-          {!peerReady && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/70">
+          {!inCall && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center text-white/70">
               <div className="h-12 w-12 animate-pulse rounded-full bg-white/20" />
-              <p className="text-sm">{connected ? "منتظر طرف مقابل..." : "در حال اتصال..."}</p>
+              <p className="text-sm">
+                {status}
+                {peerReady && remoteName ? ` — ${remoteName} آنلاین است` : ""}
+              </p>
             </div>
           )}
           {/* ویدیوی محلی (picture-in-picture) */}
@@ -288,14 +426,14 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
           )}
         </div>
 
-        {/* دکمه شروع تماس */}
-        {!inCall && peerReady && (
+        {/* دکمه شروع تماس — موکل شروع می‌کند */}
+        {!inCall && peerReady && role === "client" && (
           <button
             onClick={startCall}
             className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition-all active:scale-95"
           >
             <Icon name="video" className="h-5 w-5" />
-            شروع تماس تصویری
+            شروع تماس تصویری / صوتی
           </button>
         )}
 
@@ -308,6 +446,11 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
       <div className="flex flex-col rounded-2xl border border-border bg-surface">
         <div className="border-b border-border p-3">
           <h3 className="text-sm font-bold text-foreground">چت متنی</h3>
+          <p className="mt-0.5 text-[10px] text-muted">
+            {peerReady
+              ? `متصل${remoteName ? ` — ${remoteName}` : ""} · تاریخچه ۲۴ ساعت ذخیره می‌شود`
+              : status}
+          </p>
         </div>
         <div className="flex-1 overflow-y-auto p-3" style={{ maxHeight: "400px" }}>
           {chatMessages.length === 0 ? (
@@ -319,7 +462,7 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
               {chatMessages.map((msg, i) => (
                 <div
                   key={i}
-                  className={`flex flex-col gap-1 ${msg.isOwn ? "items-start" : "items-end"}`}
+                  className={`flex flex-col gap-1 ${msg.isOwn ? "items-end" : "items-start"}`}
                 >
                   <div
                     className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
@@ -331,7 +474,7 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
                     {msg.message}
                   </div>
                   <span className="text-[10px] text-muted">
-                    {formatJalaliTime(msg.timestamp)}
+                    {msg.isOwn ? "شما" : msg.sender} · {formatJalaliTime(msg.timestamp)}
                   </span>
                 </div>
               ))}
@@ -355,12 +498,14 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
               value={chatInput}
               onChange={(e) => onChatInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendChat()}
-              placeholder="پیام بنویسید..."
-              className="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none"
+              placeholder={peerReady ? "پیام بنویسید..." : "در انتظار ورود طرف مقابل..."}
+              disabled={!peerReady}
+              className="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none disabled:opacity-50"
             />
             <button
               onClick={sendChat}
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-all active:scale-90"
+              disabled={!peerReady}
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-all active:scale-90 disabled:opacity-50"
               aria-label="ارسال"
             >
               <Icon name="send" className="h-4 w-4" />

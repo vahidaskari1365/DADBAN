@@ -28,7 +28,7 @@ export default function proxy(req: NextRequest) {
   res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   res.headers.set(
     "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(), browsing-topics=()"
+    "camera=(self), microphone=(self), geolocation=(), browsing-topics=()"
   );
 
   // ─── Admin routes ─────────────────────────────────────────────────────
@@ -55,6 +55,18 @@ export default function proxy(req: NextRequest) {
     return res;
   }
 
+  // ─── صفحات داخلی/فنی (ERD و کلیدواژه‌های سئو) — فقط برای کاربر واردشده ──
+  if (pathname.startsWith("/developer") || pathname.startsWith("/keywords")) {
+    const token = req.cookies.get(USER_COOKIE)?.value;
+    if (!token) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return res;
+  }
+
   return res;
 }
 
@@ -62,5 +74,5 @@ export const config = {
   /**
    * فقط مسیرهای حساس middleware رو اجرا می‌کنه (نه static assets).
    */
-  matcher: ["/dashboard/:path*", "/admin/:path*"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/developer/:path*", "/keywords/:path*"],
 };

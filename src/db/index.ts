@@ -81,3 +81,8 @@ export const db = new Proxy({} as ReturnType<typeof getDb>, {
     return typeof value === "function" ? value.bind(real) : value;
   },
 });
+
+/** آیا دیتابیس واقعی PostgreSQL پیکربندی شده؟ (در حالت noop، هر query خالی برمی‌گرداند نه throw) */
+export function isDbConfigured(): boolean {
+  return isPostgresUrl(process.env.DATABASE_URL);
+}

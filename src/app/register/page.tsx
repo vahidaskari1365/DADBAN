@@ -9,7 +9,6 @@ import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"client" | "lawyer">("client");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +34,7 @@ export default function RegisterPage() {
           body: JSON.stringify({ identifier: phone, password }),
         });
         if (login.ok) {
-          router.push(role === "lawyer" ? "/dashboard/lawyer" : "/dashboard/client");
+          router.push("/dashboard/client");
           router.refresh();
         } else {
           router.push("/login");
@@ -54,22 +53,17 @@ export default function RegisterPage() {
 
   return (
     <>
-      <PageHero badge="ثبت‌نام" title="همین حالا حساب کاربری بسازید" desc="ثبت‌نام به‌عنوان موکل یا وکیل و شروع استفاده از خدمات دادبان." breadcrumb={[{ label: "خانه", href: "/" }, { label: "ثبت‌نام" }]} />
+      <PageHero badge="ثبت‌نام" title="همین حالا حساب کاربری بسازید" desc="برای استفاده از مشاوره‌ها، پیگیری پرونده و خدمات دادبان ثبت‌نام کنید." breadcrumb={[{ label: "خانه", href: "/" }, { label: "ثبت‌نام" }]} />
       <Container className="py-12">
         <div className="mx-auto max-w-md">
           <Card hover={false}>
-            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-surface-2 p-1">
-              {([["client", "ثبت‌نام موکل"], ["lawyer", "ثبت‌نام وکیل"]] as const).map(([k, label]) => (
-                <button key={k} type="button" onClick={() => setRole(k)} className={`rounded-xl py-2.5 text-sm font-semibold transition-all ${role === k ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground-soft"}`}>{label}</button>
-              ))}
-            </div>
-            <form onSubmit={submit} className="mt-5 space-y-4">
+            <form onSubmit={submit} className="space-y-4">
               <label className="block">
                 <span className="text-sm font-bold text-foreground">نام و نام خانوادگی</span>
                 <input value={name} onChange={(e) => setName(e.target.value)} className={`${fieldCls} mt-2`} placeholder="نام شما" />
               </label>
               <label className="block">
-                <span className="text-sm font-bold text-foreground">{role === "lawyer" ? "شماره پروانه / موبایل" : "شماره موبایل"}</span>
+                <span className="text-sm font-bold text-foreground">شماره موبایل</span>
                 <input value={phone} onChange={(e) => setPhone(e.target.value)} className={`${fieldCls} mt-2`} placeholder="09123456789" dir="ltr" style={{ textAlign: "right" }} />
               </label>
               <label className="block">
@@ -79,9 +73,9 @@ export default function RegisterPage() {
               {error && <p className="text-sm font-semibold text-danger">{error}</p>}
               <Button type="submit" disabled={loading} className="w-full" icon="user">{loading ? "در حال ساخت حساب…" : "ثبت‌نام"}</Button>
             </form>
-            {role === "lawyer" && (
-              <p className="mt-3 rounded-xl bg-accent-soft/60 p-3 text-xs leading-6 text-foreground-soft">پس از ثبت‌نام، اطلاعات حرفه‌ای و مدارک شما بررسی و پس از احراز هویت، پروفایل فعال می‌شود.</p>
-            )}
+            <p className="mt-3 rounded-xl bg-accent-soft/60 p-3 text-xs leading-6 text-foreground-soft">
+              وکیل هستید؟ عضویت وکلای دادبان پس از بررسی مدارک و احراز هویت از طریق <Link href="/support" className="font-bold text-primary hover:underline">پشتیبانی</Link> انجام می‌شود.
+            </p>
             <p className="mt-4 text-center text-sm text-muted">حساب دارید؟ <Link href="/login" className="font-bold text-primary hover:text-primary-hover">ورود</Link></p>
           </Card>
         </div>
