@@ -303,6 +303,11 @@ export async function ensureLawyerPhotos(): Promise<void> {
 async function upgradeArticles(): Promise<void> {
   if (!articleData.length) return;
   try {
+    // مهاجرت ستون‌های جدید — idempotent و در هر دو مسیر (fast-path هم لازم است)
+    await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS quick_answer TEXT NOT NULL DEFAULT ''`));
+    await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS faq TEXT NOT NULL DEFAULT '[]'`));
+    await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_url TEXT`));
+    await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_alt TEXT`));
     const probe = await db.execute(
       sql`SELECT LENGTH(content) AS l FROM articles WHERE slug = ${articleData[0].slug} LIMIT 1`,
     );
