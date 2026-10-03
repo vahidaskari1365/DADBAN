@@ -1,25 +1,47 @@
 // ============================================================
-// دادبان — موتور هوش مصنوعی چند-تأمین‌کننده (Multi-Provider LLM)
-// زنجیره‌ی تأمین:
-//   1) کلید OpenAI-سازگار (ZAI_API_KEY یا LLM_API_KEY) — تولید (api.z.ai پیش‌فرض)
-//   2) z-ai-web-dev-sdk (سندباکس توسعه — بدون نیاز به کلید)
-//   3) Pollinations بدون‌کلید (fallback نهایی)
+// دادبان — موتور هوش مصنوعی چند-تأمین‌کننده با سوییچ خودکار
+// معماری برگرفته از زنجیره LLM پروژه homeino1 (LLM_KEYS_JSON + fallback)
+//
+// ترتیب امتحان (کیفیت فارسیِ حقوقی در اولویت):
+//   1) LLM_KEYS_JSON   — زنجیره کلیدهای مالک؛ آرایه‌ای از ارائه‌دهنده‌ها:
+//        [{"id":"glm","base":"https://api.z.ai/api/paas/v4","key":"...","model":"glm-4.7-flash","maxTokens":2400}]
+//   2) ZAI_API_KEY / LLM_API_KEY + LLM_BASE_URL + LLM_MODEL
+//      (+ self-heal: اگر مدل پولی/ناموجود بود، مدل‌های همیشه‌رایگان glm-4.7-flash و glm-4.5-flash روی همان کلید امتحان می‌شوند)
+//   3) GEMINI_API_KEY  — کیفیت فارسی بالا (v1beta/openai)
+//   4) OPENROUTER_API_KEY / GROQ_API_KEY
+//   5) z-ai-web-dev-sdk (فقط سندباکس توسعه)
+//   6) بدون‌کلید (اضطراری): llm7 → pollinations POST → pollinations GET → hackclub → freellmapi
+//
+// فیوز خرابی (circuit breaker): هر ارائه‌دهنده‌ی خراب ۵ دقیقه کنار می‌رود و
+// برنده‌ی موفق قبلی در درخواست‌های بعدی اول امتحان می‌شود (sticky).
 // هرگز کلید واقعی در کد ذخیره نمی‌شود؛ همه از Environment Variable می‌آید.
 // ============================================================
 
 const SYSTEM_LEGAL = `تو دستیار حقوقی دادبان هستی — یک دستیار هوشمند حقوقی فارسی‌زبان.
-به سوالات حقوقی کاربر به فارسی روان و طبیعی پاسخ بده؛ مختصر، دقیق و کاربردی (حداکثر ۸-۱۰ خط).
-در پاسخ‌ات به مواد قانونی مرتبط استناد کن، اما فقط به موادی که از وجود و شماره‌ی آن‌ها مطمئن هستی.
-هرگز ماده، تبصره یا متن قانونی‌ای که وجود ندارد نساز؛ اگر شماره‌ی دقیق ماده را نمی‌دانی، بدون شماره
-فقط به نام قانون و موضوع ارجاع بده (مثلاً «طبق قانون حمایت خانواده ۱۳۹۱…»).
-نکته‌های مرجع: قانون حمایت خانواده ۱۳۹۱ در حضانت، معیار «مصلحت فرزند» را ملاک قرار داده است
-(سن ثابت ملاک نیست)؛ مهریه عندالاستطاعه بر اساس ماده ۱۰۸۲ قانون مدنی و تبصره آن است؛
-کلاهبرداری رایانه‌ای در ماده ۷۵۰ قانون مجازات اسلامی (بند الف تبصره ۱ ماده ۲) جرم‌انگاری شده است؛
-قانون صدور چک برای چک برگشتی و قانون کار ۱۳۶۹ (مواد ۲۷ و بعد) برای اخراج کارگر ملاک است.
+پاسخ‌ها کوتاه، هدفمند و کاربردی باشد (حداکثر ۸-۱۰ خط) و دقیقاً این ساختار را داشته باشد:
+۱) پاسخ مستقیم به پرسش در یک تا دو جمله.
+۲) «مستند قانونی»: استناد به ماده/تبصره مرتبط با قالب «ماده X قانون Y» یا «تبصره X ماده Y».
+۳) یک توصیه عملی کوتاه.
+
+قواعد استناد:
+- فقط به موادی که از وجود و شماره‌ی آن‌ها مطمئن هستی استناد کن؛ هرگز ماده، تبصره یا متن قانونی‌ای که وجود ندارد نساز.
+- اگر شماره‌ی دقیق ماده را نمی‌دانی، بدون شماره فقط به نام قانون و موضوع ارجاع بده (مثلاً «طبق قانون حمایت خانواده ۱۳۹۱…»).
+- اگر در پرامپت، نتایج جستجوی وب داده شده است، پاسخ باید بر اساس همان منابع واقعی باشد و منبع [۱] یا [۲] را ذکر کن.
+
+لنگرگاه‌های مطمئن (واقعی):
+- مهریه عندالاستطاعه: ماده ۱۰۸۲ قانون مدنی و تبصره الحاقی آن.
+- حق طلاق برای زوج: ماده ۱۱۳۳ قانون مدنی؛ وکالت زوجه در طلاق: ماده ۱۱۱۹ قانون مدنی.
+- حضانت فرزند: قانون حمایت خانواده ۱۳۹۱ — معیار «مصلحت فرزند» است، نه سن ثابت.
+- کلاهبرداری: ماده ۱ قانون تشدید مجازات مرتکبین ارتشا، اختلاس و کلاهبرداری ۱۳۶۷.
+- کلاهبرداری رایانه‌ای: ماده ۷۵۰ قانون مجازات اسلامی (جرایم رایانه‌ای).
+- صدور چک بلامحل: ماده ۱۰ قانون صدور چک ۱۳۵۲.
+- اخراج کارگر به‌علت تقصیر: ماده ۲۷ قانون کار ۱۳۶۹.
+- اصول قراردادها (الزام به وفا/آزادی قراردادها): مواد ۱۰، ۲۱۹ و ۲۲۰ قانون مدنی.
+
 اگر پاسخ دقیق نیاز به مطالعه اسناد/قوانین دارد، بگو برای نظر قطعی با وکیل مشورت کند.
 پاسخ را حتماً فقط با الفبای فارسی بنویس و از هر کاراکتر یا کلمه‌ی غیرفارسی (لاتین، چینی، کره‌ای،
 ژاپنی، روسی و غیره) داخل جمله‌ها جداً خودداری کن.
-هیچ​وقت خودت را وکیل رسمی معرفی نکن و در پایان در یک جمله یادآوری کن: "این پاسخ جنبه اطلاع‌رسانی دارد و جایگزین مشاوره حقوقی رسمی نیست."`;
+هیچ‌وقت خودت را وکیل رسمی معرفی نکن و در پایان در یک جمله یادآوری کن: "این پاسخ جنبه اطلاع‌رسانی دارد و جایگزین مشاوره حقوقی رسمی نیست."`;
 
 export { SYSTEM_LEGAL };
 
@@ -46,98 +68,137 @@ function normalizeMessages(messages: LlmMessage[], maxMessages = 16): LlmMessage
     .map((m) => ({ role: m.role === "assistant" ? "assistant" : m.role === "system" ? "system" : "user", content: m.content.slice(0, 8000) }));
 }
 
-async function postOpenAiCompatible(base: string, body: unknown, key: string, timeoutMs = 30_000): Promise<string> {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+/* ─── ارائه‌دهنده‌ها ───────────────────────────────────────────────────── */
+
+type Provider = {
+  id: string;
+  base: string; // آدرس کامل chat/completions
+  key?: string;
+  model: string;
+  timeoutMs: number;
+  maxTokens?: number;
+  group: "keyed" | "sdk" | "keyless";
+};
+
+async function postOpenAiCompatible(
+  url: string,
+  body: unknown,
+  key: string | undefined,
+  timeoutMs = 30_000,
+  extraHeaders: Record<string, string> = {},
+): Promise<string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json", ...extraHeaders };
+  if (key) headers.Authorization = `Bearer ${key}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+  if (!res.ok) throw new Error(`llm http ${res.status}`);
+  const data = (await res.json()) as {
+    choices?: { message?: { content?: string } }[];
+    output_text?: string;
+    response?: string;
+  };
+  const text = data?.choices?.[0]?.message?.content ?? data?.output_text ?? data?.response ?? "";
+  if (!text) throw new Error("llm empty");
+  return text;
+}
+
+/** 1) زنجیره کلیدهای مالک — همان فرمت LLM_KEYS_JSON پروژه homeino1 */
+function parseKeysJsonProviders(): Provider[] {
+  const raw = process.env.LLM_KEYS_JSON;
+  if (!raw) return [];
   try {
-    const res = await fetch(base, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-      body: JSON.stringify(body),
-      signal: ctrl.signal,
-    });
-    if (!res.ok) throw new Error(`llm http ${res.status}`);
-    const data = await res.json();
-    const text = data?.choices?.[0]?.message?.content ?? data?.output_text ?? data?.response ?? "";
-    if (!text) throw new Error("llm empty");
-    return text;
-  } finally {
-    clearTimeout(t);
+    const arr: unknown = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter((e): e is Record<string, unknown> => !!e && typeof e === "object" && typeof (e as { base?: unknown }).base === "string" && typeof (e as { key?: unknown }).key === "string")
+      .map((e, i) => ({
+        id: `key-${typeof e.id === "string" && e.id ? e.id : i}`,
+        base: `${String(e.base).replace(/\/$/, "")}/chat/completions`,
+        key: String(e.key),
+        model: typeof e.model === "string" && e.model ? e.model : "glm-4.7-flash",
+        timeoutMs: 22_000,
+        maxTokens: typeof e.maxTokens === "number" ? e.maxTokens : undefined,
+        group: "keyed" as const,
+      }));
+  } catch {
+    return [];
   }
 }
 
-/* ─── 1) تأمین‌کننده HTTP با کلید (تولید — Vercel) ─────────────────────── */
-
-function httpProvider(): { base: string; key: string; model: string } | null {
+/** 2-4) کلیدهای env — z.ai / gemini / openrouter / groq */
+function keyedEnvProviders(): Provider[] {
+  const out: Provider[] = [];
   const key = process.env.ZAI_API_KEY || process.env.LLM_API_KEY;
-  if (!key) return null;
-  const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
-  const model = process.env.LLM_MODEL ?? "glm-4.6";
-  return { base: `${base}/chat/completions`, key, model };
-}
-
-async function viaHttp(messages: LlmMessage[], maxTokens: number): Promise<string | null> {
-  const provider = httpProvider();
-  if (!provider) return null;
-  try {
-    return sanitizePersian(
-      await postOpenAiCompatible(
-        provider.base,
-        { model: provider.model, messages, max_tokens: maxTokens, temperature: 0.3 },
-        provider.key,
-      ),
-    );
-  } catch {
-    return null;
+  if (key) {
+    const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
+    const model = process.env.LLM_MODEL ?? "glm-4.6";
+    out.push({ id: "zai", base: `${base}/chat/completions`, key, model, timeoutMs: 22_000, group: "keyed" });
+    // self-heal: مدل‌های همیشه‌رایگان روی همان کلید (اگر مدل اصلی پولی/ناموجود باشد)
+    out.push({ id: "zai-free47", base: `${base}/chat/completions`, key, model: "glm-4.7-flash", timeoutMs: 22_000, group: "keyed" });
+    out.push({ id: "zai-free45", base: `${base}/chat/completions`, key, model: "glm-4.5-flash", timeoutMs: 22_000, group: "keyed" });
   }
-}
-
-/* ─── 2) SDK سندباکس (توسعه — بدون کلید) ──────────────────────────────── */
-
-async function viaSdk(messages: LlmMessage[], _maxTokens: number): Promise<string | null> {
-  try {
-    const mod = (await import("z-ai-web-dev-sdk")) as unknown as { default?: { create: () => Promise<ZaiClient> }; create?: () => Promise<ZaiClient> };
-    const createFn = mod.default?.create ?? mod.create;
-    if (!createFn) return null;
-    const zai = await createFn();
-    // طبق مستندات SDK، پیام system با نقش assistant ارسال می‌شود.
-    const mapped = messages.map((m, i) => (m.role === "system" && i === 0 ? { role: "assistant", content: m.content } : m));
-    const completion = await zai.chat.completions.create({
-      messages: mapped as never,
-      thinking: { type: "disabled" },
+  if (process.env.GEMINI_API_KEY) {
+    out.push({
+      id: "gemini",
+      base: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      key: process.env.GEMINI_API_KEY,
+      model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash",
+      timeoutMs: 22_000,
+      group: "keyed",
     });
-    const text = completion?.choices?.[0]?.message?.content ?? "";
-    return text ? sanitizePersian(text) : null;
-  } catch {
-    return null;
   }
-}
-
-interface ZaiClient {
-  chat: { completions: { create: (opts: unknown) => Promise<{ choices?: { message?: { content?: string } }[] }> } };
-}
-
-/* ─── 3) Pollinations بدون‌کلید (fallback نهایی) ──────────────────────── */
-
-/** مسیر POST — پاسخ ساختاریافته JSON. */
-async function pollinationsPost(messages: LlmMessage[], maxTokens: number): Promise<string | null> {
-  try {
-    const res = await fetch("https://text.pollinations.ai/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, model: "openai", max_tokens: maxTokens, seed: 1, referrer: "dadban" }),
-      signal: AbortSignal.timeout(9_000),
+  if (process.env.OPENROUTER_API_KEY) {
+    out.push({
+      id: "openrouter",
+      base: "https://openrouter.ai/api/v1/chat/completions",
+      key: process.env.OPENROUTER_API_KEY,
+      model: process.env.OPENROUTER_MODEL ?? "z-ai/glm-4.5-flash:free",
+      timeoutMs: 22_000,
+      group: "keyed",
     });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const text = data?.choices?.[0]?.message?.content ?? data?.output_text ?? data?.response ?? "";
-    return text ? sanitizePersian(String(text)) : null;
-  } catch {
-    return null;
   }
+  if (process.env.GROQ_API_KEY) {
+    out.push({
+      id: "groq",
+      base: "https://api.groq.com/openai/v1/chat/completions",
+      key: process.env.GROQ_API_KEY,
+      model: process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile",
+      timeoutMs: 20_000,
+      group: "keyed",
+    });
+  }
+  // حذف ترکیب تکراری (base+model)
+  const seen = new Set<string>();
+  return out.filter((p) => {
+    const k = `${p.base}|${p.model}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
 }
 
-/** مسیر GET — پرامپت در URL؛ برای مواقعی که POST بلاک/کند است. */
+/** 6) بدون‌کلید — فقط برای اضطرار؛ در Vercel ممکن است بلاک باشند */
+function keylessProviders(): Provider[] {
+  return [
+    { id: "llm7", base: "https://api.llm7.io/v1/chat/completions", key: "unused", model: "gpt-4o-mini", timeoutMs: 9_000, group: "keyless" },
+    { id: "pollinations-post", base: "https://text.pollinations.ai/", model: "openai", timeoutMs: 9_000, group: "keyless" },
+    { id: "pollinations-get", base: "https://text.pollinations.ai/", model: "openai", timeoutMs: 8_000, group: "keyless" },
+    { id: "hackclub", base: "https://ai.hackclub.com/chat/completions", model: "-", timeoutMs: 9_000, group: "keyless" },
+    { id: "freellmapi", base: "https://api.freellmapi.com/v1/chat/completions", key: "unused", model: "auto", timeoutMs: 9_000, group: "keyless" },
+  ];
+}
+
+function buildChain(): Provider[] {
+  const sdk = process.env.NODE_ENV === "production" && !process.env.ZAI_WEB_SDK_ALLOW ? [] : [{ id: "sdk", base: "", model: "-", timeoutMs: 20_000, group: "sdk" as const }];
+  return [...parseKeysJsonProviders(), ...keyedEnvProviders(), ...sdk, ...keylessProviders()];
+}
+
+/* ─── اجرای یک ارائه‌دهنده ─────────────────────────────────────────────── */
+
 async function pollinationsGet(messages: LlmMessage[]): Promise<string | null> {
   try {
     const prompt = messages
@@ -152,43 +213,146 @@ async function pollinationsGet(messages: LlmMessage[]): Promise<string | null> {
     const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
     if (!res.ok) return null;
     const text = await res.text();
-    return text ? sanitizePersian(text) : null;
+    return text ? text : null;
   } catch {
     return null;
   }
 }
 
-/* ─── 4) تأمین‌کننده‌ی بدون‌کلید دوم (fallback اضطراری روی Vercel) ─────── */
-
-async function hackClubPost(messages: LlmMessage[]): Promise<string | null> {
+async function viaSdk(messages: LlmMessage[]): Promise<string | null> {
   try {
-    const res = await fetch("https://ai.hackclub.com/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages }),
-      signal: AbortSignal.timeout(8_000),
+    const mod = (await import("z-ai-web-dev-sdk")) as unknown as { default?: { create: () => Promise<ZaiClient> }; create?: () => Promise<ZaiClient> };
+    const createFn = mod.default?.create ?? mod.create;
+    if (!createFn) return null;
+    const zai = await createFn();
+    // طبق مستندات SDK، پیام system با نقش assistant ارسال می‌شود.
+    const mapped = messages.map((m, i) => (m.role === "system" && i === 0 ? { role: "assistant", content: m.content } : m));
+    const completion = await zai.chat.completions.create({
+      messages: mapped as never,
+      thinking: { type: "disabled" },
     });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const text = data?.choices?.[0]?.message?.content ?? "";
-    return text ? sanitizePersian(String(text)) : null;
+    const text = completion?.choices?.[0]?.message?.content ?? "";
+    return text || null;
   } catch {
     return null;
   }
 }
 
-async function viaKeyless(messages: LlmMessage[], maxTokens: number): Promise<string | null> {
-  return (
-    (await pollinationsPost(messages, maxTokens)) ??
-    (await pollinationsGet(messages)) ??
-    (await hackClubPost(messages))
-  );
+interface ZaiClient {
+  chat: { completions: { create: (opts: unknown) => Promise<{ choices?: { message?: { content?: string } }[] }> } };
+}
+
+async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: number): Promise<string> {
+  if (p.group === "sdk") return (await viaSdk(messages)) ?? "";
+  if (p.id === "pollinations-get") return (await pollinationsGet(messages)) ?? "";
+  const body =
+    p.id === "hackclub"
+      ? { messages }
+      : p.id === "pollinations-post"
+        ? { messages, model: "openai", max_tokens: maxTokens, seed: 1, referrer: "dadban" }
+        : { model: p.model, messages, max_tokens: maxTokens, temperature: 0.3 };
+  const extra: Record<string, string> = {};
+  if (p.id === "openrouter") {
+    extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
+    extra["X-Title"] = "DADBAN";
+  }
+  const text = await postOpenAiCompatible(p.base, body, p.key, p.timeoutMs, extra);
+  return sanitizePersian(text);
+}
+
+/* ─── فیوز خرابی (circuit breaker) ─────────────────────────────────────── */
+
+const breaker = new Map<string, { fail: number; until: number }>();
+const COOLDOWN_MS = 5 * 60_000;
+let preferred: string | null = null;
+
+function isDown(id: string): boolean {
+  const b = breaker.get(id);
+  return !!b && b.until > Date.now();
+}
+
+function markFail(id: string): void {
+  const prev = breaker.get(id);
+  breaker.set(id, { fail: (prev?.fail ?? 0) + 1, until: Date.now() + COOLDOWN_MS });
+}
+
+function markOk(id: string): void {
+  breaker.delete(id);
+  preferred = id;
 }
 
 /* ─── API عمومی ────────────────────────────────────────────────────────── */
 
 export async function askLLM(messages: LlmMessage[], maxTokens = 400, systemPrompt = SYSTEM_LEGAL): Promise<string | null> {
   const all = normalizeMessages([{ role: "system", content: systemPrompt }, ...messages]);
-  // ترتیب امتحان: HTTP با کلید → SDK سندباکس → بدون‌کلید
-  return (await viaHttp(all, maxTokens)) ?? (await viaSdk(all, maxTokens)) ?? (await viaKeyless(all, maxTokens));
+  const chain = buildChain();
+  const ordered = [
+    ...chain.filter((p) => p.id === preferred),
+    ...chain.filter((p) => p.id !== preferred && !isDown(p.id)),
+  ];
+  let keylessTried = 0;
+  for (const p of ordered) {
+    if (p.group === "keyless" && ++keylessTried > 3) break; // بودجه زمانی درخواست
+    const t0 = Date.now();
+    try {
+      const text = await runProvider(p, all, p.maxTokens ?? maxTokens);
+      if (text && text.trim().length > 1) {
+        markOk(p.id);
+        return text;
+      }
+      markFail(p.id);
+    } catch {
+      markFail(p.id);
+    }
+    void t0;
+  }
+  return null;
+}
+
+/* ─── تشخیص سلامت (برای /api/ai/llm-health) — هرگز کلید برنمی‌گرداند ───── */
+
+export type ProbeRow = { id: string; model: string; ok: boolean; ms: number; info: string };
+
+export async function llmProbe(): Promise<ProbeRow[]> {
+  const chain = buildChain();
+  const out: ProbeRow[] = [];
+  const msgs: LlmMessage[] = [{ role: "user", content: "سلام. فقط بنویس: آماده" }];
+  for (const p of chain) {
+    const t0 = Date.now();
+    try {
+      const text = await runProvider(p, msgs, 16);
+      out.push({ id: p.id, model: p.model, ok: !!text && text.trim().length > 0, ms: Date.now() - t0, info: text ? `len=${text.trim().length}` : "پاسخ خالی" });
+    } catch (e) {
+      out.push({ id: p.id, model: p.model, ok: false, ms: Date.now() - t0, info: String((e as Error)?.message ?? e).slice(0, 80) });
+    }
+  }
+  return out;
+}
+
+/** تشخیص دقیق کلید z.ai: ترکیب‌های مختلف base × model تا منبع خرابی پیدا شود. */
+export async function zaiDiagnose(): Promise<{ configured: boolean; combos: { base: string; model: string; ok: boolean; ms: number; error?: string }[] }> {
+  const key = process.env.ZAI_API_KEY || process.env.LLM_API_KEY;
+  if (!key) return { configured: false, combos: [] };
+  const bases = [...new Set([
+    (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, ""),
+    "https://api.z.ai/api/paas/v4",
+    "https://api.z.ai/api/coding/paas/v4",
+  ])];
+  const models = [...new Set([process.env.LLM_MODEL ?? "glm-4.6", "glm-4.7-flash", "glm-4.5-flash"])];
+  const combos: { base: string; model: string; ok: boolean; ms: number; error?: string }[] = [];
+  for (const base of bases) {
+    let baseOk = false;
+    for (const model of models) {
+      const t0 = Date.now();
+      try {
+        const text = await postOpenAiCompatible(`${base}/chat/completions`, { model, messages: [{ role: "user", content: "سلام" }], max_tokens: 8, temperature: 0 }, key, 8_000);
+        combos.push({ base, model, ok: !!text, ms: Date.now() - t0 });
+        if (text) baseOk = true;
+      } catch (e) {
+        combos.push({ base, model, ok: false, ms: Date.now() - t0, error: String((e as Error)?.message ?? e).slice(0, 60) });
+      }
+    }
+    if (baseOk) break; // یک base سالم کافی است
+  }
+  return { configured: true, combos };
 }
