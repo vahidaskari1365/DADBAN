@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { LawyerPicksFlow } from "@/components/ai/lawyer-picks";
 import type { MatchedLawyer } from "@/lib/lawyer-match";
@@ -84,6 +85,9 @@ const QUICK_ACTIONS = [
 const GREETING_OPENED_AT = Date.now(); // یک‌بار در زمان لود ماژول — خارج از رندر کامپوننت
 
 export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
+  const pathname = usePathname();
+  // روی صفحات ورود/ثبت‌نام FAB نشان داده نمی‌شود تا با فرم تداخل نکند
+  const authPage = pathname === "/login" || pathname === "/register";
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -213,7 +217,7 @@ export function ConsultCompanion({ hideFab = false }: ConsultCompanionProps) {
   return (
     <>
       {/* دکمه‌ی شناور (FAB) — در سمت چپ پایین، هماهنگ با پنجره‌ی چت */}
-      {!open && !hideFab && (
+      {!open && !hideFab && !authPage && (
         <button
           onClick={() => { setOpen(true); setUnreadCount(0); }}
           aria-label="مشاور همراه"
