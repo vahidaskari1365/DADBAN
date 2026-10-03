@@ -6,12 +6,13 @@ import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 
 interface Finding { type: "risk" | "info"; label: string; detail: string }
+interface ReviewResult { analysis?: string | null; findings: Finding[]; riskScore: number }
 
 export default function ContractReviewPage() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ findings: Finding[]; riskScore: number } | null>(null);
+  const [result, setResult] = useState<ReviewResult | null>(null);
 
   const analyze = async () => {
     if (!text.trim()) return;
@@ -26,7 +27,8 @@ export default function ContractReviewPage() {
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
-      setResult({ findings: data.findings, riskScore: data.riskScore });
+      // پاسخ همیشه شامل findings/riskScore است؛ در حالت هوش مصنوعی متن تحلیل با استناد قانونی هم می‌آید
+      setResult({ analysis: data.analysis ?? null, findings: data.findings ?? [], riskScore: data.riskScore ?? 0 });
     } catch (e) {
       setError(e instanceof Error ? e.message : "خطا در تحلیل");
     } finally {
@@ -62,6 +64,20 @@ export default function ContractReviewPage() {
                   <div key={s.l} className="rounded-2xl border border-border bg-surface p-4 text-center"><p className="text-2xl font-extrabold text-foreground">{s.v}</p><p className="text-xs text-muted">{s.l}</p></div>
                 ))}
               </div>
+
+              {result.analysis && (
+                <Card hover={false} className="space-y-3 border-primary/30 bg-primary-soft/30">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary"><Icon name="sparkles" className="h-4 w-4" /></span>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">تحلیل هوش مصنوعی با استناد به مواد قانونی</p>
+                      <p className="text-xs text-muted">دستیار دادبان بندهای قرارداد را با مستند قانونی بررسی کرد</p>
+                    </div>
+                  </div>
+                  <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">{result.analysis}</p>
+                </Card>
+              )}
+
               {result.findings.map((f, i) => (
                 <div key={i} className={`flex items-start gap-3 rounded-2xl border p-4 ${f.type === "risk" ? "border-[color-mix(in_oklab,var(--danger)_30%,transparent)] bg-[color-mix(in_oklab,var(--danger)_6%,transparent)]" : "border-border bg-surface"}`}>
                   <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${f.type === "risk" ? "bg-danger/15 text-danger" : "bg-primary-soft text-primary"}`}><Icon name={f.type === "risk" ? "alert" : "check"} className="h-4 w-4" /></span>

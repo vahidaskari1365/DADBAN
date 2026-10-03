@@ -44,9 +44,13 @@ export async function POST(req: Request) {
   try {
     if (mode === "contract" || contract) {
       if (!contract) return NextResponse.json({ ok: false, error: "متن قرارداد معتبر نیست." }, { status: 400 });
+      // تحلیل محلی همیشه محاسبه می‌شود تا UI آمار/ریسک داشته باشد؛ متن تحلیل هوش مصنوعی در صورت موفقیت اضافه می‌شود
+      const local = analyzeContract(contract);
       const llm = await withTimeout(askLLM([{ role: "user", content: `${CONTRACT_PROMPT}${contract}` }], 700), 27_000);
-      if (llm) return NextResponse.json({ ok: true, mode: "contract", source: "llm", analysis: llm });
-      return NextResponse.json({ ok: true, mode: "contract", source: "local", ...analyzeContract(contract) });
+      if (llm) {
+        return NextResponse.json({ ok: true, mode: "contract", source: "llm", analysis: llm, findings: local.findings, riskScore: local.riskScore });
+      }
+      return NextResponse.json({ ok: true, mode: "contract", source: "local", ...local });
     }
 
     if (!query) return NextResponse.json({ ok: false, error: "لطفاً سؤال خود را بنویسید." }, { status: 400 });
