@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Container, Logo, Button } from "./ui";
@@ -192,15 +193,22 @@ export function Header() {
       </Container>
 
       {/* Mobile menu — Fullscreen drawer */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-[60] lg:hidden">
-          {/* پس‌زمینه تیره */}
-          <div
-            className="absolute inset-0 bg-black/40 animate-fade-in"
-            onClick={() => setMobileOpen(false)}
-          />
-          {/* drawer از راست (RTL) */}
-          <div className="absolute inset-y-0 right-0 w-[85%] max-w-sm overflow-y-auto bg-surface shadow-[var(--shadow-lift)] animate-slide-in-right">
+      {/* پورتال به body: از استکینگ‌کانتکستِ هدر (sticky z-50) خارج می‌شود تا منو «پشت صفحه» نرود */}
+      {mobileOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-[90] lg:hidden">
+            {/* پس‌زمینه تیره */}
+            <div
+              className="absolute inset-0 bg-black/40 animate-fade-in"
+              onClick={() => setMobileOpen(false)}
+            />
+            {/* drawer از راست (RTL) */}
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="منوی اصلی"
+              className="absolute inset-y-0 right-0 w-[85%] max-w-sm overflow-y-auto bg-surface shadow-[var(--shadow-lift)] animate-slide-in-right"
+            >
             {/* هدر drawer */}
             <div className="flex items-center justify-between border-b border-border p-4">
               <Logo />
@@ -261,9 +269,10 @@ export function Header() {
               <Button href="/consultation" icon="calendar" className="w-full">رزرو مشاوره</Button>
               <Button href="/dashboard/client" variant="outline" icon="user" className="mt-2 w-full">ورود / ثبت‌نام</Button>
             </div>
-          </div>
-        </div>
-      )}
+            </div>
+          </div>,
+          document.body
+        )}
     </header>
   );
 }
