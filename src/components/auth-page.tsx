@@ -50,7 +50,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
         />
       </div>
 
-      <Container className="relative grid items-center gap-10 py-12 lg:min-h-[calc(100svh-4.5rem)] lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-14">
+      <Container className="relative grid items-center gap-10 py-12 pb-32 lg:min-h-[calc(100svh-4.5rem)] lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-14">
         {/* ── سمت برند: لوگو + ارزش‌ها ── */}
         <div className="flex flex-col items-center text-center lg:items-start lg:text-right">
           <div className="relative">
