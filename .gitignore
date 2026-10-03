@@ -40,3 +40,5 @@ node_modules/
 *.log
 dev.log
 server.log
+eng.traineddata
+*.traineddata
