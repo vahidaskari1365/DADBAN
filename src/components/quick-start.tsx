@@ -9,8 +9,8 @@ import type { IconKey } from "@/lib/data";
 import { buildRecommendation, type HelpType, type Recommendation } from "@/lib/recommendation";
 import { trackEvent } from "@/lib/analytics";
 
-const STAGES = ["هنوز اقدامی نکرده‌ام", "اظهارنامه/اخطار داده‌ام", "در دادگاه/دادسراست", "رأی صادر شده", "مرحله اجرا"];
-const HELPS: { key: HelpType; label: string; icon: IconKey }[] = [
+export const STAGES = ["هنوز اقدامی نکرده‌ام", "اظهارنامه/اخطار داده‌ام", "در دادگاه/دادسراست", "رأی صادر شده", "مرحله اجرا"];
+export const HELPS: { key: HelpType; label: string; icon: IconKey }[] = [
   { key: "consult", label: "مشاوره و راهنمایی", icon: "chat" },
   { key: "lawyer", label: "استخدام وکیل", icon: "user" },
   { key: "doc", label: "تنظیم سند/قرارداد", icon: "document" },
@@ -52,7 +52,7 @@ function OptionCard({
   );
 }
 
-function ResultCard({ label, option, tone }: { label: string; option: Recommendation["primary"]; tone: "primary" | "neutral" | "accent" }) {
+export function ResultCard({ label, option, tone }: { label: string; option: Recommendation["primary"]; tone: "primary" | "neutral" | "accent" }) {
   const styles = {
     primary: "border-primary bg-primary-soft/40 ring-1 ring-primary/30",
     neutral: "border-border",

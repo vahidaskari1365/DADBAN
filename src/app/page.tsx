@@ -6,7 +6,6 @@ import { Container, SectionHeading, Button, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
 import { HomeHero } from "@/components/home-hero";
-import AIFunnel from "@/components/ai-funnel";
 import { QuickStart } from "@/components/quick-start";
 import { Reveal } from "@/components/reveal";
 import { Counter } from "@/components/counter";
@@ -110,15 +109,6 @@ export default async function HomePage() {
               </Reveal>
             ))}
           </div>
-        </Container>
-      </section>
-
-      {/* #3 — AI funnel (never competes with a lawyer; routes to /ai-assistant?q=) */}
-      <section className="mt-24">
-        <Container>
-          <Reveal>
-            <AIFunnel />
-          </Reveal>
         </Container>
       </section>
 

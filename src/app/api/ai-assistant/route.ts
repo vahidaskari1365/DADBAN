@@ -3,6 +3,7 @@ import { analyzeLegalQuery, analyzeContract } from "@/lib/legal-engine";
 import { askLLM, SYSTEM_LEGAL } from "@/lib/llm";
 import { webSearch, type WebSearchResult } from "@/lib/ai";
 import { rateLimit, readJson, text } from "@/lib/api-security";
+import { extractContractFile } from "@/lib/extract-text";
 import { detectSpecialtiesFromMessage, detectProvinceFromMessage, matchLawyers, TOPIC_SPECIALTIES, type MatchedLawyer } from "@/lib/lawyer-match";
 
 export const runtime = "nodejs";
@@ -30,11 +31,33 @@ ${context}`;
 }
 
 export async function POST(req: Request) {
-  const body = await readJson(req, 16_384);
   const limited = rateLimit(req, "ai", 15, 60 * 60_000);
   if (limited) return limited;
 
-  const contract = text(body?.contract, 6000);
+  // آپلود فایل قرارداد (multipart/form-data) یا بدنه JSON معمولی
+  let upload: { text: string; name: string; chars: number } | null = null;
+  let body: Record<string, unknown> = {};
+  if ((req.headers.get("content-type") || "").includes("multipart/form-data")) {
+    const form = await req.formData();
+    const file = form.get("file");
+    if (!(file instanceof File) || file.size === 0) {
+      return NextResponse.json({ ok: false, error: "فایلی برای تحلیل انتخاب نشده است." }, { status: 400 });
+    }
+    try {
+      upload = await extractContractFile(file);
+    } catch (e) {
+      return NextResponse.json(
+        { ok: false, error: e instanceof Error ? e.message : "خواندن فایل ناموفق بود." },
+        { status: 400 },
+      );
+    }
+    const m = form.get("mode");
+    body = { mode: typeof m === "string" && m ? m : "contract" };
+  } else {
+    body = (await readJson(req, 16_384)) ?? {};
+  }
+
+  const contract = upload ? upload.text : text(body?.contract, 6000);
   const query = text(body?.query, 3000);
   const mode = body?.mode;
   const useWeb = body?.webSearch === true;
@@ -46,11 +69,12 @@ export async function POST(req: Request) {
       if (!contract) return NextResponse.json({ ok: false, error: "متن قرارداد معتبر نیست." }, { status: 400 });
       // تحلیل محلی همیشه محاسبه می‌شود تا UI آمار/ریسک داشته باشد؛ متن تحلیل هوش مصنوعی در صورت موفقیت اضافه می‌شود
       const local = analyzeContract(contract);
+      const meta = upload ? { fileName: upload.name, chars: upload.chars } : {};
       const llm = await withTimeout(askLLM([{ role: "user", content: `${CONTRACT_PROMPT}${contract}` }], 700), 27_000);
       if (llm) {
-        return NextResponse.json({ ok: true, mode: "contract", source: "llm", analysis: llm, findings: local.findings, riskScore: local.riskScore });
+        return NextResponse.json({ ok: true, mode: "contract", source: "llm", ...meta, analysis: llm, findings: local.findings, riskScore: local.riskScore });
       }
-      return NextResponse.json({ ok: true, mode: "contract", source: "local", ...local });
+      return NextResponse.json({ ok: true, mode: "contract", source: "local", ...meta, ...local });
     }
 
     if (!query) return NextResponse.json({ ok: false, error: "لطفاً سؤال خود را بنویسید." }, { status: 400 });
