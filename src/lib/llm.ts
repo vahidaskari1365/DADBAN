@@ -367,16 +367,6 @@ function visionProviders(): Provider[] {
       push("zai-vision-custom", `${custom}/chat/completions`, process.env.VISION_MODEL ?? "glm-4.5v", 16_000);
     }
   }
-  if (process.env.ATRIA_API_KEY) {
-    out.push({
-      id: "atria-vision",
-      base: `${(process.env.ATRIA_BASE_URL ?? "https://api.atria-asi.ai/v1").replace(/\/$/, "")}/chat/completions`,
-      key: process.env.ATRIA_API_KEY,
-      model: process.env.ATRIA_MODEL ?? "Atria-Dawn-Preview",
-      timeoutMs: 16_000,
-      group: "keyed",
-    });
-  }
   if (process.env.GEMINI_API_KEY) {
     out.push({
       id: "gemini-vision",
