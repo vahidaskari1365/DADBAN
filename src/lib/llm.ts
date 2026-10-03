@@ -143,27 +143,40 @@ function parseKeysJsonProviders(): Provider[] {
   }
 }
 
-/** 2-4) کلیدهای env — atria (اول زنجیره برای همه چت‌ها) / z.ai / gemini / openrouter / groq */
+/** 2-4) کلیدهای env — z.ai / atria / gemini / openrouter / groq */
 function keyedEnvProviders(): Provider[] {
   const out: Provider[] = [];
-  // آتریا — گیت‌وی اصلی برای همه چت‌ها؛ مدل‌های گران‌تر فقط به‌عنوان پشتیبان مصرف می‌شوند
-  if (process.env.ATRIA_API_KEY) {
+  const key = process.env.ZAI_API_KEY || process.env.LLM_API_KEY;
+  if (key) {
+    const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
+    const model = process.env.LLM_MODEL ?? "glm-4.6";
+    // ۱) مدل همیشه‌رایگان اول — سریع، پایدار و هیچ توکن پولی مصرف نمی‌کند (صرفه‌جویی)
+    out.push({ id: "zai-free", base: `${base}/chat/completions`, key, model: "glm-4.5-flash", timeoutMs: 22_000, group: "keyed" });
+    // ۲) آتریا — پشتیبان اصلی همه چت‌ها؛ وقتی flash محدود شد خودکار جواب می‌دهد
+    //    (مدل Preview برای پاسخ‌های بلند کند است؛ timeout محافظت‌شده)
+    if (process.env.ATRIA_API_KEY) {
+      out.push({
+        id: "atria",
+        base: `${(process.env.ATRIA_BASE_URL ?? "https://api.atria-asi.ai/v1").replace(/\/$/, "")}/chat/completions`,
+        key: process.env.ATRIA_API_KEY,
+        model: process.env.ATRIA_MODEL ?? "Atria-Dawn-Preview",
+        timeoutMs: 18_000,
+        group: "keyed",
+      });
+    }
+    // ۳) مدل پولی — فقط به‌عنوان ارتقا وقتی سهمیه شارژ شده باشد
+    out.push({ id: "zai", base: `${base}/chat/completions`, key, model, timeoutMs: 22_000, group: "keyed" });
+  }
+  if (!key && process.env.ATRIA_API_KEY) {
+    // اگر کلید z.ai نبود، آتریا تأمین‌کننده اصلی است
     out.push({
       id: "atria",
       base: `${(process.env.ATRIA_BASE_URL ?? "https://api.atria-asi.ai/v1").replace(/\/$/, "")}/chat/completions`,
       key: process.env.ATRIA_API_KEY,
       model: process.env.ATRIA_MODEL ?? "Atria-Dawn-Preview",
-      timeoutMs: 25_000,
+      timeoutMs: 18_000,
       group: "keyed",
     });
-  }
-  const key = process.env.ZAI_API_KEY || process.env.LLM_API_KEY;
-  if (key) {
-    const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
-    const model = process.env.LLM_MODEL ?? "glm-4.6";
-    // مدل همیشه‌رایگان اول (پایدار و بدون نیاز به شارژ)؛ مدل پولی به‌عنوان ارتقا اگر سهمیه داشت
-    out.push({ id: "zai-free", base: `${base}/chat/completions`, key, model: "glm-4.5-flash", timeoutMs: 22_000, group: "keyed" });
-    out.push({ id: "zai", base: `${base}/chat/completions`, key, model, timeoutMs: 22_000, group: "keyed" });
   }
   if (process.env.GEMINI_API_KEY) {
     out.push({
