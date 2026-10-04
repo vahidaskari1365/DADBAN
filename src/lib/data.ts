@@ -110,6 +110,27 @@ export const CONSULTATION_TYPES: {
   { key: "video", title: "مشاوره تصویری", desc: "جلسه ویدئویی داخل پلتفرم", icon: "video" },
 ];
 
+/* ---------------- Consultation case types ----------------
+   «نوع مورد نیاز مشاوره» در فرم رزرو — پوشش همه حوزه‌های پلتفرم.
+   match: کلیدواژه‌های تخصص وکلا (ستون specialties) برای سورت/فیلتر
+   وکلای «وکیل موردنظر» بر اساس انتخاب کاربر. */
+export const CONSULT_CASE_TYPES: { label: string; match: string[] }[] = [
+  { label: "طلاق و خانواده", match: ["خانواده", "طلاق"] },
+  { label: "مهریه و نفقه", match: ["خانواده", "طلاق"] },
+  { label: "حضانت فرزند", match: ["خانواده"] },
+  { label: "ملکی و املاک", match: ["ملک"] },
+  { label: "کیفری", match: ["کیفری"] },
+  { label: "قراردادها", match: ["قراردادها"] },
+  { label: "چک، سفته و مطالبات", match: ["چک و اسناد"] },
+  { label: "ارث و انحصار وراثت", match: ["ارث"] },
+  { label: "شرکت‌ها و ثبت شرکت", match: ["شرکت‌ها", "تجارت"] },
+  { label: "تجارت و بازرگانی", match: ["تجارت"] },
+  { label: "کار و تأمین اجتماعی", match: ["کار"] },
+  { label: "مالیاتی", match: ["مالیاتی"] },
+  { label: "ثبت برند و مالکیت فکری", match: ["ثبت برند"] },
+  { label: "مهاجرت", match: ["مهاجرت"] },
+];
+
 /* ---------------- Trust badges ----------------
    Only claims the platform can actually honour today. Nothing here may
    promise something there is no backend for (no fake ratings / guarantees). */

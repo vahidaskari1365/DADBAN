@@ -76,7 +76,7 @@ export default async function HomePage() {
       {/* #1 — Intent cards: "هر کمکی نیاز دارید، اینجاست" */}
       <section className="mt-20">
         <Container>
-          <Reveal>
+          <Reveal variant="blur">
             <SectionHeading
               eyebrow="دریافت کمک"
               title="هر کمکی نیاز دارید، اینجاست"
@@ -116,7 +116,7 @@ export default async function HomePage() {
       {/* Stats — real, DB-derived counters only (part of "rest") */}
       {realStats.length > 0 && (
         <Container>
-          <Reveal>
+          <Reveal variant="zoom">
             <div className="grid grid-cols-2 gap-4 rounded-3xl border border-border bg-surface/80 p-6 card-shadow backdrop-blur sm:grid-cols-4 sm:p-8">
               {realStats.map((s) => (
                 <div key={s.label} className="flex flex-col items-center gap-1.5 text-center">
@@ -138,7 +138,7 @@ export default async function HomePage() {
       {/* Special services */}
       <section className="mt-24">
         <Container>
-          <Reveal>
+          <Reveal variant="blur">
             <SectionHeading eyebrow="خدمات ویژه" title="سریع‌ترین راه‌حل‌ها، همین‌جا" desc="خدماتی که بیشترین تقاضا را دارند؛ با یک کلیک شروع کنید." />
           </Reveal>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -163,7 +163,7 @@ export default async function HomePage() {
       {/* Quick start — decision engine */}
       <section id="quickstart" className="mt-24 scroll-mt-24">
         <Container>
-          <Reveal>
+          <Reveal variant="blur">
             <QuickStart />
           </Reveal>
         </Container>
@@ -173,7 +173,7 @@ export default async function HomePage() {
       {featured.length > 0 && (
         <section className="mt-24">
           <Container>
-            <Reveal>
+            <Reveal variant="blur">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <SectionHeading
                   align="start"
@@ -207,7 +207,7 @@ export default async function HomePage() {
       {/* Consultation types */}
       <section className="mt-24">
         <Container>
-          <Reveal>
+          <Reveal variant="blur">
             <SectionHeading
               eyebrow="مشاوره آنلاین"
               title="به روش خودتان مشاوره بگیرید"
@@ -249,12 +249,12 @@ export default async function HomePage() {
       {/* Trust badges */}
       <section className="mt-24">
         <Container>
-          <Reveal>
+          <Reveal variant="blur">
             <SectionHeading eyebrow="چرا دادبان؟" title="اعتماد، اصل ماجراست" />
           </Reveal>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {TRUST.map((t, i) => (
-              <Reveal key={t.title} delay={i * 60}>
+              <Reveal key={t.title} delay={i * 60} variant="zoom">
                 <Card className="h-full text-center">
                   <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
                     <Icon name={t.icon} className="h-6 w-6" />
@@ -272,7 +272,7 @@ export default async function HomePage() {
       <section className="mt-24">
         <Container>
           <div className="grid gap-8 lg:grid-cols-3">
-            <Reveal>
+            <Reveal variant="start">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-foreground">جدیدترین مقالات</h2>
                 <Link href="/knowledge" className="text-sm font-medium text-primary hover:text-primary-hover">همه ←</Link>
@@ -288,7 +288,7 @@ export default async function HomePage() {
               </div>
             </Reveal>
 
-            <Reveal delay={80}>
+            <Reveal delay={80} variant="start">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-foreground">پرسش و پاسخ</h2>
                 <Link href="/qa" className="text-sm font-medium text-primary hover:text-primary-hover">همه ←</Link>
@@ -307,7 +307,7 @@ export default async function HomePage() {
               </div>
             </Reveal>
 
-            <Reveal delay={160}>
+            <Reveal delay={160} variant="start">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-foreground">قراردادهای پرطرفدار</h2>
                 <Link href="/contracts" className="text-sm font-medium text-primary hover:text-primary-hover">همه ←</Link>
@@ -337,7 +337,7 @@ export default async function HomePage() {
       {/* Final CTA */}
       <section className="mt-24 pb-8">
         <Container>
-          <Reveal>
+          <Reveal variant="blur">
             <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-8 text-center card-shadow sm:p-12">
               <div className="pointer-events-none absolute inset-0 opacity-50" style={{ background: "linear-gradient(110deg, color-mix(in oklab, var(--primary) 14%, transparent), color-mix(in oklab, var(--accent) 12%, transparent), color-mix(in oklab, var(--primary) 14%, transparent))" }} />
               <div className="relative">

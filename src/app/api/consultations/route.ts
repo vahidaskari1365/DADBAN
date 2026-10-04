@@ -8,6 +8,7 @@ import { randomBytes } from "crypto";
 import { phone as normalizePhone, rateLimit, readJson, text, validPhone } from "@/lib/api-security";
 import { computeSlots, parseTehranDay } from "@/lib/availability";
 import { getPaymentProvider } from "@/lib/payments";
+import { CONSULT_CASE_TYPES } from "@/lib/data";
 
 export const runtime = "nodejs";
 
@@ -31,6 +32,8 @@ export async function POST(req: Request) {
     name?: string;
     phone?: string;
     subject?: string;
+    /** «نوع مورد نیاز مشاوره» — از فهرست CONSULT_CASE_TYPES؛ به subject الصاق می‌شود */
+    caseType?: string;
     date?: string;
     time?: string;
     /** ISO instant of the chosen real slot (preferred over date/time) */
@@ -47,7 +50,11 @@ export async function POST(req: Request) {
   const { lawyer, type, duration, date, time, startsAt: startsAtRaw } = body;
   const name = text(body.name, 120);
   const phone = normalizePhone(body.phone);
-  const subject = text(body.subject, 1000);
+  const rawSubject = text(body.subject, 1000);
+  // caseType فقط از فهرست مجاز پذیرفته می‌شود (نه ورودی دلخواه کاربر)
+  const caseTypeRaw = text(body.caseType, 80);
+  const caseType = CONSULT_CASE_TYPES.some((c) => c.label === caseTypeRaw) ? caseTypeRaw : null;
+  const subject = caseType ? `نوع مورد نیاز: ${caseType} — ${rawSubject}` : rawSubject;
 
   if (!name || !phone || !subject || !type) {
     return NextResponse.json(

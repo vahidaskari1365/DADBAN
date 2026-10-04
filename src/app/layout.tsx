@@ -193,6 +193,27 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         )}
       </head>
       <body className="bg-background text-foreground antialiased">
+        {/* ── پس‌زمینه سینمایی سراسری: عکس هیرو با شفافیت کم پشت همه صفحات ──
+            ثابت (fixed) است و با اسکرول جابه‌جا نمی‌شود؛ واش بالای آن کنتراست را
+            کم می‌کند تا خوانایی متن در هر دو تم حفظ شود. */}
+        <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 select-none overflow-hidden">
+          <div
+            className="site-hero-bg absolute inset-0 bg-cover bg-center opacity-[0.16] dark:hidden"
+            style={{ backgroundImage: "url('/hero-bg-light.jpg')" }}
+          />
+          <div
+            className="site-hero-bg absolute inset-0 hidden bg-cover bg-center opacity-[0.12] dark:block"
+            style={{ backgroundImage: "url('/hero-bg-dark.jpg')" }}
+          />
+          {/* واش محوکننده برای حفظ خوانایی */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, color-mix(in oklab, var(--background) 55%, transparent) 0%, color-mix(in oklab, var(--background) 38%, transparent) 50%, color-mix(in oklab, var(--background) 55%, transparent) 100%)",
+            }}
+          />
+        </div>
         <ThemeProvider>
           <a
             href="#main"

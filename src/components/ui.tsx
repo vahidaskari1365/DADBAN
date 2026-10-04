@@ -203,16 +203,18 @@ export function Card({
   children,
   className = "",
   hover = true,
+  ...rest
 }: {
   children: ReactNode;
   className?: string;
   hover?: boolean;
-}) {
+} & React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={`rounded-2xl border border-border bg-surface p-5 card-shadow transition-all duration-200 ${
         hover ? "hover:-translate-y-1 hover:border-border-strong hover:shadow-[var(--shadow-lift)]" : ""
       } ${className}`}
+      {...rest}
     >
       {children}
     </div>

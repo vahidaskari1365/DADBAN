@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Container, Button, Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { CONSULTATION_TYPES, faNum } from "@/lib/data";
+import { CONSULTATION_TYPES, CONSULT_CASE_TYPES, faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { JalaliDatePicker } from "@/components/jalali-date-picker";
 import { trackEvent } from "@/lib/analytics";
@@ -18,7 +18,13 @@ const DURATIONS: Record<string, { min: number; price: number }[]> = {
   video: [{ min: 30, price: 500000 }, { min: 60, price: 800000 }],
 };
 
-interface LawyerOpt { slug: string; name: string; city: string }
+interface LawyerOpt {
+  slug: string;
+  name: string;
+  city: string;
+  specialties?: string[];
+  rating?: number;
+}
 interface Slot { start: string; label: string }
 
 function ConsultationContent() {
@@ -31,6 +37,7 @@ function ConsultationContent() {
     return byType;
   });
   const [lawyerSlug, setLawyerSlug] = useState(search.get("lawyer") ?? "");
+  const [caseType, setCaseType] = useState(search.get("caseType") ?? "");
   const [lawyers, setLawyers] = useState<LawyerOpt[]>([]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -94,6 +101,17 @@ function ConsultationContent() {
   const price = DURATIONS[type].find((d) => d.min === duration)?.price ?? DURATIONS[type][0].price;
   const selectedSlot = slots.find((s) => s.start === slot) ?? null;
 
+  // «نوع مورد نیاز مشاوره» → وکلای متخصص همان حوزه بالای فهرست (سورت بر اساس امتیاز)
+  const caseMatch = CONSULT_CASE_TYPES.find((c) => c.label === caseType) ?? null;
+  const { specialistLawyers, otherLawyers } = useMemo(() => {
+    if (!caseMatch) return { specialistLawyers: [] as LawyerOpt[], otherLawyers: [] as LawyerOpt[] };
+    const spec = lawyers
+      .filter((l) => (l.specialties ?? []).some((s) => caseMatch.match.includes(s)))
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    const specSlugs = new Set(spec.map((l) => l.slug));
+    return { specialistLawyers: spec, otherLawyers: lawyers.filter((l) => !specSlugs.has(l.slug)) };
+  }, [caseMatch, lawyers]);
+
   const submit = async () => {
     setError(null);
     if (!name || !phone || !subject) {
@@ -113,6 +131,7 @@ function ConsultationContent() {
           name,
           phone,
           subject,
+          caseType: caseType || undefined,
           date: date || undefined,
           time: time || undefined,
           startsAt: slot ?? undefined,
@@ -169,6 +188,275 @@ function ConsultationContent() {
 
   const fieldCls =
     "h-11 w-full rounded-xl border border-border-strong bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-primary";
+
+  /* ───────────── فیلدهای مشترک (هم‌حالت موبایل و دسکتاپ از همین JSX استفاده می‌کنند) ───────────── */
+
+  // فیلد جدید: نوع مورد نیاز مشاوره (طلاق، ملکی، کیفری و…)
+  const caseTypeField = (
+    <label className="flex flex-col gap-1.5" data-testid="case-type-field">
+      <span className="text-xs font-semibold text-muted">نوع مورد نیاز مشاوره</span>
+      <select
+        value={caseType}
+        onChange={(e) => setCaseType(e.target.value)}
+        className={fieldCls}
+        data-testid="case-type-select"
+      >
+        <option value="">انتخاب کنید — مثلاً طلاق، ملکی، کیفری…</option>
+        {CONSULT_CASE_TYPES.map((c) => (
+          <option key={c.label} value={c.label}>{c.label}</option>
+        ))}
+      </select>
+    </label>
+  );
+
+  // وکیل موردنظر — با انتخاب نوع مشاوره، وکلای متخصص همان حوزه سورت‌شده بالای فهرست می‌آیند
+  const lawyerField = (
+    <label className="flex flex-col gap-1.5" data-testid="lawyer-field">
+      <span className="text-xs font-semibold text-muted">وکیل موردنظر (اختیاری)</span>
+      <select
+        value={lawyerSlug}
+        onChange={(e) => setLawyerSlug(e.target.value)}
+        className={fieldCls}
+        data-testid="lawyer-select"
+      >
+        <option value="">بدون وکیل مشخص — معرفی بهترین وکیل توسط کارشناسان</option>
+        {!caseMatch && lawyers.map((lw) => (
+          <option key={lw.slug} value={lw.slug}>{lw.name} — {lw.city}</option>
+        ))}
+        {caseMatch && specialistLawyers.length > 0 && (
+          <optgroup label={`متخصص ${caseType}`}>
+            {specialistLawyers.map((lw) => (
+              <option key={lw.slug} value={lw.slug}>{lw.name} — {lw.city}</option>
+            ))}
+          </optgroup>
+        )}
+        {caseMatch && otherLawyers.length > 0 && (
+          <optgroup label="سایر وکلا">
+            {otherLawyers.map((lw) => (
+              <option key={lw.slug} value={lw.slug}>{lw.name} — {lw.city}</option>
+            ))}
+          </optgroup>
+        )}
+      </select>
+      {caseMatch && specialistLawyers.length > 0 && (
+        <span className="text-[11px] font-medium leading-5 text-success" data-testid="specialist-hint">
+          {faNum(specialistLawyers.length)} وکیل متخصص «{caseType}» در بالای فهرست قرار گرفت.
+        </span>
+      )}
+      {caseMatch && specialistLawyers.length === 0 && lawyers.length > 0 && (
+        <span className="text-[11px] leading-5 text-muted">
+          هنوز وکیلی با تخصص «{caseType}» ثبت نشده؛ کارشناسان دادبان بهترین وکیل را معرفی می‌کنند.
+        </span>
+      )}
+    </label>
+  );
+
+  /* ───────────── کارت‌های فرم ───────────── */
+
+  // گام ۱ — نوع مشاوره (متنی/صوتی/تصویری)
+  const typeCard = (
+    <Card hover={false}>
+      <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">۱</span>
+        نوع مشاوره را انتخاب کنید
+      </h2>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        {CONSULTATION_TYPES.map((c) => (
+          <button
+            key={c.key}
+            type="button"
+            onClick={() => changeType(c.key)}
+            className={`flex flex-col items-start gap-2 rounded-2xl border p-4 text-right transition-all cursor-pointer ${
+              type === c.key ? "border-primary bg-primary-soft ring-1 ring-primary" : "border-border hover:border-primary/40 hover:bg-surface-2"
+            }`}
+          >
+            <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${type === c.key ? "bg-primary text-primary-foreground" : "bg-primary-soft text-primary"}`}>
+              <Icon name={c.icon as IconKey} className="h-5 w-5" />
+            </span>
+            <span className="text-sm font-bold text-foreground">{c.title}</span>
+            <span className="text-xs text-muted">{c.desc}</span>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+
+  // گام ۲ — مدت و زمان موردنظر (در دسکتاپ ستون چپ، بالای خلاصه رزرو)
+  const scheduleCard = (
+    <Card hover={false} data-testid="schedule-card">
+      <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">۲</span>
+        مدت و زمان موردنظر
+      </h2>
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        {DURATIONS[type].map((d) => (
+          <button
+            key={d.min}
+            type="button"
+            onClick={() => setDuration(d.min)}
+            className={`rounded-xl border px-3 py-3 text-center transition-all cursor-pointer ${
+              duration === d.min ? "border-primary bg-primary-soft" : "border-border hover:bg-surface-2"
+            }`}
+          >
+            <p className="text-sm font-bold text-foreground">{faNum(d.min)} دقیقه</p>
+            <p className="mt-0.5 text-xs text-muted">{faNum(d.price.toLocaleString("en-US"))} ت</p>
+          </button>
+        ))}
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-muted">تاریخ (شمسی)</span>
+          <JalaliDatePicker value={date} onChange={setDate} />
+        </div>
+        {!lawyerSlug ? (
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-muted">ساعت پیشنهادی (اختیاری)</span>
+            <select value={time} onChange={(e) => setTime(e.target.value)} className={fieldCls}>
+              <option value="">ساعت ترجیحی</option>
+              {["۰۹:۰۰ تا ۱۱:۰۰", "۱۱:۰۰ تا ۱۳:۰۰", "۱۴:۰۰ تا ۱۶:۰۰", "۱۶:۰۰ تا ۱۸:۰۰", "۱۸:۰۰ تا ۲۰:۰۰"].map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold text-muted">نوبت‌های آزاد (واقعی)</span>
+            <div className="rounded-xl border border-border bg-surface-2/60 p-2.5">
+              {!date ? (
+                <p className="px-1 py-1.5 text-[11px] text-muted">ابتدا تاریخ را انتخاب کنید.</p>
+              ) : !slotsLoaded ? (
+                <p className="px-1 py-1.5 text-[11px] text-muted">در حال بررسی نوبت‌ها…</p>
+              ) : slots.length === 0 ? (
+                <p className="px-1 py-1.5 text-[11px] leading-5 text-muted">
+                  برای این روز نوبتی خالی نیست؛ تاریخ دیگری را امتحان کنید.
+                </p>
+              ) : (
+                <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+                  {slots.map((s) => (
+                    <button
+                      key={s.start}
+                      type="button"
+                      onClick={() => { setSlot(s.start); trackEvent("slot_selected"); }}
+                      className={`rounded-lg border px-1 py-2 text-center text-[11px] font-bold transition-colors cursor-pointer ${
+                        slot === s.start
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-success/30 bg-success/5 text-success hover:bg-success/10"
+                      }`}
+                    >
+                      {faNum(s.label.split("— ")[1] ?? s.label)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {slot && (
+              <p className="text-[11px] font-bold text-success">
+                نوبت انتخاب‌شده: {selectedSlot?.label}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+      {lawyerSlug && (
+        <p className="mt-2 text-[11px] leading-5 text-muted">
+          نوبت‌ها از برنامه واقعی وکیل (به وقت تهران) محاسبه می‌شوند و همین‌جا قطعی ثبت می‌شوند.
+          اگر نوبتی انتخاب نکنید، زمان توسط کارشناسان با شما هماهنگ می‌شود.
+        </p>
+      )}
+    </Card>
+  );
+
+  // گام ۳ — اطلاعات تماس و وکیل (با فیلد جدید «نوع مورد نیاز مشاوره»)
+  const contactCard = (
+    <Card hover={false} data-testid="contact-card">
+      <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">۳</span>
+        اطلاعات تماس و وکیل
+      </h2>
+      <div className="mt-4">
+        {caseTypeField}
+      </div>
+      <div className="mt-3">
+        {lawyerField}
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-muted">نام و نام خانوادگی</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً علی رضایی" className={fieldCls} />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-muted">شماره موبایل</span>
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="09123456789" dir="ltr" className={fieldCls + " text-right"} />
+        </label>
+      </div>
+      <label className="mt-3 flex flex-col gap-1.5">
+        <span className="text-xs font-semibold text-muted">شرح موضوع / سؤال شما</span>
+        <textarea value={subject} onChange={(e) => setSubject(e.target.value)} rows={3} placeholder="موضوع مشاوره را به اختصار بنویسید…" className={fieldCls + " h-auto resize-y py-2.5"} />
+      </label>
+      {error && (
+        <div className="mt-3 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">{error}</div>
+      )}
+      <Button onClick={submit} disabled={loading} icon="calendar" className="mt-4 w-full">
+        {loading ? "در حال ثبت…" : slot ? "ثبت نهایی نوبت" : "ثبت درخواست مشاوره"}
+      </Button>
+      <TrustLine compact className="mt-3" />
+      <p className="mt-2 text-center text-[11px] text-muted">
+        با ثبت، شرایط استفاده دادبان را می‌پذیرید. اطلاعات شما محرمانه است و هیچ مبلغی پیش از تأیید کسر نمی‌شود.
+      </p>
+    </Card>
+  );
+
+  // خلاصه رزرو (در دسکتاپ ستون چپ، زیر مدت‌وزمان)
+  const summaryCard = (
+    <Card hover={false} className="space-y-4" data-testid="summary-card">
+      <h3 className="font-bold text-foreground">خلاصه رزرو</h3>
+      <div className="space-y-2.5 text-sm">
+        <div className="flex items-center justify-between">
+          <span className="text-muted">نوع مشاوره</span>
+          <span className="font-medium text-foreground">{CONSULTATION_TYPES.find((c) => c.key === type)?.title}</span>
+        </div>
+        {caseType && (
+          <div className="flex items-center justify-between">
+            <span className="text-muted">نوع موضوع</span>
+            <span className="font-medium text-foreground">{caseType}</span>
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          <span className="text-muted">مدت</span>
+          <span className="font-medium text-foreground">{faNum(duration)} دقیقه</span>
+        </div>
+        {lawyerSlug && (
+          <div className="flex items-center justify-between">
+            <span className="text-muted">وکیل</span>
+            <span className="font-medium text-foreground">{lawyers.find((l) => l.slug === lawyerSlug)?.name ?? "—"}</span>
+          </div>
+        )}
+        {selectedSlot && (
+          <div className="flex items-center justify-between">
+            <span className="text-muted">زمان</span>
+            <span className="font-medium text-success">{selectedSlot.label}</span>
+          </div>
+        )}
+      </div>
+      <div className="border-t border-border pt-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-bold text-foreground">مبلغ قابل پرداخت</span>
+          <span className="text-lg font-extrabold text-primary">{faNum(price.toLocaleString("en-US"))} <span className="text-xs font-normal">تومان</span></span>
+        </div>
+        <p className="mt-1 text-[11px] leading-5 text-muted">مبلغ نهایی است و هزینه پنهانی وجود ندارد.</p>
+      </div>
+      <div className="rounded-xl bg-surface-2 p-3">
+        <p className="flex items-start gap-2 text-xs leading-5 text-muted">
+          <Icon name="lock" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+          پرداخت پس از تأیید نوبت انجام می‌شود؛ بازگشت وجه طبق سیاست شفاف.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Badge tone="success" icon="shield">بازگشت وجه طبق سیاست شفاف</Badge>
+        <Badge tone="primary" icon="lock">محرمانگی</Badge>
+      </div>
+    </Card>
+  );
 
   if (result) {
     return (
@@ -249,204 +537,28 @@ function ConsultationContent() {
         </Container>
       </section>
 
-      <div id="booking-form" className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_340px] lg:px-8">
-        <div className="space-y-6">
-          {/* Type */}
-          <Card hover={false}>
-            <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">۱</span>
-              نوع مشاوره را انتخاب کنید
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              {CONSULTATION_TYPES.map((c) => (
-                <button
-                  key={c.key}
-                  type="button"
-                  onClick={() => changeType(c.key)}
-                  className={`flex flex-col items-start gap-2 rounded-2xl border p-4 text-right transition-all cursor-pointer ${
-                    type === c.key ? "border-primary bg-primary-soft ring-1 ring-primary" : "border-border hover:border-primary/40 hover:bg-surface-2"
-                  }`}
-                >
-                  <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${type === c.key ? "bg-primary text-primary-foreground" : "bg-primary-soft text-primary"}`}>
-                    <Icon name={c.icon as IconKey} className="h-5 w-5" />
-                  </span>
-                  <span className="text-sm font-bold text-foreground">{c.title}</span>
-                  <span className="text-xs text-muted">{c.desc}</span>
-                </button>
-              ))}
-            </div>
-          </Card>
-
-          {/* Duration + schedule */}
-          <Card hover={false}>
-            <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">۲</span>
-              مدت و زمان موردنظر
-            </h2>
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              {DURATIONS[type].map((d) => (
-                <button
-                  key={d.min}
-                  type="button"
-                  onClick={() => setDuration(d.min)}
-                  className={`rounded-xl border px-3 py-3 text-center transition-all cursor-pointer ${
-                    duration === d.min ? "border-primary bg-primary-soft" : "border-border hover:bg-surface-2"
-                  }`}
-                >
-                  <p className="text-sm font-bold text-foreground">{faNum(d.min)} دقیقه</p>
-                  <p className="mt-0.5 text-xs text-muted">{faNum(d.price.toLocaleString("en-US"))} ت</p>
-                </button>
-              ))}
-            </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-muted">تاریخ (شمسی)</span>
-                <JalaliDatePicker value={date} onChange={setDate} />
-              </div>
-              {!lawyerSlug ? (
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-xs font-semibold text-muted">ساعت پیشنهادی (اختیاری)</span>
-                  <select value={time} onChange={(e) => setTime(e.target.value)} className={fieldCls}>
-                    <option value="">ساعت ترجیحی</option>
-                    {["۰۹:۰۰ تا ۱۱:۰۰", "۱۱:۰۰ تا ۱۳:۰۰", "۱۴:۰۰ تا ۱۶:۰۰", "۱۶:۰۰ تا ۱۸:۰۰", "۱۸:۰۰ تا ۲۰:۰۰"].map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </label>
-              ) : (
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-xs font-semibold text-muted">نوبت‌های آزاد (واقعی)</span>
-                  <div className="rounded-xl border border-border bg-surface-2/60 p-2.5">
-                    {!date ? (
-                      <p className="px-1 py-1.5 text-[11px] text-muted">ابتدا تاریخ را انتخاب کنید.</p>
-                    ) : !slotsLoaded ? (
-                      <p className="px-1 py-1.5 text-[11px] text-muted">در حال بررسی نوبت‌ها…</p>
-                    ) : slots.length === 0 ? (
-                      <p className="px-1 py-1.5 text-[11px] leading-5 text-muted">
-                        برای این روز نوبتی خالی نیست؛ تاریخ دیگری را امتحان کنید.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
-                        {slots.map((s) => (
-                          <button
-                            key={s.start}
-                            type="button"
-                            onClick={() => { setSlot(s.start); trackEvent("slot_selected"); }}
-                            className={`rounded-lg border px-1 py-2 text-center text-[11px] font-bold transition-colors cursor-pointer ${
-                              slot === s.start
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-success/30 bg-success/5 text-success hover:bg-success/10"
-                            }`}
-                          >
-                            {faNum(s.label.split("— ")[1] ?? s.label)}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {slot && (
-                    <p className="text-[11px] font-bold text-success">
-                      نوبت انتخاب‌شده: {selectedSlot?.label}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-            {lawyerSlug && (
-              <p className="mt-2 text-[11px] leading-5 text-muted">
-                نوبت‌ها از برنامه واقعی وکیل (به وقت تهران) محاسبه می‌شوند و همین‌جا قطعی ثبت می‌شوند.
-                اگر نوبتی انتخاب نکنید، زمان توسط کارشناسان با شما هماهنگ می‌شود.
-              </p>
-            )}
-          </Card>
-
-          {/* Contact */}
-          <Card hover={false}>
-            <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">۳</span>
-              اطلاعات تماس و وکیل
-            </h2>
-            <label className="mt-4 flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-muted">وکیل موردنظر (اختیاری)</span>
-              <select value={lawyerSlug} onChange={(e) => setLawyerSlug(e.target.value)} className={fieldCls}>
-                <option value="">بدون وکیل مشخص — معرفی بهترین وکیل توسط کارشناسان</option>
-                {lawyers.map((lw) => (
-                  <option key={lw.slug} value={lw.slug}>{lw.name} — {lw.city}</option>
-                ))}
-              </select>
-            </label>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-muted">نام و نام خانوادگی</span>
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً علی رضایی" className={fieldCls} />
-              </label>
-              <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-muted">شماره موبایل</span>
-                <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="09123456789" dir="ltr" className={fieldCls + " text-right"} />
-              </label>
-            </div>
-            <label className="mt-3 flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-muted">شرح موضوع / سؤال شما</span>
-              <textarea value={subject} onChange={(e) => setSubject(e.target.value)} rows={3} placeholder="موضوع مشاوره را به اختصار بنویسید…" className={fieldCls + " h-auto resize-y py-2.5"} />
-            </label>
-            {error && (
-              <div className="mt-3 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">{error}</div>
-            )}
-            <Button onClick={submit} disabled={loading} icon="calendar" className="mt-4 w-full">
-              {loading ? "در حال ثبت…" : slot ? "ثبت نهایی نوبت" : "ثبت درخواست مشاوره"}
-            </Button>
-            <TrustLine compact className="mt-3" />
-            <p className="mt-2 text-center text-[11px] text-muted">
-              با ثبت، شرایط استفاده دادبان را می‌پذیرید. اطلاعات شما محرمانه است و هیچ مبلغی پیش از تأیید کسر نمی‌شود.
-            </p>
-          </Card>
+      <div id="booking-form" className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        {/* موبایل/تبلت — ترتیب طبیعی: ۱ نوع مشاوره → ۲ مدت‌وزمان → ۳ تماس → خلاصه */}
+        <div className="grid gap-6 lg:hidden" data-testid="mobile-flow">
+          {typeCard}
+          {scheduleCard}
+          {contactCard}
+          {summaryCard}
         </div>
 
-        {/* Summary */}
-        <aside className="lg:sticky lg:top-20 lg:self-start">
-          <Card hover={false} className="space-y-4">
-            <h3 className="font-bold text-foreground">خلاصه رزرو</h3>
-            <div className="space-y-2.5 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted">نوع مشاوره</span>
-                <span className="font-medium text-foreground">{CONSULTATION_TYPES.find((c) => c.key === type)?.title}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted">مدت</span>
-                <span className="font-medium text-foreground">{faNum(duration)} دقیقه</span>
-              </div>
-              {lawyerSlug && (
-                <div className="flex items-center justify-between">
-                  <span className="text-muted">وکیل</span>
-                  <span className="font-medium text-foreground">{lawyers.find((l) => l.slug === lawyerSlug)?.name ?? "—"}</span>
-                </div>
-              )}
-              {selectedSlot && (
-                <div className="flex items-center justify-between">
-                  <span className="text-muted">زمان</span>
-                  <span className="font-medium text-success">{selectedSlot.label}</span>
-                </div>
-              )}
+        {/* دسکتاپ — راست: نوع مشاوره + اطلاعات تماس | چپ: مدت‌وزمان + خلاصه رزرو (چسبان) */}
+        <div className="hidden gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start" data-testid="desktop-grid">
+          <div className="grid gap-6">
+            {typeCard}
+            {contactCard}
+          </div>
+          <div className="grid gap-6">
+            {scheduleCard}
+            <div className="self-start lg:sticky lg:top-20">
+              {summaryCard}
             </div>
-            <div className="border-t border-border pt-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-foreground">مبلغ قابل پرداخت</span>
-                <span className="text-lg font-extrabold text-primary">{faNum(price.toLocaleString("en-US"))} <span className="text-xs font-normal">تومان</span></span>
-              </div>
-              <p className="mt-1 text-[11px] leading-5 text-muted">مبلغ نهایی است و هزینه پنهانی وجود ندارد.</p>
-            </div>
-            <div className="rounded-xl bg-surface-2 p-3">
-              <p className="flex items-start gap-2 text-xs leading-5 text-muted">
-                <Icon name="lock" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                پرداخت پس از تأیید نوبت انجام می‌شود؛ بازگشت وجه طبق سیاست شفاف.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge tone="success" icon="shield">بازگشت وجه طبق سیاست شفاف</Badge>
-              <Badge tone="primary" icon="lock">محرمانگی</Badge>
-            </div>
-          </Card>
-        </aside>
+          </div>
+        </div>
       </div>
 
       {/* پرسش‌های متداول — کاهش تردید لحظه آخر (سبک Customer Q&A آمازون) */}

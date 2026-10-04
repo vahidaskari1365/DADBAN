@@ -16,6 +16,7 @@ export async function GET(req: Request) {
       name: lawyers.name,
       city: lawyers.city,
       specialties: lawyers.specialties,
+      rating: lawyers.rating,
       photoUrl: lawyers.photoUrl,
     })
     .from(lawyers)
