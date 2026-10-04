@@ -303,7 +303,8 @@ function ConsultationContent() {
           </button>
         ))}
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      {/* تاریخ تمام‌عرض (تقویم جا می‌شود) و ساعت زیر آن — طبق درخواست کاربر */}
+      <div className="mt-4 grid gap-3">
         <div className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-muted">تاریخ (شمسی)</span>
           <JalaliDatePicker value={date} onChange={setDate} />

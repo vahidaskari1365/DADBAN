@@ -134,7 +134,7 @@ export function JalaliDatePicker({
       </div>
 
       {/* شبکه روزها */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 justify-items-center gap-1">
         {grid.map((c, i) =>
           c === null ? (
             <span key={`e${i}`} />
