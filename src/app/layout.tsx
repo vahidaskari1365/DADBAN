@@ -12,6 +12,7 @@ import { ConsultCompanion } from "@/components/consult-companion";
 import { LiveActivity } from "@/components/amazon/live-activity";
 import { SW_REGISTER_SCRIPT } from "@/components/pwa/sw-register-script";
 import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/brand";
+import { SITE_URL } from "@/lib/site";
 import { organizationSchema, websiteSchema, jsonLd } from "@/lib/seo";
 import { getGoogleSearchConsoleVerification, getGoogleAnalyticsId } from "@/lib/metadata-builder";
 
@@ -26,7 +27,10 @@ const vazirmatn = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://dadban.ir"),
+  // metadataBase باید همیشه با NEXT_PUBLIC_SITE_URL هماهنگ باشد تا
+  // canonical/OG با sitemap.xml و llms.txt و JSON-LD یک دامنه را اعلام کنند.
+  // با انتقال به دامنه اصلی فقط همین env تغییر می‌کند — بدون تغییر کد.
+  metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_TITLE,
     template: `%s | ${SITE_NAME}`,
