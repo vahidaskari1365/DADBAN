@@ -14,7 +14,8 @@ const childIcon = (label: string): IconKey => {
   const m: Record<string, IconKey> = {
     "مشاوره حقوقی": "chat",
     "درخواست وکیل": "user",
-    "تنظیم قرارداد": "document",
+    "وکیل کارمندان": "user",
+    "انجام امور اداری": "building",
     "تنظیم دادخواست و شکواییه": "gavel",
     "تنظیم اسناد": "document",
     "بررسی قرارداد": "file",

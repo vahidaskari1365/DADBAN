@@ -155,7 +155,8 @@ export const NAV: {
     children: [
       { label: "مشاوره حقوقی", href: "/consultation", desc: "متنی، صوتی و تصویری" },
       { label: "ثبت پرونده و درخواست وکیل", href: "/case/new", desc: "معرفی وکیل توسط کارشناسان" },
-      { label: "تنظیم قرارداد", href: "/contracts/builder", desc: "قراردادساز گام‌به‌گام" },
+      { label: "وکیل کارمندان", href: "/lawyers?sp=کار", desc: "حقوق کار و تأمین اجتماعی" },
+      { label: "انجام امور اداری", href: "/services", desc: "واگذاری کارهای اداری به کارشناسان" },
       { label: "تنظیم دادخواست و شکواییه", href: "/legal-forms", desc: "فرم‌های حقوقی آماده" },
       { label: "بررسی قرارداد", href: "/contracts/review", desc: "تحلیل بندهای پرریسک" },
       { label: "خدمات ثبتی", href: "/pricing", desc: "ثبت شرکت و برند" },
