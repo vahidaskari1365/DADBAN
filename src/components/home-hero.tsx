@@ -115,8 +115,8 @@ export function HomeHero() {
           className="animate-fade-up mt-7 flex flex-wrap items-center justify-center gap-3"
           style={{ animationDelay: "0.2s" }}
         >
-          <Button href="/#quickstart" size="lg" icon="arrow" className="shadow-[var(--shadow-lift)]">
-            شروع مسیر من
+          <Button href="/ai-assistant" size="lg" icon="sparkles" className="shadow-[var(--shadow-lift)]">
+            پرسش از دستیار هوشمند
           </Button>
           <Button href="/lawyers" size="lg" variant="outline" icon="search">
             مستقیماً وکیل پیدا می‌کنم

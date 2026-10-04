@@ -7,36 +7,35 @@ import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
 import { PinMasonry } from "@/components/pin-masonry";
 import { HomeHero } from "@/components/home-hero";
-import { QuickStart } from "@/components/quick-start";
 import { Reveal } from "@/components/reveal";
 import { Counter } from "@/components/counter";
 import { CONSULTATION_TYPES, faNum, faPrice } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
-import { SPECIAL_SERVICES } from "@/lib/content";
 import { RelatedLinks } from "@/components/related-links";
 import { getPlatformStats } from "@/lib/stats";
 import { ReviewsSpotlight } from "@/components/amazon/reviews-spotlight";
 import { LawyerDiscovery } from "@/components/amazon/recently-viewed";
 import { TrustLine } from "@/components/amazon/trust-line";
+import { ActionHub, TrustStrip } from "@/components/home/action-hub";
+import { AISpotlight } from "@/components/home/ai-spotlight";
+import { InPersonServices, type InPersonService } from "@/components/home/inperson";
+import { SiteMenu } from "@/components/home/site-menu";
+import { CATALOG_SERVICES } from "@/lib/managed-catalog";
 
 export const dynamic = "force-dynamic";
 
-// Homepage intent cards (section #2): "هر کمکی نیاز دارید، اینجاست"
-const INTENT_CARDS: { title: string; desc: string; icon: IconKey; href: string; accent?: boolean }[] = [
-  { title: "وکیل", desc: "وکیل متخصص را بیابید و با خیال آسوده اعتماد کنید.", icon: "search", href: "/lawyers", accent: true },
-  { title: "مشاوره", desc: "مشاوره متنی، صوتی یا تصویری با وکیل متخصص.", icon: "chat", href: "/consultation" },
-  { title: "پیگیری و انجام امور", desc: "پیگیری پرونده، امور اداری و ثبتی را به ما بسپارید.", icon: "briefcase", href: "/services", accent: true },
-  { title: "قرارداد", desc: "تنظیم و بررسی قراردادهای حقوقی.", icon: "document", href: "/contracts" },
-  { title: "پرونده", desc: "ثبت و ارزیابی اولیه پرونده حقوقی خود.", icon: "folder", href: "/case/new" },
-  { title: "کسب‌وکار", desc: "خدمات حقوقی شرکت‌ها و کسب‌وکارها.", icon: "building", href: "/business" },
-];
-
-const TRUST: { title: string; desc: string; icon: IconKey }[] = [
-  { title: "احراز هویت و تأیید پروانه", desc: "هویت و پروانه همه وکلا توسط کارشناسان دادبان راستی‌آزمایی می‌شود.", icon: "badge" },
-  { title: "محرمانگی اطلاعات", desc: "اطلاعات شما محرمانه نگه‌داری می‌شود و طبق سیاست حریم خصوصی در اختیار غیر قرار نمی‌گیرد.", icon: "lock" },
-  { title: "بازگشت وجه طبق سیاست شفاف", desc: "اگر خدمتی ارائه نشود، وجه شما طبق سیاست بازگشت وجه عودت داده می‌شود.", icon: "shield" },
-  { title: "حل اختلاف شفاف", desc: "تیم پشتیبانی در صورت بروز اختلاف، رسیدگی بی‌طرفانه انجام می‌دهد.", icon: "balance" },
-];
+// خدمات حضوری/اداری — از کاتالوگ مدیریت‌شده (فیلتر ADMINISTRATIVE) به‌صورت اسلیم
+const IN_PERSON: InPersonService[] = CATALOG_SERVICES.filter(
+  (s) => s.category === "ADMINISTRATIVE" && s.active,
+).map((s) => ({
+  slug: s.slug,
+  title: s.title,
+  desc: s.shortDescription,
+  icon: s.icon,
+  basePrice: s.basePrice,
+  estimatedTime: s.estimatedTime,
+}));
+const TOTAL_SERVICES = CATALOG_SERVICES.filter((s) => s.active).length;
 
 export default async function HomePage() {
   let featured: typeof lawyers.$inferSelect[] = [];
@@ -73,47 +72,7 @@ export default async function HomePage() {
     <div className="page-wash">
       <HomeHero />
 
-      {/* #1 — Intent cards: "هر کمکی نیاز دارید، اینجاست" */}
-      <section className="mt-20">
-        <Container>
-          <Reveal variant="blur">
-            <SectionHeading
-              eyebrow="دریافت کمک"
-              title="هر کمکی نیاز دارید، اینجاست"
-              desc="مسیر درست را انتخاب کنید؛ دادبان شما را به بهترین اقدام بعدی هدایت می‌کند."
-            />
-          </Reveal>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {INTENT_CARDS.map((s, i) => (
-              <Reveal key={s.title} delay={i * 40}>
-                <Link
-                  href={s.href}
-                  className={`group flex h-full items-start gap-4 rounded-2xl border bg-surface p-5 card-shadow transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] ${
-                    s.accent ? "border-accent/30" : "border-border hover:border-primary/30"
-                  }`}
-                >
-                  <span
-                    className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-110 ${
-                      s.accent ? "bg-accent-soft text-accent" : "bg-primary-soft text-primary"
-                    }`}
-                  >
-                    <Icon name={s.icon} className="h-6 w-6" />
-                  </span>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="font-bold text-foreground">{s.title}</h3>
-                      <Icon name="arrow" className="h-4 w-4 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
-                    </div>
-                    <p className="mt-1 text-sm leading-6 text-muted">{s.desc}</p>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* Stats — real, DB-derived counters only (part of "rest") */}
+      {/* Stats — real, DB-derived counters only */}
       {realStats.length > 0 && (
         <Container>
           <Reveal variant="zoom">
@@ -135,37 +94,45 @@ export default async function HomePage() {
         </Container>
       )}
 
-      {/* Special services */}
-      <section className="mt-24">
+      {/* #1 — هاب یکپارچهٔ اقدام‌ها (بنتو) — جایگزین کارت‌های هدف + خدمات ویژهٔ تکراری */}
+      <section className="mt-20">
         <Container>
           <Reveal variant="blur">
-            <SectionHeading eyebrow="خدمات ویژه" title="سریع‌ترین راه‌حل‌ها، همین‌جا" desc="خدماتی که بیشترین تقاضا را دارند؛ با یک کلیک شروع کنید." />
+            <SectionHeading
+              eyebrow="دریافت کمک"
+              title="همه‌چیز از یک‌جا"
+              desc="هر خدمتی که از دادبان می‌خواهید، همین‌جا یک‌کلیکه در دسترس است."
+            />
           </Reveal>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {SPECIAL_SERVICES.map((s, i) => (
-              <Reveal key={s.title} delay={i * 50}>
-                <a
-                  href={s.href}
-                  className={`group flex h-full flex-col rounded-2xl border bg-surface p-5 card-shadow transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] ${s.accent ? "border-accent/40" : "border-border hover:border-primary/30"}`}
-                >
-                  <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl transition-transform group-hover:scale-110 ${s.accent ? "bg-accent text-accent-foreground" : "bg-primary-soft text-primary"}`}>
-                    <Icon name={s.icon} className="h-5 w-5" />
-                  </span>
-                  <h3 className="mt-3 text-sm font-bold text-foreground">{s.title}</h3>
-                  <p className="mt-1 text-xs leading-5 text-muted">{s.desc}</p>
-                </a>
-              </Reveal>
-            ))}
+          <div className="mt-10">
+            <ActionHub />
+          </div>
+          <div className="mt-8">
+            <TrustStrip />
           </div>
         </Container>
       </section>
 
-      {/* Quick start — decision engine */}
-      <section id="quickstart" className="mt-24 scroll-mt-24">
+      {/* #2 — اسپات‌لایت سینمایی دستیار هوش مصنوعی */}
+      <section className="mt-24">
+        <Container>
+          <AISpotlight />
+        </Container>
+      </section>
+
+      {/* #3 — خدمات حضوری و اداری */}
+      <section className="mt-24">
         <Container>
           <Reveal variant="blur">
-            <QuickStart />
+            <SectionHeading
+              eyebrow="نمایندهٔ شما در اداره‌ها"
+              title="کارهای حضوری، دیگر دردسر نیست"
+              desc="از اجرای احکام تا انحصار وراثت — نمایندهٔ دادبان با وکالت‌نامهٔ رسمی به‌جای شما می‌رود."
+            />
           </Reveal>
+          <div className="mt-10">
+            <InPersonServices services={IN_PERSON} totalCount={TOTAL_SERVICES} />
+          </div>
         </Container>
       </section>
 
@@ -239,28 +206,6 @@ export default async function HomePage() {
                   <Button href="/consultation" variant="soft" icon="calendar" className="mt-5 w-full">
                     رزرو مشاوره
                   </Button>
-                </Card>
-              </Reveal>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* Trust badges */}
-      <section className="mt-24">
-        <Container>
-          <Reveal variant="blur">
-            <SectionHeading eyebrow="چرا دادبان؟" title="اعتماد، اصل ماجراست" />
-          </Reveal>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {TRUST.map((t, i) => (
-              <Reveal key={t.title} delay={i * 60} variant="zoom">
-                <Card className="h-full text-center">
-                  <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
-                    <Icon name={t.icon} className="h-6 w-6" />
-                  </span>
-                  <h3 className="mt-4 text-sm font-bold text-foreground">{t.title}</h3>
-                  <p className="mt-1.5 text-xs leading-6 text-muted">{t.desc}</p>
                 </Card>
               </Reveal>
             ))}
@@ -360,6 +305,9 @@ export default async function HomePage() {
       <Container>
         <RelatedLinks pathname="/" />
       </Container>
+
+      {/* منوی شناور «همه خدمات» — همبرگری با همهٔ بخش‌های سایت */}
+      <SiteMenu />
     </div>
   );
 }

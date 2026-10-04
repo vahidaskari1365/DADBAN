@@ -49,7 +49,7 @@ export default async function ClientDashboard() {
     ? nextActionForCase(latestCase.stage, latestCase.status)
     : myConsults.length > 0
       ? { action: "در انتظار تأیید مشاوره", detail: "کارشناسان برای تأیید نوبت مشاوره شما تماس می‌گیرند. از کد پیگیری در «پیگیری» وضعیت را ببینید.", href: "/track-case" }
-      : { action: "اقدام بعدی شما: شروع اولین درخواست", detail: "هنوز پرونده یا مشاوره‌ای ثبت نکرده‌اید؛ از مسیر سریع شروع کنید تا بهترین اقدام مشخص شود.", href: "/#quickstart" };
+      : { action: "اقدام بعدی شما: شروع اولین درخواست", detail: "هنوز پرونده یا مشاوره‌ای ثبت نکرده‌اید؛ از مسیر سریع شروع کنید تا بهترین اقدام مشخص شود.", href: "/case/new" };
 
   const recentItems = [
     ...myCases.map((c) => ({ kind: "پرونده", title: c.subject, meta: c.caseNumber + " • " + c.city, tone: "primary" as const })),
