@@ -213,7 +213,8 @@ export function visibilityWhere(session: { id: number; role: string; phone: stri
   }
   if (session.role === "lawyer") {
     // Lawyer sees every live request — drafts/cancelled/rejected stay private.
-    return notInArray(serviceRequests.status, LAWYER_HIDDEN_STATUSES as unknown as string[]);
+    // Spread into a mutable array so the literal types match the pg enum column.
+    return notInArray(serviceRequests.status, [...LAWYER_HIDDEN_STATUSES]);
   }
   return eq(serviceRequests.userId, session.id);
 }

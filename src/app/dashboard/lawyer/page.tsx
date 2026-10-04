@@ -71,7 +71,7 @@ export default async function LawyerDashboard() {
       .from(serviceRequests)
       .leftJoin(managedServices, eq(serviceRequests.serviceId, managedServices.id))
       .leftJoin(users, eq(serviceRequests.userId, users.id))
-      .where(notInArray(serviceRequests.status, LAWYER_HIDDEN_STATUSES as unknown as string[]))
+      .where(notInArray(serviceRequests.status, [...LAWYER_HIDDEN_STATUSES]))
       .orderBy(desc(serviceRequests.createdAt))
       .limit(8);
   } catch (err) {
