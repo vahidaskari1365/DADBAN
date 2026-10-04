@@ -199,14 +199,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="bg-background text-foreground antialiased">
         {/* ── پس‌زمینه سینمایی سراسری: عکس هیرو با شفافیت کم پشت همه صفحات ──
             ثابت (fixed) است و با اسکرول جابه‌جا نمی‌شود؛ واش بالای آن کنتراست را
-            کم می‌کند تا خوانایی متن در هر دو تم حفظ شود. */}
+            کم می‌کند تا خوانایی متن در هر دو تم حفظ شود.
+            موبایل: تصویر افقی است و وسطش خالی — با bg-right ترازوی طلایی
+            (سمت راست تصویر) در قاب عمودی گوشی دیده می‌شود؛ دسکتاپ مثل قبل
+            مرکز تصویر را نشان می‌دهد. شفافیت موبایل کمی بالاتر است تا پشت
+            کارت‌های تمام‌عرض هم پس‌زمینه حس شود. */}
         <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 select-none overflow-hidden">
           <div
-            className="site-hero-bg absolute inset-0 bg-cover bg-center opacity-[0.16] dark:hidden"
+            className="site-hero-bg absolute inset-0 bg-cover bg-right opacity-[0.22] sm:bg-center sm:opacity-[0.16] dark:hidden"
             style={{ backgroundImage: "url('/hero-bg-light.jpg')" }}
           />
           <div
-            className="site-hero-bg absolute inset-0 hidden bg-cover bg-center opacity-[0.12] dark:block"
+            className="site-hero-bg absolute inset-0 hidden bg-cover bg-right opacity-[0.16] sm:bg-center sm:opacity-[0.12] dark:block"
             style={{ backgroundImage: "url('/hero-bg-dark.jpg')" }}
           />
           {/* واش محوکننده برای حفظ خوانایی */}
