@@ -47,7 +47,7 @@ export default async function ServicesCatalog() {
   }));
 
   return (
-    <div className="min-h-screen bg-background pb-16">
+    <div className="min-h-screen pb-16">
       <section className="border-b border-border bg-gradient-to-b from-primary-soft/60 to-background">
         <Container className="py-12 sm:py-16">
           <span className="inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
@@ -86,7 +86,7 @@ export default async function ServicesCatalog() {
                 </div>
               </div>
               {g.items.length ? (
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
                   {g.items.map((s: any) => (
                     <ServiceCard key={s.slug ?? s.id} service={s} />
                   ))}
@@ -99,7 +99,7 @@ export default async function ServicesCatalog() {
           {(services as any[]).filter((s) => !categories.some((c) => c.slug === s.category)).length > 0 && (
             <div>
               <h2 className="mb-5 text-xl font-bold text-foreground">سایر خدمات</h2>
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
                 {(services as any[]).filter((s) => !categories.some((c) => c.slug === s.category)).map((s: any) => (
                   <ServiceCard key={s.slug ?? s.id} service={s} />
                 ))}

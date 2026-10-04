@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { lawyers } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,6 +9,11 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const featuredOnly = url.searchParams.get("featured");
+  const sp = url.searchParams.get("sp");
+
+  const conds = [];
+  if (featuredOnly) conds.push(eq(lawyers.featured, true));
+  if (sp) conds.push(sql`${lawyers.specialties} @> ARRAY[${sp}]::text[]`);
 
   const rows = await db
     .select({
@@ -18,9 +23,12 @@ export async function GET(req: Request) {
       specialties: lawyers.specialties,
       rating: lawyers.rating,
       photoUrl: lawyers.photoUrl,
+      avatarColor: lawyers.avatarColor,
+      verified: lawyers.verified,
+      experienceYears: lawyers.experienceYears,
     })
     .from(lawyers)
-    .where(featuredOnly ? eq(lawyers.featured, true) : undefined)
+    .where(conds.length ? and(...conds) : undefined)
     .orderBy(lawyers.name);
 
   return NextResponse.json({ ok: true, lawyers: rows });
