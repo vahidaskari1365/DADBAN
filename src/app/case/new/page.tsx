@@ -47,6 +47,8 @@ function NewCaseContent() {
   });
   /** زمینه‌ی فانل که فرم با آن خودکار پر شده — برای نمایش جعبه‌ی «انتخاب‌های قبلی شما» */
   const [prefilled, setPrefilled] = useState(false);
+  /** کاربر با حساب خود وارد شده — پرونده به «پرونده‌های من» پنل موکل متصل می‌شود */
+  const [accountLinked, setAccountLinked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,6 +71,26 @@ function NewCaseContent() {
       }));
       setPrefilled(true);
     });
+  }, []);
+
+  // prefill نام و موبایل از حساب کاربری — تضمین می‌کند پرونده با شماره‌ی همان
+  // حساب ثبت شود و در «پرونده‌های من» پنل موکل ظاهر گردد
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.ok && d.user) {
+          setForm((f) => ({
+            ...f,
+            name: f.name || d.user.name || "",
+            phone: f.phone || d.user.phone || "",
+          }));
+          setAccountLinked(true);
+        }
+      })
+      .catch(() => {
+        /* مهمان — بدون اتصال حساب */
+      });
   }, []);
 
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -212,6 +234,13 @@ function NewCaseContent() {
                 <input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="09123456789" dir="ltr" className={fieldCls + " text-right"} />
               </label>
             </div>
+
+            {accountLinked && (
+              <p className="flex items-start gap-2 rounded-xl border border-primary/20 bg-primary-soft/50 px-3 py-2.5 text-xs leading-6 text-foreground-soft">
+                <Icon name="user" className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                با حساب خود وارد شده‌اید؛ این پرونده با همین شماره به «پرونده‌های من» در پنل موکل متصل می‌شود و روند آن را همان‌جا مرحله‌به‌مرحله می‌بینید.
+              </p>
+            )}
 
             {error && <div className="rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">{error}</div>}
 

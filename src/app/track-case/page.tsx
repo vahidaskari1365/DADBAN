@@ -1,14 +1,17 @@
 "use client";
 import { formatJalali } from "@/lib/jalali";
+import { CASE_STAGE_FLOW } from "@/lib/case-facts";
 import { useState } from "react";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button, Badge } from "@/components/ui";
+import { Icon } from "@/components/icons";
+import { faNum } from "@/lib/data";
 
 const FA: Record<string, string> = { new: "جدید", reviewing: "در حال بررسی", matched: "تطبیق با وکیل", active: "فعال", closed: "بسته" };
 
 export default function TrackCasePage() {
   const [code, setCode] = useState("");
-  const [result, setResult] = useState<null | { found: boolean; caseData?: any; error?: string }>(null);
+  const [result, setResult] = useState<null | { found: boolean; caseData?: { caseNumber: string; status: string; stage: string; createdAt: string; lastUpdatedAt: string }; error?: string }>(null);
   const [loading, setLoading] = useState(false);
 
   const search = async () => {
@@ -65,6 +68,42 @@ export default function TrackCasePage() {
                 <div className="flex justify-between rounded-xl bg-surface-2/60 p-3"><span className="text-muted">تاریخ ثبت</span><span className="font-bold text-foreground">{formatJalali(result.caseData.createdAt)}</span></div>
               </div>
 
+              {/* تایم‌لاین مراحل — «پرونده در چه حالی است» بدون نیاز به ورود */}
+              <div className="mt-5 border-t border-border pt-4">
+                <p className="text-sm font-bold text-foreground">پرونده در چه مرحله‌ای است؟</p>
+                <div className="mt-3 space-y-0">
+                  {(() => {
+                    const idx = Math.max(0, CASE_STAGE_FLOW.indexOf(result.caseData.stage as (typeof CASE_STAGE_FLOW)[number]));
+                    return CASE_STAGE_FLOW.map((title, i) => (
+                      <div key={title} className="flex gap-3">
+                        <div className="flex flex-col items-center">
+                          <span
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold ${
+                              i < idx
+                                ? "border-success bg-success text-primary-foreground"
+                                : i === idx
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border bg-surface text-muted"
+                            }`}
+                          >
+                            {i < idx ? <Icon name="check" className="h-3 w-3" /> : faNum(i + 1)}
+                          </span>
+                          {i < CASE_STAGE_FLOW.length - 1 && (
+                            <span className={`h-5 w-0.5 ${i < idx ? "bg-success" : "bg-border"}`} />
+                          )}
+                        </div>
+                        <p className={`-mt-0.5 pb-4 text-xs font-bold ${i === idx ? "text-primary" : i < idx ? "text-foreground" : "text-muted"}`}>
+                          {title}
+                          {i === idx && <span className="mr-2 rounded-full bg-primary-soft px-2 py-0.5 text-[9px] font-bold text-primary">مرحله فعلی</span>}
+                        </p>
+                      </div>
+                    ));
+                  })()}
+                </div>
+                <p className="mt-2 rounded-xl bg-primary-soft/50 p-3 text-[11px] leading-6 text-foreground-soft">
+                  برای جزئیات کامل (مدارک، پرداخت‌ها و اقدام بعدی) با همان شماره موبایل ثبت پرونده وارد حساب خود شوید.
+                </p>
+              </div>
             </Card>
           )}
         </div>

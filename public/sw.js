@@ -10,7 +10,7 @@
 
 // v1.4.0 — چیدمان جدید صفحه مشاوره + پس‌زمینه سراسری هیرو + موشن‌های سینمایی؛
 // کش‌های نسخه قبل در activate حذف می‌شوند تا هیچ گوشی‌ای نسخه قدیمی را نبیند.
-const VERSION = "sharifmand-v1.4.4";
+const VERSION = "sharifmand-v1.4.5";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;

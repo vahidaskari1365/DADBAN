@@ -7,7 +7,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { faNum, faPrice } from "@/lib/data";
+import { faNum, faPrice, CONSULT_TYPE_FA } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 
@@ -141,7 +141,7 @@ export default async function LawyerDashboard() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-foreground">{r.clientName}</p>
-                    <Badge tone="primary">{r.type}</Badge>
+                    <Badge tone="primary">{CONSULT_TYPE_FA[r.type] ?? r.type}</Badge>
                   </div>
                   <p className="mt-0.5 text-xs text-muted">
                     {r.subject.slice(0, 60)} • {faPrice(Number(r.price ?? 0))}

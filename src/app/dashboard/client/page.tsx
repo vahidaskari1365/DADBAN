@@ -6,10 +6,10 @@ import { desc, eq } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, Badge, Button, Avatar } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { faNum } from "@/lib/data";
+import { faNum, CONSULT_STATUS_FA, CONSULT_TYPE_FA } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { ensureProfileSchema } from "@/lib/auto-seed";
-import { nextActionForCase } from "@/lib/case-facts";
+import { nextActionForCase, CASE_STATUS_FA } from "@/lib/case-facts";
 import DocumentsManager from "@/components/documents-manager";
 import Link from "next/link";
 export const metadata: Metadata = {
@@ -132,7 +132,7 @@ export default async function ClientDashboard() {
                 </div>
                 <div className="mt-2 flex items-center gap-2">
                   <Badge tone="primary">{c.stage}</Badge>
-                  <Badge tone="success">{c.status}</Badge>
+                  <Badge tone="success">{CASE_STATUS_FA[c.status] ?? c.status}</Badge>
                   <span className="mr-auto text-xs text-muted">{c.city}</span>
                 </div>
               </Link>
@@ -198,9 +198,9 @@ export default async function ClientDashboard() {
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2 text-foreground-soft"><Icon name="calendar" className="h-4 w-4" /></span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{c.subject}</p>
-                  <p className="text-xs text-muted" dir="ltr">{c.type} • {c.duration} دقیقه</p>
+                  <p className="text-xs text-muted" dir="ltr">{CONSULT_TYPE_FA[c.type] ?? c.type} • {faNum(c.duration)} دقیقه</p>
                 </div>
-                <Badge tone="accent">{c.status}</Badge>
+                <Badge tone="accent">{CONSULT_STATUS_FA[c.status] ?? c.status}</Badge>
               </div>
             )) : (
               <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">مشاوره‌ای ثبت نکرده‌اید. <Link href="/consultation" className="text-accent hover:underline">رزرو مشاوره آنلاین</Link></p>

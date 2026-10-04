@@ -131,6 +131,27 @@ export const CONSULT_CASE_TYPES: { label: string; match: string[] }[] = [
   { label: "مهاجرت", match: ["مهاجرت"] },
 ];
 
+/** برچسب فارسی نوع مشاوره — هیچ‌جا نباید مقدار خام انگلیسی (chat/voice/video) به کاربر نشان داده شود */
+export const CONSULT_TYPE_FA: Record<string, string> = {
+  chat: "چت",
+  voice: "تماس صوتی",
+  video: "ویدئویی",
+};
+
+/** برچسب فارسی وضعیت مشاوره — هم‌راستا با enum consultation_status در اسکیما */
+export const CONSULT_STATUS_FA: Record<string, string> = {
+  pending: "در انتظار بررسی",
+  payment_pending: "در انتظار پرداخت",
+  paid: "پرداخت‌شده",
+  confirmed: "تأییدشده",
+  scheduled: "نوبت قطعی",
+  in_progress: "در حال انجام",
+  completed: "انجام‌شده",
+  cancelled: "لغوشده",
+  expired: "منقضی‌شده",
+  refunded: "عودت‌داده‌شده",
+};
+
 /* ---------------- Trust badges ----------------
    Only claims the platform can actually honour today. Nothing here may
    promise something there is no backend for (no fake ratings / guarantees). */
