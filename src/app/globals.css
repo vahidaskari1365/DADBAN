@@ -599,3 +599,166 @@ input, select, textarea {
 .pin-photo-a { aspect-ratio: 3 / 4; }
 .pin-photo-b { aspect-ratio: 1 / 1; }
 .pin-photo-c { aspect-ratio: 4 / 5; }
+
+/* ============================================================
+   Auth — کارت دوپاره سبک VERSO + انیمیشن «تیغه» (بدون fade)
+   تیغه: یک مستطیل کج (skewX) که کل کارت را جارو می‌کند؛ محتوای
+   مقصد روی آن با ترانسفورم معکوس ثابت می‌ماند و سوییچ زیر پوشش
+   کامل تیغه انجام می‌شود — دقیقاً مثل ریورنس.
+   ============================================================ */
+:root {
+  --verso-cream: #f7f3ea;
+  --verso-cream-2: #eee8d9;
+  --verso-ink: #20261f;
+  --verso-ink-soft: #6d7565;
+  --verso-line: rgba(32, 38, 31, 0.18);
+  --verso-green: #0e2417;
+  --verso-green-2: #16382a;
+  --verso-green-hover: #17422e;
+  --verso-paper: #f3efe2;
+  --verso-gold-bright: #e2b969;
+}
+.dark {
+  --verso-cream: #151b17;
+  --verso-cream-2: #1e2620;
+  --verso-ink: #ece9df;
+  --verso-ink-soft: #a2aa9c;
+  --verso-line: rgba(236, 233, 223, 0.2);
+}
+
+/* ── فیلد زیرخط‌دار: خط طلایی که با فوکوس از راست کشیده می‌شود ── */
+.verso-field {
+  position: relative;
+}
+.verso-field > input {
+  width: 100%;
+  height: 3rem;
+  background: transparent;
+  border: 0;
+  border-bottom: 1.5px solid var(--verso-line);
+  border-radius: 0;
+  padding: 0 2.4rem 0 2.6rem;
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: var(--verso-ink);
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.verso-field > input::placeholder {
+  color: color-mix(in oklab, var(--verso-ink-soft) 65%, transparent);
+  font-weight: 500;
+}
+.verso-field > input:-webkit-autofill {
+  -webkit-text-fill-color: var(--verso-ink);
+  transition: background-color 9999s ease-in-out 0s;
+}
+.verso-field::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(to left, var(--accent), var(--verso-gold-bright));
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.verso-field:focus-within::after {
+  transform: scaleX(1);
+}
+
+/* ── تیغه ── */
+.verso-blade {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  background: linear-gradient(120deg, #0b1f13 0%, var(--verso-green) 40%, var(--verso-green-2) 100%);
+  animation-duration: 0.85s;
+  animation-timing-function: cubic-bezier(0.77, 0, 0.18, 1);
+  animation-fill-mode: both;
+  will-change: transform;
+}
+.verso-blade--fwd { animation-name: verso-blade-fwd; }
+.verso-blade--back { animation-name: verso-blade-back; }
+@keyframes verso-blade-fwd {
+  from { transform: skewX(-10deg) translateX(-112%); }
+  to   { transform: skewX(-10deg) translateX(112%); }
+}
+@keyframes verso-blade-back {
+  from { transform: skewX(-10deg) translateX(112%); }
+  to   { transform: skewX(-10deg) translateX(-112%); }
+}
+/* لایه داخلی با ترانسفورم معکوس → محتوا در مختصات کارت ثابت می‌ماند */
+.verso-blade-inner {
+  position: absolute;
+  inset: 0;
+  animation-duration: 0.85s;
+  animation-timing-function: cubic-bezier(0.77, 0, 0.18, 1);
+  animation-fill-mode: both;
+  will-change: transform;
+}
+.verso-blade--fwd .verso-blade-inner { animation-name: verso-blade-fwd-inner; }
+.verso-blade--back .verso-blade-inner { animation-name: verso-blade-back-inner; }
+@keyframes verso-blade-fwd-inner {
+  from { transform: translateX(112%) skewX(10deg); }
+  to   { transform: translateX(-112%) skewX(10deg); }
+}
+@keyframes verso-blade-back-inner {
+  from { transform: translateX(-112%) skewX(10deg); }
+  to   { transform: translateX(112%) skewX(10deg); }
+}
+/* دو درز نورانی طلایی روی لبه‌های تیغه */
+.verso-blade-seam {
+  position: absolute;
+  top: -12%;
+  bottom: -12%;
+  width: 3px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--verso-gold-bright) 18%,
+    #fff3d6 50%,
+    var(--verso-gold-bright) 82%,
+    transparent
+  );
+  box-shadow: 0 0 22px 2px color-mix(in oklab, var(--verso-gold-bright) 60%, transparent);
+}
+.verso-blade-seam--lead { right: 0; }
+.verso-blade-seam--tail { left: 0; }
+/* صفحه مقصد روی تیغه — همان هندسه پنل برند (نیمه چپ کارت) */
+.verso-blade-page {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem;
+}
+@media (max-width: 63.98rem) {
+  .verso-blade-page { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .verso-blade,
+  .verso-blade-inner {
+    animation-duration: 0.01s;
+  }
+}
+
+/* لینک سوییچ با زیرخط طلایی — سبک VERSO */
+.verso-switch {
+  font-weight: 800;
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 1px;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.verso-switch:hover {
+  color: var(--verso-gold-bright);
+  border-color: var(--verso-gold-bright);
+}
