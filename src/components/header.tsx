@@ -43,6 +43,10 @@ const childIcon = (label: string): IconKey => {
   return m[label] ?? "arrow";
 };
 
+/* منوی موبایل: دستیار هوشمند همیشه اولین گزینه است.
+   ترتیب بقیه اقلام حفظ می‌شود (sort پایدار) و NAV اصلی دسکتاپ دست‌نخورده می‌ماند. */
+const MOBILE_NAV = [...NAV].sort((a, b) => Number(Boolean(b.ai)) - Number(Boolean(a.ai)));
+
 export function Header() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -224,9 +228,9 @@ export function Header() {
                 </svg>
               </button>
             </div>
-            {/* ناوبری */}
+            {/* ناوبری — دستیار هوشمند اول از همه */}
             <nav className="flex flex-col gap-1 p-3">
-              {NAV.map((item) =>
+              {MOBILE_NAV.map((item) =>
                 item.children ? (
                   <div key={item.label} className="border-b border-border pb-2 last:border-0">
                     <p className="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-muted">{item.label}</p>
@@ -251,7 +255,7 @@ export function Header() {
                     href={item.href}
                     className={
                       item.ai
-                        ? "mb-2 mt-1 flex items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent-soft px-4 py-3 text-sm font-bold text-accent active:scale-95"
+                        ? "mb-3 flex items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent-soft px-4 py-3.5 text-sm font-bold text-accent active:scale-95"
                         : "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground-soft hover:bg-surface-2 active:bg-surface-3"
                     }
                   >
