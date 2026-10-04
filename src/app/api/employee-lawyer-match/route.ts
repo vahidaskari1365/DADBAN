@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { lawyers } from "@/db/schema";
 import { and, desc, inArray, sql } from "drizzle-orm";
 import { LOCATIONS } from "@/lib/data";
-import ZAI from "z-ai-web-dev-sdk";
+import { askLLM } from "@/lib/llm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -71,16 +71,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, matches: [] as MatchItem[], fallback: true });
     }
 
-    // تلاش برای پیشنهاد هوشمند با LLM
+    // تلاش برای پیشنهاد هوشمند با موتور LLM چند-تأمین‌کننده‌ی دادبان
     try {
-      const zai = await ZAI.create();
-      const completion = await zai.chat.completions.create({
-        messages: [
-          {
-            role: "assistant",
-            content:
-              "تو کارشناس حقوق کار و تأمین اجتماعی پلتفرم دادبان هستی. کارمند، مشکل خودش را می‌گوید و تو از بین فهرست وکلای «وکیل کارمندان»، حداکثر ۳ وکیل مناسب را به ترتیب بهترین انتخاب می‌کنی. دلیل هر انتخاب یک جمله کوتاه فارسی (حداکثر ۱۲ کلمه) و مخصوص همان مشکل باشد. فقط و فقط JSON معتبر برگردان، بدون هیچ متن اضافه، در این قالب: [{\"slug\":\"...\",\"reason\":\"...\"}] و slug فقط از فهرست داده‌شده باشد.",
-          },
+      const raw = (await askLLM(
+        [
           {
             role: "user",
             content: `مشکل کارمند: ${problem}\n\nوکلای موجود (فقط از این لیست انتخاب کن):\n${JSON.stringify(
@@ -96,10 +90,9 @@ export async function POST(req: Request) {
             )}`,
           },
         ],
-        thinking: { type: "disabled" },
-      });
-
-      const raw = completion.choices[0]?.message?.content ?? "";
+        500,
+        "تو کارشناس حقوق کار و تأمین اجتماعی پلتفرم دادبان هستی. کارمند، مشکل خودش را می‌گوید و تو از بین فهرست وکلای «وکیل کارمندان»، حداکثر ۳ وکیل مناسب را به ترتیب بهترین انتخاب می‌کنی. دلیل هر انتخاب یک جمله کوتاه فارسی (حداکثر ۱۲ کلمه) و مخصوص همان مشکل باشد. فقط و فقط JSON معتبر برگردان، بدون هیچ متن اضافه، در این قالب: [{\"slug\":\"...\",\"reason\":\"...\"}] و slug فقط از فهرست داده‌شده باشد.",
+      )) ?? "";
       const jsonMatch = raw.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]) as { slug?: unknown; reason?: unknown }[];
