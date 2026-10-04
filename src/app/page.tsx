@@ -185,10 +185,10 @@ export default async function HomePage() {
                 </Button>
               </div>
             </Reveal>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-8 pin-columns">
               {featured.map((l, i) => (
-                <Reveal key={l.id} delay={i * 60}>
-                  <LawyerCard lawyer={l} />
+                <Reveal key={l.id} delay={i * 60} className="pin-item">
+                  <LawyerCard lawyer={l} index={i} priority={i === 0} />
                 </Reveal>
               ))}
             </div>
