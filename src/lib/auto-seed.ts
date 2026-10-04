@@ -187,8 +187,16 @@ export interface SeedCounts {
 /** Seed categories + services once (idempotent). */
 export async function seedManagedServices(): Promise<void> {
   try {
+    // Categories: catalog is the editorial source of truth → refresh name/
+    // description/icon on every boot (services are NOT touched so admin edits persist).
     for (const c of CATALOG_CATEGORIES) {
-      await db.insert(serviceCategories).values(c).onConflictDoNothing({ target: serviceCategories.slug });
+      await db
+        .insert(serviceCategories)
+        .values(c)
+        .onConflictDoUpdate({
+          target: serviceCategories.slug,
+          set: { name: c.name, description: c.description, icon: c.icon },
+        });
     }
     for (const s of CATALOG_SERVICES) {
       await db.insert(managedServices).values(s as any).onConflictDoNothing({ target: managedServices.slug });

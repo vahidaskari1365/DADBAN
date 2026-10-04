@@ -57,7 +57,7 @@ export default async function ServicesCatalog() {
             کارهای زمان‌بر حقوقی و اداری را به ما بسپارید
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-8 text-muted">
-            پیگیری پرونده، امور ثبتی، مالیاتی، اجرای احکام و درخواست‌های اداری — تیم عملیات دادبان با نظارت حرفه‌ای آن‌ها را انجام می‌دهد.
+            کارهایی که باید حضوری در اجرای احکام، اداره ثبت، دارایی، شهرداری و تأمین اجتماعی انجام شود — با یک وکالت‌نامه رسمی، نماینده دادبان به‌جای شما صف می‌ایستد و پیش می‌برد.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button href="/services#catalog" size="lg" icon="briefcase">
