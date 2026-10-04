@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { cases, documents, payments, consultations } from "@/db/schema";
+import { cases, documents, payments, consultations, serviceRequests } from "@/db/schema";
 import { desc, eq, and } from "drizzle-orm";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Badge, Button, EmptyState } from "@/components/ui";
@@ -10,6 +11,7 @@ import { faNum, faPrice } from "@/lib/data";
 import { formatJalaliLong } from "@/lib/jalali";
 import { getCurrentUser } from "@/lib/user-auth";
 import { CASE_STATUS_FA, buildCaseTimeline, nextActionForCase } from "@/lib/case-facts";
+import { StatusBadge } from "@/components/managed";
 
 export const metadata: Metadata = {
   title: "پرونده من — دادبان",
@@ -39,9 +41,9 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
+  // درس E2E: کوئری‌های همراه (مدارک/پرداخت‌ها) در try واحد بودند و هر خطایی
+  // کل صفحه را به «پرونده پیدا نشد» تبدیل می‌کرد — حالا هر بخش مستقل است.
   let row: typeof cases.$inferSelect | null = null;
-  let userDocs: typeof documents.$inferSelect[] = [];
-  let userPayments: { payment: typeof payments.$inferSelect; consult: typeof consultations.$inferSelect | null }[] = [];
   try {
     const rows = await db
       .select()
@@ -49,10 +51,21 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
       .where(and(eq(cases.caseNumber, id), eq(cases.contactPhone, user.phone)))
       .limit(1);
     row = rows[0] ?? null;
-    if (row) {
-      [userDocs] = await Promise.all([
-        db.select().from(documents).where(eq(documents.userPhone, user.phone)).orderBy(desc(documents.createdAt)).limit(10),
-      ]);
+  } catch (err) {
+    console.error("[dadban] case detail: case query failed:", err);
+    row = null;
+  }
+
+  let userDocs: typeof documents.$inferSelect[] = [];
+  let userPayments: { payment: typeof payments.$inferSelect; consult: typeof consultations.$inferSelect | null }[] = [];
+  let relatedRequests: typeof serviceRequests.$inferSelect[] = [];
+  if (row) {
+    try {
+      userDocs = await db.select().from(documents).where(eq(documents.userPhone, user.phone)).orderBy(desc(documents.createdAt)).limit(10);
+    } catch (err) {
+      console.error("[dadban] case detail: documents query failed:", err);
+    }
+    try {
       const consultRows = await db
         .select()
         .from(consultations)
@@ -70,9 +83,21 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
         payment,
         consult: consultRows.find((c) => c.paymentRef === payment.reference) ?? null,
       }));
+    } catch (err) {
+      console.error("[dadban] case detail: payments/consultations query failed:", err);
     }
-  } catch {
-    row = null;
+    try {
+      // درخواست‌های خدماتی که موکل با شماره همین پرونده ثبت کرده —
+      // «پرونده در چه حالی است» با کارهای در جریان روی آن کامل می‌شود.
+      relatedRequests = await db
+        .select()
+        .from(serviceRequests)
+        .where(and(eq(serviceRequests.caseNumber, row.caseNumber), eq(serviceRequests.userId, user.id)))
+        .orderBy(desc(serviceRequests.createdAt))
+        .limit(10);
+    } catch (err) {
+      console.error("[dadban] case detail: related requests query failed:", err);
+    }
   }
 
   if (!row) {
@@ -185,6 +210,36 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
               </div>
             ))}
           </div>
+        </Card>
+
+        {/* درخواست‌های خدمات مرتبط با این پرونده */}
+        <Card hover={false}>
+          <h2 className="flex items-center gap-2 font-bold text-foreground">
+            <Icon name="briefcase" className="h-5 w-5 text-accent" />
+            درخواست‌های خدمات این پرونده
+          </h2>
+          {relatedRequests.length ? (
+            <div className="mt-4 space-y-3">
+              {relatedRequests.map((r) => (
+                <a key={r.id} href={`/dashboard/services/${r.id}`} className="block rounded-xl border border-border p-3 transition-colors hover:border-primary/30 hover:bg-surface-2/60">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-foreground">{r.title}</p>
+                      <p className="mt-0.5 text-xs text-muted">
+                        <span className="font-mono" dir="ltr">{r.requestNumber}</span>
+                        {r.price ? <> • {faPrice(r.price)}</> : null}
+                      </p>
+                    </div>
+                    <StatusBadge status={r.status} />
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 rounded-xl bg-surface-2 p-4 text-sm leading-7 text-muted">
+              برای این پرونده درخواست خدمتی (پیگیری، ابلاغ‌ها، اجرای حکم و…) ثبت نشده است. اگر کاری را می‌خواهید کارشناسان دادبان برایتان انجام دهند، از <Link href="/services" className="font-bold text-primary hover:underline">خدمات پیگیری و انجام امور</Link> با ذکر شماره همین پرونده ثبت کنید.
+            </p>
+          )}
         </Card>
 
         {/* مدارک — real uploads of this user */}

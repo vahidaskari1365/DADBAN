@@ -24,7 +24,7 @@ import {
   type ServiceRequest,
   type ServiceField,
 } from "@/db/schema";
-import { eq, sql, desc, and, inArray } from "drizzle-orm";
+import { eq, sql, desc, and, inArray, notInArray } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { catalogServiceBySlug, type CatalogService } from "@/lib/managed-catalog";
 
@@ -180,10 +180,17 @@ export async function notifyUser(args: {
 
 /* ----------------------------- Access control ----------------------------- */
 /**
+ * Statuses a lawyer must never see — anything else (submitted, awaiting docs/
+ * payment, in progress, …) is live work lawyers triage and carry out.
+ * Exported so dashboards share the exact same visibility rule as the API.
+ */
+export const LAWYER_HIDDEN_STATUSES = ["DRAFT", "CANCELLED", "REJECTED"] as const;
+
+/**
  * Whether `session` (the current user) may view `req`.
  *  - USER: only their own.
  *  - staff/supervisor/admin: any request.
- *  - lawyer: only requests they supervise, or that require a lawyer.
+ *  - lawyer: their supervised requests, or any live (non-hidden) request.
  */
 export function canAccessRequest(
   session: { id: number; role: string; phone: string } | null,
@@ -193,7 +200,8 @@ export function canAccessRequest(
   if (session.role === "admin" || session.role === "staff" || session.role === "supervisor") return true;
   if (session.role === "lawyer") {
     if (req.supervisingLawyerId === session.id) return true;
-    return req.requiresLawyer === true || req.status === "REVIEWING" || req.status === "QUOTED";
+    if (req.requiresLawyer === true) return true;
+    return !(LAWYER_HIDDEN_STATUSES as readonly string[]).includes(req.status);
   }
   return req.userId === session.id;
 }
@@ -204,8 +212,8 @@ export function visibilityWhere(session: { id: number; role: string; phone: stri
     return undefined;
   }
   if (session.role === "lawyer") {
-    // Lawyer sees requests they supervise OR that require a lawyer (still being triaged).
-    return inArray(serviceRequests.status, ["REVIEWING", "QUOTED", "AWAITING_DOCUMENTS", "ASSIGNED", "IN_PROGRESS", "WAITING_EXTERNAL", "COMPLETED", "DELIVERED"]);
+    // Lawyer sees every live request — drafts/cancelled/rejected stay private.
+    return notInArray(serviceRequests.status, LAWYER_HIDDEN_STATUSES as unknown as string[]);
   }
   return eq(serviceRequests.userId, session.id);
 }

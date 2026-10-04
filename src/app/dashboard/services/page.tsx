@@ -12,6 +12,7 @@ import { faNum } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { StatusBadge, UrgencyBadge } from "@/components/managed";
 import { nextBestAction, faNumSafe } from "@/lib/managed-labels";
+import { isOperative } from "@/lib/managed-services";
 
 export const metadata: Metadata = { title: "خدمات من — دادبان" };
 export const dynamic = "force-dynamic";
@@ -39,7 +40,7 @@ export default async function MyServices() {
   }
 
   const nav = [
-    { label: "نمای کلی", icon: "home" as IconKey, href: "/dashboard/client" },
+    { label: "نمای کلی", icon: "home" as IconKey, href: isOperative(user.role) ? "/dashboard/lawyer" : "/dashboard/client" },
     { label: "پرونده‌های من", icon: "folder" as IconKey, href: "/dashboard/cases" },
     { label: "خدمات من", icon: "briefcase" as IconKey, active: true, href: "/dashboard/services" },
     { label: "اسناد و مدارک", icon: "document" as IconKey, href: "/dashboard/documents" },
@@ -48,7 +49,7 @@ export default async function MyServices() {
   ];
 
   return (
-    <DashboardShell role="موکل" title={`داشبورد ${user.name}`} nav={nav}>
+    <DashboardShell role={isOperative(user.role) ? "وکیل" : "موکل"} title={`داشبورد ${user.name}`} nav={nav}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-foreground">خدمات من</h1>
@@ -71,6 +72,10 @@ export default async function MyServices() {
                       </span>
                       <div>
                         <p className="font-bold text-foreground">{r.title ?? "خدمت"}</p>
+                        {/* موضوع واقعی درخواست — همان‌طور که موکل نوشته */}
+                        {r.req.title && r.req.title !== r.title && (
+                          <p className="mt-0.5 text-sm font-bold text-foreground">{r.req.title}</p>
+                        )}
                         <p className="text-xs text-muted" dir="ltr">{r.req.requestNumber}</p>
                         <p className="mt-1 text-sm text-muted">{na.label}</p>
                       </div>

@@ -65,10 +65,12 @@ export default async function ClientDashboard() {
         { label: "نمای کلی", icon: "home", active: true, href: "/dashboard/client" },
         { label: "پرونده‌های من", icon: "folder", badge: faNum(myCases.length), href: "/dashboard/cases" },
         { label: "مشاوره‌های من", icon: "chat", badge: faNum(myConsults.length), href: "/dashboard/client" },
-        { label: "پیگیری پرونده", icon: "search", href: "/track-case" },
+        { label: "پیگیری پرونده", icon: "search", href: "/dashboard/cases" },
+        { label: "درخواست‌های خدمات", icon: "briefcase", href: "/dashboard/services" },
         { label: "اسناد و مدارک", icon: "document", href: "/dashboard/client" },
         { label: "رزرو مشاوره", icon: "calendar", href: "/consultation" },
         { label: "ثبت پرونده جدید", icon: "folder", href: "/case/new" },
+        { label: "پیگیری با کد رهگیری", icon: "location", href: "/track-case" },
         { label: "پیام‌ها و پشتیبانی", icon: "mail", badge: faNum(myTickets.length), href: "/support" },
         { label: "پروفایل من", icon: "user", href: "/dashboard/client/profile" },
       ]}

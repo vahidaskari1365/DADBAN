@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
-import { resolveRequestFor } from "@/lib/managed-services";
+import { resolveRequestFor, isOperative } from "@/lib/managed-services";
 import UserRequestDetail from "@/components/user-request-detail";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +38,7 @@ export default async function MyServiceRequest({ params }: { params: Promise<{ i
   const visibleEvents = events.filter((e) => e.visibleToUser);
 
   const nav = [
-    { label: "نمای کلی", icon: "home" as IconKey, href: "/dashboard/client" },
+    { label: "نمای کلی", icon: "home" as IconKey, href: isOperative(user.role) ? "/dashboard/lawyer" : "/dashboard/client" },
     { label: "پرونده‌های من", icon: "folder" as IconKey, href: "/dashboard/cases" },
     { label: "خدمات من", icon: "briefcase" as IconKey, active: true, href: "/dashboard/services" },
     { label: "اسناد و مدارک", icon: "document" as IconKey, href: "/dashboard/documents" },
@@ -46,10 +46,10 @@ export default async function MyServiceRequest({ params }: { params: Promise<{ i
     { label: "پیام‌ها", icon: "mail" as IconKey, href: "/support" },
   ];
 
-  const canCancel = ["DRAFT", "SUBMITTED", "REVIEWING", "AWAITING_DOCUMENTS", "QUOTED", "AWAITING_PAYMENT"].includes(req.status);
+  const canCancel = !isOperative(user.role) && ["DRAFT", "SUBMITTED", "REVIEWING", "AWAITING_DOCUMENTS", "QUOTED", "AWAITING_PAYMENT"].includes(req.status);
 
   return (
-    <DashboardShell role="موکل" title={`داشبورد ${user.name}`} nav={nav}>
+    <DashboardShell role={isOperative(user.role) ? "وکیل" : "موکل"} title={`داشبورد ${user.name}`} nav={nav}>
       <div className="mb-6 flex items-center gap-2 text-sm text-muted">
         <Link href="/dashboard/services" className="hover:text-primary">خدمات من</Link>
         <Icon name="chevron" className="h-4 w-4" />
