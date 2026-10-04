@@ -5,6 +5,7 @@ import { desc, eq } from "drizzle-orm";
 import { Container, SectionHeading, Button, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
+import { PinMasonry } from "@/components/pin-masonry";
 import { HomeHero } from "@/components/home-hero";
 import { QuickStart } from "@/components/quick-start";
 import { Reveal } from "@/components/reveal";
@@ -185,13 +186,13 @@ export default async function HomePage() {
                 </Button>
               </div>
             </Reveal>
-            <div className="mt-8 pin-columns">
+            <PinMasonry className="mt-8">
               {featured.map((l, i) => (
-                <Reveal key={l.id} delay={i * 60} className="pin-item">
+                <Reveal key={l.id} delay={i * 60}>
                   <LawyerCard lawyer={l} index={i} priority={i === 0} />
                 </Reveal>
               ))}
-            </div>
+            </PinMasonry>
           </Container>
         </section>
       )}

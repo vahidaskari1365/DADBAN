@@ -5,6 +5,7 @@ import { and, desc, asc, eq, inArray, sql, count } from "drizzle-orm";
 import { Container, Button, EmptyState, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
+import { PinMasonry } from "@/components/pin-masonry";
 import { LawyerFilters } from "@/components/lawyer-filters";
 import { LawyerDiscovery } from "@/components/amazon/recently-viewed";
 import { StickyCta } from "@/components/amazon/sticky-cta";
@@ -122,11 +123,11 @@ export default async function LawyersPage({
             icon="search"
           />
         ) : (
-          <div className="pin-columns">
+          <PinMasonry>
             {list.map((l, i) => (
-              <LawyerCard key={l.id} lawyer={l} index={i} priority={i === 0} className="pin-item" />
+              <LawyerCard key={l.id} lawyer={l} index={i} priority={i === 0} />
             ))}
-          </div>
+          </PinMasonry>
         )}
 
         {/* بازدیدهای اخیر + پیشنهاد برای شما (شخصی‌سازی، سبک آمازون) */}
