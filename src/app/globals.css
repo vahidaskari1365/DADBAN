@@ -865,13 +865,24 @@ input, select, textarea {
 }
 .home-caret { animation: home-caret 1s steps(1) infinite; }
 
+/* نقطهٔ نورانی مسیر دادبان — در RTL از راست به چپِ خط سفر می‌رود و برمی‌گردد */
+@keyframes home-journey-x {
+  from { inset-inline-start: 13%; }
+  to { inset-inline-start: 87%; }
+}
+.home-journey-dot {
+  inset-inline-start: 13%;
+  animation: home-journey-x 9s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-marquee-track,
   .home-float,
   .home-float-slow,
   .home-shimmer::after,
   .home-glow,
-  .home-caret {
+  .home-caret,
+  .home-journey-dot {
     animation: none;
   }
 }
