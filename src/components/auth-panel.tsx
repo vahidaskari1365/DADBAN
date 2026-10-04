@@ -20,7 +20,7 @@ const TABS: { id: Tab; label: string; icon: "user" | "briefcase" }[] = [
   { id: "lawyer", label: "وکیل", icon: "briefcase" },
 ];
 
-/** محتوای پنل برند (سبز) به تفکیک حالت — عیناً در تیغه هم رندر می‌شود تا جابه‌جایی بی‌درز باشد */
+/** محتوای پنل برند به تفکیک حالت — عیناً در تیغه هم رندر می‌شود تا جابه‌جایی بی‌درز باشد */
 const BRAND: Record<Mode, { title: string; gold: string; sub: string }> = {
   login: {
     title: "خوش آمدید",
@@ -42,41 +42,45 @@ const LAWYER_STEPS = [
 
 const TRUST_ITEMS = ["وکلای احراز هویت‌شده", "پیگیری شفاف", "پشتیبانی ۲۴/۷"];
 
-/* ─────────────── پنل برند (سبز تیره + عکس هیرو) ─────────────── */
+/* ─────────────── پنل برند — سرمه‌ای/طلایی تم خود سایت + عکس هیرو ─────────────── */
 
 function BrandPane({ mode, priority = false }: { mode: Mode; priority?: boolean }) {
   const b = BRAND[mode];
   return (
-    <div className="relative flex h-full flex-col justify-center overflow-hidden bg-[linear-gradient(150deg,#0b1f13_0%,var(--verso-green)_45%,var(--verso-green-2)_100%)] px-10 py-12">
-      {/* عکس هیروی سایت — ترازوی طلایی (سمت راست تصویر) به‌صورت بافت کم‌رنگ */}
+    <div
+      className="relative flex h-full flex-col justify-center overflow-hidden px-14 py-14 xl:px-20"
+      style={{
+        background:
+          "linear-gradient(155deg, var(--auth-brand-a) 0%, var(--auth-brand-b) 52%, var(--auth-brand-c) 100%)",
+      }}
+    >
+      {/* عکس هیروی سایت — کن‌برنز آرام + ماسک محوشدن به بالا */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-cover bg-right opacity-30 dark:hidden"
+        className="site-hero-bg absolute inset-0 bg-cover bg-right opacity-[0.4] dark:hidden"
         style={{
           backgroundImage: "url('/hero-bg-light.jpg')",
-          maskImage: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.35) 45%, transparent 78%)",
-          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.35) 45%, transparent 78%)",
+          maskImage: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 45%, transparent 80%)",
+          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 45%, transparent 80%)",
         }}
       />
       <div
         aria-hidden
-        className="absolute inset-0 hidden bg-cover bg-right opacity-25 dark:block"
+        className="site-hero-bg absolute inset-0 hidden bg-cover bg-right opacity-[0.32] dark:block"
         style={{
           backgroundImage: "url('/hero-bg-dark.jpg')",
-          maskImage: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.35) 45%, transparent 78%)",
-          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.35) 45%, transparent 78%)",
+          maskImage: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 45%, transparent 80%)",
+          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 45%, transparent 80%)",
         }}
       />
-      {/* هاله طلایی */}
-      <div
-        aria-hidden
-        className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full blur-2xl"
-        style={{ background: "radial-gradient(closest-side, rgba(226,185,105,0.28), transparent)" }}
-      />
+      {/* هاله‌های نورانی طلایی/آبی — اورورای آرام */}
+      <div aria-hidden className="auth-aurora-b absolute -bottom-28 -right-24 h-[26rem] w-[26rem]" />
+      <div aria-hidden className="auth-aurora-a absolute -top-32 -left-20 h-[24rem] w-[24rem] [animation-delay:-7s]" />
+      <div aria-hidden className="auth-noise absolute inset-0" />
 
-      <div className="relative">
+      <div className="auth-stagger relative ms-auto w-full max-w-md">
         <div className="auth-float w-fit">
-          <div className="rounded-2xl bg-white p-2 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.6)] ring-1 ring-black/10">
+          <div className="rounded-2xl bg-white p-2 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.65)] ring-1 ring-white/20">
             <Image
               src="/logo1.png"
               alt="لوگوی دادبان"
@@ -88,17 +92,17 @@ function BrandPane({ mode, priority = false }: { mode: Mode; priority?: boolean 
           </div>
         </div>
 
-        <p className="mt-9 text-[11px] font-extrabold tracking-[0.4em] text-[var(--verso-gold-bright)]">دادبان</p>
-        <h1 className="mt-3 text-[2.5rem] font-black leading-[1.25] text-[#f6f2e6]">
+        <p className="mt-10 text-[11px] font-extrabold tracking-[0.45em] text-[var(--auth-gold)]">دادبان</p>
+        <h1 className="mt-3 text-[2.6rem] font-black leading-[1.3] text-[var(--auth-onbrand)] xl:text-[2.9rem]">
           {b.title}{" "}
-          <span className="text-[var(--verso-gold-bright)]">{b.gold}</span>
+          <span className="text-[var(--auth-gold)]">{b.gold}</span>
         </h1>
-        <p className="mt-4 max-w-xs text-[13px] leading-7 text-white/65">{b.sub}</p>
+        <p className="mt-4 text-sm leading-8 text-[var(--auth-onbrand-soft)]">{b.sub}</p>
 
-        <ul className="mt-10 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] font-bold text-white/55">
+        <ul className="mt-10 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-[11px] font-bold text-[var(--auth-onbrand-soft)]">
           {TRUST_ITEMS.map((t, i) => (
             <li key={t} className="flex items-center gap-2.5">
-              {i > 0 && <span aria-hidden className="text-[var(--verso-gold-bright)]">•</span>}
+              {i > 0 && <span aria-hidden className="text-[var(--auth-gold)]">•</span>}
               {t}
             </li>
           ))}
@@ -108,7 +112,58 @@ function BrandPane({ mode, priority = false }: { mode: Mode; priority?: boolean 
   );
 }
 
-/* ─────────────── کارت اصلی ─────────────── */
+/* ─────────────── نوار برند موبایل — لبه پایین مورب ─────────────── */
+
+function BrandBand({ mode }: { mode: Mode }) {
+  const b = BRAND[mode];
+  return (
+    <div
+      className="relative mb-4 overflow-hidden lg:hidden"
+      style={{
+        background:
+          "linear-gradient(155deg, var(--auth-brand-a) 0%, var(--auth-brand-b) 55%, var(--auth-brand-c) 100%)",
+        clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 44px), 0 100%)",
+      }}
+    >
+      <div
+        aria-hidden
+        className="site-hero-bg absolute inset-0 bg-cover bg-right opacity-[0.4] dark:hidden"
+        style={{
+          backgroundImage: "url('/hero-bg-light.jpg')",
+          maskImage: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 85%)",
+          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 85%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="site-hero-bg absolute inset-0 hidden bg-cover bg-right opacity-[0.32] dark:block"
+        style={{
+          backgroundImage: "url('/hero-bg-dark.jpg')",
+          maskImage: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 85%)",
+          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 85%)",
+        }}
+      />
+      <div aria-hidden className="auth-aurora-b absolute -bottom-16 -right-10 h-56 w-56" />
+      <div aria-hidden className="auth-noise absolute inset-0" />
+
+      <div className="auth-stagger relative px-6 pb-14 pt-7">
+        <div className="flex items-center gap-3">
+          <div className="auth-float rounded-xl bg-white p-1.5 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.6)] ring-1 ring-white/20">
+            <Image src="/logo1.png" alt="لوگوی دادبان" width={44} height={44} priority className="h-11 w-11 rounded-lg" />
+          </div>
+          <p className="text-[10px] font-extrabold tracking-[0.4em] text-[var(--auth-gold)]">دادبان</p>
+        </div>
+        <h1 className="mt-5 text-2xl font-black leading-relaxed text-[var(--auth-onbrand)]">
+          {b.title}{" "}
+          <span className="text-[var(--auth-gold)]">{b.gold}</span>
+        </h1>
+        <p className="mt-2 text-xs leading-6 text-[var(--auth-onbrand-soft)]">{b.sub}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── صحنه تمام‌صفحه با برش مورب ─────────────── */
 
 export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
   const [tab, setTab] = useState<Tab>("client");
@@ -180,6 +235,13 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
   const finishSweep = () => {
     setSweep(null);
     busyRef.current = false;
+  };
+
+  /** اسپات‌لایت دنبال‌کننده موس روی ستون فرم */
+  const trackSpotlight = (e: React.MouseEvent<HTMLElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
   };
 
   const safeRedirect = () => {
@@ -284,255 +346,267 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
     : null;
 
   return (
-    <div className="verso-card relative w-full overflow-hidden rounded-[26px] shadow-[var(--shadow-lift)] ring-1 ring-black/10 dark:ring-white/10 lg:rounded-[28px]">
-      <div className="grid lg:grid-cols-2">
-        {/* ══ سمت فرم (راست در RTL) — کرم روشن / سبز-زغالی در تم تیره ══ */}
-        <div className="verso-form relative flex flex-col justify-center bg-[var(--verso-cream)] px-6 py-10 min-h-[560px] sm:px-10 sm:py-12 lg:min-h-[660px]">
-          {/* برند موبایل (پنل سبز در موبایل مخفی است) */}
-          <div className="mb-7 flex items-center gap-3 lg:hidden">
-            <div className="rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-black/10">
-              <Image src="/logo1.png" alt="لوگوی دادبان" width={40} height={40} priority className="h-9 w-9 rounded-lg" />
-            </div>
-            <div className="leading-tight">
-              <p className="text-sm font-black text-[var(--verso-ink)]">دادبان</p>
-              <p className="text-[10px] font-bold text-[var(--verso-ink-soft)]">مرجع وکالت</p>
-            </div>
-          </div>
+    <div className="auth-root relative min-h-[100svh] w-full overflow-hidden bg-[var(--auth-form-bg)]">
+      <div className="grid min-h-[100svh] lg:grid-cols-[44fr_56fr]">
+        {/* ══ ستون فرم (راست در RTL) — زمینه خود تم سایت ══ */}
+        <section
+          className="auth-spotlight relative flex flex-col px-5 pb-12 pt-5 sm:px-10 lg:justify-center lg:pb-10"
+          onMouseMove={trackSpotlight}
+        >
+          <BrandBand mode={mode} />
 
-          {/* تب نوع حساب */}
-          <div role="tablist" aria-label="نوع حساب" className="mb-8 grid grid-cols-2 gap-1 rounded-full bg-[var(--verso-cream-2)] p-1">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                role="tab"
-                aria-selected={tab === t.id}
-                onClick={() => sweepTo(mode, t.id)}
-                className={`flex h-10 items-center justify-center gap-1.5 rounded-full text-[13px] font-extrabold transition-all duration-300 ${
-                  tab === t.id
-                    ? "bg-[var(--verso-green)] text-[var(--verso-paper)] shadow-md"
-                    : "text-[var(--verso-ink-soft)] hover:text-[var(--verso-ink)]"
-                }`}
-              >
-                <Icon name={t.icon} className="h-4 w-4" />
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          {/* سرتیتر + خط طلایی */}
-          <h2 className="text-[1.4rem] font-black text-[var(--verso-ink)]">{heading.title}</h2>
-          <span aria-hidden className="mt-3 block h-[3px] w-10 rounded-full bg-gradient-to-l from-[var(--accent)] to-[var(--verso-gold-bright)]" />
-          <p className="mt-3 text-xs leading-6 text-[var(--verso-ink-soft)] sm:text-[13px]">{heading.sub}</p>
-
-          {/* بنر خطا / اطلاع */}
-          {banner && (
-            <div
-              role="alert"
-              className={`mt-4 flex items-start gap-2 rounded-xl border p-3 text-xs font-bold leading-6 ${
-                banner.tone === "danger"
-                  ? "border-[#b42318]/25 bg-[#b42318]/[0.06] text-[#b42318] dark:border-[#f87171]/30 dark:bg-[#f87171]/[0.08] dark:text-[#f87171]"
-                  : "border-[var(--accent)]/30 bg-[var(--accent)]/[0.08] text-[var(--accent)]"
-              }`}
-            >
-              <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0" />
-              {banner.text}
-            </div>
-          )}
-
-          {/* ── فرم‌ها ── */}
-          {tab === "client" && mode === "login" && (
-            <form onSubmit={submitLogin} className="mt-7 space-y-5" noValidate>
-              <VersoField label="موبایل یا ایمیل" icon="user">
-                <input
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="09123456789"
-                  autoComplete="username"
-                  dir="ltr"
-                  style={{ textAlign: "right" }}
-                />
-              </VersoField>
-              <VersoPwField idPrefix="login" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} />
-              <div className="flex items-center justify-between pt-0.5">
-                <label className="flex cursor-pointer select-none items-center gap-2 text-xs font-bold text-[var(--verso-ink-soft)]">
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                    className="sr-only"
-                  />
-                  <span
-                    aria-hidden
-                    className={`flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all ${
-                      remember
-                        ? "border-[var(--verso-green)] bg-[var(--verso-green)]"
-                        : "border-[var(--verso-line)] bg-transparent"
-                    }`}
-                  >
-                    {remember && <Icon name="check" className="h-3 w-3 text-[var(--verso-paper)]" strokeWidth={3.2} />}
-                  </span>
-                  مرا به خاطر بسپار
-                </label>
+          <div className="auth-enter-form mx-auto w-full max-w-md lg:my-auto">
+            <div className="auth-stagger">
+              {/* بازگشت به خانه */}
+              <div className="mb-6 flex justify-start">
                 <Link
-                  href="/contact"
-                  className="text-xs font-extrabold text-[var(--accent)] transition-colors hover:text-[var(--verso-gold-bright)]"
+                  href="/"
+                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-bold text-[var(--auth-ink-soft)] transition-colors hover:text-[var(--accent)]"
                 >
-                  فراموشی رمز؟
+                  <Icon name="arrow" className="h-4 w-4 -scale-x-100" />
+                  بازگشت به صفحه اصلی
                 </Link>
               </div>
-              <VersoSubmit loading={loading} label="ورود به دادبان" loadingLabel="در حال ورود…" />
-            </form>
-          )}
 
-          {tab === "client" && mode === "register" && (
-            <form onSubmit={submitRegister} className="mt-7 space-y-5" noValidate>
-              <VersoField label="نام و نام خانوادگی" icon="id">
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="مثلاً سارا محمدی"
-                  autoComplete="name"
-                />
-              </VersoField>
-              <VersoField label="شماره موبایل" icon="phone">
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="09123456789"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  dir="ltr"
-                  style={{ textAlign: "right" }}
-                />
-              </VersoField>
-              <div>
-                <VersoPwField idPrefix="register" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} autoComplete="new-password" />
-                {password && (
-                  <span className="mt-2.5 flex items-center gap-2.5">
-                    <span className="flex flex-1 gap-1">
-                      {[1, 2, 3, 4].map((i) => (
-                        <span
-                          key={i}
-                          className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                            i <= pwScore
-                              ? pwScore === 1
-                                ? "bg-[#b42318]"
-                                : pwScore === 2
-                                  ? "bg-[var(--accent)]"
-                                  : pwScore === 3
-                                    ? "bg-[var(--verso-green-hover)]"
-                                    : "bg-success"
-                              : "bg-[var(--verso-line)]"
-                          }`}
-                        />
-                      ))}
-                    </span>
-                    <span className="text-[10px] font-extrabold text-[var(--verso-ink-soft)]">
-                      {["", "ضعیف", "متوسط", "خوب", "عالی"][pwScore]}
-                    </span>
-                  </span>
-                )}
-              </div>
-              <VersoSubmit loading={loading} label="ساخت حساب رایگان" loadingLabel="در حال ساخت حساب…" />
-            </form>
-          )}
-
-          {tab === "lawyer" && mode === "login" && (
-            <form onSubmit={submitLogin} className="mt-7 space-y-5" noValidate>
-              <VersoField label="موبایل یا ایمیل حساب وکیل" icon="briefcase">
-                <input
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="09123456789"
-                  autoComplete="username"
-                  dir="ltr"
-                  style={{ textAlign: "right" }}
-                />
-              </VersoField>
-              <VersoPwField idPrefix="lawyer" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} />
-              <VersoSubmit loading={loading} label="ورود به پنل وکیل" loadingLabel="در حال ورود…" />
-              <p className="rounded-xl border border-[var(--verso-line)] bg-[color-mix(in_oklab,var(--verso-cream-2)_55%,transparent)] p-3 text-center text-xs leading-6 text-[var(--verso-ink-soft)]">
-                هنوز عضو دادبان نشده‌اید؟{" "}
-                <button type="button" onClick={() => sweepTo("register", "lawyer")} className="font-extrabold text-[var(--accent)] hover:underline">
-                  درخواست عضویت وکیل
-                </button>
-              </p>
-            </form>
-          )}
-
-          {tab === "lawyer" && mode === "register" && (
-            <div className="mt-7">
-              <ol className="space-y-3">
-                {LAWYER_STEPS.map((s, i) => (
-                  <li key={s.title} className="flex items-start gap-3 rounded-2xl border border-[var(--verso-line)] bg-[color-mix(in_oklab,var(--verso-cream-2)_55%,transparent)] p-3.5">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--verso-green)] text-xs font-black text-[var(--verso-paper)] shadow-md">
-                      {faNum(i + 1)}
-                    </span>
-                    <span className="flex flex-col gap-0.5">
-                      <span className="text-sm font-bold text-[var(--verso-ink)]">{s.title}</span>
-                      <span className="text-xs leading-6 text-[var(--verso-ink-soft)]">{s.desc}</span>
-                    </span>
-                  </li>
+              {/* تب نوع حساب */}
+              <div role="tablist" aria-label="نوع حساب" className="mb-8 grid grid-cols-2 gap-1 rounded-full bg-[color-mix(in_oklab,var(--primary)_8%,var(--auth-form-bg))] p-1 ring-1 ring-[var(--border)]">
+                {TABS.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === t.id}
+                    onClick={() => sweepTo(mode, t.id)}
+                    className={`flex h-10 items-center justify-center gap-1.5 rounded-full text-[13px] font-extrabold transition-all duration-300 ${
+                      tab === t.id
+                        ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md"
+                        : "text-[var(--auth-ink-soft)] hover:text-[var(--auth-ink)]"
+                    }`}
+                  >
+                    <Icon name={t.icon} className="h-4 w-4" />
+                    {t.label}
+                  </button>
                 ))}
-              </ol>
-              <a
-                href="/contact"
-                className="btn-press mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--verso-green)] text-sm font-extrabold text-[var(--verso-paper)] shadow-[0_14px_30px_-12px_rgba(14,36,23,0.55)] transition-all hover:bg-[var(--verso-green-hover)]"
-              >
-                <Icon name="chat" className="h-4 w-4" />
-                شروع درخواست عضویت
-              </a>
-              <p className="mt-4 text-center text-xs text-[var(--verso-ink-soft)]">
-                پروانه‌تان قبلاً تأیید شده؟{" "}
-                <button type="button" onClick={() => sweepTo("login", "lawyer")} className="font-extrabold text-[var(--accent)] hover:underline">
-                  ورود وکیل
-                </button>
+              </div>
+
+              {/* سرتیتر + خط طلایی */}
+              <h2 className="text-[1.5rem] font-black text-[var(--auth-ink)]">{heading.title}</h2>
+              <span aria-hidden className="mt-3 block h-[3px] w-12 rounded-full bg-gradient-to-l from-[var(--accent)] to-[var(--auth-gold)]" />
+              <p className="mt-3 text-[13px] leading-7 text-[var(--auth-ink-soft)]">{heading.sub}</p>
+
+              {/* بنر خطا / اطلاع */}
+              {banner && (
+                <div
+                  role="alert"
+                  className={`mt-4 flex items-start gap-2 rounded-xl border p-3 text-xs font-bold leading-6 ${
+                    banner.tone === "danger"
+                      ? "border-[#b42318]/25 bg-[#b42318]/[0.06] text-[#b42318] dark:border-[#f87171]/30 dark:bg-[#f87171]/[0.08] dark:text-[#f87171]"
+                      : "border-[var(--accent)]/30 bg-[var(--accent)]/[0.08] text-[var(--accent)]"
+                  }`}
+                >
+                  <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0" />
+                  {banner.text}
+                </div>
+              )}
+
+              {/* ── فرم‌ها ── */}
+              {tab === "client" && mode === "login" && (
+                <form onSubmit={submitLogin} className="mt-7 space-y-5" noValidate>
+                  <AuthField label="موبایل یا ایمیل" icon="user">
+                    <input
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="09123456789"
+                      autoComplete="username"
+                      dir="ltr"
+                      style={{ textAlign: "right" }}
+                    />
+                  </AuthField>
+                  <AuthPwField idPrefix="login" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} />
+                  <div className="flex items-center justify-between pt-0.5">
+                    <label className="flex cursor-pointer select-none items-center gap-2 text-xs font-bold text-[var(--auth-ink-soft)]">
+                      <input
+                        type="checkbox"
+                        checked={remember}
+                        onChange={(e) => setRemember(e.target.checked)}
+                        className="sr-only"
+                      />
+                      <span
+                        aria-hidden
+                        className={`flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all ${
+                          remember
+                            ? "border-[var(--primary)] bg-[var(--primary)]"
+                            : "border-[var(--auth-line)] bg-transparent"
+                        }`}
+                      >
+                        {remember && <Icon name="check" className="h-3 w-3 text-[var(--primary-foreground)]" strokeWidth={3.2} />}
+                      </span>
+                      مرا به خاطر بسپار
+                    </label>
+                    <Link
+                      href="/contact"
+                      className="text-xs font-extrabold text-[var(--accent)] transition-colors hover:text-[var(--auth-gold)]"
+                    >
+                      فراموشی رمز؟
+                    </Link>
+                  </div>
+                  <AuthSubmit loading={loading} label="ورود به دادبان" loadingLabel="در حال ورود…" />
+                </form>
+              )}
+
+              {tab === "client" && mode === "register" && (
+                <form onSubmit={submitRegister} className="mt-7 space-y-5" noValidate>
+                  <AuthField label="نام و نام خانوادگی" icon="id">
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="مثلاً سارا محمدی"
+                      autoComplete="name"
+                    />
+                  </AuthField>
+                  <AuthField label="شماره موبایل" icon="phone">
+                    <input
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="09123456789"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      dir="ltr"
+                      style={{ textAlign: "right" }}
+                    />
+                  </AuthField>
+                  <div>
+                    <AuthPwField idPrefix="register" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} autoComplete="new-password" />
+                    {password && (
+                      <span className="mt-2.5 flex items-center gap-2.5">
+                        <span className="flex flex-1 gap-1">
+                          {[1, 2, 3, 4].map((i) => (
+                            <span
+                              key={i}
+                              className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
+                                i <= pwScore
+                                  ? pwScore === 1
+                                    ? "bg-[#b42318]"
+                                    : pwScore === 2
+                                      ? "bg-[var(--accent)]"
+                                      : pwScore === 3
+                                        ? "bg-[var(--success)]"
+                                        : "bg-success"
+                                  : "bg-[var(--auth-line)]"
+                              }`}
+                            />
+                          ))}
+                        </span>
+                        <span className="text-[10px] font-extrabold text-[var(--auth-ink-soft)]">
+                          {["", "ضعیف", "متوسط", "خوب", "عالی"][pwScore]}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                  <AuthSubmit loading={loading} label="ساخت حساب رایگان" loadingLabel="در حال ساخت حساب…" />
+                </form>
+              )}
+
+              {tab === "lawyer" && mode === "login" && (
+                <form onSubmit={submitLogin} className="mt-7 space-y-5" noValidate>
+                  <AuthField label="موبایل یا ایمیل حساب وکیل" icon="briefcase">
+                    <input
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="09123456789"
+                      autoComplete="username"
+                      dir="ltr"
+                      style={{ textAlign: "right" }}
+                    />
+                  </AuthField>
+                  <AuthPwField idPrefix="lawyer" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} />
+                  <AuthSubmit loading={loading} label="ورود به پنل وکیل" loadingLabel="در حال ورود…" />
+                  <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-center text-xs leading-6 text-[var(--auth-ink-soft)]">
+                    هنوز عضو دادبان نشده‌اید؟{" "}
+                    <button type="button" onClick={() => sweepTo("register", "lawyer")} className="font-extrabold text-[var(--accent)] hover:underline">
+                      درخواست عضویت وکیل
+                    </button>
+                  </p>
+                </form>
+              )}
+
+              {tab === "lawyer" && mode === "register" && (
+                <div className="mt-7">
+                  <ol className="space-y-3">
+                    {LAWYER_STEPS.map((s, i) => (
+                      <li key={s.title} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3.5">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-black text-[var(--primary-foreground)] shadow-md">
+                          {faNum(i + 1)}
+                        </span>
+                        <span className="flex flex-col gap-0.5">
+                          <span className="text-sm font-bold text-[var(--auth-ink)]">{s.title}</span>
+                          <span className="text-xs leading-6 text-[var(--auth-ink-soft)]">{s.desc}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                  <a
+                    href="/contact"
+                    className="btn-press mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] text-sm font-extrabold text-[var(--primary-foreground)] shadow-[0_14px_30px_-12px_rgba(21,54,93,0.55)] transition-all hover:bg-[var(--primary-hover)] hover:shadow-[0_18px_36px_-12px_rgba(21,54,93,0.65)]"
+                  >
+                    <Icon name="chat" className="h-4 w-4" />
+                    شروع درخواست عضویت
+                  </a>
+                  <p className="mt-4 text-center text-xs text-[var(--auth-ink-soft)]">
+                    پروانه‌تان قبلاً تأیید شده؟{" "}
+                    <button type="button" onClick={() => sweepTo("login", "lawyer")} className="font-extrabold text-[var(--accent)] hover:underline">
+                      ورود وکیل
+                    </button>
+                  </p>
+                </div>
+              )}
+
+              {/* سوییچ ورود ↔ ثبت‌نام */}
+              {tab === "client" && (
+                <p className="mt-7 text-center text-xs text-[var(--auth-ink-soft)]">
+                  {mode === "login" ? (
+                    <>
+                      تازه به دادبان آمده‌اید؟{" "}
+                      <button type="button" onClick={() => sweepTo("register", tab)} className="auth-switch">
+                        حساب بسازید
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      قبلاً ثبت‌نام کرده‌اید؟{" "}
+                      <button type="button" onClick={() => sweepTo("login", tab)} className="auth-switch">
+                        وارد شوید
+                      </button>
+                    </>
+                  )}
+                </p>
+              )}
+
+              <p className="mt-4 text-center text-[10px] leading-5 text-[var(--auth-ink-soft)]">
+                با ورود یا ثبت‌نام،{" "}
+                <Link href="/legal/terms" className="font-bold text-[var(--accent)] hover:underline">
+                  قوانین و مقررات
+                </Link>{" "}
+                و{" "}
+                <Link href="/legal/privacy" className="font-bold text-[var(--accent)] hover:underline">
+                  حریم خصوصی
+                </Link>{" "}
+                دادبان را می‌پذیرید.
               </p>
             </div>
-          )}
+          </div>
+        </section>
 
-          {/* سوییچ ورود ↔ ثبت‌نام */}
-          {tab === "client" && (
-            <p className="mt-7 text-center text-xs text-[var(--verso-ink-soft)]">
-              {mode === "login" ? (
-                <>
-                  تازه به دادبان آمده‌اید؟{" "}
-                  <button type="button" onClick={() => sweepTo("register", tab)} className="verso-switch">
-                    حساب بسازید
-                  </button>
-                </>
-              ) : (
-                <>
-                  قبلاً ثبت‌نام کرده‌اید؟{" "}
-                  <button type="button" onClick={() => sweepTo("login", tab)} className="verso-switch">
-                    وارد شوید
-                  </button>
-                </>
-              )}
-            </p>
-          )}
-
-          <p className="mt-4 text-center text-[10px] leading-5 text-[var(--verso-ink-soft)]">
-            با ورود یا ثبت‌نام،{" "}
-            <Link href="/legal/terms" className="font-bold text-[var(--accent)] hover:underline">
-              قوانین و مقررات
-            </Link>{" "}
-            و{" "}
-            <Link href="/legal/privacy" className="font-bold text-[var(--accent)] hover:underline">
-              حریم خصوصی
-            </Link>{" "}
-            دادبان را می‌پذیرید.
-          </p>
-        </div>
-
-        {/* ══ سمت برند (چپ در RTL) — سبز تیره + عکس هیرو ══ */}
-        <aside className="verso-brand relative hidden lg:block">
-          <BrandPane mode={mode} priority />
+        {/* ══ پنل برند (چپ در RTL) — برش مورب + درز طلایی ══ */}
+        <aside className="auth-brand auth-enter-brand relative hidden lg:block">
+          <div className="auth-seam" aria-hidden />
+          <div className="auth-brand-clip absolute inset-0">
+            <BrandPane mode={mode} priority />
+          </div>
         </aside>
       </div>
 
-      {/* ══ تیغه — جاروی کارت هنگام سوییچ؛ بدون حتی یک fade ══ */}
+      {/* ══ تیغه — جاروی تمام‌صفحه هنگام سوییچ؛ بدون حتی یک fade ══ */}
       {sweep && (
         <div
           key={sweep.id}
@@ -557,7 +631,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
 
 /* ─────────────── اجزای فرم ─────────────── */
 
-function VersoField({
+function AuthField({
   label,
   icon,
   children,
@@ -568,9 +642,9 @@ function VersoField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[11px] font-extrabold text-[var(--verso-ink-soft)]">{label}</span>
+      <span className="mb-1.5 block text-[11px] font-extrabold text-[var(--auth-ink-soft)]">{label}</span>
       <div className="verso-field">
-        <Icon name={icon} className="pointer-events-none absolute right-0 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--verso-ink-soft)]" />
+        <Icon name={icon} className="pointer-events-none absolute right-0 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--auth-ink-soft)]" />
         {children}
       </div>
     </label>
@@ -578,7 +652,7 @@ function VersoField({
 }
 
 /** فیلد رمز عبور زیرخط‌دار با برچسب و دکمه نمایش/پنهان */
-function VersoPwField({
+function AuthPwField({
   idPrefix,
   value,
   onChange,
@@ -596,11 +670,11 @@ function VersoPwField({
   const inputId = `pw-${idPrefix}`;
   return (
     <div>
-      <label htmlFor={inputId} className="mb-1.5 block text-[11px] font-extrabold text-[var(--verso-ink-soft)]">
+      <label htmlFor={inputId} className="mb-1.5 block text-[11px] font-extrabold text-[var(--auth-ink-soft)]">
         رمز عبور
       </label>
       <div className="verso-field">
-        <Icon name="lock" className="pointer-events-none absolute right-0 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--verso-ink-soft)]" />
+        <Icon name="lock" className="pointer-events-none absolute right-0 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--auth-ink-soft)]" />
         <input
           id={inputId}
           type={show ? "text" : "password"}
@@ -613,7 +687,7 @@ function VersoPwField({
           type="button"
           onClick={onToggle}
           aria-label={show ? "پنهان‌کردن رمز" : "نمایش رمز"}
-          className="absolute left-0 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--verso-ink-soft)] transition-colors hover:text-[var(--verso-ink)]"
+          className="absolute left-0 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--auth-ink-soft)] transition-colors hover:text-[var(--auth-ink)]"
         >
         {show ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -632,13 +706,13 @@ function VersoPwField({
   );
 }
 
-/** دکمه قرصی سبز با اسپینر */
-function VersoSubmit({ loading, label, loadingLabel }: { loading: boolean; label: string; loadingLabel: string }) {
+/** دکمه قرصی سرمه‌ای (تم خود سایت) با اسپینر */
+function AuthSubmit({ loading, label, loadingLabel }: { loading: boolean; label: string; loadingLabel: string }) {
   return (
     <button
       type="submit"
       disabled={loading}
-      className="btn-press mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--verso-green)] text-sm font-extrabold text-[var(--verso-paper)] shadow-[0_14px_30px_-12px_rgba(14,36,23,0.55)] transition-all hover:bg-[var(--verso-green-hover)] hover:shadow-[0_18px_36px_-12px_rgba(14,36,23,0.65)] disabled:opacity-60"
+      className="btn-press mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] text-sm font-extrabold text-[var(--primary-foreground)] shadow-[0_14px_30px_-12px_rgba(21,54,93,0.55)] transition-all hover:bg-[var(--primary-hover)] hover:shadow-[0_18px_36px_-12px_rgba(21,54,93,0.65)] disabled:opacity-60"
     >
       {loading ? (
         <>

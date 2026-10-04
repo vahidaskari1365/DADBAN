@@ -601,30 +601,87 @@ input, select, textarea {
 .pin-photo-c { aspect-ratio: 4 / 5; }
 
 /* ============================================================
-   Auth — کارت دوپاره سبک VERSO + انیمیشن «تیغه» (بدون fade)
-   تیغه: یک مستطیل کج (skewX) که کل کارت را جارو می‌کند؛ محتوای
-   مقصد روی آن با ترانسفورم معکوس ثابت می‌ماند و سوییچ زیر پوشش
-   کامل تیغه انجام می‌شود — دقیقاً مثل ریورنس.
+   Auth — لاگین تمام‌صفحه با برش مورب (سبک رفرنس VERSO ولی با
+   تم خود سایت: سرمه‌ای اعتماد + طلایی عدالت)
+   هندسه: پنل برند ۵۶٪ عرض صفحه در سمت چپ با لبه راستِ مورب
+   (بالای پنل باریک‌تر، پایین پهن‌تر — عین رفرنس)؛ درز طلایی روی
+   لبه مورب + شیمر؛ ورود سینمایی دو ستون از دو طرف با blur.
    ============================================================ */
 :root {
-  --verso-cream: #f7f3ea;
-  --verso-cream-2: #eee8d9;
-  --verso-ink: #20261f;
-  --verso-ink-soft: #6d7565;
-  --verso-line: rgba(32, 38, 31, 0.18);
-  --verso-green: #0e2417;
-  --verso-green-2: #16382a;
-  --verso-green-hover: #17422e;
-  --verso-paper: #f3efe2;
-  --verso-gold-bright: #e2b969;
+  --auth-form-bg: #f5f7fb;
+  --auth-brand-a: #0a1c33;
+  --auth-brand-b: #15365d;
+  --auth-brand-c: #1e4a7c;
+  --auth-gold: #e2b969;
+  --auth-onbrand: #eef3fa;
+  --auth-onbrand-soft: rgba(238, 243, 250, 0.66);
+  --auth-line: rgba(21, 54, 93, 0.22);
+  --auth-ink: #0e1d33;
+  --auth-ink-soft: #5a6b82;
 }
 .dark {
-  --verso-cream: #151b17;
-  --verso-cream-2: #1e2620;
-  --verso-ink: #ece9df;
-  --verso-ink-soft: #a2aa9c;
-  --verso-line: rgba(236, 233, 223, 0.2);
+  --auth-form-bg: #141416;
+  --auth-brand-a: #0b0e14;
+  --auth-brand-b: #131a28;
+  --auth-brand-c: #1a2336;
+  --auth-gold: #e6b94e;
+  --auth-onbrand: #ededf0;
+  --auth-onbrand-soft: rgba(237, 237, 240, 0.6);
+  --auth-line: rgba(122, 167, 240, 0.28);
+  --auth-ink: #ededf0;
+  --auth-ink-soft: #9b9ba4;
 }
+
+/* ── صحنه تمام‌صفحه: روی هدر/فوتر/نوار پایین می‌نشیند ── */
+.auth-stage { background: var(--auth-form-bg); }
+
+/* برش مورب پنل برند: لبه راست از ۷۴٪ عرض پنل در بالا تا ۱۰۰٪ در پایین */
+.auth-brand-clip {
+  clip-path: polygon(0 0, 74% 0, 100% 100%, 0 100%);
+  background: linear-gradient(155deg, var(--auth-brand-a) 0%, var(--auth-brand-b) 52%, var(--auth-brand-c) 100%);
+}
+
+/* درز طلایی در امتداد لبه مورب — لایه پشت پنل با همان برش کمی پهن‌تر */
+.auth-seam {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 74.9% 0, 100.9% 100%, 0 100%);
+  background: linear-gradient(160deg, var(--auth-gold) 0%, #fff3d6 45%, var(--auth-gold) 100%);
+  background-size: 100% 260%;
+  animation: auth-seam-shimmer 7s ease-in-out infinite;
+}
+@keyframes auth-seam-shimmer {
+  0%, 100% { background-position: 50% 0%; }
+  50% { background-position: 50% 100%; }
+}
+
+/* ── ورود سینمایی: هر ستون از سمت خودش با blur وارد می‌شود ── */
+@keyframes auth-enter-right {
+  from { opacity: 0; transform: translateX(52px); filter: blur(14px); }
+  60% { filter: blur(0); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes auth-enter-left {
+  from { opacity: 0; transform: translateX(-52px); filter: blur(14px); }
+  60% { filter: blur(0); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.auth-enter-form { animation: auth-enter-right 1.05s var(--ease-cine) both; }
+.auth-enter-brand { animation: auth-enter-left 1.05s var(--ease-cine) both; }
+
+/* استگرگر محتوای پنل‌ها — ورود پله‌ای عناصر */
+@keyframes auth-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+.auth-stagger > * { animation: auth-rise 0.7s var(--ease-cine) both; }
+.auth-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+.auth-stagger > *:nth-child(2) { animation-delay: 0.18s; }
+.auth-stagger > *:nth-child(3) { animation-delay: 0.26s; }
+.auth-stagger > *:nth-child(4) { animation-delay: 0.34s; }
+.auth-stagger > *:nth-child(5) { animation-delay: 0.42s; }
+.auth-stagger > *:nth-child(6) { animation-delay: 0.5s; }
+.auth-stagger > *:nth-child(7) { animation-delay: 0.58s; }
 
 /* ── فیلد زیرخط‌دار: خط طلایی که با فوکوس از راست کشیده می‌شود ── */
 .verso-field {
@@ -635,21 +692,21 @@ input, select, textarea {
   height: 3rem;
   background: transparent;
   border: 0;
-  border-bottom: 1.5px solid var(--verso-line);
+  border-bottom: 1.5px solid var(--auth-line);
   border-radius: 0;
   padding: 0 2.4rem 0 2.6rem;
   font-size: 0.925rem;
   font-weight: 600;
-  color: var(--verso-ink);
+  color: var(--auth-ink);
   outline: none;
   transition: border-color 0.3s ease;
 }
 .verso-field > input::placeholder {
-  color: color-mix(in oklab, var(--verso-ink-soft) 65%, transparent);
+  color: color-mix(in oklab, var(--auth-ink-soft) 65%, transparent);
   font-weight: 500;
 }
 .verso-field > input:-webkit-autofill {
-  -webkit-text-fill-color: var(--verso-ink);
+  -webkit-text-fill-color: var(--auth-ink);
   transition: background-color 9999s ease-in-out 0s;
 }
 .verso-field::after {
@@ -659,7 +716,7 @@ input, select, textarea {
   bottom: -1px;
   height: 2px;
   width: 100%;
-  background: linear-gradient(to left, var(--accent), var(--verso-gold-bright));
+  background: linear-gradient(to left, var(--accent), var(--auth-gold));
   transform: scaleX(0);
   transform-origin: right;
   transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
@@ -668,13 +725,13 @@ input, select, textarea {
   transform: scaleX(1);
 }
 
-/* ── تیغه ── */
+/* ── تیغه — جاروی تمام‌صفحه با لبه مورب هماهنگ با برش ── */
 .verso-blade {
   position: absolute;
   inset: 0;
   z-index: 40;
   overflow: hidden;
-  background: linear-gradient(120deg, #0b1f13 0%, var(--verso-green) 40%, var(--verso-green-2) 100%);
+  background: linear-gradient(120deg, var(--auth-brand-a) 0%, var(--auth-brand-b) 45%, var(--auth-brand-c) 100%);
   animation-duration: 0.85s;
   animation-timing-function: cubic-bezier(0.77, 0, 0.18, 1);
   animation-fill-mode: both;
@@ -690,7 +747,7 @@ input, select, textarea {
   from { transform: skewX(-10deg) translateX(112%); }
   to   { transform: skewX(-10deg) translateX(-112%); }
 }
-/* لایه داخلی با ترانسفورم معکوس → محتوا در مختصات کارت ثابت می‌ماند */
+/* لایه داخلی با ترانسفورم معکوس → محتوا در مختصات صفحه ثابت می‌ماند */
 .verso-blade-inner {
   position: absolute;
   inset: 0;
@@ -719,26 +776,26 @@ input, select, textarea {
   background: linear-gradient(
     to bottom,
     transparent,
-    var(--verso-gold-bright) 18%,
+    var(--auth-gold) 18%,
     #fff3d6 50%,
-    var(--verso-gold-bright) 82%,
+    var(--auth-gold) 82%,
     transparent
   );
-  box-shadow: 0 0 22px 2px color-mix(in oklab, var(--verso-gold-bright) 60%, transparent);
+  box-shadow: 0 0 22px 2px color-mix(in oklab, var(--auth-gold) 60%, transparent);
 }
 .verso-blade-seam--lead { right: 0; }
 .verso-blade-seam--tail { left: 0; }
-/* صفحه مقصد روی تیغه — همان هندسه پنل برند (نیمه چپ کارت) */
+/* صفحه مقصد روی تیغه — همان هندسه پنل برند (۵۶٪ چپ صفحه) */
 .verso-blade-page {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
-  width: 50%;
+  width: 56%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 2.5rem;
+  padding: 3.5rem;
 }
 @media (max-width: 63.98rem) {
   .verso-blade-page { display: none; }
@@ -750,15 +807,15 @@ input, select, textarea {
   }
 }
 
-/* لینک سوییچ با زیرخط طلایی — سبک VERSO */
-.verso-switch {
+/* لینک سوییچ با زیرخط طلایی */
+.auth-switch {
   font-weight: 800;
   color: var(--accent);
   border-bottom: 2px solid var(--accent);
   padding-bottom: 1px;
   transition: color 0.25s ease, border-color 0.25s ease;
 }
-.verso-switch:hover {
-  color: var(--verso-gold-bright);
-  border-color: var(--verso-gold-bright);
+.auth-switch:hover {
+  color: var(--auth-gold);
+  border-color: var(--auth-gold);
 }
