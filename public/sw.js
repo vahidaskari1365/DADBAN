@@ -8,7 +8,9 @@
    - تصاویر: stale-while-revalidate
    ========================================================================== */
 
-const VERSION = "sharifmand-v1.2.0";
+// v1.3.0 — اجباری: کش‌های نسخه قبل حذف می‌شوند تا هیچ گوشی‌ای نسخه قدیمی صفحات را
+// از کش سرو نکند (گزارش کاربر: چیدمان دوستونه روی موبایل دیده نمی‌شد)
+const VERSION = "sharifmand-v1.3.0";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;
@@ -74,9 +76,13 @@ self.addEventListener("activate", (event) => {
 });
 
 // آیا درخواست نباید cache شود؟
-const shouldNeverCache = (url) =>
+const shouldNeverCache = (req, url) =>
   NEVER_CACHE.some((re) => re.test(url.pathname)) ||
   url.searchParams.has("XTransformPort") ||
+  // payloadهای RSC و prefetch نکست مخصوص یک بیلد هستند — کش‌کردنشان بین دیپلوی‌ها
+  // باعث نمایش نسخه قدیمی در ناوبری سمت کلاینت می‌شود؛ همیشه network
+  req.headers.get("RSC") === "1" ||
+  req.headers.get("Next-Router-Prefetch") === "1" ||
   // پارامترهای HMR و query strings های dev mode
   url.searchParams.has("t") ||
   url.searchParams.has("ts") ||
@@ -152,7 +158,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   // فقط same-origin
   if (url.origin !== self.location.origin) return;
-  if (shouldNeverCache(url)) return;
+  if (shouldNeverCache(req, url)) return;
 
   if (isNavigation(req)) {
     event.respondWith(networkFirst(req, PAGE_CACHE));
