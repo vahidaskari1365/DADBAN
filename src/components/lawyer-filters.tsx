@@ -48,20 +48,20 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-4 card-shadow">
       <div className="flex items-center gap-2">
-        <div className="flex flex-1 items-center gap-2 rounded-xl border border-border-strong bg-background px-3">
-          <Icon name="search" className="h-4 w-4 text-muted-soft" />
+        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-border-strong bg-background px-3">
+          <Icon name="search" className="h-4 w-4 shrink-0 text-muted-soft" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && update("q", q)}
             placeholder="جستجوی نام یا تخصص…"
-            className="h-10 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-soft"
+            className="h-10 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-soft"
           />
         </div>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border-strong bg-background px-3 text-sm font-medium text-foreground-soft lg:hidden"
+          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border-strong bg-background px-3 text-sm font-medium text-foreground-soft lg:hidden"
         >
           <Icon name="filter" className="h-4 w-4" />
           فیلتر

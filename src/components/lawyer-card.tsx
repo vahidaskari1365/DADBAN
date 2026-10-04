@@ -89,14 +89,14 @@ export function LawyerCard({
         )}
       </div>
 
-      {/* بدنه کارت */}
-      <div className="flex flex-col gap-2.5 p-4">
+      {/* بدنه کارت — در ستون‌های باریک موبایل فشرده می‌شود */}
+      <div className="flex flex-col gap-2 p-3 sm:gap-2.5 sm:p-4">
         <div>
-          <h3 className="text-base font-bold text-foreground">{lawyer.name}</h3>
-          <p className="mt-0.5 line-clamp-1 text-xs text-muted">{lawyer.title}</p>
+          <h3 className="truncate text-sm font-bold text-foreground sm:text-base">{lawyer.name}</h3>
+          <p className="mt-0.5 line-clamp-1 text-[11px] text-muted sm:text-xs">{lawyer.title}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+        <div className="hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted sm:flex">
           <span className="inline-flex items-center gap-1">
             <Icon name="location" className="h-3.5 w-3.5" /> {lawyer.city}
           </span>
@@ -108,7 +108,7 @@ export function LawyerCard({
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1 sm:gap-1.5">
           {lawyer.specialties.slice(0, 2).map((s) => (
             <Badge key={s} tone="primary">
               {s}
@@ -119,12 +119,12 @@ export function LawyerCard({
           )}
         </div>
 
-        <div className="mt-1 flex items-center justify-between gap-2 border-t border-border pt-3">
+        <div className="mt-1 flex items-center justify-between gap-2 border-t border-border pt-2 sm:pt-3">
           <div>
-            <p className="text-[11px] text-muted">مشاوره متنی از</p>
-            <p className="text-sm font-bold text-foreground">{faPrice(lawyer.priceChat)}</p>
+            <p className="text-[10px] text-muted sm:text-[11px]">مشاوره متنی از</p>
+            <p className="text-xs font-bold text-foreground sm:text-sm">{faPrice(lawyer.priceChat)}</p>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-lg bg-primary-soft px-3 py-1.5 text-xs font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+          <span className="hidden items-center gap-1 rounded-lg bg-primary-soft px-3 py-1.5 text-xs font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground sm:inline-flex">
             مشاهده پروفایل
             <Icon name="arrow" className="h-3.5 w-3.5" />
           </span>
