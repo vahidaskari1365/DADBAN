@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { lawyers } from "@/db/schema";
-import { and, desc, inArray, sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { LOCATIONS } from "@/lib/data";
 import { askLLM } from "@/lib/llm";
 
@@ -36,9 +36,7 @@ export async function POST(req: Request) {
     }
 
     // استخر فقط وکلایی که «کار» (وکیل کارمندان) را در ثبت‌نام انتخاب کرده‌اند
-    const conds = [sql`${lawyers.specialties} @> ARRAY[${"کار"}]::text[]`];
     const prov = province ? LOCATIONS.find((l) => l.province === province) : null;
-    if (prov) conds.push(inArray(lawyers.city, prov.cities));
 
     let pool: {
       slug: string;
@@ -61,8 +59,10 @@ export async function POST(req: Request) {
           caseCount: lawyers.caseCount,
         })
         .from(lawyers)
-        .where(and(...conds))
+        .where(sql`${lawyers.specialties} @> ARRAY[${"کار"}]::text[]`)
         .orderBy(desc(lawyers.rating));
+      // فیلتر استان در سطح اپلیکیشن — پایدارتر از inArray روی استخر کوچک
+      if (prov) pool = pool.filter((p) => prov.cities.includes(p.city));
     } catch (err) {
       console.error("[employee-lawyer-match] pool query failed:", err);
     }
