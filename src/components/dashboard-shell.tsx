@@ -91,7 +91,7 @@ export function DashboardShell({
 
       {/* ───── بدنه: منوی کناری + محتوا ───── */}
       <div className="grid gap-6 lg:grid-cols-[250px_1fr]">
-        <aside className="lg:sticky lg:top-20 lg:self-start">
+        <aside className="min-w-0 lg:sticky lg:top-20 lg:self-start">
           <nav
             aria-label={`منوی پنل ${role}`}
             className="flex gap-2 overflow-x-auto rounded-2xl border border-border bg-surface p-2 card-shadow lg:flex-col"

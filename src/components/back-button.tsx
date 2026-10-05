@@ -5,10 +5,14 @@ import { Icon } from "./icons";
 
 /**
  * دکمهٔ بازگشت هوشمند — اگر کاربر از داخل خود سایت به این صفحه آمده،
- * به صفحهٔ قبلی برمی‌گردد (router.back)؛ وگرنه (لینک مستقیم، رفرش یا
- * ورود از سایت دیگر) به مقصد پیش‌فرض می‌رود تا کاربر را از سایت بیرون نبرد.
+ * به صفحهٔ قبلی برمی‌گردد (router.back)؛ وگرنه (لینک مستقیم، رفرش،
+ * تب جدید یا ورود از سایت دیگر) به مقصد پیش‌فرض می‌رود تا کاربر را
+ * از سایت بیرون نبرد.
  *
- * تشخیص «از داخل سایت»: Next.js در history.state کلید __NA/__N می‌گذارد.
+ * دو شرطِ باهم لازم است:
+ *  ۱) history.state دارای __NA/__N باشد (رکورد فعلی مال روتر نکست است)
+ *  ۲) referrer هم‌مبدأ باشد (ورود قبلی هم از داخل سایت بوده —
+ *     در بازکردن مستقیم/تب جدید referrer خارجی یا خالی است)
  */
 export function BackButton({
   fallback = "/",
@@ -17,7 +21,7 @@ export function BackButton({
 }: {
   fallback?: string;
   label?: string;
-  /** chip: چیپ کوچک روی هدر پنل‌ها — bar: نوار پهن‌تر برای صفحات محتوایی */
+  /** chip: چیپ کوچک روی بنر پنل — bar: نوار پهن‌تر برای صفحات محتوایی */
   variant?: "chip" | "bar";
 }) {
   const router = useRouter();
@@ -26,12 +30,21 @@ export function BackButton({
     try {
       const st = window.history.state as { __NA?: boolean; __N?: boolean } | null;
       const navigatedInsideApp = !!(st && (st.__NA || st.__N));
-      if (navigatedInsideApp && window.history.length > 1) {
+      const referrerInternal =
+        !!document.referrer &&
+        (() => {
+          try {
+            return new URL(document.referrer).origin === window.location.origin;
+          } catch {
+            return false;
+          }
+        })();
+      if (navigatedInsideApp && referrerInternal && window.history.length > 1) {
         router.back();
         return;
       }
     } catch {
-      /* history در دسترس نیست — fallback */
+      /* history/referrer در دسترس نیست — fallback */
     }
     router.push(fallback);
   };
