@@ -10,6 +10,7 @@ import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
 import { formatJalaliLong } from "@/lib/jalali";
 import { getCurrentUser } from "@/lib/user-auth";
+import { isLawyerSideRole } from "@/lib/roles";
 import { CASE_STATUS_FA, buildCaseTimeline, nextActionForCase } from "@/lib/case-facts";
 import { StatusBadge } from "@/components/managed";
 
@@ -40,6 +41,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (isLawyerSideRole(user.role)) redirect("/dashboard/lawyer");
 
   // درس E2E: کوئری‌های همراه (مدارک/پرداخت‌ها) در try واحد بودند و هر خطایی
   // کل صفحه را به «پرونده پیدا نشد» تبدیل می‌کرد — حالا هر بخش مستقل است.

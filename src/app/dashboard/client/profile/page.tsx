@@ -8,6 +8,7 @@ import { Card, Badge, Button, Avatar } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
+import { isLawyerSideRole } from "@/lib/roles";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 import { PersonalInfoForm, PasswordForm } from "@/components/profile/profile-forms";
 import { FavoritesPanel } from "@/components/profile/favorites-panel";
@@ -23,6 +24,7 @@ export default async function ClientProfilePage() {
   await ensureProfileSchema();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (isLawyerSideRole(user.role)) redirect("/dashboard/lawyer");
 
   // شمارنده‌های واقعی برای خلاصه حساب (هیچ عدد جعلی نمایش داده نمی‌شود)
   let casesCount = 0;

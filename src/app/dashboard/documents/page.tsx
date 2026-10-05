@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
+import { getCurrentUser } from "@/lib/user-auth";
+import { isLawyerSideRole } from "@/lib/roles";
 
 export const metadata: Metadata = { title: "مدیریت اسناد و مدارک" };
 
@@ -23,7 +26,10 @@ const FILES = [
   { name: "سند مالکیت.pdf", type: "سند", folder: "مدارک شخصی", date: "۲ هفته پیش", size: "۳۱۰ ک‌ب" },
 ];
 
-export default function DocumentsPage() {
+export default async function DocumentsPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  if (isLawyerSideRole(user.role)) redirect("/dashboard/lawyer");
   return (
     <>
       <PageHero badge="پنل موکل" title="مدیریت اسناد و مدارک" desc="آپلود، دسته‌بندی، مشاهده و اشتراک امن اسناد حقوقی شما — با رمزنگاری و تاریخچه‌ی نسخه‌ها." breadcrumb={[{ label: "خانه", href: "/" }, { label: "اسناد و مدارک" }]}>

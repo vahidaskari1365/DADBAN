@@ -10,6 +10,7 @@ import { Container, Card, Badge, Button, EmptyState } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
+import { isLawyerSideRole } from "@/lib/roles";
 import { CASE_STATUS_FA, CASE_STAGE_FLOW } from "@/lib/case-facts";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export const dynamic = "force-dynamic";
 export default async function MyCasesPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (isLawyerSideRole(user.role)) redirect("/dashboard/lawyer");
 
   let myCases: typeof cases.$inferSelect[] = [];
   try {

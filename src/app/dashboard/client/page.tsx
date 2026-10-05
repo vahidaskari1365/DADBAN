@@ -9,6 +9,7 @@ import { Icon } from "@/components/icons";
 import { faNum, CONSULT_STATUS_FA, CONSULT_TYPE_FA } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
+import { isLawyerSideRole } from "@/lib/roles";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 import { nextActionForCase, CASE_STATUS_FA, CASE_STAGE_FLOW } from "@/lib/case-facts";
 import DocumentsManager from "@/components/documents-manager";
@@ -41,6 +42,8 @@ export default async function ClientDashboard() {
   await ensureProfileSchema();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  // گارد نقش: وکیل/عضو تیم هرگز نباید پنل موکل را ببیند (باگ «هر یوزر میره پنل موکل»)
+  if (isLawyerSideRole(user.role)) redirect("/dashboard/lawyer");
   const phone = user.phone;
 
   let myCases: typeof cases.$inferSelect[] = [];

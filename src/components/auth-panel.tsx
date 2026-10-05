@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
+import { isRedirectSafeForRole, isLawyerSideRole, panelHomeForRole } from "@/lib/roles";
 
 type Tab = "client" | "lawyer";
 type Mode = "login" | "register";
@@ -254,6 +255,17 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
     window.location.assign(target);
   };
 
+  /**
+   * مقصد نهایی بعد از ورود — نقش همیشه برنده است:
+   * پارامتر ?redirect= فقط وقتی honored می‌شود که با نقش کاربر هم‌ناحیه باشد.
+   * (تلهٔ گزارش‌شده: بعد از خروج از پنل موکل، proxy آدرس /login?redirect=/dashboard/client
+   * می‌سازد و وکیلی که بعداً از همین صفحه وارد می‌شد به‌اجبار به پنل موکل فرستاده می‌شد.)
+   */
+  const destinationFor = (role: string | null | undefined) => {
+    const wanted = safeRedirect();
+    return isRedirectSafeForRole(role, wanted) && wanted ? wanted : panelHomeForRole(role);
+  };
+
   const submitLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const id = toEnDigits(identifier).trim();
@@ -273,13 +285,13 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
           if (remember) localStorage.setItem("dadban:remember", id);
           else localStorage.removeItem("dadban:remember");
         } catch {}
-        if (tab === "lawyer" && data.user?.role !== "lawyer") {
+        if (tab === "lawyer" && !isLawyerSideRole(data.user?.role)) {
           setNotice("این حساب به‌عنوان «وکیل» ثبت نشده است — از تب «موکل» برای ورود استفاده کنید.");
           setTab("client");
           setLoading(false);
           return;
         }
-        hardNavigate(safeRedirect() ?? (data.user?.role === "lawyer" ? "/dashboard/lawyer" : "/dashboard/client"));
+        hardNavigate(destinationFor(data.user?.role));
         return; // در حال هدایت — لودینگ باقی می‌ماند
       }
       setError(data.error ?? "خطا در ورود");
@@ -318,7 +330,9 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
           body: JSON.stringify({ identifier: mobile, password }),
         });
         if (login.ok) {
-          hardNavigate(safeRedirect() ?? "/dashboard/client");
+          let registered: { role?: string } | null = null;
+          try { registered = (await login.json())?.user ?? null; } catch {}
+          hardNavigate(destinationFor(registered?.role ?? "client"));
           return;
         }
         hardNavigate("/login");
