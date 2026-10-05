@@ -23,6 +23,8 @@ export const EVENTS = [
   "slot_selected",
   "employee_match_success",
   "employee_lawyer_select",
+  "lawyer_picked_from_directory",
+  "consult_chat_started",
 ] as const;
 
 export type AnalyticsEvent = (typeof EVENTS)[number];

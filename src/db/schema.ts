@@ -612,3 +612,39 @@ export const consultationSignals = pgTable("consultation_signals", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 export type ConsultationSignal = typeof consultationSignals.$inferSelect;
+
+/* ------------------------------ Consult chat (گفتگوی موکل با وکیل) ------------------------------ */
+
+/**
+ * پیام‌های ماندگار گفتگوی متنی موکل و وکیل.
+ * هر گفتگو یک roomId دارد (consult-<slug>-<rand>) و پیام‌ها حتی وقتی وکیل آفلاین است
+ * ذخیره می‌شوند تا پس از ورود وکیل به پنل، تاریخچه و پیام‌های خوانده‌نشده را ببیند.
+ */
+export const consultMessages = pgTable("consult_messages", {
+  id: serial("id").primaryKey(),
+  roomId: text("room_id").notNull(),
+  lawyerSlug: text("lawyer_slug").notNull(),
+  sender: text("sender").notNull(), // client | lawyer
+  name: text("name").notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => ({
+  roomIdx: index("consult_messages_room_idx").on(t.roomId, t.id),
+  lawyerIdx: index("consult_messages_lawyer_idx").on(t.lawyerSlug, t.createdAt),
+}));
+export type ConsultMessage = typeof consultMessages.$inferSelect;
+
+/* ------------------------------ Lawyer presence (وضعیت آنلاین وکلا) ------------------------------ */
+
+/**
+ * حضور واقعی وکیل — با باز کردن پنل وکیل (/consultation/live) هر ۳۰ ثانیه یک heartbeat
+ * ثبت می‌شود؛ وکیل وقتی «آنلاین» است که state=online و آخرین ping کمتر از ۷۵ ثانیه قبل باشد.
+ * یک ردیف به‌ازای هر وکیل (upsert) — سبک و ارزان برای serverless.
+ */
+export const lawyerPresence = pgTable("lawyer_presence", {
+  slug: text("slug").primaryKey(),
+  name: text("name").notNull().default(""),
+  state: text("state").notNull().default("offline"), // online | offline
+  lastPingAt: timestamp("last_ping_at").defaultNow().notNull(),
+});
+export type LawyerPresence = typeof lawyerPresence.$inferSelect;

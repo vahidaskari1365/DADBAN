@@ -459,3 +459,26 @@ export async function ensureSignalSchema(): Promise<void> {
   }
   signalSchemaReady = true;
 }
+
+/**
+ * جداول گفتگوی موکل-وکیل و حضور آنلاین وکلا — best-effort.
+ * (consult_messages + lawyer_presence — بدون نیاز به مایگریشن دستی در پروداکشن)
+ */
+let consultSchemaReady = false;
+export async function ensureConsultSchema(): Promise<void> {
+  if (consultSchemaReady) return;
+  const stmts = [
+    `CREATE TABLE IF NOT EXISTS consult_messages (id SERIAL PRIMARY KEY, room_id TEXT NOT NULL, lawyer_slug TEXT NOT NULL, sender TEXT NOT NULL, name TEXT NOT NULL, body TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS consult_messages_room_idx ON consult_messages (room_id, id)`,
+    `CREATE INDEX IF NOT EXISTS consult_messages_lawyer_idx ON consult_messages (lawyer_slug, created_at)`,
+    `CREATE TABLE IF NOT EXISTS lawyer_presence (slug TEXT PRIMARY KEY, name TEXT NOT NULL DEFAULT '', state TEXT NOT NULL DEFAULT 'offline', last_ping_at TIMESTAMP NOT NULL DEFAULT now())`,
+  ];
+  for (const stmt of stmts) {
+    try {
+      await db.execute(sql.raw(stmt));
+    } catch {
+      /* non-fatal */
+    }
+  }
+  consultSchemaReady = true;
+}

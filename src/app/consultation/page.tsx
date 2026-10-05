@@ -10,6 +10,8 @@ import { JalaliDatePicker } from "@/components/jalali-date-picker";
 import { trackEvent } from "@/lib/analytics";
 import { FaqAccordion } from "@/components/amazon/faq-accordion";
 import { TrustLine } from "@/components/amazon/trust-line";
+import { ConsultLawyerDirectory } from "@/components/consultation/consult-lawyer-directory";
+import { ConsultChatPanel } from "@/components/consultation/consult-chat-panel";
 import Link from "next/link";
 
 const DURATIONS: Record<string, { min: number; price: number }[]> = {
@@ -26,6 +28,15 @@ interface LawyerOpt {
   rating?: number;
 }
 interface Slot { start: string; label: string }
+
+/** وکیل از فهرست قابل‌گفتگو — زیرمجموعه‌ای از فیلدهای API /api/lawyers */
+interface DirectoryLawyer {
+  slug: string;
+  name: string;
+  city: string;
+  photoUrl: string | null;
+  avatarColor: string;
+}
 
 function ConsultationContent() {
   const search = useSearchParams();
@@ -59,6 +70,7 @@ function ConsultationContent() {
   } | null>(null);
   const [paidSandbox, setPaidSandbox] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [chatLawyer, setChatLawyer] = useState<DirectoryLawyer | null>(null);
 
   useEffect(() => {
     trackEvent("consultation_started");
@@ -167,6 +179,13 @@ function ConsultationContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // انتخاب «رزرو نوبت» از فهرست وکلا → پیش‌پر کردن وکیل در فرم و اسکرول به فرم
+  const bookWithLawyer = (slug: string) => {
+    setLawyerSlug(slug);
+    trackEvent("lawyer_picked_from_directory");
+    document.getElementById("booking-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const sandboxPay = async () => {
@@ -538,6 +557,11 @@ function ConsultationContent() {
         </Container>
       </section>
 
+      {/* فهرست وکلا — انتخاب وکیل، وضعیت آنلاین/آفلاین و شروع گفتگو */}
+      <div className="border-b border-border bg-surface-2/30 py-10">
+        <ConsultLawyerDirectory onChat={(lw) => setChatLawyer(lw)} onBook={bookWithLawyer} />
+      </div>
+
       <div id="booking-form" className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {/* موبایل/تبلت — ترتیب طبیعی: ۱ نوع مشاوره → ۲ مدت‌وزمان → ۳ تماس → خلاصه */}
         <div className="grid gap-6 lg:hidden" data-testid="mobile-flow">
@@ -561,6 +585,15 @@ function ConsultationContent() {
           </div>
         </div>
       </div>
+
+      {/* پنل گفتگوی متنی با وکیل انتخاب‌شده */}
+      {chatLawyer && (
+        <ConsultChatPanel
+          lawyer={chatLawyer}
+          role="client"
+          onClose={() => setChatLawyer(null)}
+        />
+      )}
 
       {/* پرسش‌های متداول — کاهش تردید لحظه آخر (سبک Customer Q&A آمازون) */}
       <div className="mt-10">
