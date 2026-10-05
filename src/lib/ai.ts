@@ -169,6 +169,28 @@ async function ddgSearch(query: string, num: number): Promise<WebSearchResult[]>
 
 const searchCache = new Map<string, { results: WebSearchResult[]; until: number }>();
 
+/** گزارش تشخیصی هر موتور پشتیبان (تعداد/وضعیت/خطا) — فقط برای debug جستجو. */
+export async function webSearchProbe(query: string): Promise<{ engine: string; ok: boolean; count: number; ms: number; info: string }[]> {
+  const q = encodeURIComponent(query.slice(0, 300));
+  const out: { engine: string; ok: boolean; count: number; ms: number; info: string }[] = [];
+  const engines: [string, () => Promise<WebSearchResult[]>][] = [
+    ["ddg-lite", () => ddgFetch(`https://lite.duckduckgo.com/lite/?q=${q}`, 6)],
+    ["ddg-html", () => ddgFetch(`https://html.duckduckgo.com/html/?q=${q}&kl=ir-ir`, 6)],
+    ["gnews-rss", () => gnewsFetch(query, 6)],
+    ["bing", () => bingFetch(query, 6)],
+  ];
+  for (const [name, fn] of engines) {
+    const t0 = Date.now();
+    try {
+      const r = await fn();
+      out.push({ engine: name, ok: r.length > 0, count: r.length, ms: Date.now() - t0, info: r.length ? "" : "0 result" });
+    } catch (e) {
+      out.push({ engine: name, ok: false, count: 0, ms: Date.now() - t0, info: String((e as Error)?.message ?? e).slice(0, 80) });
+    }
+  }
+  return out;
+}
+
 /** گوگل‌نیوز RSS — قالب ماشینی و معمولاً از IPهای دیتاسنتر در دسترس. */
 async function gnewsFetch(query: string, num: number): Promise<WebSearchResult[]> {
   try {

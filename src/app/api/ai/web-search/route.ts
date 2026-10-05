@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { webSearch } from "@/lib/ai";
+import { webSearch, webSearchProbe } from "@/lib/ai";
 import { rateLimit, readJson, text } from "@/lib/api-security";
 
 export const runtime = "nodejs";
@@ -17,6 +17,11 @@ export async function POST(req: Request) {
   if (!query) return NextResponse.json({ ok: false, error: "لطفاً عبارت جستجو را بنویسید." }, { status: 400 });
 
   try {
+    // حالت تشخیصی (debug) — گزارش هر موتور پشتیبان برای یافتن منبع خرابی روی Vercel
+    if (body?.debug === true) {
+      const probe = await webSearchProbe(`${query} حقوقی`);
+      return NextResponse.json({ ok: true, debug: probe });
+    }
     // ترکیب عبارت کاربر با نشانه‌ی منابع حقوقی فارسی برای نتایج مرتبط‌تر
     const results = await webSearch(`${query} حقوقی`, 8);
     return NextResponse.json({
