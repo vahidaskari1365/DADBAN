@@ -5,6 +5,7 @@ import { ConsultationClient } from "@/components/consultation-client";
 import { ConsultChatPanel } from "@/components/consultation/consult-chat-panel";
 import { Container, Button, Badge, Avatar } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { faNum } from "@/lib/data";
 import { formatJalaliDateTime, relativeTimeJalali } from "@/lib/jalali";
 
 /**
@@ -34,6 +35,39 @@ interface Thread {
   total: number;
 }
 
+/** درخواست مشاوره از کارتابل وکیل (GET /api/consultation/requests) */
+interface ConsultReq {
+  id: number;
+  clientName: string;
+  phoneMasked: string;
+  type: "chat" | "voice" | "video";
+  duration: number;
+  price: number;
+  status: string;
+  startsAt: string | null;
+  createdAt: string;
+  subject: string;
+}
+
+const REQ_STATUS: Record<string, { label: string; tone: "success" | "primary" | "neutral" | "danger" | "accent" }> = {
+  paid: { label: "پرداخت‌شده", tone: "success" },
+  pending: { label: "در انتظار پرداخت", tone: "neutral" },
+  payment_pending: { label: "در انتظار پرداخت", tone: "neutral" },
+  confirmed: { label: "تأییدشده", tone: "primary" },
+  scheduled: { label: "نوبت‌دار", tone: "primary" },
+  in_progress: { label: "در حال انجام", tone: "accent" },
+  completed: { label: "انجام‌شده", tone: "neutral" },
+  cancelled: { label: "لغوشده", tone: "danger" },
+  expired: { label: "منقضی", tone: "neutral" },
+  refunded: { label: "بازگشت وجه", tone: "neutral" },
+};
+
+const TYPE_LABEL: Record<"chat" | "voice" | "video", string> = {
+  chat: "متنی",
+  voice: "صوتی",
+  video: "تصویری",
+};
+
 const HEARTBEAT_MS = 30_000;
 const INBOX_POLL_MS = 5_000;
 
@@ -51,11 +85,13 @@ export default function LiveConsultationPage() {
   const [mySlug, setMySlug] = useState("");
   const [panelOn, setPanelOn] = useState(false);
   const [threads, setThreads] = useState<Thread[]>([]);
+  const [requests, setRequests] = useState<ConsultReq[]>([]);
   const [openThread, setOpenThread] = useState<Thread | null>(null);
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inboxRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const me = lawyers.find((l) => l.slug === mySlug) ?? null;
+  const paidCount = requests.filter((r) => r.status === "paid").length;
 
   /* وکلا برای انتخاب پروفایل وکیل */
   useEffect(() => {
@@ -85,17 +121,27 @@ export default function LiveConsultationPage() {
       .catch(() => {});
   }, [mySlug]);
 
+  /* کارتابل درخواست‌های مشاوره — هر poll همراه صندوق گفتگوها تازه می‌شود */
+  const loadRequests = useCallback(() => {
+    if (!mySlug) return;
+    fetch(`/api/consultation/requests?lawyer=${encodeURIComponent(mySlug)}`)
+      .then((r) => r.json())
+      .then((d) => { if (d.ok) setRequests(d.requests ?? []); })
+      .catch(() => {});
+  }, [mySlug]);
+
   useEffect(() => {
     if (!panelOn || !mySlug) return;
     ping("online");
     heartbeatRef.current = setInterval(() => ping("online"), HEARTBEAT_MS);
     loadThreads();
-    inboxRef.current = setInterval(loadThreads, INBOX_POLL_MS);
+    loadRequests();
+    inboxRef.current = setInterval(() => { loadThreads(); loadRequests(); }, INBOX_POLL_MS);
     return () => {
       if (heartbeatRef.current) clearInterval(heartbeatRef.current);
       if (inboxRef.current) clearInterval(inboxRef.current);
     };
-  }, [panelOn, mySlug, ping, loadThreads]);
+  }, [panelOn, mySlug, ping, loadThreads, loadRequests]);
 
   /* خروج با بستن تب — بهترین تلاش با keepalive */
   useEffect(() => {
@@ -153,6 +199,77 @@ export default function LiveConsultationPage() {
           >
             خروج و آفلاین شدن
           </Button>
+        </div>
+
+        {/* کارتابل درخواست‌های مشاوره — بعد از پرداخت، درخواست همین‌جا می‌آید */}
+        <div className="mb-4 rounded-2xl border border-border bg-surface p-4 sm:p-5" data-testid="lawyer-workdesk">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <Icon name="calendar" className="h-4 w-4 text-primary" />
+              کارتابل درخواست‌های مشاوره
+            </h2>
+            <Badge tone={requests.length ? "primary" : "neutral"} data-testid="requests-count">
+              {requests.length ? `${faNum(requests.length)} درخواست` : "بدون درخواست"}
+            </Badge>
+          </div>
+
+          {requests.length === 0 ? (
+            <p className="rounded-xl border border-border bg-surface-2/50 px-4 py-5 text-center text-xs leading-6 text-muted">
+              هنوز درخواست مشاوره‌ای برای شما ثبت نشده. به‌محض ثبت و پرداخت، درخواست همین‌جا نمایش داده می‌شود.
+            </p>
+          ) : (
+            <>
+              {paidCount > 0 && (
+                <p
+                  className="mb-2 flex items-start gap-2 rounded-xl border border-[color-mix(in_oklab,var(--success)_30%,transparent)] bg-[color-mix(in_oklab,var(--success)_12%,transparent)] px-3 py-2.5 text-xs font-bold leading-6 text-success"
+                  data-testid="requests-banner"
+                  role="status"
+                >
+                  <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0" />
+                  شما {faNum(paidCount)} درخواست مشاورهٔ پرداخت‌شده دارید — از طریق گفتگو یا هماهنگی با موکل پیگیری کنید.
+                </p>
+              )}
+              <ul className="max-h-96 space-y-2 overflow-y-auto" data-testid="lawyer-requests">
+                {requests.map((rq) => {
+                  const st = REQ_STATUS[rq.status] ?? { label: rq.status, tone: "neutral" as const };
+                  return (
+                    <li
+                      key={rq.id}
+                      className={`rounded-xl border p-3 ${
+                        rq.status === "paid"
+                          ? "border-[color-mix(in_oklab,var(--success)_35%,transparent)] bg-[color-mix(in_oklab,var(--success)_7%,transparent)]"
+                          : "border-border bg-surface-2/40"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
+                          <Icon name="user" className="h-4 w-4 shrink-0 text-primary" />
+                          {rq.clientName}
+                          <Badge tone={st.tone}>{st.label}</Badge>
+                        </span>
+                        <span className="shrink-0 text-[10px] text-muted">{relativeTimeJalali(rq.createdAt)}</span>
+                      </div>
+                      <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
+                        <span>مشاورهٔ {TYPE_LABEL[rq.type]} · {faNum(rq.duration)} دقیقه</span>
+                        <span className="tnum font-bold text-foreground">
+                          {faNum(rq.price.toLocaleString("en-US"))} تومان
+                        </span>
+                        {rq.startsAt ? (
+                          <span>نوبت: {formatJalaliDateTime(rq.startsAt)}</span>
+                        ) : (
+                          <span>زمان: هماهنگی توسط کارشناسان</span>
+                        )}
+                        <span dir="ltr" className="font-mono">{rq.phoneMasked}</span>
+                      </p>
+                      {rq.subject && (
+                        <p className="mt-1 line-clamp-2 text-xs leading-6 text-foreground-soft">{rq.subject}</p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
         </div>
 
         {/* صندوق گفتگوها */}

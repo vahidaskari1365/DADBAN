@@ -4,7 +4,7 @@ import BookingForm from "@/components/consultation/booking-form";
 /**
  * صفحهٔ اختصاصی رزرو مشاوره — فرم تکمیل رزرو (نوع، مدت/زمان، تماس و خلاصه)
  * از صفحهٔ /consultation به اینجا منتقل شد تا آن صفحه فقط فهرست وکلا را نشان دهد.
- * دیپ‌لینک‌ها: ?lawyer= &type= &caseType= &subject= &date= &slot=
+ * دیپ‌لینک‌ها: ?lawyer= &type= &subject= &date= &slot= — وکیل از فهرست صفحهٔ مشاوره انتخاب و در فرم قفل می‌شود
  */
 export const metadata: Metadata = {
   title: "رزرو مشاوره با وکیل | دادبان",

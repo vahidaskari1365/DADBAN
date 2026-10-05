@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Container, Button, Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { CONSULTATION_TYPES, CONSULT_CASE_TYPES, faNum, faPrice } from "@/lib/data";
+import { CONSULTATION_TYPES, faNum, faPrice } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { JalaliDatePicker } from "@/components/jalali-date-picker";
 import { trackEvent } from "@/lib/analytics";
@@ -42,7 +42,9 @@ interface Slot { start: string; label: string }
 /**
  * فرم رزرو مشاوره — صفحهٔ اختصاصی /consultation/book
  * از صفحهٔ مشاوره به اینجا منتقل شد تا آن صفحه فقط فهرست وکلا را نشان دهد.
- * دیپ‌لینک‌ها: ?lawyer= &type= &caseType= &subject= &date= &slot= (+ انکر #booking-form)
+ * دیپ‌لینک‌ها: ?lawyer= &type= &subject= &date= &slot= (+ انکر #booking-form)
+ * «وکیل مورد نظر» فقط از فهرست وکلای صفحهٔ مشاوره انتخاب می‌شود و در این فرم غیرقابل تغییر است.
+ * فیلد «نوع مورد نیاز مشاوره» حذف شد — موضوع در «شرح موضوع» نوشته می‌شود.
  */
 function BookingFormContent() {
   const search = useSearchParams();
@@ -56,7 +58,6 @@ function BookingFormContent() {
     return DURATIONS[key][0].min;
   });
   const [lawyerSlug, setLawyerSlug] = useState(search.get("lawyer") ?? "");
-  const [caseType, setCaseType] = useState(search.get("caseType") ?? "");
   const [lawyers, setLawyers] = useState<LawyerOpt[]>([]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -140,17 +141,6 @@ function BookingFormContent() {
   const selectedLawyer = lawyers.find((l) => l.slug === lawyerSlug) ?? null;
   const selectedOnline = selectedLawyer ? onlineSlugs.includes(selectedLawyer.slug) : false;
 
-  // «نوع مورد نیاز مشاوره» → وکلای متخصص همان حوزه بالای فهرست (سورت بر اساس امتیاز)
-  const caseMatch = CONSULT_CASE_TYPES.find((c) => c.label === caseType) ?? null;
-  const { specialistLawyers, otherLawyers } = useMemo(() => {
-    if (!caseMatch) return { specialistLawyers: [] as LawyerOpt[], otherLawyers: [] as LawyerOpt[] };
-    const spec = lawyers
-      .filter((l) => (l.specialties ?? []).some((s) => caseMatch.match.includes(s)))
-      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-    const specSlugs = new Set(spec.map((l) => l.slug));
-    return { specialistLawyers: spec, otherLawyers: lawyers.filter((l) => !specSlugs.has(l.slug)) };
-  }, [caseMatch, lawyers]);
-
   const submit = async () => {
     setError(null);
     if (!name || !phone || !subject) {
@@ -170,7 +160,6 @@ function BookingFormContent() {
           name,
           phone,
           subject,
-          caseType: caseType || undefined,
           date: date || undefined,
           time: time || undefined,
           startsAt: slot ?? undefined,
@@ -208,24 +197,7 @@ function BookingFormContent() {
     }
   };
 
-  // تغییر وکیل از select فرم → نوار وکیل منتخب همگام می‌شود
-  const changeLawyer = (slug: string) => {
-    setLawyerSlug(slug);
-  };
-
-  const clearLawyer = () => {
-    setLawyerSlug("");
-    trackEvent("lawyer_removed_from_booking");
-  };
-
-  // «تغییر وکیل» روی نوار — در این صفحه فهرست وکلا نیست؛ فوکوس به همان select می‌رود
-  const focusLawyerSelect = () => {
-    const el = document.querySelector('[data-testid=lawyer-select]') as HTMLSelectElement | null;
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    window.setTimeout(() => el.focus({ preventScroll: true }), 400);
-  };
-
+  /* «وکیل مورد نظر» غیرقابل تغییر است — انتخاب وکیل فقط از فهرست وکلای صفحهٔ مشاوره انجام می‌شود */
   const sandboxPay = async () => {
     if (!result) return;
     trackEvent("payment_started");
@@ -248,64 +220,47 @@ function BookingFormContent() {
 
   /* ───────────── فیلدهای مشترک (هم‌حالت موبایل و دسکتاپ از همین JSX استفاده می‌کنند) ───────────── */
 
-  // فیلد «نوع مورد نیاز مشاوره» (طلاق، ملکی، کیفری و…)
-  const caseTypeField = (
-    <label className="flex flex-col gap-1.5" data-testid="case-type-field">
-      <span className="text-xs font-semibold text-muted">نوع مورد نیاز مشاوره</span>
-      <select
-        value={caseType}
-        onChange={(e) => setCaseType(e.target.value)}
-        className={fieldCls}
-        data-testid="case-type-select"
-      >
-        <option value="">انتخاب کنید — مثلاً طلاق، ملکی، کیفری…</option>
-        {CONSULT_CASE_TYPES.map((c) => (
-          <option key={c.label} value={c.label}>{c.label}</option>
-        ))}
-      </select>
-    </label>
-  );
-
-  // وکیل موردنظر — با انتخاب نوع مشاوره، وکلای متخصص همان حوزه سورت‌شده بالای فهرست می‌آیند
+  // «وکیل مورد نظر» — قفل‌شده؛ انتخاب وکیل فقط از فهرست وکلای صفحهٔ مشاوره انجام می‌شود
   const lawyerField = (
-    <label className="flex flex-col gap-1.5" data-testid="lawyer-field">
-      <span className="text-xs font-semibold text-muted">وکیل موردنظر (اختیاری)</span>
-      <select
-        value={lawyerSlug}
-        onChange={(e) => changeLawyer(e.target.value)}
-        className={fieldCls}
-        data-testid="lawyer-select"
+    <div className="flex flex-col gap-1.5" data-testid="lawyer-field">
+      <span className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-muted">
+        وکیل مورد نظر
+        <Icon name="lock" className="h-3.5 w-3.5 text-muted" aria-hidden />
+        <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-bold text-muted">غیرقابل تغییر</span>
+      </span>
+      <div
+        data-testid="lawyer-locked"
+        aria-readonly="true"
+        className="flex h-11 w-full items-center justify-between gap-2 rounded-xl border border-border-strong bg-surface-2 px-3 text-sm"
       >
-        <option value="">بدون وکیل مشخص — معرفی بهترین وکیل توسط کارشناسان</option>
-        {!caseMatch && lawyers.map((lw) => (
-          <option key={lw.slug} value={lw.slug}>{lw.name} — {lw.city}</option>
-        ))}
-        {caseMatch && specialistLawyers.length > 0 && (
-          <optgroup label={`متخصص ${caseType}`}>
-            {specialistLawyers.map((lw) => (
-              <option key={lw.slug} value={lw.slug}>{lw.name} — {lw.city}</option>
-            ))}
-          </optgroup>
+        {selectedLawyer ? (
+          <span className="truncate font-bold text-foreground">
+            {selectedLawyer.name}
+            {selectedLawyer.city ? <span className="font-medium text-muted"> — {selectedLawyer.city}</span> : null}
+          </span>
+        ) : (
+          <span className="truncate text-muted">معرفی بهترین وکیل توسط کارشناسان دادبان</span>
         )}
-        {caseMatch && otherLawyers.length > 0 && (
-          <optgroup label="سایر وکلا">
-            {otherLawyers.map((lw) => (
-              <option key={lw.slug} value={lw.slug}>{lw.name} — {lw.city}</option>
-            ))}
-          </optgroup>
+        {selectedLawyer && selectedOnline && (
+          <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-bold text-success">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-success" /> آنلاین
+          </span>
         )}
-      </select>
-      {caseMatch && specialistLawyers.length > 0 && (
-        <span className="text-[11px] font-medium leading-5 text-success" data-testid="specialist-hint">
-          {faNum(specialistLawyers.length)} وکیل متخصص «{caseType}» در بالای فهرست قرار گرفت.
-        </span>
-      )}
-      {caseMatch && specialistLawyers.length === 0 && lawyers.length > 0 && (
-        <span className="text-[11px] leading-5 text-muted">
-          هنوز وکیلی با تخصص «{caseType}» ثبت نشده؛ کارشناسان دادبان بهترین وکیل را معرفی می‌کنند.
-        </span>
-      )}
-    </label>
+      </div>
+      <span className="text-[11px] leading-5 text-muted">
+        {selectedLawyer ? (
+          "وکیل شما از فهرست وکلای صفحهٔ مشاوره انتخاب شده و در این فرم قابل تغییر نیست."
+        ) : (
+          <>
+            برای انتخاب وکیل، از{" "}
+            <Link href="/consultation" className="font-bold text-primary underline underline-offset-4">
+              فهرست وکلای صفحهٔ مشاوره
+            </Link>{" "}
+            استفاده کنید.
+          </>
+        )}
+      </span>
+    </div>
   );
 
   /* ───────────── کارت‌های فرم ───────────── */
@@ -432,9 +387,6 @@ function BookingFormContent() {
         اطلاعات تماس و وکیل
       </h2>
       <div className="mt-4">
-        {caseTypeField}
-      </div>
-      <div className="mt-3">
         {lawyerField}
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -473,12 +425,6 @@ function BookingFormContent() {
           <span className="text-muted">نوع مشاوره</span>
           <span className="font-medium text-foreground">{CONSULTATION_TYPES.find((c) => c.key === type)?.title}</span>
         </div>
-        {caseType && (
-          <div className="flex items-center justify-between">
-            <span className="text-muted">نوع موضوع</span>
-            <span className="font-medium text-foreground">{caseType}</span>
-          </div>
-        )}
         <div className="flex items-center justify-between">
           <span className="text-muted">مدت</span>
           <span className="font-medium text-foreground">{faNum(duration)} دقیقه</span>
@@ -576,17 +522,10 @@ function BookingFormContent() {
                 <span className="h-2 w-2 rounded-full bg-border-strong" /> آفلاین
               </span>
             )}
-            <Button size="sm" variant="outline" onClick={focusLawyerSelect}>
+            {/* وکیل غیرقابل تغییر است — تغییر فقط با انتخاب وکیل دیگر از فهرست صفحهٔ مشاوره */}
+            <Button size="sm" variant="outline" href="/consultation" data-testid="change-lawyer-link">
               تغییر وکیل
             </Button>
-            <button
-              onClick={clearLawyer}
-              aria-label="حذف وکیل انتخاب‌شده"
-              title="حذف وکیل انتخاب‌شده"
-              className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-muted transition-colors hover:bg-surface-2 hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            >
-              <Icon name="x" className="h-4 w-4" />
-            </button>
           </div>
         </div>
         {((selectedLawyer.specialties?.length ?? 0) > 0 || !!selectedLawyer.priceChat) && (
