@@ -60,7 +60,10 @@ export async function POST(req: Request) {
   const contract = upload ? upload.text : text(body?.contract, 6000);
   const query = text(body?.query, 3000);
   const mode = body?.mode;
-  const useWeb = body?.webSearch === true;
+  // جستجوی وب: اگر کاربر فعال کرده باشد یا سؤال به مبالغ/قوانین زمان‌مند مربوط باشد
+  // (دیه، دستمزد، مالیات، وام، سقف‌ها…) خودکار فعال می‌شود تا پاسخ با قوانین روز ایران باشد.
+  const TIME_SENSITIVE_RE = /(دیه|دستمزد|مالیات|وام|جریمه|سقف|تورم|امسال|سال جاری|۱۴۰۳|۱۴۰۴|۱۴۰۲|شورای عالی کار|ابلاغیه)/;
+  const useWeb = body?.webSearch === true || (!!query && TIME_SENSITIVE_RE.test(query));
   // استان کاربر: از state فانل (انتخاب در ویزارد) یا از خود متن پیام تشخیص داده می‌شود
   const province = text(body?.province, 60) || (query ? detectProvinceFromMessage(query) : null);
 

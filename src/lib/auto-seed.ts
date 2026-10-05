@@ -241,6 +241,43 @@ export async function seedDemoOperators(): Promise<void> {
   }
 }
 
+/**
+ * اکانت‌های رسمی پلتفرم برای تست و تحویل (به درخواست مالک) — در پروداکشن هم ساخته می‌شوند.
+ * Idempotent: با onConflictDoNothing روی شماره موبایل؛ اجرای تکراری هیچ تغییری نمی‌دهد.
+ *   وکیل  → 09120000001 / Dadban1404!  (متصل به پروفایل «دکتر سهراب محمدی» — تهران)
+ *   موکل  → 09120000002 / Dadban1404!
+ */
+export async function seedPlatformAccounts(): Promise<void> {
+  const rows = [
+    { phone: "09120000001", name: "وکیل آزمایشی دادبان", email: "lawyer.demo@dadban.ir", role: "lawyer" },
+    { phone: "09120000002", name: "موکل آزمایشی دادبان", email: "client.demo@dadban.ir", role: "client" },
+  ];
+  for (const d of rows) {
+    try {
+      await db
+        .insert(users)
+        .values({
+          name: d.name,
+          phone: d.phone,
+          email: d.email,
+          passwordHash: hashPassword("Dadban1404!"),
+          role: d.role,
+        })
+        .onConflictDoNothing({ target: users.phone });
+    } catch {
+      /* non-fatal */
+    }
+  }
+  // اتصال حساب وکیل به پروفایل وکیل مشخص تا کارتابل مشاوره، پیشنهادهای استان و پنل کامل کار کند.
+  try {
+    await db.execute(
+      sql`UPDATE app_users SET lawyer_id = (SELECT id FROM lawyers WHERE slug = 'sohrab-mohammadi' LIMIT 1) WHERE phone = '09120000001' AND lawyer_id IS NULL`,
+    );
+  } catch {
+    /* non-fatal */
+  }
+}
+
 /* ---------------- Profile features migration (idempotent, once per process) ---------------- */
 let profileSchemaReady = false;
 
@@ -384,6 +421,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
         await ensureProfileSchema();
         await seedManagedServices();
         await seedDemoOperators();
+        await seedPlatformAccounts(); // اکانت‌های وکیل/موکل تحویل — در پروداکشن هم
         await ensureLawyerPhotos();
         await upgradeArticles();
       } catch {
@@ -411,6 +449,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
   try {
     await seedManagedServices();
     await seedDemoOperators();
+    await seedPlatformAccounts(); // اکانت‌های وکیل/موکل تحویل — در پروداکشن هم
   } catch {
     /* non-fatal */
   }
