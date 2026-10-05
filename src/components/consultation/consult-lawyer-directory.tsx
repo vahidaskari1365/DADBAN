@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container, Button, Badge, StarRating, EmptyState } from "@/components/ui";
@@ -11,7 +11,7 @@ import { faNum, faPrice } from "@/lib/data";
  * فهرست وکلای قابل گفتگو در صفحه مشاوره:
  *  - وضعیت واقعی آنلاین/آفلاین (poll هر ۲۰ ثانیه از /api/lawyers/presence)
  *  - فیلتر بر اساس نوع کار (تخصص) + سوییچ «فقط آنلاین‌ها»
- *  - شروع گفتگوی متنی همان‌جا یا رزرو نوبت (پیش‌پر کردن فرم پایین صفحه)
+ *  - شروع گفتگوی متنی همان‌جا یا «رزرو مشاوره» (فرم پایین صفحه در حالت «وکیل منتخب» باز می‌شود)
  *  - وکلای آنلاین بالای فهرست، سپس بر اساس امتیاز
  */
 
@@ -35,9 +35,12 @@ interface DirectoryLawyer {
 export function ConsultLawyerDirectory({
   onChat,
   onBook,
+  onPresence,
 }: {
   onChat: (lawyer: DirectoryLawyer) => void;
-  onBook: (slug: string) => void;
+  onBook: (lawyer: DirectoryLawyer) => void;
+  /** حضور زنده به بالا کشیده می‌شود تا نوار «وکیل منتخب» فرم هم همان وضعیت را نشان دهد */
+  onPresence?: (online: string[]) => void;
 }) {
   const [lawyers, setLawyers] = useState<DirectoryLawyer[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -58,13 +61,20 @@ export function ConsultLawyerDirectory({
   }, []);
 
   /* حضور آنلاین — poll هر ۲۰ ثانیه + هنگام بازگشت به تب */
+  const onPresenceRef = useRef(onPresence);
+  useEffect(() => {
+    onPresenceRef.current = onPresence;
+  }, [onPresence]);
   useEffect(() => {
     let alive = true;
     const check = () => {
       fetch("/api/lawyers/presence")
         .then((r) => r.json())
         .then((d) => {
-          if (alive && d.ok) setOnline(d.online as string[]);
+          if (alive && d.ok) {
+            setOnline(d.online as string[]);
+            onPresenceRef.current?.(d.online as string[]);
+          }
         })
         .catch(() => {});
     };
@@ -103,7 +113,7 @@ export function ConsultLawyerDirectory({
   const onlineCount = lawyers.filter((l) => isOnline(l.slug)).length;
 
   return (
-    <section id="lawyer-directory" aria-labelledby="directory-title">
+    <section id="lawyer-directory" aria-labelledby="directory-title" className="scroll-mt-20 lg:scroll-mt-22">
       <Container>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -271,8 +281,8 @@ export function ConsultLawyerDirectory({
                       <p className="text-xs font-bold text-foreground tnum">{faPrice(l.priceChat ?? 0)}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" onClick={() => onBook(l.slug)}>
-                        رزرو نوبت
+                      <Button size="sm" variant="outline" onClick={() => onBook(l)} data-testid={`book-${l.slug}`}>
+                        رزرو مشاوره
                       </Button>
                       <Button
                         size="sm"

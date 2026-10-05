@@ -24,6 +24,7 @@ export const EVENTS = [
   "employee_match_success",
   "employee_lawyer_select",
   "lawyer_picked_from_directory",
+  "lawyer_removed_from_booking",
   "consult_chat_started",
 ] as const;
 

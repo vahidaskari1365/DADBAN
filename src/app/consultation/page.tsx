@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo, Suspense } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Container, Button, Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { CONSULTATION_TYPES, CONSULT_CASE_TYPES, faNum } from "@/lib/data";
+import { CONSULTATION_TYPES, CONSULT_CASE_TYPES, faNum, faPrice } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { JalaliDatePicker } from "@/components/jalali-date-picker";
 import { trackEvent } from "@/lib/analytics";
@@ -23,20 +24,22 @@ const DURATIONS: Record<string, { min: number; price: number }[]> = {
 interface LawyerOpt {
   slug: string;
   name: string;
+  title?: string;
   city: string;
   specialties?: string[];
   rating?: number;
-}
-interface Slot { start: string; label: string }
-
-/** وکیل از فهرست قابل‌گفتگو — زیرمجموعه‌ای از فیلدهای API /api/lawyers */
-interface DirectoryLawyer {
-  slug: string;
-  name: string;
-  city: string;
+  reviewCount?: number;
+  caseCount?: number;
+  priceChat?: number;
+  responseTime?: string;
   photoUrl: string | null;
   avatarColor: string;
+  verified?: boolean;
+  experienceYears?: number;
 }
+/** وکیل از فهرست قابل‌گفتگو — هم‌شکل فیلدهای API /api/lawyers */
+type DirectoryLawyer = LawyerOpt;
+interface Slot { start: string; label: string }
 
 function ConsultationContent() {
   const search = useSearchParams();
@@ -71,6 +74,9 @@ function ConsultationContent() {
   const [paidSandbox, setPaidSandbox] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatLawyer, setChatLawyer] = useState<DirectoryLawyer | null>(null);
+  const [picked, setPicked] = useState<DirectoryLawyer | null>(null); // وکیل انتخاب‌شده از فهرست
+  const [onlineSlugs, setOnlineSlugs] = useState<string[]>([]); // حضور زنده — از فهرست وکلا بالا کشیده می‌شود
+  const [barImgFailed, setBarImgFailed] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     trackEvent("consultation_started");
@@ -112,6 +118,10 @@ function ConsultationContent() {
 
   const price = DURATIONS[type].find((d) => d.min === duration)?.price ?? DURATIONS[type][0].price;
   const selectedSlot = slots.find((s) => s.start === slot) ?? null;
+
+  // وکیل انتخاب‌شده (از فهرست یا select فرم) + وضعیت آنلاین زنده
+  const selectedLawyer = picked ?? lawyers.find((l) => l.slug === lawyerSlug) ?? null;
+  const selectedOnline = selectedLawyer ? onlineSlugs.includes(selectedLawyer.slug) : false;
 
   // «نوع مورد نیاز مشاوره» → وکلای متخصص همان حوزه بالای فهرست (سورت بر اساس امتیاز)
   const caseMatch = CONSULT_CASE_TYPES.find((c) => c.label === caseType) ?? null;
@@ -181,11 +191,28 @@ function ConsultationContent() {
     }
   };
 
-  // انتخاب «رزرو نوبت» از فهرست وکلا → پیش‌پر کردن وکیل در فرم و اسکرول به فرم
-  const bookWithLawyer = (slug: string) => {
-    setLawyerSlug(slug);
+  // «رزرو مشاوره» از فهرست وکلا → فرم پایین صفحه در حالت «رزرو با وکیل منتخب» باز می‌شود
+  const bookWithLawyer = (lw: DirectoryLawyer) => {
+    setLawyerSlug(lw.slug);
+    setPicked(lw);
     trackEvent("lawyer_picked_from_directory");
     document.getElementById("booking-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // تغییر وکیل از خودِ فرم (select گام ۳) → نوار وکیل منتخب همگام می‌شود
+  const changeLawyer = (slug: string) => {
+    setLawyerSlug(slug);
+    setPicked(slug ? lawyers.find((l) => l.slug === slug) ?? null : null);
+  };
+
+  const clearLawyer = () => {
+    setLawyerSlug("");
+    setPicked(null);
+    trackEvent("lawyer_removed_from_booking");
+  };
+
+  const scrollToDirectory = () => {
+    document.getElementById("lawyer-directory")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const sandboxPay = async () => {
@@ -234,7 +261,7 @@ function ConsultationContent() {
       <span className="text-xs font-semibold text-muted">وکیل موردنظر (اختیاری)</span>
       <select
         value={lawyerSlug}
-        onChange={(e) => setLawyerSlug(e.target.value)}
+        onChange={(e) => changeLawyer(e.target.value)}
         className={fieldCls}
         data-testid="lawyer-select"
       >
@@ -478,6 +505,98 @@ function ConsultationContent() {
     </Card>
   );
 
+  // نوار وکیل منتخب — بالای فرم؛ فرم پایین صفحه در حالت «وکیل انتخاب‌شده ← رزرو مشاوره» معنا پیدا می‌کند
+  const selectedLawyerBar = selectedLawyer ? (() => {
+    const initials = selectedLawyer.name.trim().split(" ").slice(-2).map((w) => w[0]).join("");
+    const hasPhoto = !!selectedLawyer.photoUrl && !barImgFailed[selectedLawyer.slug];
+    return (
+      <div
+        data-testid="selected-lawyer-bar"
+        className="mb-6 rounded-2xl border border-primary/40 bg-primary-soft p-4"
+      >
+        <div className="flex flex-wrap items-start gap-3">
+          <span className="relative shrink-0">
+            {hasPhoto ? (
+              <Image
+                src={selectedLawyer.photoUrl as string}
+                alt=""
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded-2xl object-cover"
+                onError={() => setBarImgFailed((f) => ({ ...f, [selectedLawyer.slug]: true }))}
+              />
+            ) : (
+              <span
+                className="flex h-14 w-14 items-center justify-center rounded-2xl text-lg font-bold text-white"
+                style={{ background: `linear-gradient(135deg, ${selectedLawyer.avatarColor}, color-mix(in oklab, ${selectedLawyer.avatarColor} 55%, #000))` }}
+                aria-hidden
+              >
+                {initials}
+              </span>
+            )}
+            <span
+              title={selectedOnline ? "آنلاین" : "آفلاین"}
+              className={`absolute -bottom-0.5 -start-0.5 h-3.5 w-3.5 rounded-full border-2 border-surface ${selectedOnline ? "bg-success" : "bg-border-strong"}`}
+            />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-bold text-primary">رزرو مشاوره با وکیل منتخب</p>
+            <p className="mt-0.5 flex items-center gap-1.5 text-sm font-extrabold text-foreground">
+              {selectedLawyer.name}
+              {selectedLawyer.verified && (
+                <Icon name="badge" className="h-4 w-4 shrink-0 text-primary" aria-label="احراز هویت‌شده" />
+              )}
+            </p>
+            <p className="mt-0.5 text-[11px] leading-5 text-muted">
+              {[
+                selectedLawyer.title ?? "وکیل پایه یک دادگستری",
+                selectedLawyer.city,
+                selectedLawyer.experienceYears ? `${faNum(selectedLawyer.experienceYears)} سال سابقه` : null,
+              ].filter(Boolean).join(" · ")}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 max-sm:w-full max-sm:justify-end">
+            {selectedOnline ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--success)_14%,transparent)] px-2.5 py-1 text-[11px] font-bold text-success">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-success" /> آنلاین
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-medium text-muted">
+                <span className="h-2 w-2 rounded-full bg-border-strong" /> آفلاین
+              </span>
+            )}
+            <Button size="sm" variant="outline" onClick={scrollToDirectory}>
+              تغییر وکیل
+            </Button>
+            <button
+              onClick={clearLawyer}
+              aria-label="حذف وکیل انتخاب‌شده"
+              title="حذف وکیل انتخاب‌شده"
+              className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-muted transition-colors hover:bg-surface-2 hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <Icon name="x" className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+        {((selectedLawyer.specialties?.length ?? 0) > 0 || !!selectedLawyer.priceChat) && (
+          <div className="mt-3 flex flex-wrap items-center gap-1 border-t border-primary/15 pt-3">
+            {(selectedLawyer.specialties ?? []).slice(0, 4).map((s) => (
+              <Badge key={s} tone="primary">{s}</Badge>
+            ))}
+            {(selectedLawyer.specialties?.length ?? 0) > 4 && (
+              <Badge tone="neutral">+{faNum(selectedLawyer.specialties!.length - 4)}</Badge>
+            )}
+            {!!selectedLawyer.priceChat && (
+              <span className="ms-auto text-[11px] font-bold text-foreground tnum">
+                مشاوره متنی از {faPrice(selectedLawyer.priceChat)}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  })() : null;
+
   if (result) {
     return (
       <Container className="py-16">
@@ -559,10 +678,15 @@ function ConsultationContent() {
 
       {/* فهرست وکلا — انتخاب وکیل، وضعیت آنلاین/آفلاین و شروع گفتگو */}
       <div className="border-b border-border bg-surface-2/30 py-10">
-        <ConsultLawyerDirectory onChat={(lw) => setChatLawyer(lw)} onBook={bookWithLawyer} />
+        <ConsultLawyerDirectory
+          onChat={(lw) => setChatLawyer(lw)}
+          onBook={bookWithLawyer}
+          onPresence={setOnlineSlugs}
+        />
       </div>
 
-      <div id="booking-form" className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div id="booking-form" className="mx-auto w-full max-w-7xl scroll-mt-20 px-4 py-10 sm:px-6 lg:scroll-mt-22 lg:px-8">
+        {selectedLawyerBar}
         {/* موبایل/تبلت — ترتیب طبیعی: ۱ نوع مشاوره → ۲ مدت‌وزمان → ۳ تماس → خلاصه */}
         <div className="grid gap-6 lg:hidden" data-testid="mobile-flow">
           {typeCard}
