@@ -64,6 +64,7 @@ export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boo
   const wrapRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hoverOpenedAt = useRef(0);
 
   // بستن با تغییر مسیر — الگوی «تنظیم state در حین رندر» با ردیابی مقدار قبلی
   const [prevPathname, setPrevPathname] = useState(pathname);
@@ -140,11 +141,17 @@ export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boo
 
   const openNow = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
+    hoverOpenedAt.current = Date.now();
     setOpen(true);
   };
   const closeSoon = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     closeTimer.current = setTimeout(() => setOpen(false), 180);
+  };
+  /** کلیک روی تریگر: اگر هاور همین حالا باز کرده، باز بماند؛ وگرنه toggle */
+  const toggleFromClick = () => {
+    if (open && Date.now() - hoverOpenedAt.current < 500) return;
+    setOpen((v) => !v);
   };
 
   return (
@@ -152,7 +159,7 @@ export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boo
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggleFromClick}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={`حساب کاربری — ${user.name}`}
