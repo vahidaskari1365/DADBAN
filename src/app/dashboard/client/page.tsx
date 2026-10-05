@@ -140,7 +140,7 @@ export default async function ClientDashboard() {
       </Card>
 
       {/* Stats — کاشی‌های گرادیانی */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 [&>*]:min-w-0">
         {stats.map((s) => {
           const body = (
             <>
@@ -167,7 +167,7 @@ export default async function ClientDashboard() {
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground-soft">
           <Icon name="bolt" className="h-4 w-4 text-accent-text" /> دسترسی سریع
         </h2>
-        <div data-testid="quick-actions" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div data-testid="quick-actions" className="grid grid-cols-2 gap-3 sm:grid-cols-3 [&>*]:min-w-0">
           {quickActions.map((q) => (
             <Link
               key={q.label}
@@ -187,7 +187,7 @@ export default async function ClientDashboard() {
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr] [&>*]:min-w-0">
         {/* Cases — با نوار پیشرفت مرحله */}
         <Card hover={false}>
           <div className="flex items-center justify-between">
@@ -260,7 +260,7 @@ export default async function ClientDashboard() {
       </div>
 
       {/* Tickets */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <Card hover={false}>
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 font-bold text-foreground"><Icon name="mail" className="h-5 w-5 text-success" /> تیکت‌های پشتیبانی</h2>

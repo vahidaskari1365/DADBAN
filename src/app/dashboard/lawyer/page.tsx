@@ -218,7 +218,7 @@ export default async function LawyerDashboard() {
 
       {/* Stats — کاشی‌های گرادیانی */}
       {stats.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 [&>*]:min-w-0">
           {stats.map((s) => (
             <Card key={s.label} hover={false} className={`flex items-center gap-3 rounded-2xl border border-border bg-gradient-to-bl p-4 ${toneTile[s.tone]}`}>
               <IconChip icon={s.icon} tone={s.tone} />
@@ -236,7 +236,7 @@ export default async function LawyerDashboard() {
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground-soft">
           <Icon name="bolt" className="h-4 w-4 text-accent-text" /> دسترسی سریع
         </h2>
-        <div data-testid="quick-actions" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div data-testid="quick-actions" className="grid grid-cols-2 gap-3 sm:grid-cols-3 [&>*]:min-w-0">
           {quickActions.map((q) => (
             <Link
               key={q.label}
@@ -327,7 +327,7 @@ export default async function LawyerDashboard() {
       {isBoss && <TeamPanel />}
 
       {showConsultCards && (
-        <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr] [&>*]:min-w-0">
           {/* New consultation requests — real pending consultations */}
           <Card hover={false}>
             <div className="flex items-center justify-between">
