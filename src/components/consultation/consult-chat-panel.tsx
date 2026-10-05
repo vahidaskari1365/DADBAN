@@ -35,6 +35,7 @@ interface ChatMsg {
 }
 
 const NAME_KEY = "dadban:consult:name";
+const ROOM_KEY_PREFIX = "dadban:consult:room:";
 const POLL_MS = 2_000;
 
 function newRoomId(slug: string) {
@@ -144,7 +145,14 @@ export function ConsultChatPanel({
     setError(null);
     try { localStorage.setItem(NAME_KEY, clean); } catch { /* private mode */ }
     if (isClient) trackEvent("consult_chat_started");
-    setRoomId(newRoomId(lawyer.slug));
+    /* ادامه‌ی گفتگوی قبلی با همین وکیل (اگر وجود داشته باشد) — نه اتاق جدید */
+    let rid: string | null = null;
+    try { rid = localStorage.getItem(ROOM_KEY_PREFIX + lawyer.slug); } catch { /* private mode */ }
+    if (!rid) {
+      rid = newRoomId(lawyer.slug);
+      try { localStorage.setItem(ROOM_KEY_PREFIX + lawyer.slug, rid); } catch { /* private mode */ }
+    }
+    setRoomId(rid);
   };
 
   const send = async () => {
