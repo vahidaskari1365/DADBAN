@@ -244,13 +244,16 @@ export async function seedDemoOperators(): Promise<void> {
 /**
  * اکانت‌های رسمی پلتفرم برای تست و تحویل (به درخواست مالک) — در پروداکشن هم ساخته می‌شوند.
  * Idempotent: با onConflictDoNothing روی شماره موبایل؛ اجرای تکراری هیچ تغییری نمی‌دهد.
- *   وکیل  → 09120000001 / Dadban1404!  (متصل به پروفایل «دکتر سهراب محمدی» — تهران)
+ *   وکیل ۱ → 09120000001 / Dadban1404!  (متصل به پروفایل «دکتر سهراب محمدی» — تهران)
+ *   وکیل ۲ → 09120000003 / Dadban1404!  (متصل به پروفایل «دکتر مهسا ابراهیمی» — تهران؛
+ *          برای نمایش دو-سویهٔ جریان همکاری/ارجاع وکیل↔وکیل)
  *   موکل  → 09120000002 / Dadban1404!
  */
 export async function seedPlatformAccounts(): Promise<void> {
   const rows = [
     { phone: "09120000001", name: "وکیل آزمایشی دادبان", email: "lawyer.demo@dadban.ir", role: "lawyer" },
     { phone: "09120000002", name: "موکل آزمایشی دادبان", email: "client.demo@dadban.ir", role: "client" },
+    { phone: "09120000003", name: "وکیل آزمایشی دوم دادبان", email: "lawyer2.demo@dadban.ir", role: "lawyer" },
   ];
   for (const d of rows) {
     try {
@@ -268,10 +271,14 @@ export async function seedPlatformAccounts(): Promise<void> {
       /* non-fatal */
     }
   }
-  // اتصال حساب وکیل به پروفایل وکیل مشخص تا کارتابل مشاوره، پیشنهادهای استان و پنل کامل کار کند.
+  // اتصال حساب‌های وکیل به پروفایل‌های وکیل مشخص تا کارتابل مشاوره، پیشنهادهای استان،
+  // کارتابل همکاری/ارجاع و پنل کامل برای هر دو سوی جریان کار کند.
   try {
     await db.execute(
       sql`UPDATE app_users SET lawyer_id = (SELECT id FROM lawyers WHERE slug = 'sohrab-mohammadi' LIMIT 1) WHERE phone = '09120000001' AND lawyer_id IS NULL`,
+    );
+    await db.execute(
+      sql`UPDATE app_users SET lawyer_id = (SELECT id FROM lawyers WHERE slug = 'mahsa-ebrahimi' LIMIT 1) WHERE phone = '09120000003' AND lawyer_id IS NULL`,
     );
   } catch {
     /* non-fatal */
