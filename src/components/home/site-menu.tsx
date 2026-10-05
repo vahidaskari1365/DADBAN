@@ -92,7 +92,7 @@ export function SiteMenu() {
         transition={{ delay: 1.1, type: "spring", stiffness: 260, damping: 18 }}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.9 }}
-        className="fixed bottom-40 left-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-accent/40 bg-surface/90 text-accent shadow-[var(--shadow-lift)] backdrop-blur sm:bottom-24 sm:left-6"
+        className="fixed bottom-40 right-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-accent/40 bg-surface/90 text-accent shadow-[var(--shadow-lift)] backdrop-blur sm:bottom-24 sm:right-6"
       >
         <Icon name="menu" className="h-6 w-6" />
         <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">

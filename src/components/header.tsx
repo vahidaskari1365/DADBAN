@@ -15,10 +15,13 @@ const childIcon = (label: string): IconKey => {
     "مشاوره حقوقی": "chat",
     "درخواست وکیل": "user",
     "وکیل کارمندان": "user",
+    "ثبت پرونده و درخواست وکیل": "folder",
+    "پیگیری پرونده": "clock",
     "انجام امور اداری": "building",
     "تنظیم دادخواست و شکواییه": "gavel",
     "تنظیم اسناد": "document",
     "بررسی قرارداد": "file",
+    "همه قراردادها": "file",
     "خدمات ثبتی": "stamp",
     "همه وکلا": "search",
     "وکلای خانواده": "family",
@@ -176,12 +179,20 @@ export function Header() {
               ورود
             </a>
           </div>
-          {/* دکمه رزرو مشاوره فقط روی دسکتاپ (در موبایل از طریق BottomNav تب وسط) */}
+          {/* CTA اصلی هدر — شروع مسیر حقوقی (فقط دسکتاپ) */}
           <div className="hidden lg:block">
-            <Button href="/consultation" size="sm" icon="calendar">
-              رزرو مشاوره
+            <Button href="/ai-assistant" size="sm" icon="arrow">
+              شروع مسیر حقوقی
             </Button>
           </div>
+          {/* CTA کوچک موبایل — کنار آیکون منو */}
+          <Link
+            href="/ai-assistant"
+            className="inline-flex items-center gap-1 rounded-xl border border-accent/30 bg-accent-soft px-3 py-2.5 text-xs font-bold text-accent transition-all active:scale-95 lg:hidden"
+          >
+            شروع مسیر
+            <Icon name="arrow" className="h-3.5 w-3.5" />
+          </Link>
           {/* آیکون منو — موبایل/تبلت، حداقل 44px touch target */}
           <button
             type="button"
@@ -271,7 +282,8 @@ export function Header() {
                 <span className="text-xs font-bold uppercase tracking-wide text-muted">حالت نمایش</span>
                 <ThemeToggle compact />
               </div>
-              <Button href="/consultation" icon="calendar" className="w-full">رزرو مشاوره</Button>
+              <Button href="/ai-assistant" icon="arrow" className="w-full">شروع مسیر حقوقی</Button>
+              <Button href="/consultation" variant="outline" icon="calendar" className="mt-2 w-full">رزرو مشاوره</Button>
               <Button href="/dashboard/client" variant="outline" icon="user" className="mt-2 w-full">ورود / ثبت‌نام</Button>
             </div>
             </div>

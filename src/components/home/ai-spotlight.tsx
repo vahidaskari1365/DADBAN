@@ -173,6 +173,17 @@ export function AISpotlight() {
             </Link>
             <span className="text-xs text-primary-foreground/60">بدون نیاز به ثبت‌نام</span>
           </motion.div>
+
+          {/* Disclaimer — دستیار جایگزین وکیل نیست */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.55, duration: 0.5 }}
+            className="mt-4 max-w-lg text-[11px] leading-5 text-primary-foreground/55"
+          >
+            پاسخ‌های دستیار هوشمند برای راهنمایی اولیه هستند و جایگزین مشاوره تخصصی وکیل نمی‌شوند.
+          </motion.p>
         </div>
 
         {/* پنل نمونه پاسخ */}

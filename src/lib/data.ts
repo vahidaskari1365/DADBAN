@@ -162,7 +162,9 @@ export const TRUST_BADGES: { title: string; desc: string; icon: IconKey }[] = [
   { title: "حل اختلاف شفاف", desc: "تیم پشتیبانی در صورت بروز اختلاف، رسیدگی بی‌طرفانه انجام می‌دهد.", icon: "balance" },
 ];
 
-/* ---------------- Main navigation ---------------- */
+/* ---------------- Main navigation ----------------
+   هدر خلوت و premium: وکیل‌یابی، مشاوره، خدمات حقوقی، قراردادها، مجله + دستیار.
+   دستیار هوشمند آخرین آیتم دسکتاپ است ولی در دراور موبایل اول می‌آید (MOBILE_NAV در header). */
 export const NAV: {
   label: string;
   href: string;
@@ -170,19 +172,6 @@ export const NAV: {
   ai?: boolean;
   children?: { label: string; href: string; desc?: string }[];
 }[] = [
-  {
-    label: "خدمات حقوقی",
-    href: "/services",
-    children: [
-      { label: "مشاوره حقوقی", href: "/consultation", desc: "متنی، صوتی و تصویری" },
-      { label: "ثبت پرونده و درخواست وکیل", href: "/case/new", desc: "معرفی وکیل توسط کارشناسان" },
-      { label: "وکیل کارمندان", href: "/employee-lawyers", desc: "حقوق کار و تأمین اجتماعی" },
-      { label: "انجام امور اداری", href: "/services", desc: "واگذاری کارهای اداری به کارشناسان" },
-      { label: "تنظیم دادخواست و شکواییه", href: "/legal-forms", desc: "فرم‌های حقوقی آماده" },
-      { label: "بررسی قرارداد", href: "/contracts/review", desc: "تحلیل بندهای پرریسک" },
-      { label: "خدمات ثبتی", href: "/pricing", desc: "ثبت شرکت و برند" },
-    ],
-  },
   {
     label: "وکیل‌یابی",
     href: "/lawyers",
@@ -193,29 +182,38 @@ export const NAV: {
       { label: "وکلای کیفری", href: "/lawyers?sp=کیفری", desc: "دفاع کیفری" },
     ],
   },
+  { label: "مشاوره", href: "/consultation" },
   {
-    label: "ابزارها",
-    href: "/ai-assistant",
+    label: "خدمات حقوقی",
+    href: "/services",
     children: [
-      { label: "دستیار حقوقی هوشمند", href: "/ai-assistant", desc: "راهنمای حقوقی با استناد قانونی" },
-      { label: "تحلیل قرارداد", href: "/contracts/review", desc: "بندهای پرریسک" },
+      { label: "ثبت پرونده و درخواست وکیل", href: "/case/new", desc: "معرفی وکیل توسط کارشناسان" },
+      { label: "انجام امور اداری", href: "/services", desc: "واگذاری کارهای اداری به کارشناسان" },
+      { label: "وکیل کارمندان", href: "/employee-lawyers", desc: "حقوق کار و تأمین اجتماعی" },
+      { label: "پیگیری پرونده", href: "/track-case", desc: "وضعیت لحظه‌ای پرونده" },
+      { label: "خدمات ثبتی", href: "/pricing", desc: "ثبت شرکت و برند" },
+    ],
+  },
+  {
+    label: "قراردادها",
+    href: "/contracts",
+    children: [
+      { label: "همه قراردادها", href: "/contracts", desc: "کتابخانه قراردادهای آماده" },
       { label: "قراردادساز", href: "/contracts/builder", desc: "ساخت قرارداد گام‌به‌گام" },
+      { label: "بررسی قرارداد", href: "/contracts/review", desc: "تحلیل بندهای پرریسک" },
       { label: "فرم‌های حقوقی", href: "/legal-forms", desc: "دادخواست، شکواییه، اظهارنامه" },
     ],
   },
   {
-    label: "دانش حقوقی",
+    label: "مجله",
     href: "/knowledge",
     children: [
       { label: "مقالات", href: "/knowledge", desc: "بانک مقالات حقوقی" },
       { label: "قوانین", href: "/laws", desc: "مرکز قوانین" },
       { label: "آرای قضایی", href: "/judgments", desc: "رویه قضایی" },
       { label: "پرسش و پاسخ", href: "/qa", desc: "پاسخ وکلای متخصص" },
-      { label: "واژه‌نامه حقوقی", href: "/glossary", desc: "اصطلاحات حقوقی" },
     ],
   },
-  { label: "برای کسب‌وکارها", href: "/business" },
-  { label: "پیگیری پرونده", href: "/track-case" },
   { label: "دستیار هوشمند", href: "/ai-assistant", ai: true },
 ];
 

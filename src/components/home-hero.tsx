@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Icon } from "./icons";
 import { Button } from "./ui";
 import { HeroScene } from "./hero-scene";
-import { LEGAL_TOPICS, ALL_PROVINCES, faNum, type IconKey } from "@/lib/data";
+import { LEGAL_TOPICS, ALL_PROVINCES, faNum } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
 import { buildFunnelOptions, saveFunnelSelections, type FunnelRecommendation } from "@/lib/recommendation";
 import { STAGES, ResultCard } from "./quick-start";
@@ -17,6 +17,9 @@ const FSTEP_TITLES = [
   "در کدام استان هستید؟",
 ];
 const FUNNEL_TOTAL = 2; // مرحله/استان — انتخاب موضوع گام صفر است؛ پس از استان، سه گزینه نهایی نمایش داده می‌شود
+
+/* موضوعات محبوب هیرو — از داده واقعی سیستم (LEGAL_TOPICS) انتخاب شده‌اند */
+const HERO_TOPIC_LABELS = ["ملک و اجاره", "طلاق", "کیفری", "کار", "قرارداد", "ارث", "چک", "مهریه"];
 
 export function HomeHero() {
   const router = useRouter();
@@ -68,27 +71,22 @@ export function HomeHero() {
       ? buildFunnelOptions({ topic, stage, city: province })
       : null;
 
+  const heroTopics = HERO_TOPIC_LABELS.map(
+    (label) => LEGAL_TOPICS.find((t) => t.label === label)!,
+  ).filter(Boolean);
+
   return (
-    <section className="relative isolate flex min-h-[90vh] items-center overflow-hidden pb-16 pt-12 sm:min-h-[88vh]">
+    <section className="relative isolate flex min-h-[86vh] items-center overflow-hidden pb-16 pt-12 sm:min-h-[84vh]">
       <HeroScene />
 
       <div className="relative z-10 mx-auto w-full max-w-3xl px-4 text-center sm:px-6">
-        <span className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3.5 py-1.5 text-xs font-medium text-foreground-soft backdrop-blur">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
-          </span>
-          وکیل پایه یک دادگستری با پروانه راستی‌آزمایی‌شده
-        </span>
-
         <h1
-          className="animate-fade-up mt-6 text-balance text-4xl font-extrabold leading-[1.18] tracking-tight text-foreground sm:text-5xl md:text-6xl"
-          style={{ animationDelay: "0.08s" }}
+          className="animate-fade-up text-balance text-4xl font-extrabold leading-[1.2] tracking-tight text-foreground sm:text-5xl md:text-6xl"
         >
-          مشکل{" "}
+          مشکل حقوقی دارید؟{" "}
           <span className="relative inline-block">
             <span className="bg-gradient-to-l from-primary via-accent to-primary bg-clip-text text-transparent">
-              حقوقی‌تان
+              اول مسیر درست
             </span>
             <svg
               className="absolute -bottom-2 right-0 h-3 w-full text-accent/50"
@@ -99,77 +97,54 @@ export function HomeHero() {
               <path d="M2 9C40 3 160 3 198 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
             </svg>
           </span>{" "}
-          چیست؟
+          را پیدا کنید.
         </h1>
 
         <p
           className="animate-fade-up mx-auto mt-6 max-w-xl text-base leading-8 text-muted sm:text-lg"
-          style={{ animationDelay: "0.16s" }}
+          style={{ animationDelay: "0.12s" }}
         >
-          در چند سؤال کوتاه، مسیر مطمئن برایت را پیدا می‌کنیم — از راهنمایی رایگان تا وکیل متخصص.
-          بدون هزینه پنهان، بدون موظف شدن به ثبت‌نام.
+          مسئله‌تان را برای دادبان بنویسید؛ مسیر مناسب را پیدا کنید و اگر لازم بود،
+          به وکیل یا خدمت حقوقی مناسب وصل شوید.
         </p>
 
-        {/* Primary decision CTAs */}
-        <div
-          className="animate-fade-up mt-7 flex flex-wrap items-center justify-center gap-3"
-          style={{ animationDelay: "0.2s" }}
-        >
-          <Button href="/ai-assistant" size="lg" icon="sparkles" className="shadow-[var(--shadow-lift)]">
-            پرسش از دستیار هوشمند
-          </Button>
-          <Button href="/lawyers" size="lg" variant="outline" icon="search">
-            مستقیماً وکیل پیدا می‌کنم
-          </Button>
-        </div>
-
-        {/* The main question box — فانل کامل در همین‌جا ادامه می‌یابد */}
+        {/* Legal Problem Search — ورودی اصلی؛ پس از Enter به مسیر بررسی مشکل می‌رود */}
         <div
           className="animate-fade-up mx-auto mt-9 max-w-2xl rounded-3xl border border-border bg-surface/85 p-5 text-right shadow-[var(--shadow-lift)] backdrop-blur-md sm:p-6"
-          style={{ animationDelay: "0.24s" }}
+          style={{ animationDelay: "0.18s" }}
         >
           {fstep === 0 ? (
             <>
-              <label htmlFor="hero-search" className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
-                <Icon name="sparkles" className="h-5 w-5 text-accent" />
-                برای چه موضوعی به کمک حقوقی نیاز دارید؟
-              </label>
-
-              <div className="flex items-center gap-2 rounded-2xl border border-border-strong bg-background p-1.5 transition-colors focus-within:border-primary">
-                <span className="pr-2 text-muted-soft">
-                  <Icon name="search" className="h-5 w-5" />
-                </span>
-                <input
-                  id="hero-search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && search()}
-                  placeholder="مثلاً: مستأجرم سه ماه اجاره نداده، چه کنم؟"
-                  className="h-11 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-soft"
-                />
-                <Button onClick={search} size="sm" icon="chat" className="h-11">
-                  بپرس
+              <div className="flex flex-col gap-2 rounded-2xl border border-border-strong bg-background p-1.5 transition-colors focus-within:border-primary sm:flex-row sm:items-center">
+                <div className="flex flex-1 items-center">
+                  <span className="pr-2 text-muted-soft">
+                    <Icon name="search" className="h-5 w-5" />
+                  </span>
+                  <input
+                    id="hero-search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && search()}
+                    placeholder="مثلاً: مستأجرم چند ماه اجاره نداده، چه کار کنم؟"
+                    aria-label="شرح مشکل حقوقی شما"
+                    className="h-11 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-soft"
+                  />
+                </div>
+                <Button onClick={search} size="sm" icon="arrow" className="h-11 w-full justify-center sm:w-auto">
+                  بررسی مشکل من
                 </Button>
               </div>
 
               <div className="mt-4">
-                <p className="mb-2 text-xs font-medium text-muted">یا یک موضوع را انتخاب کنید — فرآیند همین‌جا ادامه می‌یابد:</p>
+                <p className="mb-2 text-xs font-medium text-muted">یا موضوع را انتخاب کنید — مسیر همین‌جا ادامه می‌یابد:</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => router.push("/ai-assistant")}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent-soft px-3 py-1.5 text-xs font-bold text-accent transition-all duration-200 cursor-pointer hover:border-accent/60 hover:bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] hover:shadow-sm"
-                  >
-                    <Icon name="sparkles" className="h-3.5 w-3.5" />
-                    دستیار حقوقی
-                  </button>
-                  {LEGAL_TOPICS.map((t) => (
+                  {heroTopics.map((t) => (
                     <button
                       key={t.label}
                       type="button"
                       title={t.hint}
                       onClick={() => pickTopic(t.label)}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground-soft transition-all duration-200 cursor-pointer hover:border-primary/40 hover:bg-primary-soft hover:text-primary"
+                      className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 py-2 text-xs font-medium text-foreground-soft transition-all duration-200 cursor-pointer hover:border-primary/40 hover:bg-primary-soft hover:text-primary"
                     >
                       <Icon name={t.icon} className="h-3.5 w-3.5" />
                       {t.label}
@@ -318,24 +293,6 @@ export function HomeHero() {
               )}
             </div>
           )}
-        </div>
-
-        {/* Trust row — only claims the product actually backs today */}
-        <div
-          className="animate-fade-up mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted"
-          style={{ animationDelay: "0.32s" }}
-        >
-          {[
-            { icon: "badge", text: "احراز هویت وکلا" },
-            { icon: "lock", text: "محرمانگی اطلاعات" },
-            { icon: "shield", text: "بازگشت وجه طبق سیاست شفاف" },
-            { icon: "balance", text: "تعرفه شفاف پیش از تصمیم" },
-          ].map((t) => (
-            <span key={t.text} className="inline-flex items-center gap-1.5">
-              <Icon name={t.icon as "badge"} className="h-4 w-4 text-accent" />
-              {t.text}
-            </span>
-          ))}
         </div>
       </div>
     </section>
