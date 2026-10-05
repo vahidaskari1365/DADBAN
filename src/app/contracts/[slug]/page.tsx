@@ -158,7 +158,7 @@ export default async function ContractDetail({
                 <p className="text-sm font-bold text-primary">{faPrice(c.customPrice)}</p>
               </div>
             </div>
-            <Button href="/consultation?subject=" icon="document" className="mt-4 w-full">سفارش تنظیم قرارداد</Button>
+            <Button href="/consultation/book?subject=" icon="document" className="mt-4 w-full">سفارش تنظیم قرارداد</Button>
             <Button href="/ai-assistant?tab=contract" variant="outline" icon="file" className="mt-2 w-full">تحلیل هوشمند این قرارداد</Button>
           </Card>
           <Card hover={false} className="bg-primary-soft/50">

@@ -291,11 +291,11 @@ export default async function LawyerProfile({
               ))}
             </div>
             <FavoriteButton lawyerId={l.id} lawyerName={l.name} />
-            <Button href={`/consultation?lawyer=${l.slug}`} icon="calendar" className="w-full">
+            <Button href={`/consultation/book?lawyer=${l.slug}`} icon="calendar" className="w-full">
               رزرو مشاوره
             </Button>
             <div className="grid grid-cols-2 gap-2">
-              <Button href={`/consultation?lawyer=${l.slug}&type=chat`} variant="outline" size="sm" icon="chat">
+              <Button href={`/consultation/book?lawyer=${l.slug}&type=chat`} variant="outline" size="sm" icon="chat">
                 پیام
               </Button>
               <Button href={`/case/new?lawyer=${l.slug}`} variant="outline" size="sm" icon="folder">
@@ -353,7 +353,7 @@ export default async function LawyerProfile({
 
       {/* CTA چسبان موبایل — رزرو همیشه در دسترس */}
       <StickyCta
-        href={`/consultation?lawyer=${l.slug}`}
+        href={`/consultation/book?lawyer=${l.slug}`}
         label={`رزرو مشاوره با ${l.name}`}
         sub={`از ${faPrice(l.priceChat)} • پرداخت امن • ضمانت بازگشت وجه`}
       />

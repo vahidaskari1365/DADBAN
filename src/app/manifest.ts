@@ -52,7 +52,7 @@ export default function manifest(): MetadataRoute.Manifest {
         name: "رزرو مشاوره",
         short_name: "مشاوره",
         description: "مشاوره متنی، صوتی یا تصویری با وکیل",
-        url: "/consultation?source=shortcut",
+        url: "/consultation/book?source=shortcut",
         icons: [{ src: "/icon-192.png", sizes: "192x192", type: "image/png" }],
       },
       {

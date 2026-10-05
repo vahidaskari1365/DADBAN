@@ -46,7 +46,7 @@ function LawyerRow({ l, reason }: { l: LawyerOpt; reason?: string }) {
 
   return (
     <Link
-      href={`/consultation?lawyer=${encodeURIComponent(l.slug)}&caseType=${encodeURIComponent(CASE_TYPE)}`}
+      href={`/consultation/book?lawyer=${encodeURIComponent(l.slug)}&caseType=${encodeURIComponent(CASE_TYPE)}`}
       onClick={() => trackEvent("employee_lawyer_select")}
       className="group flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 card-shadow transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[var(--shadow-lift)] sm:gap-4 sm:p-4"
     >

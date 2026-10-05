@@ -218,7 +218,7 @@ export function LawyerPicksFlow({
                 {CONTACT_TYPES.map((c) => (
                   <Link
                     key={c.key}
-                    href={`/consultation?lawyer=${l.slug}&type=${c.key}`}
+                    href={`/consultation/book?lawyer=${l.slug}&type=${c.key}`}
                     className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary-soft px-2.5 py-1 text-[11px] font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
                   >
                     <Icon name={c.icon} className="h-3 w-3" />

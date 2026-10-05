@@ -112,7 +112,7 @@ export function FavoritesPanel() {
             </p>
           </div>
           <div className="flex shrink-0 flex-col gap-1.5">
-            <Button href={`/consultation?lawyer=${l.slug}`} size="sm" variant="soft" icon="calendar">
+            <Button href={`/consultation/book?lawyer=${l.slug}`} size="sm" variant="soft" icon="calendar">
               رزرو
             </Button>
             <button

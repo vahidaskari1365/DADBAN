@@ -87,7 +87,7 @@ export function AvailabilityPanel({ lawyerSlug, durationMin = 30 }: { lawyerSlug
   const pick = (slot: Slot) => {
     trackEvent("slot_selected");
     router.push(
-      `/consultation?lawyer=${encodeURIComponent(lawyerSlug)}&date=${date}&slot=${encodeURIComponent(slot.start)}#booking-form`,
+      `/consultation/book?lawyer=${encodeURIComponent(lawyerSlug)}&date=${date}&slot=${encodeURIComponent(slot.start)}#booking-form`,
     );
   };
 
