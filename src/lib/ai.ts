@@ -126,11 +126,85 @@ export type WebSearchResult = {
 };
 
 export async function webSearch(query: string, num = 8, recencyDays?: number): Promise<WebSearchResult[]> {
-  const zai = await getZai();
-  const results = await zai.functions.invoke("web_search", {
-    query: query.slice(0, 400),
-    num: Math.min(10, Math.max(1, num)),
-    ...(recencyDays ? { recency_days: recencyDays } : {}),
-  });
-  return Array.isArray(results) ? results.slice(0, num) : [];
+  const take = Math.min(10, Math.max(1, num));
+  // ۱) مسیر اصلی: SDK (سندباکس/توسعه — در Vercel معمولاً در دسترس نیست)
+  try {
+    const zai = await getZai();
+    const results = await zai.functions.invoke("web_search", {
+      query: query.slice(0, 400),
+      num: take,
+      ...(recencyDays ? { recency_days: recencyDays } : {}),
+    });
+    if (Array.isArray(results) && results.length) return results.slice(0, num);
+  } catch {
+    /* SDK در دسترس نیست → مسیر پشتیبان */
+  }
+  // ۲) مسیر پشتیبان بدون کلید (Vercel-friendly): DuckDuckGo HTML — best-effort
+  return ddgSearch(query, take);
+}
+
+/** پشتیبانِ جستجو بدون هیچ کلیدی — خواندن HTML عمومی DuckDuckGo و پارس سبک.
+ *  دو قالب شناخته‌شده: lite (عنوان+خلاصه) و html (عنوان) — پاسخ DDG گاهی متغیر است. */
+async function ddgSearch(query: string, num: number): Promise<WebSearchResult[]> {
+  const lite = await ddgFetch(`https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(query.slice(0, 300))}`, num);
+  if (lite.length) return lite;
+  return ddgFetch(
+    `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query.slice(0, 300))}&kl=ir-ir`,
+    num,
+  );
+}
+
+async function ddgFetch(url: string, num: number): Promise<WebSearchResult[]> {
+  const decodeEntities = (s: string): string =>
+    s
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;|&#39;/g, "'")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&#(\d+);/g, (_, d: string) => String.fromCharCode(Number(d)));
+  const stripTags = (s: string): string => decodeEntities(s.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Accept-Language": "fa,en;q=0.8",
+      },
+      signal: AbortSignal.timeout(9_000),
+    });
+    if (!res.ok) return [];
+    const html = await res.text();
+    // ۱) همهٔ لینک‌های ریدایرکت DDG (uddg=) — مستقل از کلاس و ترتیب ویژگی‌ها
+    const linkRe = /<a[^>]*href="([^"]*uddg=[^"&]+)[^"]*"[^>]*>([\s\S]*?)<\/a>/g;
+    // ۲) خلاصه‌ها (هر کدام که حاضر بود)
+    const snippets: string[] = [];
+    const snipRes = [
+      /<td[^>]*class="[^"]*result-snippet[^"]*"[^>]*>([\s\S]*?)<\/td>/g,
+      /<a[^>]*class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/a>/g,
+    ];
+    for (const re of snipRes) {
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(html)) && snippets.length < 12) {
+        const s = stripTags(m[1]);
+        if (s) snippets.push(s);
+      }
+      if (snippets.length) break;
+    }
+    const out: WebSearchResult[] = [];
+    let lm: RegExpExecArray | null;
+    while ((lm = linkRe.exec(html)) && out.length < num) {
+      const title = stripTags(lm[2]);
+      if (!title || title.length < 3) continue;
+      let href = decodeURIComponent(lm[1]);
+      if (href.startsWith("//")) href = `https:${href}`;
+      let host = "";
+      try { host = new URL(href).hostname.replace(/^www\./, ""); } catch { continue; }
+      if (!host || host.endsWith("duckduckgo.com")) continue;
+      out.push({ url: href, name: title, snippet: snippets[out.length] ?? "", host_name: host, rank: out.length + 1, date: "", favicon: "" });
+    }
+    return out;
+  } catch {
+    return [];
+  }
 }
