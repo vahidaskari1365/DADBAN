@@ -168,9 +168,10 @@ async function ddgSearch(query: string, num: number): Promise<WebSearchResult[]>
   for (const engine of [
     () => ddgFetch(`https://lite.duckduckgo.com/lite/?q=${q}`, num),
     () => ddgFetch(`https://html.duckduckgo.com/html/?q=${q}&kl=ir-ir`, num),
-    () => gnewsFetch(query, num),
     () => bingFetch(query, num),
     () => bingFetch(bingKeywords(query), num), // واریانت کلیدواژه‌ای — بینینگ جملهٔ گفتاری را دوست ندارد
+    () => gnewsFetch(query, num),
+    () => wikiFetch(query, num),
   ]) {
     if (Date.now() - t0 > 18_000) break; // سقف زمانی کل زنجیره — مسیر maxDuration=60 امن بماند
     results = await engine();
@@ -201,9 +202,10 @@ export async function webSearchProbe(query: string): Promise<{ engine: string; o
   const engines: [string, () => Promise<WebSearchResult[]>][] = [
     ["ddg-lite", () => ddgFetch(`https://lite.duckduckgo.com/lite/?q=${q}`, 6)],
     ["ddg-html", () => ddgFetch(`https://html.duckduckgo.com/html/?q=${q}&kl=ir-ir`, 6)],
-    ["gnews-rss", () => gnewsFetch(query, 6)],
     ["bing", () => bingFetch(query, 6)],
     ["bing-keywords", () => bingFetch(bingKeywords(query), 6)],
+    ["gnews-rss", () => gnewsFetch(query, 6)],
+    ["wiki-fa", () => wikiFetch(query, 6)],
   ];
   for (const [name, fn] of engines) {
     const t0 = Date.now();
@@ -244,6 +246,35 @@ async function gnewsFetch(query: string, num: number): Promise<WebSearchResult[]
         host_name: "news.google.com",
         rank: out.length + 1,
         date: pick("pubDate").slice(0, 16),
+        favicon: "",
+      });
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+/** ویکی‌پدیای فارسی — API ماشینی باز، معمولاً از دیتاسنترها قابل دسترس. */
+async function wikiFetch(query: string, num: number): Promise<WebSearchResult[]> {
+  try {
+    const res = await fetch(
+      `https://fa.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(bingKeywords(query).slice(0, 200))}&srlimit=${num}&format=json&origin=*`,
+      { headers: { "User-Agent": "DadbanBot/1.0 (dadban.ir)" }, signal: AbortSignal.timeout(6_000) },
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as { query?: { search?: { title: string; snippet: string }[] } };
+    const items = data?.query?.search ?? [];
+    const out: WebSearchResult[] = [];
+    for (const it of items) {
+      if (!it.title) continue;
+      out.push({
+        url: `https://fa.wikipedia.org/wiki/${encodeURIComponent(it.title.replace(/\s/g, "_"))}`,
+        name: it.title,
+        snippet: it.snippet?.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim() ?? "",
+        host_name: "fa.wikipedia.org",
+        rank: out.length + 1,
+        date: "",
         favicon: "",
       });
     }
