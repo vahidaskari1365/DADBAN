@@ -177,6 +177,7 @@ export const NAV: {
     href: "/lawyers",
     children: [
       { label: "همه وکلا", href: "/lawyers", desc: "جستجو با فیلتر پیشرفته" },
+      { label: "وکلای کارمندان", href: "/employee-lawyers", desc: "حقوق کار و تأمین اجتماعی" },
       { label: "وکلای خانواده", href: "/lawyers?sp=خانواده", desc: "طلاق، مهریه، حضانت" },
       { label: "وکلای ملکی", href: "/lawyers?sp=ملک", desc: "تخلیه، سند، تصرف" },
       { label: "وکلای کیفری", href: "/lawyers?sp=کیفری", desc: "دفاع کیفری" },
@@ -189,7 +190,6 @@ export const NAV: {
     children: [
       { label: "ثبت پرونده و درخواست وکیل", href: "/case/new", desc: "معرفی وکیل توسط کارشناسان" },
       { label: "انجام امور اداری", href: "/services", desc: "واگذاری کارهای اداری به کارشناسان" },
-      { label: "وکیل کارمندان", href: "/employee-lawyers", desc: "حقوق کار و تأمین اجتماعی" },
       { label: "پیگیری پرونده", href: "/track-case", desc: "وضعیت لحظه‌ای پرونده" },
       { label: "خدمات ثبتی", href: "/pricing", desc: "ثبت شرکت و برند" },
     ],

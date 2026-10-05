@@ -504,6 +504,10 @@ export const users = pgTable("app_users", {
   avatarColor: text("avatar_color").notNull().default("#15365d"),
   /** اتصال حساب به پروفایل عمومی وکیل (فقط برای role=lawyer) */
   lawyerId: integer("lawyer_id").references(() => lawyers.id, { onDelete: "set null" }),
+  /** اعضای تیم وکیل: role="team" — وکیلِ مادر و دسترسی‌های عضو */
+  parentLawyerId: integer("parent_lawyer_id").references(() => lawyers.id, { onDelete: "cascade" }),
+  /** دسترسی‌های عضو تیم — CSV از: offers,consultations,reminders,services,cases */
+  teamPermissions: text("team_permissions").notNull().default(""),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 export type User = typeof users.$inferSelect;
@@ -648,3 +652,71 @@ export const lawyerPresence = pgTable("lawyer_presence", {
   lastPingAt: timestamp("last_ping_at").defaultNow().notNull(),
 });
 export type LawyerPresence = typeof lawyerPresence.$inferSelect;
+
+/* ---------------- Case offers (پیشنهاد وکلای استان روی پرونده‌های ثبت‌شده) ---------------- */
+
+/**
+ * هر پروندهٔ ثبت‌شده در /case/new به وکلای همان استان اطلاع‌رسانی می‌شود؛
+ * هر وکیل یک «نظر + قیمت اعلامی» ثبت می‌کند و موکل یکی را انتخاب می‌کند.
+ * بعد از انتخاب، گفتگوی رایگان موکل↔وکیل در همین رشته (replies) ادامه می‌یابد.
+ */
+export const caseOffers = pgTable("case_offers", {
+  id: serial("id").primaryKey(),
+  caseId: integer("case_id")
+    .notNull()
+    .references(() => cases.id, { onDelete: "cascade" }),
+  lawyerId: integer("lawyer_id")
+    .notNull()
+    .references(() => lawyers.id, { onDelete: "cascade" }),
+  /** نظر وکیل دربارهٔ پرونده و چگونگی پیگیری آن */
+  message: text("message").notNull(),
+  /** قیمت اعلامی (تومان — عدد صحیح) */
+  price: integer("price").notNull().default(0),
+  /** sent | accepted | declined */
+  status: text("status").notNull().default("sent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [uniqueIndex("case_offers_case_lawyer_uniq").on(t.caseId, t.lawyerId)]);
+export type CaseOffer = typeof caseOffers.$inferSelect;
+
+/** گفتگوی رایگان موکل↔وکیل روی هر پیشنهاد (بعد از انتخاب موکل، موکل هم پاسخ می‌دهد) */
+export const caseOfferReplies = pgTable("case_offer_replies", {
+  id: serial("id").primaryKey(),
+  offerId: integer("offer_id")
+    .notNull()
+    .references(() => caseOffers.id, { onDelete: "cascade" }),
+  /** client | lawyer */
+  sender: text("sender").notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [index("case_offer_replies_offer_idx").on(t.offerId, t.id)]);
+export type CaseOfferReply = typeof caseOfferReplies.$inferSelect;
+
+/* ---------------- Lawyer reminders (یادآورهای پنل وکیل) ---------------- */
+export const lawyerReminders = pgTable("lawyer_reminders", {
+  id: serial("id").primaryKey(),
+  lawyerId: integer("lawyer_id")
+    .notNull()
+    .references(() => lawyers.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  note: text("note"),
+  dueAt: timestamp("due_at").notNull(),
+  done: boolean("done").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type LawyerReminder = typeof lawyerReminders.$inferSelect;
+
+/* ---------------- Team members (ساخت تیم وکیل) ---------------- */
+// اعضای تیم در همان app_users ساخته می‌شوند (role="team") تا از همان سشن/کوکی
+// موجود استفاده کنند؛ دسترسی‌ها و پرونده‌های سپرده‌شده به هر عضو اینجا نگه داشته می‌شود.
+export const teamCaseAssignments = pgTable("team_case_assignments", {
+  id: serial("id").primaryKey(),
+  /** کاربر عضو تیم (role="team") */
+  memberUserId: integer("member_user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  caseId: integer("case_id")
+    .notNull()
+    .references(() => cases.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [uniqueIndex("team_case_assign_uniq").on(t.memberUserId, t.caseId)]);
+export type TeamCaseAssignment = typeof teamCaseAssignments.$inferSelect;

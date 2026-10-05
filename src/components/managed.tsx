@@ -71,12 +71,18 @@ export function ServiceCard({
           <h3 className="text-base font-bold text-foreground">{service.title}</h3>
           <p className="mt-1 text-sm leading-6 text-muted">{service.shortDescription}</p>
         </div>
-        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-          <span className="text-xs text-muted">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-t border-border pt-2">
+          <span className="text-[11px] text-muted">
             {service.category ? CATEGORY_LABELS[service.category] ?? "" : ""}
-            {service.estimatedTime ? ` • ${service.estimatedTime}` : ""}
           </span>
-          <PriceTag price={service.basePrice} priceType={service.priceType} />
+          <span className="flex items-center gap-2 whitespace-nowrap">
+            {service.estimatedTime && (
+              <span className="text-[11px] text-muted">{service.estimatedTime}</span>
+            )}
+            <span className="text-sm font-bold text-foreground">
+              <PriceTag price={service.basePrice} priceType={service.priceType} />
+            </span>
+          </span>
         </div>
       </Card>
     </Link>

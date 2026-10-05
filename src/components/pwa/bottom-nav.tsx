@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
 
@@ -15,6 +16,8 @@ import type { IconKey } from "@/lib/data";
  * - تب وسط FAB بزرگ با gradient طلایی
  * - active indicator به‌صورت pill/dot
  * - انیمیشن‌های spring نرم
+ * - وقتی کاربر با حساب «وکیل» یا «عضو تیم» وارد شده باشد، تب‌ها به نسخهٔ
+ *   وکیلی تغییر می‌کند: کارتابل، پنل آنلاین، پیشنهادها و یادآور.
  */
 
 type Tab = {
@@ -33,8 +36,33 @@ const TABS: Tab[] = [
   { label: "پنل", href: "/dashboard/client", icon: "user", match: ["/dashboard"] },
 ];
 
+const LAWYER_TABS: Tab[] = [
+  { label: "خانه", href: "/", icon: "home", match: ["/"] },
+  { label: "کارتابل", href: "/dashboard/lawyer", icon: "folder", match: ["/dashboard"] },
+  { label: "پنل آنلاین", href: "/consultation/live", icon: "calendar", center: true, match: ["/consultation"] },
+  { label: "پیشنهادها", href: "/dashboard/lawyer#offers", icon: "mail", match: [] },
+  { label: "یادآور", href: "/dashboard/lawyer#reminders", icon: "clock", match: [] },
+];
+
 export function BottomNav() {
   const pathname = usePathname();
+  const [isLawyer, setIsLawyer] = useState(false);
+
+  // نقش کاربر — فقط یک بار بعد از mount؛ SSR همان تب‌های عمومی را می‌دهد (بدون mismatch)
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (alive && d?.ok && (d.user?.role === "lawyer" || d.user?.role === "team")) setIsLawyer(true);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const tabs = isLawyer ? LAWYER_TABS : TABS;
 
   const isActive = (tab: Tab) => {
     if (tab.match) {
@@ -70,7 +98,7 @@ export function BottomNav() {
           padding: "0 8px",
         }}
       >
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const active = isActive(tab);
           if (tab.center) {
             // تب وسط — FAB بزرگ با gradient طلایی

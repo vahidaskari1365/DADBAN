@@ -151,7 +151,7 @@ export default async function ServiceCategoryPage({
       <Container className="py-12">
         {/* Sub-services */}
         <h2 className="text-xl font-bold text-foreground">خدمات این حوزه</h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {cat.sub.map((s, i) => (
             <Reveal key={s.name} delay={i * 50}>
               <Link href={s.href} className="group flex h-full flex-col rounded-2xl border border-border bg-surface p-5 card-shadow transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">

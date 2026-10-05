@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { verifyPassword, signUserSession, userCookieName, isUserAuthConfigured } from "@/lib/user-auth";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 import { clientIp, rateLimit, readJson, text } from "@/lib/api-security";
@@ -17,10 +17,20 @@ export async function POST(req: Request) {
   try {
     // تشخیص نوع شناسه: ایمیل (حاوی @) از شماره موبایل جدا می‌شود تا
     // ایمیل‌های دارای رقم (مثل ali90@…) به‌اشتباه به‌عنوان شماره پرس‌وجو نشوند.
+    // اعضای تیم وکیل با «نام کاربری» (حروف انگلیسی) هم وارد می‌شوند —
+    // نام کاربری در ستون phone اعضای role=team ذخیره شده است.
     const raw = identifier.trim();
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw);
     const normalizedPhone = isEmail ? "" : raw.replace(/[^\d]/g, "");
-    const [user] = await db.select().from(users).where(isEmail ? eq(users.email, raw) : eq(users.phone, normalizedPhone)).limit(1);
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(
+        isEmail
+          ? eq(users.email, raw)
+          : or(eq(users.phone, raw), eq(users.phone, normalizedPhone)),
+      )
+      .limit(1);
     if (!user || !verifyPassword(password, user.passwordHash)) return NextResponse.json({ ok: false, error: "اطلاعات ورود صحیح نیست." }, { status: 401 });
     const store = await cookies(); store.set(userCookieName(), signUserSession(user.id, user.role), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 30 });
     return NextResponse.json({ ok: true, user: { id: user.id, name: user.name, role: user.role } });

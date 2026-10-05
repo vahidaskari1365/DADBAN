@@ -256,8 +256,20 @@ export async function ensureProfileSchema(): Promise<void> {
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS city TEXT`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS avatar_color TEXT NOT NULL DEFAULT '#15365d'`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS lawyer_id INTEGER REFERENCES lawyers(id) ON DELETE SET NULL`,
+    `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS parent_lawyer_id INTEGER REFERENCES lawyers(id) ON DELETE CASCADE`,
+    `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS team_permissions TEXT NOT NULL DEFAULT ''`,
     `CREATE TABLE IF NOT EXISTS favorite_lawyers (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES app_users(id) ON DELETE CASCADE, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE UNIQUE INDEX IF NOT EXISTS favorite_lawyers_uniq ON favorite_lawyers (user_id, lawyer_id)`,
+    // پیشنهاد وکلای استان روی پرونده‌ها + گفتگوی رایگان موکل↔وکیل
+    `CREATE TABLE IF NOT EXISTS case_offers (id SERIAL PRIMARY KEY, case_id INTEGER NOT NULL REFERENCES cases(id) ON DELETE CASCADE, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, message TEXT NOT NULL, price INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'sent', created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS case_offers_case_lawyer_uniq ON case_offers (case_id, lawyer_id)`,
+    `CREATE TABLE IF NOT EXISTS case_offer_replies (id SERIAL PRIMARY KEY, offer_id INTEGER NOT NULL REFERENCES case_offers(id) ON DELETE CASCADE, sender TEXT NOT NULL, body TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS case_offer_replies_offer_idx ON case_offer_replies (offer_id, id)`,
+    // یادآورهای پنل وکیل
+    `CREATE TABLE IF NOT EXISTS lawyer_reminders (id SERIAL PRIMARY KEY, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, title TEXT NOT NULL, note TEXT, due_at TIMESTAMP NOT NULL, done BOOLEAN NOT NULL DEFAULT false, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    // تیم وکیل — پرونده‌های سپرده‌شده به هر عضو
+    `CREATE TABLE IF NOT EXISTS team_case_assignments (id SERIAL PRIMARY KEY, member_user_id INTEGER NOT NULL REFERENCES app_users(id) ON DELETE CASCADE, case_id INTEGER NOT NULL REFERENCES cases(id) ON DELETE CASCADE, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS team_case_assign_uniq ON team_case_assignments (member_user_id, case_id)`,
   ];
   for (const stmt of stmts) {
     try {

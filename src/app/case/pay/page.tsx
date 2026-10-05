@@ -154,6 +154,28 @@ function PayContent() {
             </ol>
           </Card>
 
+          {/* پیشنهاد وکلای استان — موکل با کد پیگیری نظر و قیمت وکلا را می‌بیند */}
+          {ctx?.trackingToken && ctx?.caseNumber && (
+            <Card hover={false} className="mt-6 border-success/30 bg-success/5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-foreground">نظر و قیمت وکلای استان شما</p>
+                  <p className="mt-1 text-xs leading-6 text-muted">
+                    وکلای همان استان پروندهٔ شما را می‌بینند و نظر و قیمت خود را ثبت می‌کنند؛ هر وقت خواستید یکی را انتخاب کنید — انتخاب و پاسخ به پیام وکیل رایگان است.
+                  </p>
+                </div>
+                <Button
+                  href={`/case/offers?cn=${encodeURIComponent(ctx.caseNumber)}&t=${encodeURIComponent(ctx.trackingToken)}`}
+                  icon="mail"
+                  className="shrink-0"
+                  data-testid="offers-cta"
+                >
+                  دیدن پیشنهاد وکلا
+                </Button>
+              </div>
+            </Card>
+          )}
+
           {/* دعوت به ثبت‌نام — پرونده با شماره موبایل به پنل موکل متصل می‌شود */}
           {authed === false ? (
             <Card hover={false} className="mt-6 border-primary/30 bg-primary-soft/40">
