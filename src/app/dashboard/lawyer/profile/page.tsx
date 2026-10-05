@@ -39,6 +39,8 @@ export default async function LawyerProfileEditorPage() {
     <DashboardShell
       role="وکیل"
       title="پروفایل حرفه‌ای من"
+      name={user.name}
+      back={{ fallback: "/dashboard/lawyer", label: "بازگشت به داشبورد" }}
       nav={[
         { label: "نمای کلی", icon: "home", href: "/dashboard/lawyer" },
         { label: "پروفایل حرفه‌ای من", icon: "badge", active: true, href: "/dashboard/lawyer/profile" },

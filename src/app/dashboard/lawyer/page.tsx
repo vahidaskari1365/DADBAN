@@ -8,6 +8,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice, CONSULT_TYPE_FA } from "@/lib/data";
+import type { IconKey } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 import { StatusBadge, UrgencyBadge } from "@/components/managed";
@@ -16,6 +17,7 @@ import { LAWYER_HIDDEN_STATUSES } from "@/lib/managed-services";
 import { CaseOffersPanel } from "@/components/lawyer/case-offers-panel";
 import { TeamPanel } from "@/components/lawyer/team-panel";
 import { RemindersPanel } from "@/components/lawyer/reminders-panel";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "پنل وکیل — داشبورد مدیریت",
@@ -24,6 +26,23 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 type NavItem = { label: string; icon: "home" | "badge" | "briefcase" | "user" | "chat" | "shield" | "mail" | "clock" | "folder"; active?: boolean; badge?: string; href?: string };
+type Tone = "primary" | "accent" | "success" | "neutral";
+
+/** چیپ آیکونی رنگی — پایهٔ گرافیک کارت‌های پنل */
+function IconChip({ icon, tone, size = "md" }: { icon: IconKey; tone: Tone; size?: "sm" | "md" }) {
+  const tones: Record<Tone, string> = {
+    primary: "bg-primary-soft text-primary",
+    accent: "bg-accent-soft text-accent-text",
+    success: "bg-success/15 text-success",
+    neutral: "bg-surface-2 text-foreground-soft",
+  };
+  const sizes = size === "sm" ? "h-9 w-9 rounded-lg" : "h-11 w-11 rounded-xl";
+  return (
+    <span className={`inline-flex shrink-0 items-center justify-center ${sizes} ${tones[tone]}`}>
+      <Icon name={icon} className={size === "sm" ? "h-4 w-4" : "h-5 w-5"} />
+    </span>
+  );
+}
 
 export default async function LawyerDashboard() {
   await ensureProfileSchema();
@@ -125,11 +144,27 @@ export default async function LawyerDashboard() {
     (c) => c.startsAt && !["cancelled", "expired", "refunded"].includes(c.status),
   );
 
-  const stats: { label: string; value: string; icon: "folder" | "mail" | "briefcase" | "calendar" | "user" }[] = [];
-  if (can("cases")) stats.push({ label: isTeam ? "پرونده‌های سپرده‌شده به شما" : "پرونده‌های اخیر پلتفرم", value: faNum(activeCases.length), icon: "folder" });
-  if (can("consultations")) stats.push({ label: "درخواست‌های مشاوره در انتظار", value: faNum(pendingRequests.length), icon: "mail" });
-  if (can("services")) stats.push({ label: "درخواست‌های خدمات فعال", value: faNum(serviceReqs.filter((r) => !["COMPLETED", "DELIVERED"].includes(r.req.status)).length), icon: "briefcase" });
-  if (can("reminders")) stats.push({ label: isBoss && teamMembersCount ? "اعضای تیم" : "یادآورهای باز", value: faNum(isBoss ? teamMembersCount : 0), icon: "user" });
+  const stats: { label: string; value: string; icon: IconKey; tone: Tone }[] = [];
+  if (can("cases")) stats.push({ label: isTeam ? "پرونده‌های سپرده‌شده به شما" : "پرونده‌های اخیر پلتفرم", value: faNum(activeCases.length), icon: "folder", tone: "primary" });
+  if (can("consultations")) stats.push({ label: "درخواست‌های مشاوره در انتظار", value: faNum(pendingRequests.length), icon: "mail", tone: "accent" });
+  if (can("services")) stats.push({ label: "درخواست‌های خدمات فعال", value: faNum(serviceReqs.filter((r) => !["COMPLETED", "DELIVERED"].includes(r.req.status)).length), icon: "briefcase", tone: "success" });
+  if (can("reminders")) stats.push({ label: isBoss && teamMembersCount ? "اعضای تیم" : "یادآورهای باز", value: faNum(isBoss ? teamMembersCount : 0), icon: "user", tone: "neutral" });
+
+  const toneTile: Record<Tone, string> = {
+    primary: "from-primary-soft/90 via-surface to-surface hover:border-primary/40",
+    accent: "from-accent-soft/80 via-surface to-surface hover:border-accent/40",
+    success: "from-success/10 via-surface to-surface hover:border-success/40",
+    neutral: "from-surface-2/80 via-surface to-surface hover:border-border-strong",
+  };
+
+  /** دستورهای سریع وکیل — با فیلتر دسترسی */
+  const quickActions: { label: string; desc: string; icon: IconKey; tone: Tone; href: string }[] = [
+    ...(isBoss ? [{ label: "پروفایل حرفه‌ای", desc: "ویرایش اطلاعات عمومی", icon: "badge" as IconKey, tone: "primary" as Tone, href: "/dashboard/lawyer/profile" }] : []),
+    ...(can("consultations") ? [{ label: "کارتابل مشاوره", desc: "درخواست‌های زنده و آنلاین‌شدن", icon: "chat" as IconKey, tone: "accent" as Tone, href: "/consultation/live" }] : []),
+    { label: "دایرکتوری وکلا", desc: "جستجوی همکاران", icon: "search", tone: "primary", href: "/lawyers" },
+    { label: "پرسش‌های موکلان", desc: "پاسخ‌دهی تخصصی", icon: "shield", tone: "success", href: "/qa" },
+    { label: "پشتیبانی", desc: "تیکت و پیام", icon: "mail", tone: "neutral", href: "/support" },
+  ];
 
   const nav: NavItem[] = [
     { label: "نمای کلی", icon: "home", active: true, href: "/dashboard/lawyer" },
@@ -148,40 +183,45 @@ export default async function LawyerDashboard() {
   return (
     <DashboardShell
       role="وکیل"
-      title={`داشبورد وکیل — ${user.name}`}
+      title={isTeam ? "پنل همکاران" : "پنل مدیریت وکالت"}
+      name={user.name}
       nav={nav}
     >
-      {/* Greeting — real identity, real counts, no fabricated numbers */}
-      <Card hover={false} className="bg-gradient-to-l from-primary to-primary-hover text-primary-foreground">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm text-white/80">سلام، {user.name}</p>
-            <h2 className="mt-1 text-xl font-bold">{isTeam ? "پنل همکاران" : "به پنل وکیل خوش آمدید"}</h2>
-            <p className="mt-1 text-xs text-white/70">
+      {/* خلاصه وضعیت — نوار گرافیکی با داده‌های واقعی */}
+      <Card hover={false} className="relative overflow-hidden border-accent/25 bg-gradient-to-l from-accent-soft/60 via-surface to-surface">
+        <span aria-hidden className="pointer-events-none absolute -left-10 -top-12 h-32 w-32 rounded-full bg-primary-soft/80 blur-2xl" />
+        <div className="relative flex flex-wrap items-center gap-x-6 gap-y-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <IconChip icon={isTeam ? "shield" : "mail"} tone={isTeam ? "neutral" : "accent"} />
+            <p className="min-w-0 text-sm leading-7 text-foreground-soft">
               {isTeam
-                ? "دسترسی شما توسط وکیل تعیین شده است؛ فقط بخش‌های مجاز نمایش داده می‌شود."
+                ? <>دسترسی شما توسط وکیل تعیین شده است؛ فقط بخش‌های مجاز نمایش داده می‌شود.</>
                 : pendingRequests.length > 0
-                  ? `${faNum(pendingRequests.length)} درخواست مشاوره در انتظار بررسی است.`
-                  : "در حال حاضر درخواست مشاوره در انتظاری ثبت نشده است."}
+                  ? <><b className="text-foreground">{faNum(pendingRequests.length)} درخواست مشاوره</b> در انتظار بررسی است.</>
+                  : <>در حال حاضر <b className="text-foreground">درخواست مشاورهٔ در انتظاری</b> ثبت نشده است.</>}
             </p>
           </div>
           {isBoss && (
-            <div className="text-left">
-              <p className="text-xs text-white/70">تسویه تأییدشده (واقعی)</p>
-              <p className="text-2xl font-extrabold">{faPrice(verifiedRevenue)}</p>
-            </div>
+            <>
+              <span aria-hidden className="hidden h-10 w-px bg-border sm:block" />
+              <div className="flex items-center gap-3">
+                <IconChip icon="money" tone="success" />
+                <div>
+                  <p className="text-[11px] text-muted">تسویه تأییدشده (واقعی)</p>
+                  <p className="text-lg font-extrabold text-foreground">{faPrice(verifiedRevenue)}</p>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </Card>
 
-      {/* Stats — all real counts */}
+      {/* Stats — کاشی‌های گرادیانی */}
       {stats.length > 0 && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((s) => (
-            <Card key={s.label} hover={false} className="flex items-center gap-3">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary">
-                <Icon name={s.icon} className="h-5 w-5" />
-              </span>
+            <Card key={s.label} hover={false} className={`flex items-center gap-3 rounded-2xl border border-border bg-gradient-to-bl p-4 ${toneTile[s.tone]}`}>
+              <IconChip icon={s.icon} tone={s.tone} />
               <div>
                 <p className="text-xl font-extrabold text-foreground">{s.value}</p>
                 <p className="text-xs text-muted">{s.label}</p>
@@ -190,6 +230,31 @@ export default async function LawyerDashboard() {
           ))}
         </div>
       )}
+
+      {/* دستورهای سریع وکیل — کاشی‌های گرافیکی */}
+      <section aria-label="دسترسی سریع وکیل">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground-soft">
+          <Icon name="bolt" className="h-4 w-4 text-accent-text" /> دسترسی سریع
+        </h2>
+        <div data-testid="quick-actions" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {quickActions.map((q) => (
+            <Link
+              key={q.label}
+              href={q.href}
+              className="group flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-4 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[var(--shadow-lift)]"
+            >
+              <span className="flex items-center justify-between">
+                <IconChip icon={q.icon} tone={q.tone} />
+                <Icon name="chevron" className="h-4 w-4 rotate-180 text-muted transition-all group-hover:-translate-x-1 group-hover:text-primary" />
+              </span>
+              <span>
+                <span className="block text-sm font-bold text-foreground">{q.label}</span>
+                <span className="mt-0.5 block text-[11px] text-muted">{q.desc}</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* اتصال حساب به پروفایل حرفه‌ای — CTA صادقانه (فقط خود وکیل) */}
       {isBoss && !linked && (
@@ -274,6 +339,7 @@ export default async function LawyerDashboard() {
             <div className="mt-4 space-y-3">
               {pendingRequests.length > 0 ? pendingRequests.slice(0, 4).map((r) => (
                 <div key={r.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-3">
+                  <IconChip icon={r.type === "video" ? "video" : r.type === "voice" ? "phone" : "chat"} tone="accent" size="sm" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-bold text-foreground">{r.clientName}</p>
@@ -303,9 +369,7 @@ export default async function LawyerDashboard() {
             <div className="mt-4 space-y-2">
               {scheduled.length > 0 ? scheduled.slice(0, 5).map((c) => (
                 <div key={c.id} className="flex items-center gap-3 rounded-xl border border-border p-3">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                    <Icon name={c.type === "video" ? "video" : c.type === "chat" ? "chat" : "phone"} className="h-4 w-4" />
-                  </span>
+                  <IconChip icon={c.type === "video" ? "video" : c.type === "chat" ? "chat" : "phone"} tone="primary" size="sm" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">{c.subject}</p>
                     <p className="text-xs text-muted">

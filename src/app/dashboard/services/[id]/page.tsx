@@ -49,8 +49,14 @@ export default async function MyServiceRequest({ params }: { params: Promise<{ i
   const canCancel = !isOperative(user.role) && ["DRAFT", "SUBMITTED", "REVIEWING", "AWAITING_DOCUMENTS", "QUOTED", "AWAITING_PAYMENT"].includes(req.status);
 
   return (
-    <DashboardShell role={isOperative(user.role) ? "وکیل" : "موکل"} title={`داشبورد ${user.name}`} nav={nav}>
-      <div className="mb-6 flex items-center gap-2 text-sm text-muted">
+    <DashboardShell
+      role={isOperative(user.role) ? "وکیل" : "موکل"}
+      title="جزئیات درخواست خدمت"
+      name={user.name}
+      back={{ fallback: "/dashboard/services", label: "بازگشت به خدمات" }}
+      nav={nav}
+    >
+      <div className="flex items-center gap-2 text-sm text-muted">
         <Link href="/dashboard/services" className="hover:text-primary">خدمات من</Link>
         <Icon name="chevron" className="h-4 w-4" />
         <span>جزئیات درخواست</span>

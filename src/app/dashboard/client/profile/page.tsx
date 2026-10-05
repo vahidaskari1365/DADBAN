@@ -62,6 +62,8 @@ export default async function ClientProfilePage() {
     <DashboardShell
       role="موکل"
       title="پروفایل من"
+      name={user.name}
+      back={{ fallback: "/dashboard/client", label: "بازگشت به داشبورد" }}
       nav={[
         { label: "نمای کلی", icon: "home", href: "/dashboard/client" },
         { label: "پرونده‌های من", icon: "folder", href: "/dashboard/cases" },

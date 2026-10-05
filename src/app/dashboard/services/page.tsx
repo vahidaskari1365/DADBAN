@@ -49,13 +49,16 @@ export default async function MyServices() {
   ];
 
   return (
-    <DashboardShell role={isOperative(user.role) ? "وکیل" : "موکل"} title={`داشبورد ${user.name}`} nav={nav}>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold text-foreground">خدمات من</h1>
-          <p className="mt-1 text-sm text-muted">درخواست‌های پیگیری و انجام امور خود را اینجا مدیریت کنید.</p>
-        </div>
-        <Button href="/services" icon="plus" variant="primary">ثبت درخواست جدید</Button>
+    <DashboardShell
+      role={isOperative(user.role) ? "وکیل" : "موکل"}
+      title="خدمات من"
+      name={user.name}
+      back={{ fallback: isOperative(user.role) ? "/dashboard/lawyer" : "/dashboard/client", label: "بازگشت به داشبورد" }}
+      nav={nav}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm leading-7 text-muted">درخواست‌های پیگیری و انجام امور خود را اینجا مدیریت کنید.</p>
+        <Button href="/services" icon="plus" variant="primary" className="shrink-0">ثبت درخواست جدید</Button>
       </div>
 
       <div className="mt-6">
