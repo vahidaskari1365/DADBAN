@@ -143,15 +143,100 @@ export async function webSearch(query: string, num = 8, recencyDays?: number): P
   return ddgSearch(query, take);
 }
 
-/** پشتیبانِ جستجو بدون هیچ کلیدی — خواندن HTML عمومی DuckDuckGo و پارس سبک.
- *  دو قالب شناخته‌شده: lite (عنوان+خلاصه) و html (عنوان) — پاسخ DDG گاهی متغیر است. */
+/** پشتیبانِ جستجو بدون هیچ کلیدی — زنجیرهٔ چند-موتورهٔ best-effort.
+ *  DDG گاهی anomaly می‌دهد؛ برای همین چند منبع مستقل امتحان می‌شود تا روی Vercel هم نتیجه بگیریم. */
 async function ddgSearch(query: string, num: number): Promise<WebSearchResult[]> {
-  const lite = await ddgFetch(`https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(query.slice(0, 300))}`, num);
-  if (lite.length) return lite;
-  return ddgFetch(
-    `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query.slice(0, 300))}&kl=ir-ir`,
-    num,
-  );
+  // کش سبک ۱۰ دقیقه‌ای — جلوگیری از فشار مکرر روی موتورهای جستجو (ضد anomaly)
+  const cached = searchCache.get(query);
+  if (cached && cached.until > Date.now()) return cached.results.slice(0, num);
+
+  const q = encodeURIComponent(query.slice(0, 300));
+  let results: WebSearchResult[] = [];
+  for (const engine of [
+    () => ddgFetch(`https://lite.duckduckgo.com/lite/?q=${q}`, num),
+    () => ddgFetch(`https://html.duckduckgo.com/html/?q=${q}&kl=ir-ir`, num),
+    () => gnewsFetch(query, num),
+    () => bingFetch(query, num),
+  ]) {
+    results = await engine();
+    if (results.length) break; // اولین موتورِ پاسخ‌دهنده کافی است
+  }
+  if (results.length) searchCache.set(query, { results, until: Date.now() + 10 * 60_000 });
+  return results.slice(0, num);
+}
+
+const searchCache = new Map<string, { results: WebSearchResult[]; until: number }>();
+
+/** گوگل‌نیوز RSS — قالب ماشینی و معمولاً از IPهای دیتاسنتر در دسترس. */
+async function gnewsFetch(query: string, num: number): Promise<WebSearchResult[]> {
+  try {
+    const res = await fetch(
+      `https://news.google.com/rss/search?q=${encodeURIComponent(query.slice(0, 250))}&hl=fa&gl=IR&ceid=IR:fa`,
+      { headers: { "User-Agent": "Mozilla/5.0 (compatible; DadbanBot/1.0)" }, signal: AbortSignal.timeout(9_000) },
+    );
+    if (!res.ok) return [];
+    const xml = await res.text();
+    const items = xml.split("<item>").slice(1, num + 1);
+    const out: WebSearchResult[] = [];
+    for (const it of items) {
+      const pick = (tag: string): string => {
+        const m = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`).exec(it);
+        return m ? m[1].replace(/<!\[CDATA\[|\]\]>/g, "").trim() : "";
+      };
+      const title = pick("title").replace(/\s+-\s+[^-]+$/, "");
+      if (!title) continue;
+      const src = new RegExp('<source[^>]*>([\\s\\S]*?)</source>').exec(it)?.[1]?.trim() ?? "";
+      const url = pick("link");
+      out.push({
+        url: url || `https://news.google.com/search?q=${encodeURIComponent(query)}`,
+        name: title,
+        snippet: src ? `${src} — ${pick("pubDate")}` : pick("pubDate"),
+        host_name: "news.google.com",
+        rank: out.length + 1,
+        date: pick("pubDate").slice(0, 16),
+        favicon: "",
+      });
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
+/** بینینگ HTML — مسیر پشتیبان چهارم. */
+async function bingFetch(query: string, num: number): Promise<WebSearchResult[]> {
+  try {
+    const res = await fetch(`https://www.bing.com/search?q=${encodeURIComponent(query.slice(0, 250))}&setlang=fa`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Accept-Language": "fa,en;q=0.8",
+      },
+      signal: AbortSignal.timeout(9_000),
+    });
+    if (!res.ok) return [];
+    const html = await res.text();
+    const out: WebSearchResult[] = [];
+    const re = /<li class="b_algo"[\s\S]*?<h2[^>]*><a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a><\/h2>[\s\S]*?(?:<p[^>]*>([\s\S]*?)<\/p>)?<\/li>/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(html)) && out.length < num) {
+      const title = m[2].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+      if (!title) continue;
+      let host = "";
+      try { host = new URL(m[1]).hostname.replace(/^www\./, ""); } catch { continue; }
+      out.push({
+        url: m[1],
+        name: title,
+        snippet: m[3] ? m[3].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim() : "",
+        host_name: host,
+        rank: out.length + 1,
+        date: "",
+        favicon: "",
+      });
+    }
+    return out;
+  } catch {
+    return [];
+  }
 }
 
 async function ddgFetch(url: string, num: number): Promise<WebSearchResult[]> {
