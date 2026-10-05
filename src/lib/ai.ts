@@ -151,6 +151,7 @@ async function ddgSearch(query: string, num: number): Promise<WebSearchResult[]>
   if (cached && cached.until > Date.now()) return cached.results.slice(0, num);
 
   const q = encodeURIComponent(query.slice(0, 300));
+  const t0 = Date.now();
   let results: WebSearchResult[] = [];
   for (const engine of [
     () => ddgFetch(`https://lite.duckduckgo.com/lite/?q=${q}`, num),
@@ -158,6 +159,7 @@ async function ddgSearch(query: string, num: number): Promise<WebSearchResult[]>
     () => gnewsFetch(query, num),
     () => bingFetch(query, num),
   ]) {
+    if (Date.now() - t0 > 18_000) break; // سقف زمانی کل زنجیره — مسیر maxDuration=60 امن بماند
     results = await engine();
     if (results.length) break; // اولین موتورِ پاسخ‌دهنده کافی است
   }
@@ -172,7 +174,7 @@ async function gnewsFetch(query: string, num: number): Promise<WebSearchResult[]
   try {
     const res = await fetch(
       `https://news.google.com/rss/search?q=${encodeURIComponent(query.slice(0, 250))}&hl=fa&gl=IR&ceid=IR:fa`,
-      { headers: { "User-Agent": "Mozilla/5.0 (compatible; DadbanBot/1.0)" }, signal: AbortSignal.timeout(9_000) },
+      { headers: { "User-Agent": "Mozilla/5.0 (compatible; DadbanBot/1.0)" }, signal: AbortSignal.timeout(6_000) },
     );
     if (!res.ok) return [];
     const xml = await res.text();
@@ -211,7 +213,7 @@ async function bingFetch(query: string, num: number): Promise<WebSearchResult[]>
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
         "Accept-Language": "fa,en;q=0.8",
       },
-      signal: AbortSignal.timeout(9_000),
+      signal: AbortSignal.timeout(6_000),
     });
     if (!res.ok) return [];
     const html = await res.text();
@@ -256,7 +258,7 @@ async function ddgFetch(url: string, num: number): Promise<WebSearchResult[]> {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
         "Accept-Language": "fa,en;q=0.8",
       },
-      signal: AbortSignal.timeout(9_000),
+      signal: AbortSignal.timeout(6_000),
     });
     if (!res.ok) return [];
     const html = await res.text();

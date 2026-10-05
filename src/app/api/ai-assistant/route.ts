@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     let systemPrompt = undefined;
     if (useWeb) {
       try {
-        const results = await withTimeout(webSearch(query, 6), 12_000);
+        const results = await withTimeout(webSearch(query, 6), 25_000);
         if (results.length) {
           sources = results.map((r) => ({ title: r.name, url: r.url, host: r.host_name, snippet: r.snippet }));
           systemPrompt = systemWithSources(results);
