@@ -32,7 +32,7 @@ export function LegalServices() {
               <span className="block text-sm font-black text-foreground">{s.title}</span>
               <span className="mt-0.5 block text-xs leading-5 text-muted">{s.desc}</span>
             </span>
-            <Icon name="arrow" className="h-4 w-4 shrink-0 text-muted transition-all duration-300 group-hover:-translate-x-1 group-hover:text-accent" />
+            <Icon name="arrow" className="h-4 w-4 shrink-0 text-muted transition-all duration-300 group-hover:-translate-x-1 group-hover:text-accent-text" />
           </a>
         </Reveal>
       ))}

@@ -62,7 +62,7 @@ export default function SupportPage() {
           ].map((c) => (
             <a key={c.title} href={c.href}>
               <Card className="flex items-center gap-3">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent"><Icon name={c.icon} className="h-5 w-5" /></span>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent-text"><Icon name={c.icon} className="h-5 w-5" /></span>
                 <div><p className="text-sm font-bold text-foreground">{c.title}</p><p className="text-xs text-muted">{c.desc}</p></div>
               </Card>
             </a>

@@ -153,7 +153,7 @@ export default function ContractReviewPage() {
 
             {ocrPct !== null && (
               <div className="rounded-xl border border-accent/30 bg-accent-soft/30 px-4 py-3 text-center">
-                <p className="text-sm font-bold text-accent">در حال خواندن متن عکس با هوش مصنوعی… {ocrPct}٪</p>
+                <p className="text-sm font-bold text-accent-text">در حال خواندن متن عکس با هوش مصنوعی… {ocrPct}٪</p>
                 <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
                   <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(5, ocrPct)}%` }} />
                 </div>

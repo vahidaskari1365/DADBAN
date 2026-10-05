@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { MotionProvider } from "@/components/motion-config";
 import { noFlashScript } from "@/components/no-flash";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -223,6 +224,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           />
         </div>
         <ThemeProvider>
+          <MotionProvider>
           <a
             href="#main"
             className="sr-only focus:not-sr-only focus:fixed focus:right-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -243,6 +245,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ConsultCompanion />
           {/* اثبات اجتماعی زنده — فقط فعالیت واقعی پلتفرم (سبک آمازون) */}
           <LiveActivity />
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>

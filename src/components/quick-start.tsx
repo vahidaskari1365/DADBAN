@@ -125,7 +125,7 @@ function QuickStartInner() {
             <ul className="mt-5 space-y-2 text-xs text-white/75">
               {["سه مسیر پیشنهادی با دلیل روشن", "انتخاب‌های شما ذخیره می‌شود", "بدون پر کردن مجدد فرم"].map((t) => (
                 <li key={t} className="flex items-center gap-2">
-                  <Icon name="check" className="h-3.5 w-3.5 text-accent" />
+                  <Icon name="check" className="h-3.5 w-3.5 text-accent-text" />
                   {t}
                 </li>
               ))}
@@ -152,7 +152,7 @@ function QuickStartInner() {
         <div className="p-6 sm:p-8">
           {rec === null ? (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-accent">
+              <p className="text-xs font-semibold uppercase tracking-wide text-accent-text">
                 مسیر سریع دادبان
               </p>
               <h4 className="mt-2 text-xl font-bold text-foreground">{STEP_TITLES[step]}</h4>

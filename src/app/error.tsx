@@ -21,7 +21,7 @@ export default function ErrorPage({
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-24">
       <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-8 text-center card-shadow">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent-text">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
             <path d="M12 9v4" />
             <path d="M12 17h.01" />

@@ -96,7 +96,7 @@ export function AISpotlight() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.15, duration: 0.5 }}
-            className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 text-xs font-black text-accent backdrop-blur"
+            className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 text-xs font-black text-accent-text backdrop-blur"
           >
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
@@ -151,7 +151,7 @@ export function AISpotlight() {
           <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
             {FEATURES.map((f) => (
               <span key={f.text} className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-foreground/70">
-                <Icon name={f.icon} className="h-4 w-4 text-accent" />
+                <Icon name={f.icon} className="h-4 w-4 text-accent-text" />
                 {f.text}
               </span>
             ))}
@@ -196,7 +196,7 @@ export function AISpotlight() {
         >
           <div className="rounded-2xl border border-primary-foreground/15 bg-primary-foreground/[0.06] p-5 backdrop-blur-md">
             <div className="flex items-center gap-2 border-b border-primary-foreground/10 pb-3">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-accent/20 text-accent">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-accent/20 text-accent-text">
                 <Icon name="sparkles" className="h-4 w-4" />
               </span>
               <p className="text-xs font-bold text-primary-foreground/85">پاسخ نمونهٔ دستیار</p>
@@ -216,7 +216,7 @@ export function AISpotlight() {
                   transition={{ delay: 0.55 + i * 0.12, duration: 0.4 }}
                   className="flex items-start gap-2"
                 >
-                  <Icon name="check" className="mt-1 h-3.5 w-3.5 shrink-0 text-accent" />
+                  <Icon name="check" className="mt-1 h-3.5 w-3.5 shrink-0 text-accent-text" />
                   {line}
                 </motion.li>
               ))}

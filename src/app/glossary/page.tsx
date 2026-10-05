@@ -32,7 +32,7 @@ export default function GlossaryPage() {
               >
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-bold text-foreground">{t.term}</h2>
-                  <Icon name="book" className="h-4 w-4 text-accent" />
+                  <Icon name="book" className="h-4 w-4 text-accent-text" />
                 </div>
                 <p className="mt-2 flex-1 text-sm leading-6 text-muted">{t.simple}</p>
                 <span className="mt-3 text-xs font-semibold text-primary">مشاهده تعریف کامل ←</span>

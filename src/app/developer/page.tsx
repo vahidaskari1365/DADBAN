@@ -57,7 +57,7 @@ export default function DeveloperPage() {
                           {t.columns.map((c) => (
                             <div key={c.name} className="flex items-center gap-2 text-xs">
                               {c.pk ? (
-                                <span className="font-mono text-[10px] font-bold text-accent">PK</span>
+                                <span className="font-mono text-[10px] font-bold text-accent-text">PK</span>
                               ) : c.fk ? (
                                 <span className="font-mono text-[10px] font-bold text-primary">FK</span>
                               ) : (
@@ -65,7 +65,7 @@ export default function DeveloperPage() {
                               )}
                               <span className="font-mono text-foreground-soft" dir="ltr">{c.name}</span>
                               <span className="text-muted-soft">: {c.type}</span>
-                              {c.note && <span className="text-[10px] text-accent">({c.note})</span>}
+                              {c.note && <span className="text-[10px] text-accent-text">({c.note})</span>}
                               {c.fk && <span className="text-[10px] text-primary">→ {c.fk}</span>}
                             </div>
                           ))}

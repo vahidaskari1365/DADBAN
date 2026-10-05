@@ -176,7 +176,7 @@ export default async function ArticlePage({
             {a.quickAnswer && (
               <div className="mb-7 rounded-2xl border border-accent/30 bg-accent-soft/40 p-5">
                 <p className="flex items-center gap-2 text-sm font-black text-foreground">
-                  <Icon name="quote" className="h-4 w-4 text-accent" /> پاسخ کوتاه
+                  <Icon name="quote" className="h-4 w-4 text-accent-text" /> پاسخ کوتاه
                 </p>
                 <p className="mt-2 text-[15px] leading-8 text-foreground-soft">{a.quickAnswer}</p>
               </div>
@@ -195,7 +195,7 @@ export default async function ArticlePage({
                     <details key={i} className="group rounded-2xl border border-border bg-surface p-4 open:border-primary/30">
                       <summary className="cursor-pointer list-none text-sm font-bold text-foreground marker:hidden">
                         <span className="inline-flex items-start gap-2">
-                          <Icon name="plus" className="mt-0.5 h-4 w-4 shrink-0 text-accent transition-transform group-open:rotate-45" />
+                          <Icon name="plus" className="mt-0.5 h-4 w-4 shrink-0 text-accent-text transition-transform group-open:rotate-45" />
                           {f.q}
                         </span>
                       </summary>
@@ -213,7 +213,7 @@ export default async function ArticlePage({
 
             <Card hover={false} className="mt-8 bg-primary-soft/50">
               <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <Icon name="sparkles" className="h-4 w-4 text-accent" /> سؤال حقوقی دارید؟
+                <Icon name="sparkles" className="h-4 w-4 text-accent-text" /> سؤال حقوقی دارید؟
               </h2>
               <p className="mt-1.5 text-sm leading-6 text-muted">
                 برای مشاوره تخصصی درباره این موضوع با وکیل متخصص صحبت کنید یا از دستیار هوش مصنوعی کمک بگیرید.
@@ -239,7 +239,7 @@ export default async function ArticlePage({
                 <div className="mt-3 space-y-2">
                   {related.map((r) => (
                     <Link key={r.slug} href={`/knowledge/${r.slug}`} className="block rounded-xl border border-border p-3 transition-colors hover:bg-surface-2">
-                      <p className="text-xs text-accent">{r.category}</p>
+                      <p className="text-xs text-accent-text">{r.category}</p>
                       <p className="mt-1 text-sm font-semibold leading-6 text-foreground">{r.title}</p>
                     </Link>
                   ))}

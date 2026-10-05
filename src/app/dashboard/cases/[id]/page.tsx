@@ -144,7 +144,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
         {/* اقدام بعدی — command center for this case */}
         <Card hover={false} className="border-primary/30 bg-primary-soft/40">
           <h2 className="flex items-center gap-2 font-bold text-foreground">
-            <Icon name="bolt" className="h-5 w-5 text-accent" />
+            <Icon name="bolt" className="h-5 w-5 text-accent-text" />
             {next.action}
           </h2>
           <p className="mt-1.5 text-sm leading-7 text-foreground-soft">{next.detail}</p>
@@ -215,7 +215,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
         {/* درخواست‌های خدمات مرتبط با این پرونده */}
         <Card hover={false}>
           <h2 className="flex items-center gap-2 font-bold text-foreground">
-            <Icon name="briefcase" className="h-5 w-5 text-accent" />
+            <Icon name="briefcase" className="h-5 w-5 text-accent-text" />
             درخواست‌های خدمات این پرونده
           </h2>
           {relatedRequests.length ? (

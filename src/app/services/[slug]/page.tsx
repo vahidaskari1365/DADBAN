@@ -106,7 +106,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
                 </Card>
 
                 <div className="mt-4 rounded-xl border border-accent/30 bg-accent-soft p-4 text-sm leading-6 text-foreground-soft">
-                  <Icon name="id" className="me-1 inline h-4 w-4 text-accent" /> {guide.presenceNote}
+                  <Icon name="id" className="me-1 inline h-4 w-4 text-accent-text" /> {guide.presenceNote}
                 </div>
               </>
             ) : (
@@ -142,7 +142,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
 
             {svc.requiresLawyer && (
               <div className="mt-4 rounded-xl border border-accent/30 bg-accent-soft p-4 text-sm text-foreground-soft">
-                <Icon name="scale" className="inline h-4 w-4 text-accent" /> {" "}
+                <Icon name="scale" className="inline h-4 w-4 text-accent-text" /> {" "}
                 این موضوع نیازمند اقدام حرفه‌ای حقوقی است؛ پس از بررسی اولیه به وکیل دارای صلاحیت ارجاع داده می‌شود. دادبان خود را جایگزین وکیل شما معرفی نمی‌کند.
               </div>
             )}

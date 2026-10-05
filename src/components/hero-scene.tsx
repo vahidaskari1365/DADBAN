@@ -85,7 +85,7 @@ function FloatCard({
 }) {
   const toneCls =
     tone === "accent"
-      ? "bg-accent-soft text-accent"
+      ? "bg-accent-soft text-accent-text"
       : tone === "success"
       ? "bg-[color-mix(in_oklab,var(--success)_18%,transparent)] text-success"
       : "bg-primary-soft text-primary";

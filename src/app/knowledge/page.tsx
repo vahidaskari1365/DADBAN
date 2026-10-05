@@ -60,7 +60,12 @@ export default async function KnowledgePage() {
 
       {all.length === 0 ? (
         <Container className="pb-16">
-          <EmptyState title="مقاله‌ای موجود نیست" icon="book" />
+          <EmptyState
+            title="مقاله‌ای موجود نیست"
+            icon="book"
+            desc="در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادبان بپرسید."
+            action={{ href: "/ai-assistant", label: "پرسیدن از دستیار هوشمند" }}
+          />
         </Container>
       ) : (
         featured && (

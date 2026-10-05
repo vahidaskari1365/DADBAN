@@ -155,7 +155,7 @@ export default async function ServiceCategoryPage({
           {cat.sub.map((s, i) => (
             <Reveal key={s.name} delay={i * 50}>
               <Link href={s.href} className="group flex h-full flex-col rounded-2xl border border-border bg-surface p-5 card-shadow transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent-text">
                   <Icon name={cat.icon} className="h-5 w-5" />
                 </span>
                 <h3 className="mt-3 text-sm font-bold text-foreground">{s.name}</h3>

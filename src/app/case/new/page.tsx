@@ -231,7 +231,7 @@ function NewCaseContent() {
               </label>
               <label className="flex flex-col gap-1.5">
                 <span className="text-sm font-bold text-foreground">شماره موبایل *</span>
-                <input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="09123456789" dir="ltr" className={fieldCls + " text-right"} />
+                <input value={form.phone} onChange={(e) => set("phone", e.target.value)} type="tel" inputMode="tel" autoComplete="tel" dir="ltr" className={fieldCls + " text-right"} placeholder="09123456789" />
               </label>
             </div>
 
@@ -252,7 +252,7 @@ function NewCaseContent() {
 
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <Card hover={false}>
-            <h3 className="flex items-center gap-2 font-bold text-foreground"><Icon name="bolt" className="h-4 w-4 text-accent" /> بعد از ثبت چه می‌شود؟</h3>
+            <h3 className="flex items-center gap-2 font-bold text-foreground"><Icon name="bolt" className="h-4 w-4 text-accent-text" /> بعد از ثبت چه می‌شود؟</h3>
             <ol className="mt-3 space-y-2.5 text-sm text-foreground-soft">
               {[
                 "پرونده با شماره پیگیری ثبت می‌شود",

@@ -361,7 +361,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
               <div className="mb-6 flex justify-start">
                 <Link
                   href="/"
-                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-bold text-[var(--auth-ink-soft)] transition-colors hover:text-[var(--accent)]"
+                  className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-bold text-[var(--auth-ink-soft)] transition-colors hover:text-[var(--accent-text)]"
                 >
                   <Icon name="arrow" className="h-4 w-4 -scale-x-100" />
                   بازگشت به صفحه اصلی
@@ -401,7 +401,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                   className={`mt-4 flex items-start gap-2 rounded-xl border p-3 text-xs font-bold leading-6 ${
                     banner.tone === "danger"
                       ? "border-[#b42318]/25 bg-[#b42318]/[0.06] text-[#b42318] dark:border-[#f87171]/30 dark:bg-[#f87171]/[0.08] dark:text-[#f87171]"
-                      : "border-[var(--accent)]/30 bg-[var(--accent)]/[0.08] text-[var(--accent)]"
+                      : "border-[var(--accent)]/30 bg-[var(--accent)]/[0.08] text-[var(--accent-text)]"
                   }`}
                 >
                   <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0" />
@@ -424,16 +424,16 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                   </AuthField>
                   <AuthPwField idPrefix="login" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} />
                   <div className="flex items-center justify-between pt-0.5">
-                    <label className="flex cursor-pointer select-none items-center gap-2 text-xs font-bold text-[var(--auth-ink-soft)]">
+                    <label className="flex min-h-11 cursor-pointer select-none items-center gap-2 text-xs font-bold text-[var(--auth-ink-soft)]">
                       <input
                         type="checkbox"
                         checked={remember}
                         onChange={(e) => setRemember(e.target.checked)}
-                        className="sr-only"
+                        className="peer sr-only"
                       />
                       <span
                         aria-hidden
-                        className={`flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all ${
+                        className={`flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--ring)] ${
                           remember
                             ? "border-[var(--primary)] bg-[var(--primary)]"
                             : "border-[var(--auth-line)] bg-transparent"
@@ -445,7 +445,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                     </label>
                     <Link
                       href="/contact"
-                      className="text-xs font-extrabold text-[var(--accent)] transition-colors hover:text-[var(--auth-gold)]"
+                      className="text-xs font-extrabold text-[var(--accent-text)] transition-colors hover:text-[var(--auth-gold)]"
                     >
                       فراموشی رمز؟
                     </Link>
@@ -523,7 +523,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                   <AuthSubmit loading={loading} label="ورود به پنل وکیل" loadingLabel="در حال ورود…" />
                   <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-center text-xs leading-6 text-[var(--auth-ink-soft)]">
                     هنوز عضو دادبان نشده‌اید؟{" "}
-                    <button type="button" onClick={() => sweepTo("register", "lawyer")} className="font-extrabold text-[var(--accent)] hover:underline">
+                    <button type="button" onClick={() => sweepTo("register", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">
                       درخواست عضویت وکیل
                     </button>
                   </p>
@@ -554,7 +554,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                   </a>
                   <p className="mt-4 text-center text-xs text-[var(--auth-ink-soft)]">
                     پروانه‌تان قبلاً تأیید شده؟{" "}
-                    <button type="button" onClick={() => sweepTo("login", "lawyer")} className="font-extrabold text-[var(--accent)] hover:underline">
+                    <button type="button" onClick={() => sweepTo("login", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">
                       ورود وکیل
                     </button>
                   </p>
@@ -584,11 +584,11 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
 
               <p className="mt-4 text-center text-[10px] leading-5 text-[var(--auth-ink-soft)]">
                 با ورود یا ثبت‌نام،{" "}
-                <Link href="/legal/terms" className="font-bold text-[var(--accent)] hover:underline">
+                <Link href="/legal/terms" className="font-bold text-[var(--accent-text)] hover:underline">
                   قوانین و مقررات
                 </Link>{" "}
                 و{" "}
-                <Link href="/legal/privacy" className="font-bold text-[var(--accent)] hover:underline">
+                <Link href="/legal/privacy" className="font-bold text-[var(--accent-text)] hover:underline">
                   حریم خصوصی
                 </Link>{" "}
                 دادبان را می‌پذیرید.

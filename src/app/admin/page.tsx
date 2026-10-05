@@ -83,7 +83,7 @@ export default async function AdminPage() {
           {stats.map((st) => (
             <Link key={st.label} href={st.href}>
               <Card hover className="flex items-center gap-3">
-                <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${st.tone === "primary" ? "bg-primary-soft text-primary" : st.tone === "accent" ? "bg-accent-soft text-accent" : st.tone === "success" ? "bg-success/15 text-success" : "bg-surface-2 text-foreground-soft"}`}>
+                <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${st.tone === "primary" ? "bg-primary-soft text-primary" : st.tone === "accent" ? "bg-accent-soft text-accent-text" : st.tone === "success" ? "bg-success/15 text-success" : "bg-surface-2 text-foreground-soft"}`}>
                   <Icon name={st.icon} className="h-5 w-5" />
                 </span>
                 <span>

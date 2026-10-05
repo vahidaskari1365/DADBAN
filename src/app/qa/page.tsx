@@ -91,7 +91,7 @@ export default async function QaPage() {
               </div>
 
               <div className="mt-3 flex items-center gap-4 text-xs text-muted">
-                <span className="inline-flex items-center gap-1"><Icon name="star" className="h-3.5 w-3.5 text-accent" /> {faNum(q.helpful)} مفید</span>
+                <span className="inline-flex items-center gap-1"><Icon name="star" className="h-3.5 w-3.5 text-accent-text" /> {faNum(q.helpful)} مفید</span>
                 <span className="inline-flex items-center gap-1"><Icon name="book" className="h-3.5 w-3.5" /> {faNum(q.views.toLocaleString("en-US"))} بازدید</span>
                 <Badge tone="neutral">{q.category}</Badge>
               </div>
@@ -103,7 +103,7 @@ export default async function QaPage() {
           <AskForm />
           <div className="rounded-2xl border border-border bg-primary-soft/50 p-5">
             <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Icon name="bolt" className="h-4 w-4 text-accent" /> پاسخ فوری می‌خواهید؟
+              <Icon name="bolt" className="h-4 w-4 text-accent-text" /> پاسخ فوری می‌خواهید؟
             </h3>
             <p className="mt-1.5 text-xs leading-5 text-muted">برای پاسخ آنی و تخصصی، مشاوره آنلاین رزرو کنید.</p>
             <Link href="/consultation" className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover">

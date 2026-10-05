@@ -8,9 +8,17 @@ export function AskForm() {
   const [q, setQ] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const submit = async () => {
-    if (!q.trim()) return;
+    /* قانون skill-kit: دکمه ارسال تا شروع درخواست فعال می‌ماند؛
+       اعتبارسنجی هنگام submit + خطای درون‌خطی با aria-live */
+    if (loading) return;
+    if (!q.trim()) {
+      setError("لطفاً ابتدا سؤال خود را بنویسید.");
+      return;
+    }
+    setError(null);
     setLoading(true);
     try {
       await fetch("/api/qa", {
@@ -46,14 +54,26 @@ export function AskForm() {
         <Icon name="chat" className="h-4 w-4 text-primary" /> سؤال حقوقی خود را بپرسید
       </h3>
       <p className="mt-1 text-xs text-muted">سؤال شما توسط وکلای متخصص بررسی و پاسخ داده می‌شود.</p>
+      <label htmlFor="ask-question" className="sr-only">متن سؤال حقوقی شما</label>
       <textarea
+        id="ask-question"
         value={q}
-        onChange={(e) => setQ(e.target.value)}
+        onChange={(e) => {
+          setQ(e.target.value);
+          if (error) setError(null);
+        }}
         rows={3}
         placeholder="سؤال خود را بنویسید…"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? "ask-question-error" : undefined}
         className="mt-3 w-full resize-y rounded-xl border border-border-strong bg-background p-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
       />
-      <Button onClick={submit} disabled={loading || !q.trim()} icon="send" className="mt-3 w-full" size="sm">
+      <div aria-live="polite" id="ask-question-error">
+        {error && (
+          <p className="mt-2 text-xs font-bold text-danger">{error}</p>
+        )}
+      </div>
+      <Button onClick={submit} disabled={loading} icon="send" className="mt-3 w-full" size="sm">
         {loading ? "در حال ارسال…" : "ارسال سؤال"}
       </Button>
     </div>

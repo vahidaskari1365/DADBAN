@@ -41,7 +41,7 @@ export default async function LegalFormPage({ params }: { params: Promise<{ slug
             </div>
           </Card>
           <Card hover={false}>
-            <h2 className="flex items-center gap-2 text-lg font-bold text-foreground"><Icon name="bolt" className="h-5 w-5 text-accent" /> مراحل تنظیم</h2>
+            <h2 className="flex items-center gap-2 text-lg font-bold text-foreground"><Icon name="bolt" className="h-5 w-5 text-accent-text" /> مراحل تنظیم</h2>
             <ol className="mt-4 grid gap-3 sm:grid-cols-2">
               {f.steps.map((s, i) => (
                 <li key={s} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3">

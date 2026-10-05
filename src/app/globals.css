@@ -15,11 +15,13 @@
   --surface-2: #eef2f8;
   --surface-3: #e3e9f3;
   --border: #dce4ef;
-  --border-strong: #c4d0e2;
+  /* WCAG 2.2 AA (Intopia): مرز کامپوننت‌ها ≥3:1 روی سفید */
+  --border-strong: #8093aa;
   --foreground: #0e1d33;
   --foreground-soft: #2a3c54;
   --muted: #5a6b82;
-  --muted-soft: #7c8aa0;
+  /* WCAG 1.4.3 — ≥4.5:1 روی پس‌زمینه روشن (متن‌های کم‌رنگ کوچک) */
+  --muted-soft: #5e6e86;
 
   --primary: #15365d;
   --primary-hover: #0f2a48;
@@ -30,6 +32,8 @@
   --accent-hover: #946809;
   --accent-soft: #f8efd8;
   --accent-foreground: #2a2005;
+  /* طلاییِ متنِ کوچک — ≥4.5:1 روی روشن (خودِ accent فقط 3.6:1 است، برای متن درشت/پس‌زمینه) */
+  --accent-text: #8a6209;
 
   --success: #1d7a4d;
   --danger: #b42318;
@@ -48,11 +52,13 @@
   --surface-2: #242429;
   --surface-3: #2d2d33;
   --border: #33333a;
-  --border-strong: #44444d;
+  /* WCAG 2.2 AA — مرز ورودی‌ها ≥3:1 روی سطح تیره */
+  --border-strong: #6a6a76;
   --foreground: #ededf0;
   --foreground-soft: #d2d2d8;
   --muted: #9b9ba4;
-  --muted-soft: #71717b;
+  /* ≥4.5:1 روی زمینه تیره */
+  --muted-soft: #8b8b96;
 
   --primary: #7aa7f0;
   --primary-hover: #93baF4;
@@ -63,6 +69,8 @@
   --accent-hover: #efca78;
   --accent-soft: #2a230f;
   --accent-foreground: #16110a;
+  /* در تیره همان طلایی روشن کنتراست کافی دارد */
+  --accent-text: #eec97b;
 
   --success: #34d399;
   --danger: #f87171;
@@ -93,6 +101,7 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-text: var(--accent-text);
 
   --color-success: var(--success);
   --color-danger: var(--danger);
@@ -162,6 +171,17 @@ body {
 }
 .card-shadow { box-shadow: var(--shadow-card); }
 .text-balance { text-wrap: balance; }
+
+/* عناوین چندخطی متوازن — خوانایی بهتر (skill-kit: text-wrap-balance-headings) */
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+/* اعداد قیمت/آمار با عرض یکنواخت — جدول‌های قیمت و مقایسه */
+.tnum {
+  font-feature-settings: "ss01", "tnum";
+  font-variant-numeric: tabular-nums;
+}
 
 /* Soft page wash for a calm, premium feel */
 .page-wash {

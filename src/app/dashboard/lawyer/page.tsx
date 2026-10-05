@@ -145,7 +145,7 @@ export default async function LawyerDashboard() {
         <Card hover={false} className="border-accent/30 bg-accent-soft/40">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold uppercase tracking-wide text-accent">گام بعدی برای وکلا</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-accent-text">گام بعدی برای وکلا</p>
               <h3 className="mt-1 font-bold text-foreground">حساب شما به پروفایل حرفه‌ای متصل نیست</h3>
               <p className="mt-1 text-sm leading-7 text-foreground-soft">
                 با اتصال حساب، پروفایل عمومی‌تان را ویرایش کنید: تخصص‌ها، خدمات، تعرفه مشاوره متنی/صوتی/تصویری و استان.
@@ -204,7 +204,7 @@ export default async function LawyerDashboard() {
         <Card hover={false}>
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 font-bold text-foreground">
-              <Icon name="mail" className="h-5 w-5 text-accent" /> درخواست‌های مشاوره جدید
+              <Icon name="mail" className="h-5 w-5 text-accent-text" /> درخواست‌های مشاوره جدید
             </h2>
             {pendingRequests.length > 0 && <Badge tone="accent">{faNum(pendingRequests.length)} مورد</Badge>}
           </div>

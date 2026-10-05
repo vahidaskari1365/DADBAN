@@ -76,7 +76,7 @@ export function ActionHub() {
                   <Icon name={a.icon} className="h-6 w-6" />
                 </span>
                 {featured && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2.5 py-1 text-[10px] font-black text-accent ring-1 ring-accent/40">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2.5 py-1 text-[10px] font-black text-accent-text ring-1 ring-accent/40">
                     <Icon name="sparkles" className="h-3 w-3" />
                     پیشنهاد دادبان
                   </span>
@@ -92,7 +92,7 @@ export function ActionHub() {
                 </p>
                 <span
                   className={`mt-4 inline-flex items-center gap-1.5 text-sm font-bold transition-all duration-300 group-hover:gap-3 ${
-                    featured ? "text-accent" : "text-primary"
+                    featured ? "text-accent-text" : "text-primary"
                   }`}
                 >
                   شروع کنید
@@ -123,7 +123,7 @@ export function TrustStrip() {
       <div className="home-marquee-track flex w-max items-center gap-8 pl-8" dir="rtl">
         {row.map((t, i) => (
           <span key={`${t.text}-${i}`} className="inline-flex shrink-0 items-center gap-2 text-xs font-medium text-muted">
-            <Icon name={t.icon} className="h-4 w-4 text-accent" />
+            <Icon name={t.icon} className="h-4 w-4 text-accent-text" />
             {t.text}
             <span className="mr-4 inline-block h-1 w-1 rounded-full bg-border" aria-hidden />
           </span>

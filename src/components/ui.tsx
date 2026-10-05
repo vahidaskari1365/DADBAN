@@ -60,7 +60,7 @@ export function Badge({
 }) {
   const tones: Record<string, string> = {
     neutral: "bg-surface-2 text-foreground-soft border-border",
-    accent: "bg-accent-soft text-accent border-accent/30",
+    accent: "bg-accent-soft text-accent-text border-accent/30",
     success: "bg-[color-mix(in_oklab,var(--success)_14%,transparent)] text-success border-[color-mix(in_oklab,var(--success)_30%,transparent)]",
     primary: "bg-primary-soft text-primary border-primary/20",
     danger: "bg-[color-mix(in_oklab,var(--danger)_12%,transparent)] text-danger border-[color-mix(in_oklab,var(--danger)_28%,transparent)]",
@@ -90,7 +90,7 @@ export function StarRating({
           <Icon
             key={i}
             name="star"
-            className={`${px} ${i <= Math.round(rating) ? "text-accent" : "text-border-strong"}`}
+            className={`${px} ${i <= Math.round(rating) ? "text-accent-text" : "text-border-strong"}`}
           />
         ))}
       </span>
@@ -229,10 +229,13 @@ export function EmptyState({
   title,
   desc,
   icon = "folder",
+  action,
 }: {
   title: string;
   desc?: string;
   icon?: IconKey;
+  /* OJO best practice: empty state باید «کار انجام دهد» — CTA اختیاری */
+  action?: { href: string; label: string };
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface-2/50 px-6 py-16 text-center">
@@ -241,6 +244,14 @@ export function EmptyState({
       </span>
       <p className="text-base font-semibold text-foreground">{title}</p>
       {desc && <p className="mt-1 max-w-sm text-sm text-muted">{desc}</p>}
+      {action && (
+        <a
+          href={action.href}
+          className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover active:scale-[0.98]"
+        >
+          {action.label}
+        </a>
+      )}
     </div>
   );
 }

@@ -47,7 +47,7 @@ export default async function KeywordsPage({
           <div className="text-xs text-muted">کل کلمات</div>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4">
-          <div className="text-2xl font-bold text-accent">{filtered.length.toLocaleString("fa-IR")}</div>
+          <div className="text-2xl font-bold text-accent-text">{filtered.length.toLocaleString("fa-IR")}</div>
           <div className="text-xs text-muted">کلمات فیلترشده</div>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4">

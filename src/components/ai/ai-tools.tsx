@@ -119,7 +119,7 @@ function VisionTool() {
             <div className="flex h-full min-h-56 items-center justify-center"><Spinner label="هوش مصنوعی در حال مطالعه‌ی سند است…" /></div>
           ) : result ? (
             <div className="space-y-3">
-              <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="sparkles" className="h-4 w-4 text-accent" /> تحلیل هوش مصنوعی</h4>
+              <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="sparkles" className="h-4 w-4 text-accent-text" /> تحلیل هوش مصنوعی</h4>
               <p className="whitespace-pre-wrap text-sm leading-7 text-foreground-soft">{result}</p>
             </div>
           ) : (
@@ -293,7 +293,7 @@ function VoiceTool() {
     <div className="grid gap-6 lg:grid-cols-2">
       {/* متن به گفتار */}
       <Card hover={false} className="space-y-4">
-        <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="video" className="h-4 w-4 text-accent" /> متن به گفتار</h4>
+        <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="video" className="h-4 w-4 text-accent-text" /> متن به گفتار</h4>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value.slice(0, 1024))}
@@ -314,7 +314,7 @@ function VoiceTool() {
 
       {/* گفتار به متن */}
       <Card hover={false} className="space-y-4">
-        <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="chat" className="h-4 w-4 text-accent" /> گفتار به متن</h4>
+        <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="chat" className="h-4 w-4 text-accent-text" /> گفتار به متن</h4>
         <p className="text-xs leading-6 text-muted">دکمه را بزنید، سؤال حقوقی خود را بگویید و دوباره بزنید تا متن آن استخراج شود.</p>
         <div className="flex items-center justify-center py-2">
           <button

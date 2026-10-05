@@ -90,7 +90,7 @@ function LawyerRow({ l, reason }: { l: LawyerOpt; reason?: string }) {
           {!!l.experienceYears && <span>{faNum(l.experienceYears)} سال سابقه</span>}
         </span>
         {reason && (
-          <span className="mt-1.5 flex items-start gap-1 rounded-xl bg-accent-soft px-2 py-1 text-[11px] font-semibold leading-5 text-accent">
+          <span className="mt-1.5 flex items-start gap-1 rounded-xl bg-accent-soft px-2 py-1 text-[11px] font-semibold leading-5 text-accent-text">
             <Icon name="sparkles" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             پیشنهاد برای مشکل شما: {reason}
           </span>

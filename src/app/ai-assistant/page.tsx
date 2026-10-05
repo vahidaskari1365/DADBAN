@@ -57,7 +57,7 @@ function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-border bg-surface p-5">
           <h4 className="flex items-center gap-2 text-sm font-bold text-foreground">
-            <Icon name="bolt" className="h-4 w-4 text-accent" /> مراحل اقدام
+            <Icon name="bolt" className="h-4 w-4 text-accent-text" /> مراحل اقدام
           </h4>
           <ol className="mt-3 space-y-3">
             {g.steps.map((s, i) => (
@@ -277,7 +277,11 @@ function AIAssistantContent() {
 
   const ask = async (q?: string) => {
     const query = (q ?? input).trim();
-    if (!query) return;
+    /* skill-kit submit-button-state: اعتبارسنجی هنگام submit + پیام قابل‌فهم */
+    if (!query) {
+      setError("برای شروع گفتگو، لطفاً سؤال حقوقی خود را بنویسید.");
+      return;
+    }
     setInput(query);
     setLoading(true);
     setError(null);
@@ -374,7 +378,11 @@ function AIAssistantContent() {
   };
 
   const analyze = async () => {
-    if (contractLoading || (!contractFile && !contractText.trim())) return;
+    if (contractLoading) return;
+    if (!contractFile && !contractText.trim()) {
+      setError("برای تحلیل قرارداد، فایل بارگذاری کنید یا متن قرارداد را وارد کنید.");
+      return;
+    }
     if (contractFile) {
       const fd = new FormData();
       fd.append("file", contractFile);
@@ -406,7 +414,7 @@ function AIAssistantContent() {
       <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-10">
         <Container>
           <div className="mx-auto max-w-2xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+            <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
               <Icon name="sparkles" className="h-4 w-4" /> دستیار هوش مصنوعی حقوقی دادبان
             </span>
             <h1 className="mt-4 text-2xl font-extrabold text-foreground sm:text-3xl">
@@ -477,14 +485,14 @@ function AIAssistantContent() {
                       </button>
                     ))}
                   </div>
-                  <Button onClick={() => ask()} disabled={loading || !input.trim()} icon="send">
+                  <Button onClick={() => ask()} disabled={loading} icon="send">
                     {loading ? "در حال بررسی…" : "تحلیل کن"}
                   </Button>
                 </div>
               </Card>
 
               {error && (
-                <div className="rounded-2xl border border-danger/30 bg-danger/5 p-4 text-sm text-danger">
+                <div role="alert" className="rounded-2xl border border-danger/30 bg-danger/5 p-4 text-sm text-danger">
                   {error}
                 </div>
               )}
@@ -501,7 +509,7 @@ function AIAssistantContent() {
               {llmAnswer && (
                 <Card hover={false} className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent-text">
                       <Icon name="sparkles" className="h-4 w-4" />
                     </span>
                     <span className="text-sm font-bold text-foreground">پاسخ دستیار هوشمند</span>
@@ -577,7 +585,7 @@ function AIAssistantContent() {
 
                 {contractOcr !== null && (
                   <div className="rounded-xl border border-accent/30 bg-accent-soft/30 px-4 py-3 text-center">
-                    <p className="text-sm font-bold text-accent">در حال خواندن متن عکس با هوش مصنوعی… {contractOcr}٪</p>
+                    <p className="text-sm font-bold text-accent-text">در حال خواندن متن عکس با هوش مصنوعی… {contractOcr}٪</p>
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
                       <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(5, contractOcr)}%` }} />
                     </div>
@@ -624,7 +632,7 @@ function AIAssistantContent() {
                         : "فایل انتخاب‌شده آماده تحلیل است"
                       : `${contractText.length} کاراکتر`}
                   </p>
-                  <Button onClick={analyze} disabled={contractLoading || (!contractFile && !contractText.trim())} icon="file">
+                  <Button onClick={analyze} disabled={contractLoading} icon="file">
                     {contractLoading
                       ? contractFile && contractFile.type.startsWith("image/")
                         ? "در حال خواندن عکس و تحلیل…"
@@ -639,7 +647,7 @@ function AIAssistantContent() {
               </Card>
 
               {contractError && (
-                <div className="rounded-2xl border border-danger/30 bg-danger/5 p-4 text-sm text-danger">
+                <div role="alert" className="rounded-2xl border border-danger/30 bg-danger/5 p-4 text-sm text-danger">
                   {contractError}
                 </div>
               )}
@@ -653,7 +661,7 @@ function AIAssistantContent() {
               {contractAnalysis && (
                 <Card hover={false} className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent-text">
                       <Icon name="sparkles" className="h-4 w-4" />
                     </span>
                     <span className="text-sm font-bold text-foreground">تحلیل هوشمند قرارداد</span>

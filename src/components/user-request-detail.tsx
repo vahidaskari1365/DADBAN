@@ -212,7 +212,7 @@ export default function UserRequestDetail({
 
       <Card hover={false}>
         <h3 className="flex items-center gap-2 font-bold text-foreground">
-          <Icon name="clock" className="h-5 w-5 text-accent" /> تاریخچه درخواست
+          <Icon name="clock" className="h-5 w-5 text-accent-text" /> تاریخچه درخواست
         </h3>
         <div className="mt-4">
           <Timeline events={events} />

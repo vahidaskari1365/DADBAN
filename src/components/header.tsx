@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -55,6 +55,11 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  /* Intopia — Keyboard & Focus: درِاور مودال است؛ فوکوس هنگام باز شدن داخل
+     می‌رود، Trap می‌شود، با Escape بسته می‌شود و به دکمهٔ فراخوان برمی‌گردد */
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const drawerCloseRef = useRef<HTMLButtonElement>(null);
   // بستن منوها هنگام تغییر مسیر — الگوی «تنظیم state در حین رندر» بدون effect
   const [prevPathname, setPrevPathname] = useState(pathname);
   if (prevPathname !== pathname) {
@@ -75,6 +80,37 @@ export function Header() {
     return () => {
       document.body.style.overflow = "";
     };
+  }, [mobileOpen]);
+
+  /* مدیریت فوکوس درِاور مودال (WCAG 2.4.3 / 2.1.2) */
+  useEffect(() => {
+    if (!mobileOpen) return;
+    drawerCloseRef.current?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        setMobileOpen(false);
+        hamburgerRef.current?.focus();
+        return;
+      }
+      if (e.key === "Tab" && drawerRef.current) {
+        const focusables = drawerRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [mobileOpen]);
 
   return (
@@ -146,7 +182,7 @@ export function Header() {
                     aria-current={pathname === item.href ? "page" : undefined}
                     className={
                       item.ai
-                        ? "ml-1 inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-3.5 py-1.5 text-sm font-bold text-accent shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-accent/50 hover:bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] hover:shadow-md"
+                        ? "ml-1 inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-3.5 py-1.5 text-sm font-bold text-accent-text shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-accent/50 hover:bg-[color-mix(in_oklab,var(--accent)_18%,transparent)] hover:shadow-md"
                         : `flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                             pathname === item.href
                               ? "bg-surface-2 text-foreground"
@@ -188,18 +224,20 @@ export function Header() {
           {/* CTA کوچک موبایل — کنار آیکون منو */}
           <Link
             href="/ai-assistant"
-            className="inline-flex items-center gap-1 rounded-xl border border-accent/30 bg-accent-soft px-3 py-2.5 text-xs font-bold text-accent transition-all active:scale-95 lg:hidden"
+            className="inline-flex items-center gap-1 rounded-xl border border-accent/30 bg-accent-soft px-3 py-2.5 text-xs font-bold text-accent-text transition-all active:scale-95 lg:hidden"
           >
             شروع مسیر
             <Icon name="arrow" className="h-3.5 w-3.5" />
           </Link>
           {/* آیکون منو — موبایل/تبلت، حداقل 44px touch target */}
           <button
+            ref={hamburgerRef}
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
             className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface text-foreground transition-all active:scale-90 lg:hidden"
-            aria-label="منو"
+            aria-label={mobileOpen ? "بستن منو" : "باز کردن منو"}
             aria-expanded={mobileOpen}
+            aria-controls="mobile-main-menu"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               {mobileOpen ? <path d="M6 6l12 12M6 18 18 6" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
@@ -220,6 +258,8 @@ export function Header() {
             />
             {/* drawer از راست (RTL) */}
             <div
+              ref={drawerRef}
+              id="mobile-main-menu"
               role="dialog"
               aria-modal="true"
               aria-label="منوی اصلی"
@@ -229,8 +269,12 @@ export function Header() {
             <div className="flex items-center justify-between border-b border-border p-4">
               <Logo />
               <button
+                ref={drawerCloseRef}
                 type="button"
-                onClick={() => setMobileOpen(false)}
+                onClick={() => {
+                  setMobileOpen(false);
+                  hamburgerRef.current?.focus();
+                }}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted hover:bg-surface-2 active:scale-90"
                 aria-label="بستن منو"
               >
@@ -266,7 +310,7 @@ export function Header() {
                     href={item.href}
                     className={
                       item.ai
-                        ? "mb-3 flex items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent-soft px-4 py-3.5 text-sm font-bold text-accent active:scale-95"
+                        ? "mb-3 flex items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent-soft px-4 py-3.5 text-sm font-bold text-accent-text active:scale-95"
                         : "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground-soft hover:bg-surface-2 active:bg-surface-3"
                     }
                   >

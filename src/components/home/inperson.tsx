@@ -87,7 +87,7 @@ export function InPersonServices({ services, totalCount }: { services: InPersonS
                 <h3 className="mt-3 text-sm font-black leading-6 text-foreground">{s.title}</h3>
                 <p className="mt-1 line-clamp-2 flex-1 text-[11px] leading-5 text-muted">{s.desc}</p>
                 <div className="mt-3 flex items-center justify-between border-t border-border pt-2.5">
-                  <span className="text-[11px] font-bold text-accent">از {faPrice(s.basePrice)} تومان</span>
+                  <span className="text-[11px] font-bold text-accent-text">از {faPrice(s.basePrice)} تومان</span>
                   <span className="inline-flex items-center gap-1 text-[10px] text-muted">
                     <Icon name="clock" className="h-3 w-3" />
                     {s.estimatedTime}

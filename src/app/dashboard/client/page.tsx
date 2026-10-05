@@ -79,7 +79,7 @@ export default async function ClientDashboard() {
       <Card hover={false} className="border-primary/30 bg-primary-soft/40">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-wide text-accent">اقدام بعدی شما</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-accent-text">اقدام بعدی شما</p>
             <h2 className="mt-1 font-bold text-foreground">{nextAction.action}</h2>
             <p className="mt-1 text-sm leading-7 text-foreground-soft">{nextAction.detail}</p>
           </div>
@@ -98,7 +98,7 @@ export default async function ClientDashboard() {
             <>
               <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${
                 s.tone === "primary" ? "bg-primary-soft text-primary" :
-                s.tone === "accent" ? "bg-accent-soft text-accent" :
+                s.tone === "accent" ? "bg-accent-soft text-accent-text" :
                 s.tone === "success" ? "bg-success/15 text-success" : "bg-surface-2 text-foreground-soft"
               }`}>
                 <Icon name={s.icon} className="h-5 w-5" />
@@ -148,7 +148,7 @@ export default async function ClientDashboard() {
         </Card>
         {/* Recent activity */}
         <Card hover={false}>
-          <h2 className="flex items-center gap-2 font-bold text-foreground"><Icon name="clock" className="h-5 w-5 text-accent" /> فعالیت‌های اخیر</h2>
+          <h2 className="flex items-center gap-2 font-bold text-foreground"><Icon name="clock" className="h-5 w-5 text-accent-text" /> فعالیت‌های اخیر</h2>
           <div className="mt-4 space-y-2">
             {recentItems.length > 0 ? recentItems.map((m, i) => (
               <div key={i} className="flex gap-3 rounded-xl p-2.5 bg-surface-2/50">
@@ -191,8 +191,8 @@ export default async function ClientDashboard() {
         </Card>
         <Card hover={false}>
           <div className="flex items-center justify-between">
-            <h2 className="flex items-center gap-2 font-bold text-foreground"><Icon name="chat" className="h-5 w-5 text-accent" /> مشاوره‌های من</h2>
-            <Link href="/consultation" className="inline-flex items-center gap-1 rounded-lg bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent"><Icon name="calendar" className="h-3.5 w-3.5" /> رزرو مشاوره</Link>
+            <h2 className="flex items-center gap-2 font-bold text-foreground"><Icon name="chat" className="h-5 w-5 text-accent-text" /> مشاوره‌های من</h2>
+            <Link href="/consultation" className="inline-flex items-center gap-1 rounded-lg bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent-text"><Icon name="calendar" className="h-3.5 w-3.5" /> رزرو مشاوره</Link>
           </div>
           <div className="mt-4 space-y-2">
             {myConsults.length > 0 ? myConsults.map((c) => (
@@ -205,7 +205,7 @@ export default async function ClientDashboard() {
                 <Badge tone="accent">{CONSULT_STATUS_FA[c.status] ?? c.status}</Badge>
               </div>
             )) : (
-              <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">مشاوره‌ای ثبت نکرده‌اید. <Link href="/consultation" className="text-accent hover:underline">رزرو مشاوره آنلاین</Link></p>
+              <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">مشاوره‌ای ثبت نکرده‌اید. <Link href="/consultation" className="text-accent-text hover:underline">رزرو مشاوره آنلاین</Link></p>
             )}
           </div>
         </Card>

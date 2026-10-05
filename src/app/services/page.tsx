@@ -50,7 +50,7 @@ export default async function ServicesCatalog() {
     <div className="min-h-screen pb-16">
       <section className="border-b border-border bg-gradient-to-b from-primary-soft/60 to-background">
         <Container className="py-12 sm:py-16">
-          <span className="inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+          <span className="inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
             خدمات پیگیری و انجام امور
           </span>
           <h1 className="mt-4 max-w-3xl text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">

@@ -279,7 +279,7 @@ export function SituationRouter() {
               className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition-all duration-250 active:scale-95 sm:text-[13px] ${
                 isActive
                   ? "border-accent bg-accent text-accent-foreground shadow-[0_8px_24px_-8px_color-mix(in_oklab,var(--accent)_55%,transparent)]"
-                  : "border-border bg-surface text-foreground-soft hover:border-accent/50 hover:bg-accent-soft/50 hover:text-accent"
+                  : "border-border bg-surface text-foreground-soft hover:border-accent/50 hover:bg-accent-soft/50 hover:text-accent-text"
               }`}
             >
               <Icon name={p.icon} className="h-4 w-4" />
@@ -311,7 +311,7 @@ export function SituationRouter() {
                     <Icon name={plan.icon} className="h-5.5 w-5.5" />
                   </span>
                   <div>
-                    <span className="text-[11px] font-bold text-accent">مسیر پیشنهادی دادبان</span>
+                    <span className="text-[11px] font-bold text-accent-text">مسیر پیشنهادی دادبان</span>
                     <h3 className="text-lg font-black text-foreground sm:text-xl">{plan.headline}</h3>
                   </div>
                 </div>
@@ -329,14 +329,14 @@ export function SituationRouter() {
                     transition={{ ...spring, delay: 0.1 + i * 0.09 }}
                     className="relative flex items-start gap-4"
                   >
-                    <span className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-accent/40 bg-background text-sm font-black text-accent">
+                    <span className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-accent/40 bg-background text-sm font-black text-accent-text">
                       {i + 1}
                     </span>
                     <div className="min-w-0 flex-1 rounded-2xl border border-border bg-background/60 p-4 transition-colors duration-300 hover:border-accent/30">
                       <div className="flex flex-wrap items-center gap-2">
                         <h4 className="text-sm font-black text-foreground">{s.title}</h4>
                         {s.tag && (
-                          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold text-accent">
+                          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold text-accent-text">
                             {s.tag}
                           </span>
                         )}
@@ -356,7 +356,7 @@ export function SituationRouter() {
 
               {/* مسیر جایگزین */}
               <p className="mt-6 flex flex-wrap items-center gap-1.5 border-t border-border pt-4 text-xs text-muted">
-                <Icon name="sparkles" className="h-3.5 w-3.5 text-accent" />
+                <Icon name="sparkles" className="h-3.5 w-3.5 text-accent-text" />
                 موضوعت در فهرست نیست؟
                 <Link href="/ai-assistant" className="font-bold text-primary hover:text-primary-hover">
                   همین‌جا از دستیار بپرس — رایگان

@@ -31,7 +31,7 @@ export default function NotificationsPage() {
               <div className={`flex items-start gap-3 rounded-2xl border bg-surface p-4 card-shadow ${n.unread ? "border-primary/30" : "border-border"}`}>
                 <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                   n.tone === "primary" ? "bg-primary-soft text-primary" :
-                  n.tone === "accent" ? "bg-accent-soft text-accent" :
+                  n.tone === "accent" ? "bg-accent-soft text-accent-text" :
                   n.tone === "danger" ? "bg-[color-mix(in_oklab,var(--danger)_14%,transparent)] text-danger" :
                   n.tone === "success" ? "bg-[color-mix(in_oklab,var(--success)_14%,transparent)] text-success" : "bg-surface-2 text-foreground-soft"
                 }`}>

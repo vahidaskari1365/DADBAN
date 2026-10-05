@@ -31,7 +31,7 @@ export function HowItWorks() {
   return (
     <section aria-labelledby="how-it-works-title" className="rounded-3xl border border-border bg-surface p-6 card-shadow sm:p-10">
       <div className="text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-bold text-accent">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-bold text-accent-text">
           <Icon name="bolt" className="h-3.5 w-3.5" />
           ساده مثل ۱، ۲، ۳
         </span>

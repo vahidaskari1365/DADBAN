@@ -71,7 +71,7 @@ export default function ContactPage() {
                 </label>
                 <label className="flex flex-col gap-1.5">
                   <span className="text-xs font-semibold text-muted">شماره تماس</span>
-                  <input value={form.phone} onChange={(e) => set("phone", e.target.value)} dir="ltr" className={fieldCls + " text-right"} placeholder="09123456789" />
+                  <input value={form.phone} onChange={(e) => set("phone", e.target.value)} type="tel" inputMode="tel" autoComplete="tel" dir="ltr" className={fieldCls + " text-right"} placeholder="09123456789" />
                 </label>
               </div>
               <label className="flex flex-col gap-1.5">

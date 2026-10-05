@@ -58,7 +58,7 @@ export function LawyerPicksFlow({
     <div className="w-full space-y-3" role="region" aria-label="پیشنهاد وکیل توسط هوش مصنوعی">
       {/* پیام پیشنهاد — سبک پیام دستیار */}
       <div className="flex items-start gap-2">
-        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-text">
           <Icon name="sparkles" className="h-4 w-4" />
         </span>
         <p className="text-sm leading-6 text-foreground">
@@ -76,7 +76,7 @@ export function LawyerPicksFlow({
                 </span>
               )}
               {province && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
+                <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent-text">
                   <Icon name="location" className="h-3 w-3" /> استان شما: {province}
                 </span>
               )}
@@ -118,7 +118,7 @@ export function LawyerPicksFlow({
                 </span>
               </span>
               <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-foreground">
-                <Icon name="star" className="h-3.5 w-3.5 text-accent" />
+                <Icon name="star" className="h-3.5 w-3.5 text-accent-text" />
                 {faNum(l.rating.toFixed(1))}
               </span>
               <Icon name="chevron" className="h-4 w-4 shrink-0 rotate-180 text-muted" />
@@ -190,7 +190,7 @@ export function LawyerPicksFlow({
                     <span className="text-sm font-extrabold text-foreground">{l.name}</span>
                     {l.verified && <Icon name="badge" className="h-4 w-4 text-primary" />}
                     {l.topRated && (
-                      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold text-accent">
+                      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold text-accent-text">
                         وکیل برتر
                       </span>
                     )}
@@ -198,7 +198,7 @@ export function LawyerPicksFlow({
                   <span className="mt-0.5 block truncate text-xs text-muted">{l.title}</span>
                   <span className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
                     <span className="inline-flex items-center gap-1 font-bold text-foreground">
-                      <Icon name="star" className="h-3.5 w-3.5 text-accent" />
+                      <Icon name="star" className="h-3.5 w-3.5 text-accent-text" />
                       {faNum(l.rating.toFixed(1))}
                       <span className="font-normal text-muted">({faNum(l.reviewCount)} نظر)</span>
                     </span>

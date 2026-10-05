@@ -46,7 +46,7 @@ export default async function GlossaryTermPage({
       <Container className="grid gap-8 py-12 lg:grid-cols-[1fr_300px]">
         <div className="space-y-6">
           <Card hover={false}>
-            <h2 className="flex items-center gap-2 text-lg font-bold text-foreground"><Icon name="book" className="h-5 w-5 text-accent" /> تعریف تخصصی</h2>
+            <h2 className="flex items-center gap-2 text-lg font-bold text-foreground"><Icon name="book" className="h-5 w-5 text-accent-text" /> تعریف تخصصی</h2>
             <p className="mt-3 text-sm leading-8 text-foreground-soft">{t.pro}</p>
           </Card>
           <Card hover={false} className="bg-primary-soft/40">

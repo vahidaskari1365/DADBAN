@@ -245,7 +245,7 @@ export function PasswordForm() {
 export function LawyerLinkBadge({ linked, href }: { linked: boolean; href?: string }) {
   if (!linked) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
         <Icon name="alert" className="h-3.5 w-3.5" /> متصل نیست
       </span>
     );

@@ -88,8 +88,8 @@ export default async function AboutPage() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {LAYERS.map((l, i) => (
             <Card key={l.title} className="text-center">
-              <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent"><Icon name={l.icon} className="h-5 w-5" /></span>
-              <p className="mt-3 text-xs font-bold text-accent">لایه {i + 1}</p>
+              <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent-text"><Icon name={l.icon} className="h-5 w-5" /></span>
+              <p className="mt-3 text-xs font-bold text-accent-text">لایه {i + 1}</p>
               <h3 className="mt-1 text-sm font-bold text-foreground">{l.title}</h3>
               <p className="mt-1 text-xs leading-5 text-muted">{l.desc}</p>
             </Card>

@@ -68,7 +68,7 @@ export function ArticleBody({ content }: { content: string }) {
       list.ordered ? (
         <ol key={key} className="my-4 list-decimal space-y-1.5 pr-5 text-[15px]">{items}</ol>
       ) : (
-        <ul key={key} className="my-4 list-disc space-y-1.5 pr-5 text-[15px] marker:text-accent">{items}</ul>
+        <ul key={key} className="my-4 list-disc space-y-1.5 pr-5 text-[15px] marker:text-accent-text">{items}</ul>
       ),
     );
     list = null;

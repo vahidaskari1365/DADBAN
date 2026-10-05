@@ -121,7 +121,7 @@ export default async function ContractDetail({
 
           <section>
             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-              <Icon name="bolt" className="h-5 w-5 text-accent" /> مراحل تنظیم
+              <Icon name="bolt" className="h-5 w-5 text-accent-text" /> مراحل تنظیم
             </h2>
             <ol className="mt-4 grid gap-3 sm:grid-cols-2">
               {c.steps.map((s, i) => (

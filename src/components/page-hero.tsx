@@ -38,7 +38,7 @@ export function PageHero({
           </nav>
         )}
         {badge && (
-          <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+          <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
             <Icon name="sparkles" className="h-3.5 w-3.5" /> {badge}
           </span>
         )}

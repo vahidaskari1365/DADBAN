@@ -33,7 +33,7 @@ export function CommonProblems() {
             <span className="flex-1 text-sm font-semibold text-foreground-soft transition-colors group-hover:text-foreground">
               {p.text}
             </span>
-            <Icon name="arrow" className="h-4 w-4 shrink-0 text-muted opacity-50 transition-all duration-300 group-hover:-translate-x-1 group-hover:opacity-100 group-hover:text-accent" />
+            <Icon name="arrow" className="h-4 w-4 shrink-0 text-muted opacity-50 transition-all duration-300 group-hover:-translate-x-1 group-hover:opacity-100 group-hover:text-accent-text" />
           </a>
         </Reveal>
       ))}

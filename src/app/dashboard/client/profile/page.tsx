@@ -141,7 +141,7 @@ export default async function ClientProfilePage() {
       <Card hover={false}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 font-bold text-foreground">
-            <Icon name="star" className="h-5 w-5 text-accent" /> وکلای نشان‌شده من
+            <Icon name="star" className="h-5 w-5 text-accent-text" /> وکلای نشان‌شده من
           </h2>
           <Button href="/lawyers" variant="ghost" size="sm" icon="plus">
             افزودن از دایرکتوری

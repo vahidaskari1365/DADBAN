@@ -83,7 +83,7 @@ export function Footer() {
             <div className="mt-5 grid grid-cols-2 gap-2">
               {FEATURES.map((f) => (
                 <span key={f.label} className="inline-flex items-center gap-2 text-xs text-foreground-soft">
-                  <Icon name={f.icon} className="h-4 w-4 text-accent" />
+                  <Icon name={f.icon} className="h-4 w-4 text-accent-text" />
                   {f.label}
                 </span>
               ))}

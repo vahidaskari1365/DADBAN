@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -59,13 +59,23 @@ const MENU_GROUPS: MenuGroup[] = [
 export function SiteMenu() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  /* Intopia Keyboard & Focus: فوکوس هنگام باز شدن به دکمهٔ بستن،
+     هنگام بستن به دکمهٔ فراخوان (FAB) برمی‌گردد */
+  const fabRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   // بستن با Escape + قفل اسکرول بدنه
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        fabRef.current?.focus();
+      }
+    };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
@@ -84,15 +94,18 @@ export function SiteMenu() {
     <>
       {/* دکمه شناور — بالای FAB «مشاور همراه» (چت) چیده می‌شود تا تداخل نکند */}
       <motion.button
+        ref={fabRef}
         type="button"
         onClick={() => setOpen(true)}
         aria-label="همه خدمات دادبان"
+        aria-haspopup="dialog"
+        aria-expanded={open}
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 1.1, type: "spring", stiffness: 260, damping: 18 }}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.9 }}
-        className="fixed bottom-40 right-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-accent/40 bg-surface/90 text-accent shadow-[var(--shadow-lift)] backdrop-blur sm:bottom-24 sm:right-6"
+        className="fixed bottom-40 right-4 z-40 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-accent/40 bg-surface/90 text-accent-text shadow-[var(--shadow-lift)] backdrop-blur sm:bottom-24 sm:right-6"
       >
         <Icon name="menu" className="h-6 w-6" />
         <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
@@ -135,7 +148,7 @@ export function SiteMenu() {
                 {/* هدر */}
                 <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/95 p-4 backdrop-blur">
                   <div className="flex items-center gap-2.5">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent-text">
                       <Icon name="menu" className="h-5 w-5" />
                     </span>
                     <div>
@@ -144,8 +157,12 @@ export function SiteMenu() {
                     </div>
                   </div>
                   <button
+                    ref={closeRef}
                     type="button"
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpen(false);
+                      fabRef.current?.focus();
+                    }}
                     aria-label="بستن منو"
                     className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted transition-all hover:bg-surface-2 hover:text-foreground active:scale-90"
                   >
@@ -179,7 +196,7 @@ export function SiteMenu() {
                             >
                               <span
                                 className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-110 ${
-                                  item.icon === "sparkles" ? "bg-accent-soft text-accent" : "bg-primary-soft text-primary"
+                                  item.icon === "sparkles" ? "bg-accent-soft text-accent-text" : "bg-primary-soft text-primary"
                                 }`}
                               >
                                 <Icon name={item.icon} className="h-4 w-4" />

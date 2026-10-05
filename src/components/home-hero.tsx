@@ -89,7 +89,7 @@ export function HomeHero() {
               اول مسیر درست
             </span>
             <svg
-              className="absolute -bottom-2 right-0 h-3 w-full text-accent/50"
+              className="absolute -bottom-2 right-0 h-3 w-full text-accent-text/50"
               viewBox="0 0 200 12"
               preserveAspectRatio="none"
               fill="none"

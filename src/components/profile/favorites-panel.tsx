@@ -119,7 +119,7 @@ export function FavoritesPanel() {
               type="button"
               onClick={() => void remove(l.id)}
               disabled={busyId === l.id}
-              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-medium text-muted transition-colors hover:bg-accent-soft hover:text-accent disabled:opacity-50"
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-medium text-muted transition-colors hover:bg-accent-soft hover:text-accent-text disabled:opacity-50"
             >
               <Icon name="x" className="h-3.5 w-3.5" /> حذف
             </button>
@@ -199,7 +199,7 @@ export function FavoriteButton({ lawyerId, lawyerName }: { lawyerId: number; law
       aria-label={saved ? `حذف ${lawyerName} از نشان‌شده‌ها` : `افزودن ${lawyerName} به نشان‌شده‌ها`}
       className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border text-sm font-semibold transition-all disabled:opacity-60 ${
         saved
-          ? "border-accent/40 bg-accent-soft text-accent"
+          ? "border-accent/40 bg-accent-soft text-accent-text"
           : "border-border-strong bg-surface text-foreground hover:bg-surface-2"
       }`}
     >

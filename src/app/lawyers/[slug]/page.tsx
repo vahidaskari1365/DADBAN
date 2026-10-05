@@ -190,7 +190,7 @@ export default async function LawyerProfile({
           {/* Specialties */}
           <section>
             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-              <Icon name="scale" className="h-5 w-5 text-accent" /> حوزه‌های تخصص
+              <Icon name="scale" className="h-5 w-5 text-accent-text" /> حوزه‌های تخصص
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {l.specialties.map((s) => (
@@ -245,7 +245,7 @@ export default async function LawyerProfile({
           <section>
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-                <Icon name="star" className="h-5 w-5 text-accent" /> نظرات کاربران
+                <Icon name="star" className="h-5 w-5 text-accent-text" /> نظرات کاربران
               </h2>
               <span className="text-sm text-muted">{faNum(lawyerReviews.length)} نظر</span>
             </div>
@@ -307,7 +307,7 @@ export default async function LawyerProfile({
 
           <Card hover={false}>
             <h3 className="flex items-center gap-2 font-bold text-foreground">
-              <Icon name="clock" className="h-4 w-4 text-accent" /> زمان‌های آزاد
+              <Icon name="clock" className="h-4 w-4 text-accent-text" /> زمان‌های آزاد
             </h3>
             <div className="mt-3">
               <AvailabilityPanel lawyerSlug={l.slug} />

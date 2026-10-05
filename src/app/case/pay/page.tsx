@@ -241,7 +241,7 @@ function PayContent() {
                       <p className="flex items-center gap-2 text-sm font-bold text-foreground">
                         {g.title}
                         {g.badge && (
-                          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold text-accent">{g.badge}</span>
+                          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold text-accent-text">{g.badge}</span>
                         )}
                       </p>
                       <p className="mt-0.5 text-xs text-muted">{g.desc}</p>

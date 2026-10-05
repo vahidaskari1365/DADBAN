@@ -75,7 +75,12 @@ export default async function ContractsPage({
         </div>
 
         {list.length === 0 ? (
-          <EmptyState title="قراردادی با این فیلتر یافت نشد" icon="document" />
+          <EmptyState
+          title="قراردادی با این فیلتر یافت نشد"
+          icon="document"
+          desc="فیلتر دیگری را امتحان کنید یا قالب سفارشی خود را با قراردادساز بسازید."
+          action={{ href: "/contracts/builder", label: "ساخت قرارداد با قراردادساز" }}
+        />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {list.map((c) => (
@@ -117,7 +122,7 @@ export default async function ContractsPage({
             { icon: "lock", title: "نسخه نهایی محرمانه", desc: "دریافت نسخه نهایی و امن قرارداد." },
           ].map((f) => (
             <div key={f.title} className="flex items-start gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent-text">
                 <Icon name={f.icon as never} className="h-5 w-5" />
               </span>
               <div>

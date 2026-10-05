@@ -76,7 +76,7 @@ export function RelatedLinks({ pathname }: { pathname: string }) {
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {groups.map((group) => (
           <div key={group.title}>
-            <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-accent">{group.title}</h3>
+            <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-accent-text">{group.title}</h3>
             <ul className="space-y-1.5">
               {group.items.map((link) => (
                 <li key={link.href}>
@@ -84,7 +84,7 @@ export function RelatedLinks({ pathname }: { pathname: string }) {
                     href={link.href.startsWith("http") ? link.href : link.href}
                     className="inline-flex items-center gap-1.5 text-sm text-foreground-soft transition-colors hover:text-primary"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-accent" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-accent-text" aria-hidden="true">
                       <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     {link.anchor}

@@ -121,6 +121,7 @@ export default async function LawyersPage({
             title="وکیلی با این فیلترها یافت نشد"
             desc="فیلترها را تغییر دهید یا همه وکلا را مشاهده کنید."
             icon="search"
+            action={{ href: "/consultation", label: "درخواست معرفی وکیل" }}
           />
         ) : (
           <PinMasonry>

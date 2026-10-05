@@ -387,7 +387,7 @@ function ConsultationContent() {
         </label>
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-muted">شماره موبایل</span>
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="09123456789" dir="ltr" className={fieldCls + " text-right"} />
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" autoComplete="tel" dir="ltr" className={fieldCls + " text-right"} placeholder="09123456789" />
         </label>
       </div>
       <label className="mt-3 flex flex-col gap-1.5">
@@ -490,7 +490,7 @@ function ConsultationContent() {
           {/* Payment — must never fake a "paid" state */}
           {result.paymentMode === "sandbox" ? (
             <Card hover={false} className="mt-4 border-accent/40 bg-accent-soft/40 text-right">
-              <p className="flex items-center gap-2 text-xs font-bold text-accent">
+              <p className="flex items-center gap-2 text-xs font-bold text-accent-text">
                 <Icon name="bolt" className="h-4 w-4" /> حالت آزمایکی (SANDBOX)
               </p>
               <p className="mt-1.5 text-xs leading-6 text-foreground-soft">

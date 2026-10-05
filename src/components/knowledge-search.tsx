@@ -128,7 +128,7 @@ export function KnowledgeSearch({ items }: { items: KnowledgeItem[] }) {
                 href={`/knowledge/${a.slug}`}
                 className="group flex flex-col rounded-2xl border border-border bg-surface p-5 card-shadow transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[var(--shadow-lift)]"
               >
-                <div className="flex items-center gap-2 text-xs text-accent">
+                <div className="flex items-center gap-2 text-xs text-accent-text">
                   <Icon name="book" className="h-3.5 w-3.5" /> {a.category}
                 </div>
                 <h3 className="mt-2 flex-1 text-base font-bold leading-7 text-foreground">{a.title}</h3>

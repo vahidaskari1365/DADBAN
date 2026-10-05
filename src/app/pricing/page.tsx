@@ -141,7 +141,7 @@ export default function PricingPage() {
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {REGISTRY.map((r) => (
             <a key={r.title} href="/consultation" className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent-text">
                 <Icon name={r.icon} className="h-5 w-5" />
               </span>
               <div>

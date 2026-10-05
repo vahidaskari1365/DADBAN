@@ -24,7 +24,7 @@ export default async function ManagePage() {
     <div className="min-h-screen bg-background pb-16">
       <div className="border-b border-border bg-gradient-to-b from-primary-soft/50 to-background">
         <Container className="py-8">
-          <span className="inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+          <span className="inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
             خدمات و پیگیری‌ها
           </span>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-foreground">پنل عملیات دادبان</h1>
