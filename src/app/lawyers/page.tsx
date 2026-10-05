@@ -125,7 +125,7 @@ export default async function LawyersPage({
           {lawyerSide && (
             <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-bold text-primary">
               <Icon name="shield" className="h-3.5 w-3.5" />
-              نمای همکاران — برای مشاهدهٔ پروفایل هر وکیل روی کارت او کلیک کنید
+              نمای همکاران — روی کارت هر وکیل کلیک کنید و از پروفایل او «درخواست همکاری / ارجاع پرونده» را ثبت کنید
             </p>
           )}
         </Container>
@@ -175,8 +175,9 @@ export default async function LawyersPage({
                 با پشتیبانی دادبان تماس بگیرید یا پرونده‌های ارجاعی استان خود را در کارتابل پیشنهادها پیگیری کنید.
               </p>
               <div className="mt-5 flex flex-wrap justify-center gap-3">
-                <Button href="/support" icon="shield">پشتیبانی</Button>
+                <Button href="/dashboard/lawyer#collab" icon="link">همکاری و ارجاع من</Button>
                 <Button href="/dashboard/lawyer#offers" variant="outline" icon="mail">کارتابل پیشنهادهای پرونده</Button>
+                <Button href="/support" variant="ghost" icon="shield">پشتیبانی</Button>
               </div>
             </>
           ) : (

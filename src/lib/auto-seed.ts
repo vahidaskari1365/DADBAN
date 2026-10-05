@@ -307,6 +307,10 @@ export async function ensureProfileSchema(): Promise<void> {
     // تیم وکیل — پرونده‌های سپرده‌شده به هر عضو
     `CREATE TABLE IF NOT EXISTS team_case_assignments (id SERIAL PRIMARY KEY, member_user_id INTEGER NOT NULL REFERENCES app_users(id) ON DELETE CASCADE, case_id INTEGER NOT NULL REFERENCES cases(id) ON DELETE CASCADE, created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE UNIQUE INDEX IF NOT EXISTS team_case_assign_uniq ON team_case_assignments (member_user_id, case_id)`,
+    // همکاری و ارجاع پروندهٔ وکیل↔وکیل (دایرکتوری همکاران)
+    `CREATE TABLE IF NOT EXISTS lawyer_referrals (id SERIAL PRIMARY KEY, from_lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, to_lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, kind TEXT NOT NULL DEFAULT 'referral', subject TEXT NOT NULL, description TEXT NOT NULL, city TEXT, budget INTEGER, message TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'pending', response_note TEXT, responded_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS lawyer_referrals_to_idx ON lawyer_referrals (to_lawyer_id, status)`,
+    `CREATE INDEX IF NOT EXISTS lawyer_referrals_from_idx ON lawyer_referrals (from_lawyer_id, status)`,
   ];
   for (const stmt of stmts) {
     try {

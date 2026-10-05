@@ -13,6 +13,8 @@ import { LawyerViewRecorder, LawyerDiscovery } from "@/components/amazon/recentl
 import { StickyCta } from "@/components/amazon/sticky-cta";
 import { TrustLine } from "@/components/amazon/trust-line";
 import { FavoriteButton } from "@/components/profile/favorites-panel";
+import { getCurrentUser } from "@/lib/user-auth";
+import { isLawyerSideRole } from "@/lib/roles";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -70,6 +72,16 @@ export default async function LawyerProfile({
 
   // Increment views (non-blocking)
   db.update(lawyers).set({ views: sql`${lawyers.views} + 1` }).where(eq(lawyers.id, l.id)).then().catch(() => {});
+
+  // نقش بیننده: مالک پروفایل؟ وکیل‌سمت (جریان همکاری)؟ موکل (جریان رزرو)؟
+  let me: Awaited<ReturnType<typeof getCurrentUser>> = null;
+  try {
+    me = await getCurrentUser();
+  } catch {}
+  const isOwner =
+    !!me &&
+    ((me.role === "lawyer" && me.lawyerId === l.id) || (me.role === "team" && me.parentLawyerId === l.id));
+  const isLawyerViewer = !!me && !isOwner && isLawyerSideRole(me.role);
 
   const badges = [
     l.verified && { label: "وکیل تأییدشده", icon: "badge" as const, tone: "primary" as const },
@@ -310,17 +322,40 @@ export default async function LawyerProfile({
               ))}
             </div>
             <FavoriteButton lawyerId={l.id} lawyerName={l.name} />
-            <Button href={`/consultation/book?lawyer=${l.slug}`} icon="calendar" className="w-full">
-              رزرو مشاوره
-            </Button>
-            <div className="grid grid-cols-2 gap-2">
-              <Button href={`/consultation/book?lawyer=${l.slug}&type=chat`} variant="outline" size="sm" icon="chat">
-                پیام
+            {isOwner ? (
+              <Button href="/dashboard/lawyer/profile" icon="badge" className="w-full">
+                ویرایش پروفایل من
               </Button>
-              <Button href={`/case/new?lawyer=${l.slug}`} variant="outline" size="sm" icon="folder">
-                درخواست وکالت
-              </Button>
-            </div>
+            ) : isLawyerViewer ? (
+              <>
+                <Button
+                  href={`/lawyers/${l.slug}/refer`}
+                  icon="link"
+                  className="w-full"
+                  data-testid="refer-cta"
+                >
+                  درخواست همکاری / ارجاع پرونده
+                </Button>
+                <p className="flex items-start gap-1.5 text-[10px] leading-5 text-muted">
+                  <Icon name="shield" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                  درخواست در کارتابل «همکاری و ارجاع» این همکار ثبت می‌شود؛ پاسخ او در پنل شما نمایش داده می‌شود.
+                </p>
+              </>
+            ) : (
+              <>
+                <Button href={`/consultation/book?lawyer=${l.slug}`} icon="calendar" className="w-full">
+                  رزرو مشاوره
+                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button href={`/consultation/book?lawyer=${l.slug}&type=chat`} variant="outline" size="sm" icon="chat">
+                    پیام
+                  </Button>
+                  <Button href={`/case/new?lawyer=${l.slug}`} variant="outline" size="sm" icon="folder">
+                    درخواست وکالت
+                  </Button>
+                </div>
+              </>
+            )}
             <TrustLine compact className="justify-start pt-1" />
           </Card>
 
@@ -370,12 +405,18 @@ export default async function LawyerProfile({
         <LawyerDiscovery excludeSlug={l.slug} />
       </Container>
 
-      {/* CTA چسبان موبایل — رزرو همیشه در دسترس */}
-      <StickyCta
-        href={`/consultation/book?lawyer=${l.slug}`}
-        label={`رزرو مشاوره با ${l.name}`}
-        sub={`از ${faPrice(l.priceChat)} • پرداخت امن • ضمانت بازگشت وجه`}
-      />
+      {/* CTA چسبان موبایل — نقش‌محور: وکیل‌سمت ← درخواست همکاری، موکل ← رزرو */}
+      {!isOwner && (
+        <StickyCta
+          href={isLawyerViewer ? `/lawyers/${l.slug}/refer` : `/consultation/book?lawyer=${l.slug}`}
+          label={isLawyerViewer ? `درخواست همکاری با ${l.name}` : `رزرو مشاوره با ${l.name}`}
+          sub={
+            isLawyerViewer
+              ? "ارجاع کامل پرونده، مشورت تخصصی یا همکاری مشترک"
+              : `از ${faPrice(l.priceChat)} • پرداخت امن • ضمانت بازگشت وجه`
+          }
+        />
+      )}
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }} />
     </>

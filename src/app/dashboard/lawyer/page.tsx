@@ -1,9 +1,10 @@
 import { formatJalaliLong as faDate } from "@/lib/jalali";
+import { sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { cases, consultations, tickets, payments, serviceRequests, managedServices, users, teamCaseAssignments } from "@/db/schema";
-import { desc, eq, inArray, notInArray } from "drizzle-orm";
+import { cases, consultations, tickets, payments, serviceRequests, managedServices, users, teamCaseAssignments, lawyerReferrals } from "@/db/schema";
+import { and, desc, eq, inArray, notInArray } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -15,6 +16,7 @@ import { StatusBadge, UrgencyBadge } from "@/components/managed";
 import { CASE_STATUS_FA } from "@/lib/case-facts";
 import { LAWYER_HIDDEN_STATUSES } from "@/lib/managed-services";
 import { CaseOffersPanel } from "@/components/lawyer/case-offers-panel";
+import { ReferralPanel } from "@/components/lawyer/referral-panel";
 import { TeamPanel } from "@/components/lawyer/team-panel";
 import { RemindersPanel } from "@/components/lawyer/reminders-panel";
 import Link from "next/link";
@@ -44,7 +46,7 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 
-type NavItem = { label: string; icon: "home" | "badge" | "briefcase" | "user" | "chat" | "shield" | "mail" | "clock" | "folder"; active?: boolean; badge?: string; href?: string };
+type NavItem = { label: string; icon: "home" | "badge" | "briefcase" | "user" | "chat" | "shield" | "mail" | "clock" | "folder" | "link"; active?: boolean; badge?: string; href?: string };
 type Tone = "primary" | "accent" | "success" | "neutral";
 
 /** چیپ آیکونی رنگی — پایهٔ گرافیک کارت‌های پنل */
@@ -85,6 +87,19 @@ export default async function LawyerDashboard() {
   let verifiedRevenue = 0;
   let serviceReqs: { req: typeof serviceRequests.$inferSelect; serviceTitle: string | null; clientName: string | null }[] = [];
   let teamMembersCount = 0;
+  let referralPending = 0;
+
+  try {
+    if (lawyerId) {
+      const [c] = await db
+        .select({ c: sql<number>`count(*)::int` })
+        .from(lawyerReferrals)
+        .where(and(eq(lawyerReferrals.toLawyerId, lawyerId), eq(lawyerReferrals.status, "pending")));
+      referralPending = c?.c ?? 0;
+    }
+  } catch (err) {
+    console.error("[dadban] lawyer dashboard: referrals count failed:", err);
+  }
 
   try {
     if (isTeam && perms.includes("cases")) {
@@ -174,6 +189,7 @@ export default async function LawyerDashboard() {
     ...(isBoss ? [{ label: "پروفایل حرفه‌ای", desc: "ویرایش اطلاعات عمومی", icon: "badge" as IconKey, tone: "primary" as Tone, href: "/dashboard/lawyer/profile" }] : []),
     ...(can("consultations") ? [{ label: "کارتابل مشاوره", desc: "درخواست‌های زنده و آنلاین‌شدن", icon: "chat" as IconKey, tone: "accent" as Tone, href: "/consultation/live" }] : []),
     { label: "دایرکتوری وکلا", desc: "جستجوی همکاران", icon: "search", tone: "primary", href: "/lawyers" },
+    { label: "همکاری و ارجاع", desc: referralPending ? `${faNum(referralPending)} درخواست در انتظار پاسخ` : "درخواست‌های همکاران", icon: "link" as IconKey, tone: "accent" as Tone, href: "/dashboard/lawyer#collab" },
     { label: "پرسش‌های موکلان", desc: "پاسخ‌دهی تخصصی", icon: "shield", tone: "success", href: "/qa" },
     { label: "پشتیبانی", desc: "تیکت و پیام", icon: "mail", tone: "neutral", href: "/support" },
   ];
@@ -182,6 +198,7 @@ export default async function LawyerDashboard() {
     { label: "نمای کلی", icon: "home", active: true, href: "/dashboard/lawyer" },
     ...(isBoss ? [{ label: "پروفایل حرفه‌ای من", icon: "badge" as const, href: "/dashboard/lawyer/profile" }] : []),
     ...(can("offers") ? [{ label: "پیشنهادهای پرونده", icon: "mail" as const, href: "/dashboard/lawyer#offers" }] : []),
+    ...(can("offers") ? [{ label: "همکاری و ارجاع", icon: "link" as const, badge: referralPending ? faNum(referralPending) : undefined, href: "/dashboard/lawyer#collab" }] : []),
     ...(can("services") ? [{ label: "درخواست‌های خدمات", icon: "briefcase" as const, badge: serviceReqs.length ? faNum(serviceReqs.length) : undefined, href: "/dashboard/lawyer#services" }] : []),
     ...(can("reminders") ? [{ label: "یادآورها", icon: "clock" as const, href: "/dashboard/lawyer#reminders" }] : []),
     ...(isBoss ? [{ label: "تیم من", icon: "user" as const, href: "/dashboard/lawyer#team" }] : []),
@@ -286,6 +303,9 @@ export default async function LawyerDashboard() {
 
       {/* پیشنهادهای پروندهٔ استان — broadcast موکل‌ها */}
       {can("offers") && <CaseOffersPanel />}
+
+      {/* همکاری و ارجاع پرونده — جریان وکیل↔وکیل از دایرکتوری همکاران */}
+      {can("offers") && <ReferralPanel />}
 
       {/* درخواست‌های خدمات — با موضوع و جزئیات کامل */}
       {can("services") && (

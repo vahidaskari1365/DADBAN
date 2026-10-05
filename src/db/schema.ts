@@ -691,6 +691,41 @@ export const caseOfferReplies = pgTable("case_offer_replies", {
 }, (t) => [index("case_offer_replies_offer_idx").on(t.offerId, t.id)]);
 export type CaseOfferReply = typeof caseOfferReplies.$inferSelect;
 
+/* ---------------- Lawyer referrals (همکاری و ارجاع پروندهٔ وکیل↔وکیل) ---------------- */
+
+/**
+ * جریان همکاری همکار-به-همکار: وکیل از دایرکتوری همکاران، پروفایل همکار را باز
+ * می‌کند و از آنجا «درخواست همکاری / ارجاع پرونده» ثبت می‌کند؛ درخواست در
+ * کارتابل «همکاری و ارجاع» پنل همکار می‌نشیند و او پذیرش/رد می‌کند.
+ * kind: referral (ارجاع کامل پرونده) | consult (مشورت تخصصی) | joint (همکاری مشترک)
+ * status: pending (در انتظار پاسخ) | accepted (پذیرفته‌شده) | declined (ردشده)
+ */
+export const lawyerReferrals = pgTable("lawyer_referrals", {
+  id: serial("id").primaryKey(),
+  fromLawyerId: integer("from_lawyer_id")
+    .notNull()
+    .references(() => lawyers.id, { onDelete: "cascade" }),
+  toLawyerId: integer("to_lawyer_id")
+    .notNull()
+    .references(() => lawyers.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull().default("referral"),
+  subject: text("subject").notNull(),
+  description: text("description").notNull(),
+  city: text("city"),
+  /** بودجهٔ مورد انتظار پرونده (تومان — اختیاری) */
+  budget: integer("budget"),
+  message: text("message").notNull().default(""),
+  status: text("status").notNull().default("pending"),
+  /** پاسخ کوتاه همکار هنگام پذیرش/رد */
+  responseNote: text("response_note"),
+  respondedAt: timestamp("responded_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [
+  index("lawyer_referrals_to_idx").on(t.toLawyerId, t.status),
+  index("lawyer_referrals_from_idx").on(t.fromLawyerId, t.status),
+]);
+export type LawyerReferral = typeof lawyerReferrals.$inferSelect;
+
 /* ---------------- Lawyer reminders (یادآورهای پنل وکیل) ---------------- */
 export const lawyerReminders = pgTable("lawyer_reminders", {
   id: serial("id").primaryKey(),
