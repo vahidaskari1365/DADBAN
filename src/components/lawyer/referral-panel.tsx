@@ -35,10 +35,11 @@ const STATUS_FA: Record<string, string> = {
   pending: "در انتظار پاسخ",
   accepted: "پذیرفته‌شده",
   declined: "ردشده",
+  cancelled: "لغوشده توسط فرستنده",
 };
 
 const statusTone = (s: string): "accent" | "success" | "neutral" =>
-  s === "accepted" ? "success" : s === "declined" ? "neutral" : "accent";
+  s === "accepted" ? "success" : s === "declined" || s === "cancelled" ? "neutral" : "accent";
 
 const KIND_ICON: Record<string, "folder" | "scale" | "link"> = {
   referral: "folder",
@@ -73,7 +74,7 @@ export function ReferralPanel() {
     return () => clearInterval(t);
   }, [load]);
 
-  const respond = async (id: number, action: "accept" | "decline") => {
+  const respond = async (id: number, action: "accept" | "decline" | "cancel") => {
     setError(null);
     setFlash(null);
     setBusy(id);
@@ -238,11 +239,45 @@ export function ReferralPanel() {
                       <Badge tone={statusTone(r.status)}>{STATUS_FA[r.status] ?? r.status}</Badge>
                     </div>
                     <p className="mt-1.5 line-clamp-2 text-xs leading-6 text-foreground-soft">{r.description}</p>
+                    {/* همکار مقصد — همیشه در ارجاع‌های من دیده می‌شود */}
+                    {r.peer && (
+                      <Link
+                        href={`/lawyers/${r.peer.slug}`}
+                        className="mt-2 inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-2.5 py-1.5 transition-colors hover:border-primary/40"
+                      >
+                        <LawyerPhoto
+                          name={r.peer.name}
+                          color={r.peer.avatarColor ?? "#15365d"}
+                          photoUrl={r.peer.photoUrl}
+                          size="xs"
+                        />
+                        <span className="min-w-0">
+                          <span className="block truncate text-[11px] font-bold text-foreground">{r.peer.name}</span>
+                          <span className="block text-[9px] text-muted">همکار مقصد — پروفایل</span>
+                        </span>
+                        <Icon name="chevron" className="h-3 w-3 rotate-180 text-muted" />
+                      </Link>
+                    )}
                     {r.responseNote && (
                       <p className="mt-1.5 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] leading-5 text-muted">
                         <span className="font-bold text-foreground-soft">پاسخ همکار: </span>
                         {r.responseNote}
                       </p>
+                    )}
+                    {r.status === "pending" && (
+                      <div className="mt-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => respond(r.id, "cancel")}
+                          disabled={busy === r.id}
+                          icon="x"
+                          className="shrink-0"
+                          data-testid={`referral-cancel-${r.id}`}
+                        >
+                          لغو درخواست
+                        </Button>
+                      </div>
                     )}
                     {r.status === "accepted" && (
                       <p className="mt-1.5 rounded-lg bg-success/5 px-2.5 py-1.5 text-[10px] leading-5 text-success">

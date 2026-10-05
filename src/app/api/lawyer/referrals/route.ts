@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { lawyers, lawyerReferrals } from "@/db/schema";
 import { and, desc, eq, or, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { rateLimit, readJson, text } from "@/lib/api-security";
 import { getLawyerActor } from "@/lib/lawyer-actor";
 import { ensureProfileSchema } from "@/lib/auto-seed";
@@ -35,35 +36,47 @@ export async function GET(req: Request) {
   }
   try {
     await ensureProfileSchema();
+    // دو طرف جریان — برای دریافتی «فرستنده» و برای ارسالی «همکار مقصد» نمایش داده می‌شود
+    const fromLw = alias(lawyers, "from_lw");
+    const toLw = alias(lawyers, "to_lw");
     const rows = await db
       .select({
         ref: lawyerReferrals,
-        fromId: lawyers.id,
-        fromName: lawyers.name,
-        fromSlug: lawyers.slug,
-        fromCity: lawyers.city,
-        fromTitle: lawyers.title,
-        fromPhoto: lawyers.photoUrl,
-        fromColor: lawyers.avatarColor,
-        fromVerified: lawyers.verified,
+        fromId: fromLw.id,
+        fromName: fromLw.name,
+        fromSlug: fromLw.slug,
+        fromCity: fromLw.city,
+        fromTitle: fromLw.title,
+        fromPhoto: fromLw.photoUrl,
+        fromColor: fromLw.avatarColor,
+        fromVerified: fromLw.verified,
+        toId: toLw.id,
+        toName: toLw.name,
+        toSlug: toLw.slug,
+        toCity: toLw.city,
+        toTitle: toLw.title,
+        toPhoto: toLw.photoUrl,
+        toColor: toLw.avatarColor,
+        toVerified: toLw.verified,
       })
       .from(lawyerReferrals)
-      .innerJoin(lawyers, eq(lawyerReferrals.fromLawyerId, lawyers.id))
+      .innerJoin(fromLw, eq(lawyerReferrals.fromLawyerId, fromLw.id))
+      .innerJoin(toLw, eq(lawyerReferrals.toLawyerId, toLw.id))
       .where(or(eq(lawyerReferrals.toLawyerId, actor.lawyerId), eq(lawyerReferrals.fromLawyerId, actor.lawyerId)))
       .orderBy(desc(lawyerReferrals.createdAt))
       .limit(100);
 
-    const mapPeer = (r: (typeof rows)[number]) => ({
-      id: r.fromId,
-      name: r.fromName,
-      slug: r.fromSlug,
-      city: r.fromCity,
-      title: r.fromTitle,
-      photoUrl: r.fromPhoto,
-      avatarColor: r.fromColor,
-      verified: r.fromVerified,
+    const mapPeer = (side: "from" | "to", r: (typeof rows)[number]) => ({
+      id: side === "from" ? r.fromId : r.toId,
+      name: side === "from" ? r.fromName : r.toName,
+      slug: side === "from" ? r.fromSlug : r.toSlug,
+      city: side === "from" ? r.fromCity : r.toCity,
+      title: side === "from" ? r.fromTitle : r.toTitle,
+      photoUrl: side === "from" ? r.fromPhoto : r.toPhoto,
+      avatarColor: side === "from" ? r.fromColor : r.toColor,
+      verified: side === "from" ? r.fromVerified : r.toVerified,
     });
-    const mapRef = (r: (typeof rows)[number], withPeer: boolean) => ({
+    const mapRef = (r: (typeof rows)[number], peerSide: "from" | "to") => ({
       id: r.ref.id,
       kind: r.ref.kind,
       kindFa: KIND_FA[r.ref.kind] ?? r.ref.kind,
@@ -76,13 +89,13 @@ export async function GET(req: Request) {
       responseNote: r.ref.responseNote,
       createdAt: r.ref.createdAt,
       respondedAt: r.ref.respondedAt,
-      ...(withPeer ? { peer: mapPeer(r) } : {}),
+      peer: mapPeer(peerSide, r),
     });
 
     return NextResponse.json({
       ok: true,
-      received: rows.filter((r) => r.ref.toLawyerId === actor.lawyerId).map((r) => mapRef(r, true)),
-      sent: rows.filter((r) => r.ref.fromLawyerId === actor.lawyerId).map((r) => mapRef(r, false)),
+      received: rows.filter((r) => r.ref.toLawyerId === actor.lawyerId).map((r) => mapRef(r, "from")),
+      sent: rows.filter((r) => r.ref.fromLawyerId === actor.lawyerId).map((r) => mapRef(r, "to")),
     });
   } catch (err) {
     console.error("[dadban] referrals GET failed:", err);
@@ -182,7 +195,14 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ ok: false, error: "درخواست نامعتبر" }, { status: 400 });
   }
   const id = Number(body.id);
-  const action = body.action === "accept" ? "accepted" : body.action === "decline" ? "declined" : null;
+  const action =
+    body.action === "accept"
+      ? "accepted"
+      : body.action === "decline"
+        ? "declined"
+        : body.action === "cancel"
+          ? "cancelled" // لغو توسط فرستنده — تنها قبل از پاسخ همکار
+          : null;
   const responseNote = text(body.responseNote ?? "", 600) || null;
   if (!Number.isInteger(id) || !action) {
     return NextResponse.json({ ok: false, error: "شناسهٔ درخواست و نوع پاسخ الزامی است." }, { status: 422 });
@@ -191,18 +211,34 @@ export async function PATCH(req: Request) {
     await ensureProfileSchema();
     const [row] = await db.select().from(lawyerReferrals).where(eq(lawyerReferrals.id, id)).limit(1);
     if (!row) return NextResponse.json({ ok: false, error: "درخواست یافت نشد." }, { status: 404 });
-    // فقط همکارِ گیرنده حق پاسخ دارد
-    if (row.toLawyerId !== actor.lawyerId) {
+    // پاسخ همکاری فقط از سوی گیرنده؛ لغو فقط از سوی فرستنده
+    if (action === "cancelled") {
+      if (row.fromLawyerId !== actor.lawyerId) {
+        return NextResponse.json({ ok: false, error: "فقط فرستندهٔ درخواست می‌تواند آن را لغو کند." }, { status: 403 });
+      }
+    } else if (row.toLawyerId !== actor.lawyerId) {
       return NextResponse.json({ ok: false, error: "این درخواست متعلق به کارتابل شما نیست." }, { status: 403 });
     }
     if (row.status !== "pending") {
-      return NextResponse.json({ ok: false, error: "این درخواست قبلاً پاسخ داده شده است." }, { status: 409 });
+      return NextResponse.json({ ok: false, error: "این درخواست قبلاً نهایی شده است." }, { status: 409 });
     }
     await db
       .update(lawyerReferrals)
-      .set({ status: action, responseNote, respondedAt: new Date() })
+      .set({
+        status: action,
+        responseNote: action === "cancelled" ? null : responseNote,
+        respondedAt: action === "cancelled" ? null : new Date(),
+      })
       .where(eq(lawyerReferrals.id, id));
-    return NextResponse.json({ ok: true, message: action === "accepted" ? "درخواست همکاری پذیرفته شد." : "درخواست همکاری رد شد." });
+    return NextResponse.json({
+      ok: true,
+      message:
+        action === "accepted"
+          ? "درخواست همکاری پذیرفته شد؛ نتیجه در کارتابل فرستنده نمایش داده می‌شود."
+          : action === "declined"
+            ? "درخواست همکاری رد شد؛ نتیجه در کارتابل فرستنده نمایش داده می‌شود."
+            : "درخواست لغو شد و از صف پاسخ همکار خارج گردید.",
+    });
   } catch (err) {
     console.error("[dadban] referrals PATCH failed:", err);
     return NextResponse.json({ ok: false, error: "ثبت پاسخ انجام نشد." }, { status: 500 });
