@@ -125,21 +125,33 @@ export type WebSearchResult = {
   favicon: string;
 };
 
+/** SDK فقط در سندباکس/توسعه فعال است (همان سیاست llm.ts) — روی Vercel
+ *  import/create/invoke ممکن است بی‌پاسخ بماند و بودجهٔ RAG را بخورد. */
+const SDK_SEARCH_ENABLED = process.env.NODE_ENV !== "production" || !!process.env.ZAI_WEB_SDK_ALLOW;
+
 export async function webSearch(query: string, num = 8, recencyDays?: number): Promise<WebSearchResult[]> {
   const take = Math.min(10, Math.max(1, num));
-  // ۱) مسیر اصلی: SDK (سندباکس/توسعه — در Vercel معمولاً در دسترس نیست)
-  try {
-    const zai = await getZai();
-    const results = await zai.functions.invoke("web_search", {
-      query: query.slice(0, 400),
-      num: take,
-      ...(recencyDays ? { recency_days: recencyDays } : {}),
-    });
-    if (Array.isArray(results) && results.length) return results.slice(0, num);
-  } catch {
-    /* SDK در دسترس نیست → مسیر پشتیبان */
+  // ۱) مسیر اصلی: SDK (سندباکس/توسعه) — با سقف ۸ ثانیه تا هرگز هنگ نکند
+  if (SDK_SEARCH_ENABLED) {
+    try {
+      const zai = await Promise.race([
+        getZai(),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("sdk-create-timeout")), 8_000)),
+      ]);
+      const results = (await Promise.race([
+        zai.functions.invoke("web_search", {
+          query: query.slice(0, 400),
+          num: take,
+          ...(recencyDays ? { recency_days: recencyDays } : {}),
+        }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("sdk-invoke-timeout")), 8_000)),
+      ])) as Awaited<ReturnType<ZaiInstance["functions"]["invoke"]>>;
+      if (Array.isArray(results) && results.length) return results.slice(0, num);
+    } catch {
+      /* SDK در دسترس نیست → مسیر پشتیبان */
+    }
   }
-  // ۲) مسیر پشتیبان بدون کلید (Vercel-friendly): DuckDuckGo HTML — best-effort
+  // ۲) مسیر پشتیبان بدون کلید (Vercel-friendly): زنجیرهٔ چندموتوره
   return ddgSearch(query, take);
 }
 
