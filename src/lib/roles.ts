@@ -17,6 +17,15 @@ export const isLawyerSideRole = (role: string | null | undefined): boolean =>
 export const isClientSideRole = (role: string | null | undefined): boolean =>
   role === "client";
 
+/** برچسب فارسی نقش‌ها — منوی اکانت، پنل‌ها و خوش‌آید */
+export const ROLE_FA: Record<string, string> = {
+  lawyer: "وکیل",
+  client: "موکل",
+  team: "همکار وکیل",
+  staff: "کارشناس عملیات",
+  supervisor: "ناظر ارشد",
+};
+
 /** مقصد پیش‌فرض بعد از ورود، صرفاً بر اساس نقش (بدون توجه به ?redirect=) */
 export const panelHomeForRole = (role: string | null | undefined): string =>
   isLawyerSideRole(role) ? "/dashboard/lawyer" : "/dashboard/client";

@@ -10,6 +10,8 @@ import { LawyerFilters } from "@/components/lawyer-filters";
 import { LawyerDiscovery } from "@/components/amazon/recently-viewed";
 import { StickyCta } from "@/components/amazon/sticky-cta";
 import { LOCATIONS, faNum } from "@/lib/data";
+import { getCurrentUser } from "@/lib/user-auth";
+import { isLawyerSideRole } from "@/lib/roles";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +45,14 @@ export default async function LawyersPage({
 }) {
   const params = await searchParams;
   const { sp, city, gender, sort, q } = params;
+
+  // نقش کاربر — برای وکیل/همکار: دایرکتوری همکاران (نه جریان «انتخاب وکیل» موکل‌ها)
+  let meRole: string | null = null;
+  try {
+    const me = await getCurrentUser();
+    meRole = me?.role ?? null;
+  } catch {}
+  const lawyerSide = isLawyerSideRole(meRole);
 
   const conds = [];
   if (sp) conds.push(sql`${lawyers.specialties} @> ARRAY[${sp}]::text[]`);
@@ -104,10 +114,20 @@ export default async function LawyersPage({
             <Icon name="chevron" className="h-3 w-3 rotate-180" />
             <span className="text-foreground-soft">وکیل‌یابی</span>
           </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{heading}</h1>
+          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">
+            {lawyerSide ? (sp || city ? heading : "دایرکتوری وکلا — جستجوی همکاران") : heading}
+          </h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            از میان وکلای پایه یک دادگستری، تأییدشده و متخصص انتخاب کنید؛ با فیلتر تخصص، شهر، سابقه و امتیاز.
+            {lawyerSide
+              ? "فهرست وکلای احراز هویت‌شدهٔ دادبان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز."
+              : "از میان وکلای پایه یک دادگستری، تأییدشده و متخصص انتخاب کنید؛ با فیلتر تخصص، شهر، سابقه و امتیاز."}
           </p>
+          {lawyerSide && (
+            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-bold text-primary">
+              <Icon name="shield" className="h-3.5 w-3.5" />
+              نمای همکاران — برای مشاهدهٔ پروفایل هر وکیل روی کارت او کلیک کنید
+            </p>
+          )}
         </Container>
       </section>
 
@@ -121,7 +141,7 @@ export default async function LawyersPage({
             title="وکیلی با این فیلترها یافت نشد"
             desc="فیلترها را تغییر دهید یا همه وکلا را مشاهده کنید."
             icon="search"
-            action={{ href: "/consultation", label: "درخواست معرفی وکیل" }}
+            action={lawyerSide ? { href: "/support", label: "تماس با پشتیبانی" } : { href: "/consultation", label: "درخواست معرفی وکیل" }}
           />
         ) : (
           <PinMasonry>
@@ -137,23 +157,40 @@ export default async function LawyersPage({
         </div>
       </Container>
 
-      {/* CTA چسبان موبایل — همیشه یک اقدام بعدی در دسترس */}
-      <StickyCta
-        href="/case/new"
-        label="پرونده‌ات را ثبت کن"
-        sub="ارزیابی اولیه • محرمانگی کامل • بدون هزینه اولیه"
-      />
+      {/* CTA چسبان موبایل — فقط برای موکل‌ها (برای همکاران جریان پروندهٔ موکل معنا ندارد) */}
+      {!lawyerSide && (
+        <StickyCta
+          href="/case/new"
+          label="پرونده‌ات را ثبت کن"
+          sub="ارزیابی اولیه • محرمانگی کامل • بدون هزینه اولیه"
+        />
+      )}
 
       <Container className="py-12">
         <div className="rounded-3xl border border-border bg-surface p-8 text-center card-shadow">
-          <h2 className="text-xl font-bold text-foreground">وکیل مناسب خود را پیدا نکردید؟</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">
-            پرونده خود را ثبت کنید تا سیستم آن را به وکلای مرتبط معرفی کند.
-          </p>
-          <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <Button href="/case/new" icon="folder">ثبت پرونده</Button>
-            <Button href="/consultation" variant="outline" icon="calendar">رزرو مشاوره</Button>
-          </div>
+          {lawyerSide ? (
+            <>
+              <h2 className="text-xl font-bold text-foreground">همکار یا تخصص موردنظر را نیافتید؟</h2>
+              <p className="mx-auto mt-2 max-w-lg text-sm text-muted">
+                با پشتیبانی دادبان تماس بگیرید یا پرونده‌های ارجاعی استان خود را در کارتابل پیشنهادها پیگیری کنید.
+              </p>
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
+                <Button href="/support" icon="shield">پشتیبانی</Button>
+                <Button href="/dashboard/lawyer#offers" variant="outline" icon="mail">کارتابل پیشنهادهای پرونده</Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-xl font-bold text-foreground">وکیل مناسب خود را پیدا نکردید؟</h2>
+              <p className="mx-auto mt-2 max-w-lg text-sm text-muted">
+                پرونده خود را ثبت کنید تا سیستم آن را به وکلای مرتبط معرفی کند.
+              </p>
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
+                <Button href="/case/new" icon="folder">ثبت پرونده</Button>
+                <Button href="/consultation" variant="outline" icon="calendar">رزرو مشاوره</Button>
+              </div>
+            </>
+          )}
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             <Badge tone="neutral">{faNum(totalRow[0]?.c ?? 0)} وکیل فعال</Badge>
             <Badge tone="success" icon="badge">احراز هویت‌شده</Badge>

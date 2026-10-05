@@ -1,7 +1,7 @@
 "use client";
 import { formatJalali } from "@/lib/jalali";
 import { CASE_STAGE_FLOW } from "@/lib/case-facts";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -14,12 +14,12 @@ export default function TrackCasePage() {
   const [result, setResult] = useState<null | { found: boolean; caseData?: { caseNumber: string; status: string; stage: string; createdAt: string; lastUpdatedAt: string }; error?: string }>(null);
   const [loading, setLoading] = useState(false);
 
-  const search = async () => {
-    if (!code.trim()) return;
+  const runSearch = async (value: string) => {
+    if (!value.trim()) return;
     setLoading(true);
     setResult(null);
     try {
-      const res = await fetch(`/api/cases/track?code=${encodeURIComponent(code.trim())}`);
+      const res = await fetch(`/api/cases/track?code=${encodeURIComponent(value.trim())}`);
       const data = await res.json();
       setResult(data);
     } catch {
@@ -28,6 +28,21 @@ export default function TrackCasePage() {
       setLoading(false);
     }
   };
+
+  // پیگیری مستقیم با لینک /track-case?code=SHF-… (از ردیف پرونده‌های پنل وکیل و جاهای دیگر)
+  // setState داخل timeout انجام می‌شود تا رندر آبشاری در effect رخ ندهد
+  useEffect(() => {
+    const c = new URLSearchParams(window.location.search).get("code");
+    if (!c) return;
+    const t = setTimeout(() => {
+      setCode(c);
+      runSearch(c);
+    }, 0);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const search = () => runSearch(code);
 
   return (
     <>

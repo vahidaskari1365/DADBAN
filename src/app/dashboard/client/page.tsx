@@ -108,6 +108,7 @@ export default async function ClientDashboard() {
       role="موکل"
       title="داشبورد حقوقی من"
       name={user.name}
+      back={{ fallback: "/" }}
       nav={[
         { label: "نمای کلی", icon: "home", active: true, href: "/dashboard/client" },
         { label: "پرونده‌های من", icon: "folder", badge: faNum(myCases.length), href: "/dashboard/cases" },

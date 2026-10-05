@@ -7,8 +7,11 @@ import { usePathname } from "next/navigation";
 import { Container, Logo, Button } from "./ui";
 import { Icon } from "./icons";
 import { ThemeToggle } from "./theme-toggle";
+import { BackButton } from "./back-button";
+import { AccountMenu, type MeUser } from "./account-menu";
 import { NAV } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
+import { panelHomeForRole } from "@/lib/roles";
 
 const childIcon = (label: string): IconKey => {
   const m: Record<string, IconKey> = {
@@ -55,6 +58,25 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  /* منوی اکانت — وضعیت ورود از /api/auth/me (یک fetch برای هدر + drawer) */
+  const [me, setMe] = useState<MeUser | null>(null);
+  const [meLoaded, setMeLoaded] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!alive) return;
+        setMe(d?.ok ? (d.user as MeUser) : null);
+        setMeLoaded(true);
+      })
+      .catch(() => { if (alive) setMeLoaded(true); });
+    return () => { alive = false; };
+  }, []);
+  const logout = async () => {
+    try { await fetch("/api/auth/logout", { method: "POST" }); } catch {}
+    window.location.assign("/login");
+  };
   /* Intopia — Keyboard & Focus: درِاور مودال است؛ فوکوس هنگام باز شدن داخل
      می‌رود، Trap می‌شود، با Escape بسته می‌شود و به دکمهٔ فراخوان برمی‌گردد */
   const hamburgerRef = useRef<HTMLButtonElement>(null);
@@ -201,19 +223,19 @@ export function Header() {
 
         {/* Left actions — مینیمال روی موبایل */}
         <div className="flex items-center gap-2">
+          {/* دکمهٔ بازگشت — همه‌جا جز خانه */}
+          {pathname !== "/" && (
+            <div className="lg:block">
+              <BackButton variant="icon" label="بازگشت" fallback="/" />
+            </div>
+          )}
           {/* تم‌تاگل فقط روی دسکتاپ */}
           <div className="hidden lg:block">
             <ThemeToggle compact />
           </div>
-          {/* دکمه ورود فقط روی دسکتاپ (در موبایل از طریق BottomNav) */}
+          {/* اکانت — مهمان: ورود | واردشده: آواتار با منوی کشویی */}
           <div className="hidden lg:block">
-            <a
-              href="/dashboard/client"
-              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-foreground-soft transition-colors hover:bg-surface-2 hover:text-foreground"
-            >
-              <Icon name="user" className="h-4 w-4" />
-              ورود
-            </a>
+            <AccountMenu user={me} loaded={meLoaded} />
           </div>
           {/* CTA اصلی هدر — شروع مسیر حقوقی (فقط دسکتاپ) */}
           <div className="hidden lg:block">
@@ -328,7 +350,35 @@ export function Header() {
               </div>
               <Button href="/ai-assistant" icon="arrow" className="w-full">شروع مسیر حقوقی</Button>
               <Button href="/consultation" variant="outline" icon="calendar" className="mt-2 w-full">رزرو مشاوره</Button>
-              <Button href="/dashboard/client" variant="outline" icon="user" className="mt-2 w-full">ورود / ثبت‌نام</Button>
+              {meLoaded && me ? (
+                <div className="mt-3 space-y-2 rounded-2xl border border-border bg-surface-2/60 p-3">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-extrabold text-white shadow-sm"
+                      style={{ backgroundColor: me.avatarColor || "#15365d" }}
+                      aria-hidden
+                    >
+                      {(me.name || "؟").trim().charAt(0)}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-bold text-foreground">{me.name}</span>
+                      <span className="block text-[11px] text-muted">حساب کاربری فعال</span>
+                    </span>
+                  </div>
+                  <Button href={panelHomeForRole(me.role)} variant="outline" icon="home" className="w-full">داشبورد من</Button>
+                  <button
+                    type="button"
+                    onClick={logout}
+                    data-testid="drawer-logout"
+                    className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-danger/30 bg-danger/5 text-sm font-bold text-danger transition-colors hover:bg-danger/10"
+                  >
+                    <Icon name="x" className="h-4 w-4" />
+                    خروج از حساب
+                  </button>
+                </div>
+              ) : (
+                <Button href="/login" variant="outline" icon="user" className="mt-2 w-full">ورود / ثبت‌نام</Button>
+              )}
             </div>
             </div>
           </div>,

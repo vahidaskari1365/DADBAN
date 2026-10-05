@@ -8,6 +8,7 @@ import { Icon } from "@/components/icons";
 import { LawyerPhoto } from "@/components/lawyer-photo";
 import { faNum, faPrice, relativeTime } from "@/lib/data";
 import { AvailabilityPanel } from "@/components/availability-panel";
+import { BackButton } from "@/components/back-button";
 import { LawyerViewRecorder, LawyerDiscovery } from "@/components/amazon/recently-viewed";
 import { StickyCta } from "@/components/amazon/sticky-cta";
 import { TrustLine } from "@/components/amazon/trust-line";
@@ -148,32 +149,46 @@ export default async function LawyerProfile({
       />
 
       {/* Hero */}
-      <section className="border-b border-border bg-gradient-to-b from-primary-soft/40 to-background">
+      <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-primary-soft/60 via-surface-2/40 to-background">
+        <span aria-hidden className="pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full bg-accent-soft/70 blur-3xl" />
+        <span aria-hidden className="pointer-events-none absolute -right-10 top-24 h-40 w-40 rounded-full bg-primary-soft/70 blur-2xl" />
         <Container className="py-8">
-          <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">خانه</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <Link href="/lawyers" className="hover:text-primary">وکلا</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{l.name}</span>
-          </nav>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+              <Link href="/" className="hover:text-primary">خانه</Link>
+              <Icon name="chevron" className="h-3 w-3 rotate-180" />
+              <Link href="/lawyers" className="hover:text-primary">وکلا</Link>
+              <Icon name="chevron" className="h-3 w-3 rotate-180" />
+              <span className="text-foreground-soft">{l.name}</span>
+            </nav>
+            <BackButton variant="bar" label="بازگشت به فهرست وکلا" fallback="/lawyers" />
+          </div>
 
-          <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="relative mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-              <LawyerPhoto name={l.name} color={l.avatarColor} photoUrl={l.photoUrl} size="xl" />
+              <span className="rounded-3xl ring-4 ring-background shadow-[var(--shadow-lift)]">
+                <LawyerPhoto name={l.name} color={l.avatarColor} photoUrl={l.photoUrl} size="xl" />
+              </span>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">{l.name}</h1>
                   {l.verified && <Icon name="badge" className="h-6 w-6 text-primary" />}
                 </div>
                 <p className="mt-1 text-sm text-foreground-soft">{l.title}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
-                  <StarRating rating={l.rating} count={l.reviewCount} size="md" />
-                  <span className="inline-flex items-center gap-1.5"><Icon name="location" className="h-4 w-4" /> {l.city} — {l.province}</span>
-                  <span className="inline-flex items-center gap-1.5"><Icon name="briefcase" className="h-4 w-4" /> {faNum(l.experienceYears)} سال سابقه</span>
-                  <span className="inline-flex items-center gap-1.5"><Icon name="folder" className="h-4 w-4" /> {faNum(l.caseCount)} پرونده</span>
-                </div>
                 <div className="mt-3 flex flex-wrap gap-2">
+                  {[
+                    { icon: "location" as const, text: `${l.city} — ${l.province}` },
+                    { icon: "briefcase" as const, text: `${faNum(l.experienceYears)} سال سابقه` },
+                    { icon: "folder" as const, text: `${faNum(l.caseCount)} پرونده` },
+                  ].map((c) => (
+                    <span key={c.text} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground-soft">
+                      <Icon name={c.icon} className="h-3.5 w-3.5 text-primary" />
+                      {c.text}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <StarRating rating={l.rating} count={l.reviewCount} size="md" />
                   {badges.map((b) => (
                     <Badge key={b.label} tone={b.tone} icon={b.icon}>{b.label}</Badge>
                   ))}
@@ -208,22 +223,18 @@ export default async function LawyerProfile({
             </h2>
             <p className="mt-3 text-sm leading-8 text-foreground-soft">{l.about}</p>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div className="rounded-xl border border-border bg-surface p-3 text-center">
-                <p className="text-xs text-muted">پروانه</p>
-                <p className="mt-1 text-sm font-bold text-foreground" dir="ltr">{l.licenseNo}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-surface p-3 text-center">
-                <p className="text-xs text-muted">زمان پاسخ</p>
-                <p className="mt-1 text-sm font-bold text-foreground">{l.responseTime}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-surface p-3 text-center">
-                <p className="text-xs text-muted">امتیاز</p>
-                <p className="mt-1 text-sm font-bold text-foreground">{faNum(l.rating.toFixed(1))}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-surface p-3 text-center">
-                <p className="text-xs text-muted">بازدید</p>
-                <p className="mt-1 text-sm font-bold text-foreground">{faNum(l.views.toLocaleString("en-US"))}</p>
-              </div>
+              {[
+                { icon: "badge" as const, label: "پروانه", value: l.licenseNo, ltr: true },
+                { icon: "clock" as const, label: "زمان پاسخ", value: l.responseTime, ltr: false },
+                { icon: "star" as const, label: "امتیاز", value: faNum(l.rating.toFixed(1)), ltr: false },
+                { icon: "search" as const, label: "بازدید", value: faNum(l.views.toLocaleString("en-US")), ltr: false },
+              ].map((c) => (
+                <div key={c.label} className="rounded-xl border border-border bg-surface p-3 text-center transition-colors hover:border-primary/30">
+                  <Icon name={c.icon} className="mx-auto h-4 w-4 text-accent-text" />
+                  <p className="mt-1 text-xs text-muted">{c.label}</p>
+                  <p className="mt-0.5 text-sm font-bold text-foreground" dir={c.ltr ? "ltr" : undefined}>{c.value}</p>
+                </div>
+              ))}
             </div>
           </section>
 
@@ -277,13 +288,21 @@ export default async function LawyerProfile({
           <Card hover={false} className="space-y-3">
             <h3 className="font-bold text-foreground">تعرفه مشاوره</h3>
             <div className="space-y-2">
-              {pricing.map((p) => (
-                <div key={p.key} className="flex items-center gap-3 rounded-xl border border-border bg-surface-2 p-3">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
+              {pricing.map((p, i) => (
+                <div
+                  key={p.key}
+                  className={`relative flex items-center gap-3 rounded-xl border p-3 ${
+                    i === 0 ? "border-primary/40 bg-primary-soft/40" : "border-border bg-surface-2"
+                  }`}
+                >
+                  <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${i === 0 ? "bg-primary text-primary-foreground" : "bg-primary-soft text-primary"}`}>
                     <Icon name={p.icon} className="h-4 w-4" />
                   </span>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">{p.label}</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {p.label}
+                      {i === 0 && <span className="mr-2 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold text-primary-foreground">شروع قیمت</span>}
+                    </p>
                     <p className="text-xs text-muted">{p.features.join(" • ")}</p>
                   </div>
                   <p className="text-sm font-bold text-foreground">{faPrice(p.price)}</p>

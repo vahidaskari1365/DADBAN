@@ -22,7 +22,7 @@ export function BackButton({
   fallback?: string;
   label?: string;
   /** chip: چیپ کوچک روی بنر پنل — bar: نوار پهن‌تر برای صفحات محتوایی */
-  variant?: "chip" | "bar";
+  variant?: "chip" | "bar" | "icon";
 }) {
   const router = useRouter();
 
@@ -48,6 +48,21 @@ export function BackButton({
     }
     router.push(fallback);
   };
+
+  if (variant === "icon") {
+    return (
+      <button
+        type="button"
+        onClick={goBack}
+        data-testid="back-button"
+        aria-label={`${label} — رفتن به صفحهٔ قبل`}
+        title={label}
+        className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface text-foreground-soft transition-all hover:border-primary/40 hover:bg-primary-soft hover:text-primary active:scale-90"
+      >
+        <Icon name="chevron" className="h-5 w-5" />
+      </button>
+    );
+  }
 
   if (variant === "bar") {
     return (
