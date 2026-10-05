@@ -170,6 +170,7 @@ async function ddgSearch(query: string, num: number): Promise<WebSearchResult[]>
     () => ddgFetch(`https://html.duckduckgo.com/html/?q=${q}&kl=ir-ir`, num),
     () => gnewsFetch(query, num),
     () => bingFetch(query, num),
+    () => bingFetch(bingKeywords(query), num), // واریانت کلیدواژه‌ای — بینینگ جملهٔ گفتاری را دوست ندارد
   ]) {
     if (Date.now() - t0 > 18_000) break; // سقف زمانی کل زنجیره — مسیر maxDuration=60 امن بماند
     results = await engine();
@@ -181,6 +182,18 @@ async function ddgSearch(query: string, num: number): Promise<WebSearchResult[]>
 
 const searchCache = new Map<string, { results: WebSearchResult[]; until: number }>();
 
+/** استخراج کلیدواژه از جملهٔ گفتاری — حذف واژه‌های پرکاربرد برای موتورهای جستجو. */
+function bingKeywords(raw: string): string {
+  const stop = new Set([
+    "مبلغ", "چقدر", "چگونه", "چیست", "چیه", "است", "بوده", "برای", "چه", "سال", "جاری", "امسال",
+    "کامل", "کامله", "در", "به", "از", "با", "و", "من", "می", "را", "رو", "که", "این", "آن",
+    "می‌خواهم", "میخوام", "لطفا", "دارد", "دارم", "شده", "شود", "بکنم", "کنم",
+  ]);
+  const words = raw.replace(/[؟?!.،؛:«»]/g, " ").split(/\s+/).filter(Boolean);
+  const kw = words.filter((w) => !stop.has(w));
+  return (kw.length ? kw.join(" ") : raw).slice(0, 180);
+}
+
 /** گزارش تشخیصی هر موتور پشتیبان (تعداد/وضعیت/خطا) — فقط برای debug جستجو. */
 export async function webSearchProbe(query: string): Promise<{ engine: string; ok: boolean; count: number; ms: number; info: string }[]> {
   const q = encodeURIComponent(query.slice(0, 300));
@@ -190,6 +203,7 @@ export async function webSearchProbe(query: string): Promise<{ engine: string; o
     ["ddg-html", () => ddgFetch(`https://html.duckduckgo.com/html/?q=${q}&kl=ir-ir`, 6)],
     ["gnews-rss", () => gnewsFetch(query, 6)],
     ["bing", () => bingFetch(query, 6)],
+    ["bing-keywords", () => bingFetch(bingKeywords(query), 6)],
   ];
   for (const [name, fn] of engines) {
     const t0 = Date.now();
@@ -242,7 +256,7 @@ async function gnewsFetch(query: string, num: number): Promise<WebSearchResult[]
 /** بینینگ HTML — مسیر پشتیبان چهارم. */
 async function bingFetch(query: string, num: number): Promise<WebSearchResult[]> {
   try {
-    const res = await fetch(`https://www.bing.com/search?q=${encodeURIComponent(query.slice(0, 250))}&setlang=fa`, {
+    const res = await fetch(`https://www.bing.com/search?q=${encodeURIComponent(query.slice(0, 250))}&setlang=fa&mkt=fa-IR`, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
         "Accept-Language": "fa,en;q=0.8",
