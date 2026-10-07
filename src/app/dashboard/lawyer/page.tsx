@@ -191,7 +191,7 @@ export default async function LawyerDashboard() {
     ...(can("consultations") ? [{ label: "کارتابل مشاوره", desc: "تأیید و مدیریت درخواست‌ها", icon: "chat" as IconKey, tone: "accent" as Tone, href: "#consult-requests" }] : []),
     { label: "دایرکتوری وکلا", desc: "جستجوی همکاران", icon: "search", tone: "primary", href: "/lawyers" },
     { label: "همکاری و ارجاع", desc: referralPending ? `${faNum(referralPending)} درخواست در انتظار پاسخ` : "درخواست‌های همکاران", icon: "link" as IconKey, tone: "accent" as Tone, href: "/dashboard/lawyer#collab" },
-    { label: "پرسش‌های موکلان", desc: "پاسخ‌دهی تخصصی", icon: "shield", tone: "success", href: "/qa" },
+    { label: "پرسش‌های موکلان", desc: "مرجع پاسخ‌های تخصصی", icon: "shield", tone: "success", href: "/qa" },
     { label: "پشتیبانی", desc: "تیکت و پیام", icon: "mail", tone: "neutral", href: "/support" },
   ];
 
