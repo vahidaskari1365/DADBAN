@@ -80,8 +80,43 @@ export async function getCurrentUser() {
     const store = await cookies();
     const session = verifyUserSession(store.get(COOKIE)?.value);
     if (!session) return null;
-    const [user] = await db.select().from(users).where(eq(users.id, session.uid));
-    return user ?? null;
+
+    // درس E2E (QA گزینه‌به‌گزینه): روی Vercel+Neon، کوئری اول پس از idle/سردشدن
+    // گاهی با timeout خطا می‌دهد و قبلاً کل کاربر را null برمی‌گرداند — یعنی
+    // کاربرِ لاگین‌شده «ناگهان لاگ‌اوت» می‌شد (پرش به /login یا 401 در API).
+    // حالا: یک retry سریع، و در بدترین حالت fallback به ادعاهای امضاشدهٔ توکن
+    // (کریپتوگرافی سالم است) تا flap به 401 حذف شود و فقط داده‌ها degraded شوند —
+    // الگوی همان «حالت degraded» که صفحات پنل برای کوئری‌های فرعی دارند.
+    const loadUser = async () => {
+      const [user] = await db.select().from(users).where(eq(users.id, session.uid));
+      return user ?? null;
+    };
+    try {
+      return await loadUser();
+    } catch (err) {
+      console.error("[dadban] getCurrentUser: db failed, retrying once:", err);
+      await new Promise((r) => setTimeout(r, 250));
+      try {
+        return await loadUser();
+      } catch (err2) {
+        console.error("[dadban] getCurrentUser: db failed twice, falling back to token claims:", err2);
+        return {
+          id: session.uid,
+          role: session.role,
+          name: "",
+          phone: "",
+          email: null,
+          province: null,
+          city: null,
+          avatarColor: null,
+          passwordHash: "",
+          lawyerId: null,
+          parentLawyerId: null,
+          teamPermissions: null,
+          createdAt: undefined,
+        } as unknown as typeof users.$inferSelect;
+      }
+    }
   } catch {
     return null;
   }

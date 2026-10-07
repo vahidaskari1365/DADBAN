@@ -72,7 +72,9 @@ export default async function ClientProfilePage() {
         { label: "رزرو مشاوره", icon: "calendar", href: "/consultation" },
         { label: "پیگیری پرونده", icon: "search", href: "/track-case" },
         { label: "پروفایل من", icon: "user", active: true, href: "/dashboard/client/profile" },
-        { label: "خروج", icon: "x", href: "/api/auth/logout" },
+        // توجه: لینک خروج در nav نباید باشد — next/link آن را prefetch می‌کند و
+        // GET /api/auth/logout کوکی سشن را پاک می‌کرد (باگ «لاگ‌اوت ناگهانی»).
+        // دکمهٔ خروج (plain <a> بدون prefetch) در هدر DashboardShell هست.
       ]}
     >
       {/* هدر پروفایل */}

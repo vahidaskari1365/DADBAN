@@ -16,6 +16,7 @@ import { StatusBadge, UrgencyBadge } from "@/components/managed";
 import { CASE_STATUS_FA } from "@/lib/case-facts";
 import { LAWYER_HIDDEN_STATUSES } from "@/lib/managed-services";
 import { CaseOffersPanel } from "@/components/lawyer/case-offers-panel";
+import { ConsultRequestsPanel } from "@/components/lawyer/consult-requests-panel";
 import { ReferralPanel } from "@/components/lawyer/referral-panel";
 import { TeamPanel } from "@/components/lawyer/team-panel";
 import { RemindersPanel } from "@/components/lawyer/reminders-panel";
@@ -180,14 +181,14 @@ export default async function LawyerDashboard() {
 
   const stats: { label: string; value: string; icon: IconKey; tone: Tone; href: string }[] = [];
   if (can("cases")) stats.push({ label: isTeam ? "پرونده‌های سپرده‌شده به شما" : "پرونده‌های اخیر پلتفرم", value: faNum(activeCases.length), icon: "folder", tone: "primary", href: "#cases" });
-  if (can("consultations")) stats.push({ label: "درخواست‌های مشاوره در انتظار", value: faNum(pendingRequests.length), icon: "mail", tone: "accent", href: "/consultation/live" });
+  if (can("consultations")) stats.push({ label: "درخواست‌های مشاوره در انتظار", value: faNum(pendingRequests.length), icon: "mail", tone: "accent", href: "#consult-requests" });
   if (can("services")) stats.push({ label: "درخواست‌های خدمات فعال", value: faNum(serviceReqs.filter((r) => !["COMPLETED", "DELIVERED"].includes(r.req.status)).length), icon: "briefcase", tone: "success", href: "#services" });
   if (can("reminders")) stats.push({ label: isBoss && teamMembersCount ? "اعضای تیم" : "یادآورهای باز", value: faNum(isBoss ? teamMembersCount : 0), icon: "user", tone: "neutral", href: isBoss && teamMembersCount ? "#team" : "#reminders" });
 
   /** دستورهای سریع وکیل — با فیلتر دسترسی */
   const quickActions: { label: string; desc: string; icon: IconKey; tone: Tone; href: string }[] = [
     ...(isBoss ? [{ label: "پروفایل حرفه‌ای", desc: "ویرایش اطلاعات عمومی", icon: "badge" as IconKey, tone: "primary" as Tone, href: "/dashboard/lawyer/profile" }] : []),
-    ...(can("consultations") ? [{ label: "کارتابل مشاوره", desc: "درخواست‌های زنده و آنلاین‌شدن", icon: "chat" as IconKey, tone: "accent" as Tone, href: "/consultation/live" }] : []),
+    ...(can("consultations") ? [{ label: "کارتابل مشاوره", desc: "تأیید و مدیریت درخواست‌ها", icon: "chat" as IconKey, tone: "accent" as Tone, href: "#consult-requests" }] : []),
     { label: "دایرکتوری وکلا", desc: "جستجوی همکاران", icon: "search", tone: "primary", href: "/lawyers" },
     { label: "همکاری و ارجاع", desc: referralPending ? `${faNum(referralPending)} درخواست در انتظار پاسخ` : "درخواست‌های همکاران", icon: "link" as IconKey, tone: "accent" as Tone, href: "/dashboard/lawyer#collab" },
     { label: "پرسش‌های موکلان", desc: "پاسخ‌دهی تخصصی", icon: "shield", tone: "success", href: "/qa" },
@@ -198,6 +199,7 @@ export default async function LawyerDashboard() {
     { label: "نمای کلی", icon: "home", active: true, href: "/dashboard/lawyer" },
     ...(isBoss ? [{ label: "پروفایل حرفه‌ای من", icon: "badge" as const, href: "/dashboard/lawyer/profile" }] : []),
     ...(can("offers") ? [{ label: "پیشنهادهای پرونده", icon: "mail" as const, href: "/dashboard/lawyer#offers" }] : []),
+    ...(can("consultations") ? [{ label: "کارتابل مشاوره", icon: "chat" as const, href: "/dashboard/lawyer#consult-requests" }] : []),
     ...(can("offers") ? [{ label: "همکاری و ارجاع", icon: "link" as const, badge: referralPending ? faNum(referralPending) : undefined, href: "/dashboard/lawyer#collab" }] : []),
     ...(can("services") ? [{ label: "درخواست‌های خدمات", icon: "briefcase" as const, badge: serviceReqs.length ? faNum(serviceReqs.length) : undefined, href: "/dashboard/lawyer#services" }] : []),
     ...(can("reminders") ? [{ label: "یادآورها", icon: "clock" as const, href: "/dashboard/lawyer#reminders" }] : []),
@@ -355,47 +357,8 @@ export default async function LawyerDashboard() {
 
       {showConsultCards && (
         <div id="consults" className="grid gap-6 scroll-mt-24 lg:grid-cols-[1.6fr_1fr] [&>*]:min-w-0">
-          {/* New consultation requests — real pending consultations */}
-          <Card hover={false}>
-            <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-2 font-bold text-foreground">
-                <Icon name="mail" className="h-5 w-5 text-accent-text" /> درخواست‌های مشاوره جدید
-              </h2>
-              <Link href="/consultation/live" className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary-soft">
-                کارتابل مشاوره
-                <Icon name="chevron" className="h-3 w-3 rotate-180" />
-              </Link>
-            </div>
-            <div className="mt-4 space-y-3">
-              {pendingRequests.length > 0 ? pendingRequests.slice(0, 4).map((r) => (
-                <Link
-                  key={r.id}
-                  href="/consultation/live"
-                  aria-label={`مشاهده درخواست مشاوره ${r.clientName} در کارتابل`}
-                  className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 transition-all hover:border-primary/40 hover:bg-surface-2/60"
-                >
-                  <IconChip icon={r.type === "video" ? "video" : r.type === "voice" ? "phone" : "chat"} tone="accent" size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-bold text-foreground">{r.clientName}</p>
-                      <Badge tone="primary">{CONSULT_TYPE_FA[r.type] ?? r.type}</Badge>
-                    </div>
-                    <p className="mt-0.5 text-xs text-muted">
-                      {r.subject.slice(0, 60)} • {faPrice(Number(r.price ?? 0))}
-                    </p>
-                  </div>
-                  <span className="flex items-center gap-1.5 rounded-lg bg-surface-2 px-2.5 py-1.5 text-[11px] text-muted">
-                    در انتظار بررسی
-                    <Icon name="chevron" className="h-3 w-3 rotate-180" />
-                  </span>
-                </Link>
-              )) : (
-                <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
-                  درخواست مشاوره‌ای در صف نیست؛ به‌محض ثبت، این‌جا نمایش داده می‌شود.
-                </p>
-              )}
-            </div>
-          </Card>
+          {/* کارتابل مشاوره — درخواست‌های واقعی موکلان با اقدام تأیید/لغو/تکمیل */}
+          <ConsultRequestsPanel />
 
           {/* Upcoming schedule — real booked slots */}
           <Card hover={false}>
@@ -404,11 +367,10 @@ export default async function LawyerDashboard() {
             </h2>
             <div className="mt-4 space-y-2">
               {scheduled.length > 0 ? scheduled.slice(0, 5).map((c) => (
-                <Link
+                <div
                   key={c.id}
-                  href="/consultation/live"
-                  aria-label={`نوبت ${c.subject} — ورود به کارتابل مشاوره`}
-                  className="flex items-center gap-3 rounded-xl border border-border p-3 transition-all hover:border-primary/40 hover:bg-surface-2/60"
+                  aria-label={`نوبت ${c.subject}`}
+                  className="flex items-center gap-3 rounded-xl border border-border p-3"
                 >
                   <IconChip icon={c.type === "video" ? "video" : c.type === "chat" ? "chat" : "phone"} tone="primary" size="sm" />
                   <div className="min-w-0 flex-1">
@@ -417,11 +379,10 @@ export default async function LawyerDashboard() {
                       {c.startsAt ? faDate(c.startsAt) : "زمان در حال هماهنگی"} • {c.clientName}
                     </p>
                   </div>
-                  <Icon name="chevron" className="h-4 w-4 rotate-180 text-muted" />
-                </Link>
+                </div>
               )) : (
                 <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
-                  نوبت قطعی‌شده‌ای وجود ندارد.
+                  نوبت قطعی‌شده‌ای وجود ندارد؛ با تأیید درخواست در کارتابل مشاوره، نوبت این‌جا می‌نشیند.
                 </p>
               )}
             </div>
@@ -442,8 +403,8 @@ export default async function LawyerDashboard() {
             {allCases.length > 0 ? allCases.map((c) => (
               <Link
                 key={c.id}
-                href={`/track-case?code=${encodeURIComponent(c.caseNumber)}`}
-                aria-label={`پیگیری پرونده ${c.subject} با کد ${c.caseNumber}`}
+                href={`/track-case?code=${encodeURIComponent(c.trackingToken)}`}
+                aria-label={`پیگیری پرونده ${c.subject} با کد رهگیری محرمانه`}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border p-3 transition-all hover:border-primary/40 hover:bg-surface-2/60"
               >
                 <div className="min-w-0 flex-1">

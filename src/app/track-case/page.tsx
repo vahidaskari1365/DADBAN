@@ -56,7 +56,7 @@ export default function TrackCasePage() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && search()}
-                placeholder="مثلاً SHF-1024"
+                placeholder="کد محرمانهٔ پیگیری (۴۳ نویسه)"
                 dir="ltr"
                 className="mt-2 h-11 w-full rounded-xl border border-border-strong bg-background px-3 text-sm outline-none focus:border-primary"
               />

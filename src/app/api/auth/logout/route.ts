@@ -28,8 +28,21 @@ export async function POST() {
   return res;
 }
 
-/** GET — دکمهٔ خروج پنل‌ها: پاک‌کردن کوکی + ریدایرکت به خانه با URL مطلق */
+/** GET — دکمهٔ خروج پنل‌ها: پاک‌کردن کوکی + ریدایرکت به خانه با URL مطلق
+ *
+ * گارد prefetch: next/link مسیرهای داخل nav را prefetch می‌کند (هدر
+ * Next-Router-Prefetch). اگر اجازه دهیم prefetch هم کوکی را پاک کند، کاربر
+ * بدون کلیکِ «خروج» لاگ‌اوت می‌شد (باگ واقعی صفحهٔ پروفایل موکل). پس
+ * درخواست‌های prefetch/RSC را no-op می‌کنیم.
+ */
 export async function GET(req: NextRequest) {
+  if (
+    req.headers.get("next-router-prefetch") === "1" ||
+    req.headers.get("rsc") === "1" ||
+    req.headers.get("purpose") === "prefetch"
+  ) {
+    return NextResponse.json({ ok: true, prefetch: true });
+  }
   const res = NextResponse.redirect(new URL("/", req.nextUrl));
   clearSessionCookie(res);
   return res;
