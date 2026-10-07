@@ -244,7 +244,7 @@ export default function ManagedOperations({ currentRole }: { currentRole: string
                   </select>
                 </div>
 
-                {detail.paymentStatus !== "paid" && detail.price ? (
+                {detail.paymentStatus !== "paid" && detail.price && detail.viewerCanVerifyPayment ? (
                   <div className="rounded-xl border border-accent/30 bg-accent-soft p-3">
                     <p className="text-sm text-foreground-soft">این درخواست منتظر تأیید پرداخت است (مبلغ {faNumSafe(detail.price)} تومان).</p>
                     <Button disabled={busy} variant="accent" size="sm" icon="money" className="mt-2"

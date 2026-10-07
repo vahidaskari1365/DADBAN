@@ -15,6 +15,8 @@ export const dynamic = "force-dynamic";
 export default async function MyServiceRequest({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  // وکیل/عملیات: این صفحه نمای موکل است (پرداخت و بارگذاری موکل) — کارپرداز باید از کنسول /manage اقدام کند
+  if (isOperative(user.role)) redirect("/manage");
   const { id: idParam } = await params;
   const id = Number(idParam);
   const req = await resolveRequestFor(user, id);

@@ -320,7 +320,7 @@ export default async function LawyerDashboard() {
           </div>
           <div className="mt-4 space-y-3">
             {serviceReqs.length > 0 ? serviceReqs.map(({ req, serviceTitle, clientName }) => (
-              <a key={req.id} href={`/dashboard/services/${req.id}`} className="block rounded-xl border border-border p-3 transition-colors hover:border-primary/30 hover:bg-surface-2/60">
+              <a key={req.id} href="/manage" className="block rounded-xl border border-border p-3 transition-colors hover:border-primary/30 hover:bg-surface-2/60">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-foreground">{req.title}</p>

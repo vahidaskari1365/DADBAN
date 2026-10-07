@@ -90,6 +90,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     assignedStaff: staff[0] ?? null,
     supervisingLawyer: supervisor[0] ?? null,
     canManage: isOperative(user.role) && (user.role === "admin" || user.role === "staff" || user.role === "supervisor"),
+    // آینهٔ گارد PATCH: چه کسی می‌تواند تأیید پرداخت را ببیند/بزند
+    viewerCanVerifyPayment:
+      isOperative(user.role) &&
+      (user.role === "admin" || user.role === "staff" || user.role === "supervisor" ||
+        (user.role === "lawyer" && req.supervisingLawyerId === user.id)),
   });
 }
 
