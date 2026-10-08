@@ -2,18 +2,17 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { articles, lawyers } from "@/db/schema";
 import { asc } from "drizzle-orm";
-import { tdyn, tdynLong } from "@/lib/i18n/dynamic";
+import { tdyn, splitChunks } from "@/lib/i18n/dynamic";
 import type { Locale } from "@/lib/i18n/core";
 
 /**
- * گرم‌کردن کش ترجمهٔ محتوای پویا (content_translations) — یک‌بار پس از استقرار
- * اجرا می‌شود تا بازدید اول هر صفحه در زبان‌های غیر فارسی هم سریع باشد.
- *
- * محافظت: پارامتر key باید با I18N_WARM_KEY (یا کلید پیش‌فرض مستند) برابر باشد.
- * مصرف:  GET /api/i18n/warm?key=…&what=articles&locale=en&offset=0&limit=1
- *        GET /api/i18n/warm?key=…&what=lawyers&locale=ar&offset=0&limit=50
- * پاسخ JSON شمارش ترجمه‌های انجام‌شده را برمی‌گرداند؛ فراخوانی‌کننده با loop
- * offset را جلو می‌برد تا «done:false» یعنی تمام شد.
+ * گرم‌کردن کش ترجمهٔ محتوای پویا (content_translations) — یک‌بار پس از استقرار.
+ * محدودیت سختِ ۶۰ ثانیه‌ای Vercel → هر فراخوانی باید کوچک باشد:
+ *   what=lawyers  &fields=one   → فقط ۱ وکیل، همهٔ فیلدهای موازی
+ *   what=articles &fields=meta  → فیلدهای کوتاه مقاله (موازی، سریع)
+ *   what=articles &fields=faq   → پرسش‌های متداول
+ *   what=articles &fields=content&part=0..N-1 → ۲ قطعهٔ محتوا در هر فراخوانی
+ * پاسخ شمارنده‌ها و «done» را می‌دهد تا فراخوانی‌کننده loop بزند.
  */
 
 export const runtime = "nodejs";
@@ -37,67 +36,72 @@ export async function GET(req: Request) {
   }
   const locale = localeParam;
   const what = url.searchParams.get("what") === "lawyers" ? "lawyers" : "articles";
+  const fields = url.searchParams.get("fields") ?? "meta";
+  const part = Math.max(0, Number(url.searchParams.get("part") ?? "0") || 0);
   const offset = Math.max(0, Number(url.searchParams.get("offset") ?? "0") || 0);
-  const limit = Math.min(10, Math.max(1, Number(url.searchParams.get("limit") ?? "1") || 1));
-
   const t0 = Date.now();
-  try {
-    if (what === "articles") {
-      const rows = await db.select().from(articles).orderBy(asc(articles.id)).limit(limit).offset(offset);
-      let fields = 0;
-      for (const a of rows) {
-        await Promise.all([
-          tdyn(locale, a.title, 400),
-          tdyn(locale, a.category, 200),
-          tdyn(locale, a.excerpt, 800),
-          tdyn(locale, a.quickAnswer ?? "", 800),
-          a.imageAlt ? tdyn(locale, a.imageAlt, 300) : Promise.resolve(null),
-          tdyn(locale, a.author, 300),
-          tdyn(locale, a.authorRole, 300),
-        ]);
-        fields += 7;
-        // faq
-        try {
-          const faqItems = JSON.parse(a.faq || "[]") as { q: string; a: string }[];
-          await Promise.all(faqItems.flatMap((f) => [tdyn(locale, f.q, 400), tdyn(locale, f.a, 900)]));
-          fields += faqItems.length * 2;
-        } catch {
-          /* faq خراب → رد */
-        }
-        // محتوای کامل (قطعه‌قطعه)
-        await tdynLong(locale, a.content);
-        fields += 1;
-      }
-      return NextResponse.json({
-        ok: true, what, locale, offset, processed: rows.length, fields,
-        done: rows.length < limit, ms: Date.now() - t0,
-      });
-    }
 
-    // lawyers
-    const rows = await db.select().from(lawyers).orderBy(asc(lawyers.id)).limit(limit).offset(offset);
-    let fields = 0;
-    for (const l of rows) {
+  try {
+    if (what === "lawyers") {
+      const rows = await db.select().from(lawyers).orderBy(asc(lawyers.id)).limit(1).offset(offset);
+      if (!rows[0]) return NextResponse.json({ ok: true, done: true, processed: 0 });
+      const l = rows[0];
       await Promise.all([
         tdyn(locale, l.name, 300),
         tdyn(locale, l.title, 300),
         tdyn(locale, l.city, 200),
         tdyn(locale, l.province, 200),
         l.bio ? tdyn(locale, l.bio, 900) : Promise.resolve(null),
+        ...(l.specialties ?? []).map((s) => tdyn(locale, s, 200)),
+        ...(l.services ?? []).map((s) => tdyn(locale, s, 200)),
       ]);
-      fields += 5;
-      for (const s of l.specialties ?? []) {
-        await tdyn(locale, s, 200);
-        fields += 1;
-      }
-      for (const s of l.services ?? []) {
-        await tdyn(locale, s, 200);
-        fields += 1;
+      return NextResponse.json({
+        ok: true, what, locale, offset, processed: 1,
+        fields: 5 + (l.specialties?.length ?? 0) + (l.services?.length ?? 0),
+        done: false, ms: Date.now() - t0,
+      });
+    }
+
+    // articles
+    const rows = await db.select().from(articles).orderBy(asc(articles.id)).limit(1).offset(offset);
+    if (!rows[0]) return NextResponse.json({ ok: true, done: true, processed: 0 });
+    const a = rows[0];
+
+    if (fields === "meta") {
+      await Promise.all([
+        tdyn(locale, a.title, 400),
+        tdyn(locale, a.category, 200),
+        tdyn(locale, a.excerpt, 800),
+        tdyn(locale, a.quickAnswer ?? "", 800),
+        a.imageAlt ? tdyn(locale, a.imageAlt, 300) : Promise.resolve(null),
+        tdyn(locale, a.author, 300),
+        tdyn(locale, a.authorRole, 300),
+      ]);
+      return NextResponse.json({ ok: true, what, locale, fields: "meta", offset, processed: 1, done: false, ms: Date.now() - t0 });
+    }
+
+    if (fields === "faq") {
+      try {
+        const faqItems = JSON.parse(a.faq || "[]") as { q: string; a: string }[];
+        await Promise.all(faqItems.flatMap((f) => [tdyn(locale, f.q, 400), tdyn(locale, f.a, 900)]));
+        return NextResponse.json({ ok: true, what, locale, fields: "faq", offset, processed: faqItems.length * 2, done: false, ms: Date.now() - t0 });
+      } catch {
+        return NextResponse.json({ ok: true, what, locale, fields: "faq", offset, processed: 0, done: false, ms: Date.now() - t0 });
       }
     }
+
+    // content — ۲ قطعه در هر فراخوانی
+    const chunks = splitChunks(a.content);
+    const parts = Math.ceil(chunks.length / 2);
+    if (part >= parts) {
+      return NextResponse.json({ ok: true, what, locale, fields: "content", offset, processed: 0, chunks: chunks.length, parts, done: true, ms: Date.now() - t0 });
+    }
+    const slice = chunks.slice(part * 2, part * 2 + 2);
+    await Promise.all(slice.map((c) => tdyn(locale, c, 2200)));
     return NextResponse.json({
-      ok: true, what, locale, offset, processed: rows.length, fields,
-      done: rows.length < limit, ms: Date.now() - t0,
+      ok: true, what, locale, fields: "content", offset, part,
+      processed: slice.length, chunks: chunks.length, parts,
+      done: false, ms: Date.now() - t0,
     });
   } catch (e) {
     return NextResponse.json(

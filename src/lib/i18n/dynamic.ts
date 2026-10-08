@@ -144,27 +144,24 @@ export async function tdyn(locale: Locale, faText: string, maxTokens = 1400): Pr
 /** آستانهٔ شکستن متن بلند به پاراگراف‌ها */
 const CHUNK_LIMIT = 3800;
 
-/** ترجمهٔ متن بلند (محتوای کامل مقاله) — شکستن به پاراگراف و ترجمهٔ موازی */
-export async function tdynLong(locale: Locale, faText: string): Promise<string> {
-  const text = (faText ?? "").trim();
-  if (locale === "fa" || !text) return faText ?? "";
-  if (text.length <= CHUNK_LIMIT) return tdyn(locale, text, 2200);
-
-  // شکستن روی مرز پاراگراف‌ها (\n\n) تا هر قطعه ≤ CHUNK_LIMIT باشد
-  const paras = text.split(/\n{2,}/);
+/** شکستن متن بلند به قطعه‌های ≤۳۸۰۰ نویسه (برای tdynLong و گرم‌کردن کش) */
+export function splitChunks(text: string, limit = CHUNK_LIMIT): string[] {
+  const src = (text ?? "").trim();
+  if (!src) return [];
+  const paras = src.split(/\n{2,}/);
   const chunks: string[] = [];
   let cur = "";
   for (const p of paras) {
-    if ((cur + "\n\n" + p).length > CHUNK_LIMIT && cur) {
+    if ((cur + "\n\n" + p).length > limit && cur) {
       chunks.push(cur);
       cur = p;
     } else {
       cur = cur ? `${cur}\n\n${p}` : p;
     }
     // پاراگرافِ تنهایی بلندتر از حد → شکستن سخت روی جمله
-    while (cur.length > CHUNK_LIMIT) {
-      const cut = cur.lastIndexOf(". ", CHUNK_LIMIT);
-      const at = cut > CHUNK_LIMIT / 2 ? cut + 2 : CHUNK_LIMIT;
+    while (cur.length > limit) {
+      const cut = cur.lastIndexOf(". ", limit);
+      const at = cut > limit / 2 ? cut + 2 : limit;
       chunks.push(cur.slice(0, at));
       cur = cur.slice(at);
     }
@@ -174,7 +171,16 @@ export async function tdynLong(locale: Locale, faText: string): Promise<string> 
     // محافظت از هزینه: بیش از ۱۴ قطعه → فقط ۱۴ قطعه اول + بقیه فارسی می‌ماند
     chunks.length = 14;
   }
+  return chunks;
+}
 
+/** ترجمهٔ متن بلند (محتوای کامل مقاله) — شکستن به پاراگراف و ترجمهٔ موازی */
+export async function tdynLong(locale: Locale, faText: string): Promise<string> {
+  const text = (faText ?? "").trim();
+  if (locale === "fa" || !text) return faText ?? "";
+  if (text.length <= CHUNK_LIMIT) return tdyn(locale, text, 2200);
+
+  const chunks = splitChunks(text);
   const translated = await Promise.all(chunks.map((c) => tdyn(locale, c, 2200)));
   return translated.join("\n\n");
 }
