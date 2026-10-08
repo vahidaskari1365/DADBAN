@@ -115,14 +115,14 @@ const D: Record<string, Row> = {
   "ثبت پرونده و دریافت پیشنهاد قیمت برای موکل کاملاً رایگان است.": ["Filing a case and receiving price offers is completely free for clients.", "تسجيل القضية واستلام عروض الأسعار مجاني تمامًا للموكّل.", "Dava kaydı ve fiyat teklifi alma müvekkil için tamamen ücretsizdir.", "提交案件和获取报价对当事人完全免费。"],
   "ثبت پرونده": ["File a case", "سجّل قضية", "Dava kaydı", "提交案件"],
   "بازار پرونده‌ها": ["Case Marketplace", "سوق القضايا", "Dava pazarı", "案件市场"],
-  "درخواست پرونده‌های استان شما": [“Case requests in your province” — PLACEHOLDER]
+  "درخواست پرونده‌های استان شما": ["Case requests in your province", "طلبات القضايا في محافظتكم", "İlinizdeki dava talepleri", "您所在省份的案件请求"],
   "دیدن بازار پرونده‌ها": ["View the case marketplace", "اعرض سوق القضايا", "Dava pazarını gör", "查看案件市场"],
   "دیدن همهٔ پرونده‌های باز در بازار پرونده‌ها": ["See all open cases in the case marketplace", "شاهد جميع القضايا المفتوحة في سوق القضايا", "Dava pazarındaki tüm açık davaları görün", "查看案件市场中的所有开放案件"],
   "خلاصهٔ پرونده (بدون اطلاعات تماس) در بازار پرونده‌ها دیده می‌شود و وکلای متخصص نظر و پیشنهاد قیمت ثبت می‌کنند": ["The case summary (without contact info) appears in the case marketplace where specialist lawyers submit opinions and price quotes", "يظهر ملخص القضية (دون معلومات الاتصال) في سوق القضايا حيث يسجّل المحامون المتخصصون آراءهم وعروض الأسعار", "Dava özeti (iletişim bilgisi olmadan) dava pazarında görünür ve uzman avukatlar görüş ile fiyat teklifi kaydeder", "案件摘要（不含联系方式）会显示在案件市场中，专业律师会提交意见和报价"],
   "شما پیشنهادها را مقایسه و بهترین وکیل را انتخاب می‌کنید — گفتگو رایگان شروع می‌شود": ["You compare the offers and pick the best lawyer — the free chat begins", "تقارن العروض وتختار أفضل محامٍ — وتبدأ المحادثة المجانية", "Teklifleri karşılaştırır ve en iyi avukatı seçersiniz — ücretsiz sohbet başlar", "您比较各报价并选择最好的律师——免费沟通随即开始"],
 };
 
-export const EXT_B5: Record<Locale, Record<string, string>> = {
+export const EXT_B5: Record<Exclude<Locale, "fa">, Record<string, string>> = {
   en: Object.fromEntries(Object.entries(D).map(([k, v]) => [k, v[0]])),
   ar: Object.fromEntries(Object.entries(D).map(([k, v]) => [k, v[1]])),
   tr: Object.fromEntries(Object.entries(D).map(([k, v]) => [k, v[2]])),

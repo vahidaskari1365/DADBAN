@@ -314,6 +314,34 @@ export const serviceAuditLogs = pgTable("service_audit_logs", {
   requestIdx: index("service_audit_logs_request_idx").on(t.requestId),
 }));
 
+/**
+ * اعلان‌های درون‌برنامه‌ای همهٔ کاربران (موکل + وکیل/عضو تیم):
+ *  - ثبت پرونده در بازار → اعلان برای وکلای همان استان
+ *  - ثبت پیشنهاد قیمت روی پرونده → اعلان برای موکل (به‌همراه لینک مقایسهٔ پیشنهادها)
+ *  - پذیرش پیشنهاد توسط موکل → اعلان برای وکیلِ برنده
+ * نوع اعلان + متادیتا در نوع ذخیره می‌شود تا UI با t() چندزبانه رندر کند.
+ */
+export const userNotifications = pgTable("user_notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  /** new_case | new_offer | offer_accepted */
+  type: text("type").notNull(),
+  /** عنوان فارسی (کلید i18n) — متن نهایی در رندر با t() ساخته می‌شود */
+  title: text("title").notNull(),
+  /** متن تکمیلی فارسی (کلید i18n) */
+  body: text("body").notNull().default(""),
+  /** مقصد کلیک — لینک داخلی */
+  link: text("link"),
+  /** داده‌های داینامیک (موضوع پرونده، نام وکیل، مبلغ…) برای رندر چندزبانه */
+  meta: jsonb("meta"),
+  read: boolean("read").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => ({
+  userReadIdx: index("user_notifications_user_idx").on(t.userId, t.read),
+}));
+
 /* ------------------------------ Lawyers ------------------------------ */
 export const lawyers = pgTable("lawyers", {
   id: serial("id").primaryKey(),

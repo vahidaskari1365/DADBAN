@@ -10,17 +10,18 @@ import { EXT_B3 } from "./ext-b3";
 import { EXT_B3B } from "./ext-b3b";
 import { EXT_B4 } from "./ext-b4";
 import { EXT_B5 } from "./ext-b5";
+import { EXT_B6 } from "./ext-b6";
 
 /**
  * واژه‌نامه‌های دادبان — کلیدها = رشته‌های فارسی منبع (عیناً با نیم‌فاصله).
  * زبان fa نیازی به جدول ندارد (t همان رشتهٔ منبع را برمی‌گرداند).
- * لایه‌ها: دیکشنری اصلی + GEO (استان/شهر/تخصص) + پوشش‌های حوزه‌ای ext-b1..b4
+ * لایه‌ها: دیکشنری اصلی + GEO (استان/شهر/تخصص) + پوشش‌های حوزه‌ای ext-b1..b6
  * که در جریان «بومی‌سازی کامل همه‌چیز» اضافه شدند (کلید تکراری → آخرین لایه می‌برد).
  */
 export const DICTS: Record<Locale, Record<string, string>> = {
   fa: {},
-  en: { ...en, ...GEO.en, ...EXT_B1.en, ...EXT_B2.en, ...EXT_B3.en, ...EXT_B3B.en, ...EXT_B4.en, ...EXT_B5.en },
-  ar: { ...ar, ...GEO.ar, ...EXT_B1.ar, ...EXT_B2.ar, ...EXT_B3.ar, ...EXT_B3B.ar, ...EXT_B4.ar, ...EXT_B5.ar },
-  tr: { ...tr, ...GEO.tr, ...EXT_B1.tr, ...EXT_B2.tr, ...EXT_B3.tr, ...EXT_B3B.tr, ...EXT_B4.tr, ...EXT_B5.tr },
-  zh: { ...zh, ...GEO.zh, ...EXT_B1.zh, ...EXT_B2.zh, ...EXT_B3.zh, ...EXT_B3B.zh, ...EXT_B4.zh, ...EXT_B5.zh },
+  en: { ...en, ...GEO.en, ...EXT_B1.en, ...EXT_B2.en, ...EXT_B3.en, ...EXT_B3B.en, ...EXT_B4.en, ...EXT_B5.en, ...EXT_B6.en },
+  ar: { ...ar, ...GEO.ar, ...EXT_B1.ar, ...EXT_B2.ar, ...EXT_B3.ar, ...EXT_B3B.ar, ...EXT_B4.ar, ...EXT_B5.ar, ...EXT_B6.ar },
+  tr: { ...tr, ...GEO.tr, ...EXT_B1.tr, ...EXT_B2.tr, ...EXT_B3.tr, ...EXT_B3B.tr, ...EXT_B4.tr, ...EXT_B5.tr, ...EXT_B6.tr },
+  zh: { ...zh, ...GEO.zh, ...EXT_B1.zh, ...EXT_B2.zh, ...EXT_B3.zh, ...EXT_B3B.zh, ...EXT_B4.zh, ...EXT_B5.zh, ...EXT_B6.zh },
 };

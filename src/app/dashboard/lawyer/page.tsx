@@ -1,10 +1,9 @@
 import { formatJalaliLong as faDate } from "@/lib/jalali";
-import { sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { cases, consultations, tickets, payments, serviceRequests, managedServices, users, teamCaseAssignments, lawyerReferrals } from "@/db/schema";
-import { and, desc, eq, inArray, notInArray } from "drizzle-orm";
+import { cases, consultations, tickets, payments, serviceRequests, managedServices, users, teamCaseAssignments, lawyerReferrals, userNotifications } from "@/db/schema";
+import { and, desc, eq, inArray, notInArray, or, sql } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -16,6 +15,7 @@ import { StatusBadge, UrgencyBadge } from "@/components/managed";
 import { CASE_STATUS_FA } from "@/lib/case-facts";
 import { LAWYER_HIDDEN_STATUSES } from "@/lib/managed-services";
 import { CaseOffersPanel } from "@/components/lawyer/case-offers-panel";
+import { NotificationsPanel } from "@/components/notifications-panel";
 import { ConsultRequestsPanel } from "@/components/lawyer/consult-requests-panel";
 import { ReferralPanel } from "@/components/lawyer/referral-panel";
 import { TeamPanel } from "@/components/lawyer/team-panel";
@@ -100,6 +100,7 @@ export default async function LawyerDashboard() {
   let serviceReqs: { req: typeof serviceRequests.$inferSelect; serviceTitle: string | null; clientName: string | null }[] = [];
   let teamMembersCount = 0;
   let referralPending = 0;
+  let unreadNotifs = 0;
 
   try {
     if (lawyerId) {
@@ -183,6 +184,16 @@ export default async function LawyerDashboard() {
   } catch (err) {
     console.error("[dadban] lawyer dashboard: team query failed:", err);
   }
+  try {
+    // badge اعلان‌ها — پرونده‌های جدید بازار و پذیرش پیشنهادها
+    const [agg] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(userNotifications)
+      .where(and(eq(userNotifications.userId, user.id), eq(userNotifications.read, false)));
+    unreadNotifs = Number(agg?.n ?? 0);
+  } catch (err) {
+    console.error("[dadban] lawyer dashboard: notifications query failed:", err);
+  }
 
   const activeCases = allCases.filter((c) => c.status !== "closed");
   const pendingRequests = myConsults.filter((c) => c.status === "pending");
@@ -209,6 +220,7 @@ export default async function LawyerDashboard() {
   const nav: NavItem[] = [
     { label: t("نمای کلی"), icon: "home", active: true, href: "/dashboard/lawyer" },
     ...(isBoss ? [{ label: t("پروفایل حرفه‌ای من"), icon: "badge" as const, href: "/dashboard/lawyer/profile" }] : []),
+    { label: t("اعلان‌ها"), icon: "mail" as const, badge: unreadNotifs ? faNum(unreadNotifs) : undefined, href: "/dashboard/lawyer#notifications" },
     ...(can("offers") ? [{ label: t("پیشنهادهای پرونده"), icon: "mail" as const, href: "/dashboard/lawyer#offers" }] : []),
     ...(can("consultations") ? [{ label: t("کارتابل مشاوره"), icon: "chat" as const, href: "/dashboard/lawyer#consult-requests" }] : []),
     ...(can("offers") ? [{ label: t("همکاری و ارجاع"), icon: "link" as const, badge: referralPending ? faNum(referralPending) : undefined, href: "/dashboard/lawyer#collab" }] : []),
@@ -279,6 +291,11 @@ export default async function LawyerDashboard() {
           )}
         </div>
       </Card>
+
+      {/* اعلان‌ها — پرونده‌های جدید بازار و وضعیت پیشنهادها */}
+      <div id="notifications">
+        <NotificationsPanel />
+      </div>
 
       {/* Stats — کاشی‌های گرادیانی کلیک‌پذیر */}
       {stats.length > 0 && (

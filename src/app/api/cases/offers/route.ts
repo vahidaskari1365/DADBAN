@@ -5,6 +5,7 @@ import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { rateLimit, readJson, text } from "@/lib/api-security";
 import { getLawyerActor } from "@/lib/lawyer-actor";
 import { ensureProfileSchema } from "@/lib/auto-seed";
+import { notifyClientNewOffer } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -181,11 +182,17 @@ export async function POST(req: Request) {
     await ensureProfileSchema();
     const [c] = await db.select().from(cases).where(eq(cases.id, caseId)).limit(1);
     if (!c) return NextResponse.json({ ok: false, error: "پرونده پیدا نشد." }, { status: 404 });
-    const [me] = await db.select({ city: lawyers.city }).from(lawyers).where(eq(lawyers.id, actor.lawyerId)).limit(1);
+    const [me] = await db.select({ city: lawyers.city, name: lawyers.name }).from(lawyers).where(eq(lawyers.id, actor.lawyerId)).limit(1);
     // broadcast استانی: وکیل فقط روی پروندهٔ استان خودش پیشنهاد می‌دهد
     if (me?.city && normalizeCity(c.city) !== normalizeCity(me.city)) {
       return NextResponse.json({ ok: false, error: "این پرونده در استان شما ثبت نشده است." }, { status: 403 });
     }
+    // پیشنهاد جدید یا به‌روزرسانی؟ اعلان فقط برای پیشنهادِ تازه (ضد اسپم)
+    const [existing] = await db
+      .select({ id: caseOffers.id })
+      .from(caseOffers)
+      .where(and(eq(caseOffers.caseId, caseId), eq(caseOffers.lawyerId, actor.lawyerId)))
+      .limit(1);
     await db
       .insert(caseOffers)
       .values({ caseId, lawyerId: actor.lawyerId, message, price })
@@ -193,6 +200,19 @@ export async function POST(req: Request) {
         target: [caseOffers.caseId, caseOffers.lawyerId],
         set: { message, price, status: sql`case when ${caseOffers.status} = 'accepted' then 'accepted' else 'sent' end`, createdAt: new Date() },
       });
+    if (!existing) {
+      // اعلان «پیشنهاد جدید» برای موکل (پنل موکل + لینک مقایسهٔ پیشنهادها) — best-effort
+      try {
+        await notifyClientNewOffer({
+          caseNumber: c.caseNumber,
+          trackingToken: c.trackingToken,
+          subject: c.subject,
+          contactPhone: c.contactPhone,
+          lawyerName: me?.name || actor.user.name,
+          price,
+        });
+      } catch { /* non-fatal */ }
+    }
     return NextResponse.json({ ok: true, message: "پیشنهاد شما برای موکل ارسال شد." });
   } catch {
     return NextResponse.json({ ok: false, error: "ثبت پیشنهاد انجام نشد." }, { status: 500 });

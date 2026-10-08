@@ -4,6 +4,7 @@ import { cases, caseOffers } from "@/db/schema";
 import { and, eq, ne } from "drizzle-orm";
 import { rateLimit, readJson, text } from "@/lib/api-security";
 import { ensureProfileSchema } from "@/lib/auto-seed";
+import { notifyOfferAccepted } from "@/lib/notify";
 
 export const runtime = "nodejs";
 
@@ -48,6 +49,10 @@ export async function POST(req: Request) {
       .update(caseOffers)
       .set({ status: "declined" })
       .where(and(eq(caseOffers.caseId, c.id), ne(caseOffers.id, offerId), eq(caseOffers.status, "sent")));
+    // اعلان «پیشنهاد شما پذیرفته شد» برای وکیلِ برنده — best-effort
+    try {
+      await notifyOfferAccepted(offer.lawyerId, c.subject);
+    } catch { /* non-fatal */ }
     return NextResponse.json({ ok: true, message: "وکیل انتخاب شد؛ از این پس می‌توانید پاسخ پیام او را رایگان بدهید." });
   } catch {
     return NextResponse.json({ ok: false, error: "خطای داخلی رخ داد." }, { status: 500 });

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { cases, consultations, tickets } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { cases, consultations, tickets, userNotifications } from "@/db/schema";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -13,6 +13,7 @@ import { isLawyerSideRole } from "@/lib/roles";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 import { nextActionForCase, CASE_STATUS_FA, CASE_STAGE_FLOW } from "@/lib/case-facts";
 import DocumentsManager from "@/components/documents-manager";
+import { NotificationsPanel } from "@/components/notifications-panel";
 import { FeeCard } from "@/components/fee/fee-card";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
@@ -59,12 +60,22 @@ export default async function ClientDashboard() {
   let myCases: typeof cases.$inferSelect[] = [];
   let myConsults: typeof consultations.$inferSelect[] = [];
   let myTickets: typeof tickets.$inferSelect[] = [];
+  let unreadNotifs = 0;
   try {
     [myCases, myConsults, myTickets] = await Promise.all([
       db.select().from(cases).where(eq(cases.contactPhone, phone)).orderBy(desc(cases.createdAt)).limit(5),
       db.select().from(consultations).where(eq(consultations.clientPhone, phone)).orderBy(desc(consultations.createdAt)).limit(5),
       db.select().from(tickets).where(eq(tickets.phone, phone)).orderBy(desc(tickets.createdAt)).limit(5),
     ]);
+  } catch {
+    /* degraded mode */
+  }
+  try {
+    const [agg] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(userNotifications)
+      .where(and(eq(userNotifications.userId, user.id), eq(userNotifications.read, false)));
+    unreadNotifs = Number(agg?.n ?? 0);
   } catch {
     /* degraded mode */
   }
@@ -138,6 +149,7 @@ export default async function ClientDashboard() {
         { label: t("رزرو مشاوره"), icon: "calendar", href: "/consultation" },
         { label: t("ثبت پرونده جدید"), icon: "folder", href: "/case/new" },
         { label: t("پیگیری با کد رهگیری"), icon: "location", href: "/track-case" },
+        { label: t("اعلان‌ها"), icon: "mail", badge: unreadNotifs ? faNum(unreadNotifs) : undefined, href: "/dashboard/client#notifications" },
         { label: t("پیام‌ها و پشتیبانی"), icon: "mail", badge: faNum(myTickets.length), href: "/support" },
         { label: t("پروفایل من"), icon: "user", href: "/dashboard/client/profile" },
       ]}
@@ -209,6 +221,11 @@ export default async function ClientDashboard() {
           ))}
         </div>
       </section>
+
+      {/* اعلان‌ها — پیشنهادهای جدید وکلا روی پرونده‌های شما */}
+      <div id="notifications">
+        <NotificationsPanel />
+      </div>
 
       {/* پرداخت قسطی حق‌الوکاله — اطلاع‌رسانی به موکل */}
       <FeeCard />

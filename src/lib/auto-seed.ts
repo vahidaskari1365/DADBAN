@@ -325,6 +325,9 @@ export async function ensureProfileSchema(): Promise<void> {
     `CREATE INDEX IF NOT EXISTS lawyer_referrals_from_idx ON lawyer_referrals (from_lawyer_id, status)`,
     // ترجمهٔ محتوای پویا (مقالات/وکلا) — کش دائمی روی DB
     `CREATE TABLE IF NOT EXISTS content_translations (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TIMESTAMP NOT NULL DEFAULT now())`,
+    // اعلان‌های درون‌برنامه‌ای همهٔ کاربران (ثبت پرونده → وکیل، پیشنهاد → موکل، پذیرش → وکیل)
+    `CREATE TABLE IF NOT EXISTS user_notifications (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES app_users(id) ON DELETE CASCADE, type TEXT NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL DEFAULT '', link TEXT, meta JSONB, read BOOLEAN NOT NULL DEFAULT false, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS user_notifications_user_idx ON user_notifications (user_id, read)`,
   ];
   for (const stmt of stmts) {
     try {
