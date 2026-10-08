@@ -96,7 +96,7 @@ export async function notifyClientNewOffer(c: {
         type: "new_offer",
         title: "پیشنهاد جدیدی برای پروندهٔ شما ثبت شد",
         body: "وکیل «{lawyer}» برای «{subject}» پیشنهاد قیمت داد",
-        link: `/case/offers?cn=${encodeURIComponent(c.caseNumber)}&token=${encodeURIComponent(c.trackingToken)}`,
+        link: `/case/offers?cn=${encodeURIComponent(c.caseNumber)}&t=${encodeURIComponent(c.trackingToken)}`,
         meta: { lawyer: c.lawyerName, price: c.price, subject: c.subject, caseNumber: c.caseNumber },
       },
     );

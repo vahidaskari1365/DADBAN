@@ -50,7 +50,8 @@ interface Payload {
 function OffersContent() {
   const search = useSearchParams();
   const cn = search.get("cn") ?? "";
-  const token = search.get("t") ?? "";
+  // کد پیگیری: پارامتر رسمی «t» — «token» هم پذیرفته می‌شود (سازگاری لینک‌های اعلان)
+  const token = search.get("t") ?? search.get("token") ?? "";
   const t = useT();
   const tf = templateT(t);
 
