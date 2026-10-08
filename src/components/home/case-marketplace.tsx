@@ -6,6 +6,7 @@ import { Reveal } from "@/components/reveal";
 import { Icon } from "@/components/icons";
 import { Container } from "@/components/ui";
 import { faNum } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * بخش «بازار پرونده‌ها» در صفحهٔ اول — معرفی کوتاه فرآیند سه‌گامی
@@ -15,6 +16,7 @@ import { faNum } from "@/lib/data";
  */
 
 export async function CaseMarketplace() {
+  const t = await getT();
   let stats = { openCases: 0, totalOffers: 0, lawyers: 0 };
   let hasData = false;
   try {
@@ -58,13 +60,13 @@ export async function CaseMarketplace() {
       <Reveal variant="blur">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold tracking-wide text-accent-text">
-            بازار پرونده‌ها
+            {t("بازار پرونده‌ها")}
           </span>
           <h2 className="mt-3 text-pretty text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-[2rem]">
-            پرونده‌تان را به رقابت بگذارید؛ بهترین پیشنهاد را انتخاب کنید
+            {t("پرونده‌تان را به رقابت بگذارید؛ بهترین پیشنهاد را انتخاب کنید")}
           </h2>
           <p className="mt-3 text-sm leading-7 text-muted sm:text-base">
-            مثل بازار کار، ولی برای پرونده‌های حقوقی: موکل پرونده را ثبت می‌کند، وکلای متخصص نظر و پیشنهاد قیمت اعلام می‌کنند و موکل آزادانه بهترین را انتخاب می‌کند.
+            {t("مثل بازار کار، ولی برای پرونده‌های حقوقی: موکل پرونده را ثبت می‌کند، وکلای متخصص نظر و پیشنهاد قیمت اعلام می‌کنند و موکل آزادانه بهترین را انتخاب می‌کند.")}
           </p>
         </div>
       </Reveal>
@@ -80,9 +82,9 @@ export async function CaseMarketplace() {
               <div>
                 <p className="text-sm font-black text-foreground">
                   <span className="tnum text-primary">{faNum(i + 1)}. </span>
-                  {s.title}
+                  {t(s.title)}
                 </p>
-                <p className="mt-1 text-xs leading-6 text-muted">{s.desc}</p>
+                <p className="mt-1 text-xs leading-6 text-muted">{t(s.desc)}</p>
               </div>
             </div>
           </Reveal>
@@ -95,19 +97,19 @@ export async function CaseMarketplace() {
           {hasData ? (
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center sm:text-start">
               <span className="text-xs text-muted">
-                <strong className="tnum text-base font-black text-foreground">{faNum(stats.openCases)}</strong> پروندهٔ باز
+                <strong className="tnum text-base font-black text-foreground">{faNum(stats.openCases)}</strong> {t("پروندهٔ باز")}
               </span>
               <span className="hidden h-4 w-px bg-border sm:block" aria-hidden />
               <span className="text-xs text-muted">
-                <strong className="tnum text-base font-black text-foreground">{faNum(stats.totalOffers)}</strong> پیشنهاد قیمت ثبت‌شده
+                <strong className="tnum text-base font-black text-foreground">{faNum(stats.totalOffers)}</strong> {t("پیشنهاد قیمت ثبت‌شده")}
               </span>
               <span className="hidden h-4 w-px bg-border sm:block" aria-hidden />
               <span className="text-xs text-muted">
-                <strong className="tnum text-base font-black text-foreground">{faNum(stats.lawyers)}</strong> وکیل متخصص
+                <strong className="tnum text-base font-black text-foreground">{faNum(stats.lawyers)}</strong> {t("وکیل متخصص")}
               </span>
             </div>
           ) : (
-            <p className="text-xs leading-6 text-muted">ثبت پرونده و دریافت پیشنهاد قیمت برای موکل کاملاً رایگان است.</p>
+            <p className="text-xs leading-6 text-muted">{t("ثبت پرونده و دریافت پیشنهاد قیمت برای موکل کاملاً رایگان است.")}</p>
           )}
           <div className="flex shrink-0 flex-wrap justify-center gap-2">
             <Link
@@ -115,13 +117,13 @@ export async function CaseMarketplace() {
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-hover"
             >
               <Icon name="plus" className="h-4 w-4" />
-              ثبت پرونده
+              {t("ثبت پرونده")}
             </Link>
             <Link
               href="/case-board"
               className="inline-flex h-11 items-center gap-2 rounded-xl border border-border bg-background px-5 text-sm font-bold text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
             >
-              دیدن بازار پرونده‌ها
+              {t("دیدن بازار پرونده‌ها")}
               <Icon name="arrow" className="h-4 w-4" />
             </Link>
           </div>

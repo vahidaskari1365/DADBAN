@@ -6,6 +6,8 @@ import { Container, Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { relativeTimeJalali } from "@/lib/jalali";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * برد زندهٔ «بازار پرونده‌های دادبان» — سمت کلاینت:
@@ -60,6 +62,8 @@ interface CaseDetail {
 const normalize = (s: string) => s.replace(/\s+/g, " ").trim().replace(/\u200c/g, " ");
 
 export function CaseBoardClient() {
+  const t = useT();
+  const tf = templateT(t);
   const [data, setData] = useState<{ stats: BoardStats; actor: Actor | null; cities: string[]; cases: BoardCase[] } | null>(null);
   const [failed, setFailed] = useState(false);
   const [q, setQ] = useState("");
@@ -106,14 +110,14 @@ export function CaseBoardClient() {
       .then((r) => r.json())
       .then((d) => {
         if (!d.ok || !d.case) {
-          setDetailError(d.error ?? "دریافت جزئیات پرونده ناموفق بود.");
+          setDetailError(d.error ?? t("دریافت جزئیات پرونده ناموفق بود."));
           return;
         }
         setDetail({ case: d.case, myOffer: d.myOffer ?? null, actor: d.actor ?? null });
         setBidMsg(d.myOffer?.message ?? "");
         setBidPrice(d.myOffer?.price ? String(d.myOffer.price) : "");
       })
-      .catch(() => setDetailError("ارتباط برقرار نشد؛ اتصال اینترنت را بررسی کنید."))
+      .catch(() => setDetailError(t("ارتباط برقرار نشد؛ اتصال اینترنت را بررسی کنید.")))
       .finally(() => setDetailLoading(false));
   }, []);
 
@@ -132,7 +136,7 @@ export function CaseBoardClient() {
     const msg = bidMsg.trim();
     const price = Math.max(0, Math.round(Number(bidPrice) || 0));
     if (!msg) {
-      setBidError("نظر و راهکار خود را دربارهٔ پرونده بنویسید.");
+      setBidError(t("نظر و راهکار خود را دربارهٔ پرونده بنویسید."));
       return;
     }
     setBidBusy(true);
@@ -144,11 +148,11 @@ export function CaseBoardClient() {
       });
       const d = await res.json();
       if (!d.ok) throw new Error(d.error);
-      setBidFlash(d.message ?? "پیشنهاد شما ثبت شد.");
+      setBidFlash(d.message ?? t("پیشنهاد شما ثبت شد."));
       load();
       loadDetail(detail.case.id);
     } catch (e) {
-      setBidError(e instanceof Error ? e.message : "ثبت پیشنهاد انجام نشد.");
+      setBidError(e instanceof Error ? e.message : t("ثبت پیشنهاد انجام نشد."));
     } finally {
       setBidBusy(false);
     }
@@ -203,9 +207,9 @@ export function CaseBoardClient() {
         {/* آمار زندهٔ بازار */}
         <div className="grid gap-3 sm:grid-cols-3" data-testid="board-stats">
           {[
-            { icon: "folder" as const, label: "پروندهٔ باز در بازار", value: data ? faNum(data.stats.openCases) : "…" },
-            { icon: "money" as const, label: "پیشنهاد قیمت ثبت‌شده", value: data ? faNum(data.stats.totalOffers) : "…" },
-            { icon: "gavel" as const, label: "وکلای متخصص دادبان", value: data ? faNum(data.stats.lawyers) : "…" },
+            { icon: "folder" as const, label: t("پروندهٔ باز در بازار"), value: data ? faNum(data.stats.openCases) : "…" },
+            { icon: "money" as const, label: t("پیشنهاد قیمت ثبت‌شده"), value: data ? faNum(data.stats.totalOffers) : "…" },
+            { icon: "gavel" as const, label: t("وکلای متخصص دادبان"), value: data ? faNum(data.stats.lawyers) : "…" },
           ].map((s) => (
             <Card key={s.label} hover={false} className="flex items-center gap-3 p-4">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
@@ -222,38 +226,38 @@ export function CaseBoardClient() {
         {actor && (
           <p className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-primary/20 bg-primary-soft/50 px-3 py-2.5 text-xs font-bold text-foreground-soft" role="status">
             <Icon name="badge" className="h-4 w-4 text-primary" />
-            {actor.name ?? "همکار گرامی"} عزیز، به بازار پرونده‌ها خوش آمدید
-            {actor.city && <> — پرونده‌های استان «{actor.city}» با نشان «استان شما» مشخص شده‌اند</>}
+            {tf("{name} عزیز، به بازار پرونده‌ها خوش آمدید", { name: actor.name ?? t("همکار گرامی") })}
+            {actor.city && tf(" — پرونده‌های استان «{city}» با نشان «استان شما» مشخص شده‌اند", { city: actor.city })}
           </p>
         )}
 
         {/* نوار فیلتر */}
         <div className="mt-6 flex flex-col gap-2 rounded-2xl border border-border bg-surface p-3 sm:flex-row sm:items-center" role="search">
           <label className="relative flex-1">
-            <span className="sr-only">جستجوی موضوع پرونده</span>
+            <span className="sr-only">{t("جستجوی موضوع پرونده")}</span>
             <Icon name="search" className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="جستجو در موضوع و توضیحات پرونده‌ها…"
+              placeholder={t("جستجو در موضوع و توضیحات پرونده‌ها…")}
               className={fieldCls + " pe-10"}
               data-testid="board-search"
             />
           </label>
           <label className="sm:w-44">
-            <span className="sr-only">فیلتر شهر</span>
+            <span className="sr-only">{t("فیلتر شهر")}</span>
             <select value={city} onChange={(e) => setCity(e.target.value)} className={fieldCls} data-testid="board-city">
-              <option value="">همهٔ شهرها</option>
+              <option value="">{t("همهٔ شهرها")}</option>
               {(data?.cities ?? []).map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </label>
           <label className="sm:w-40">
-            <span className="sr-only">ترتیب نمایش</span>
+            <span className="sr-only">{t("ترتیب نمایش")}</span>
             <select value={sort} onChange={(e) => setSort(e.target.value as "new" | "offers")} className={fieldCls} data-testid="board-sort">
-              <option value="new">جدیدترین پرونده‌ها</option>
-              <option value="offers">بیشترین پیشنهاد</option>
+              <option value="new">{t("جدیدترین پرونده‌ها")}</option>
+              <option value="offers">{t("بیشترین پیشنهاد")}</option>
             </select>
           </label>
         </div>
@@ -262,7 +266,7 @@ export function CaseBoardClient() {
         <div className="mt-5" data-testid="board-list">
           {failed && (
             <p className="rounded-xl border border-danger/30 bg-danger/5 px-4 py-6 text-center text-xs font-bold text-danger" role="alert">
-              دریافت بازار پرونده‌ها ناموفق بود؛ اتصال اینترنت را بررسی کنید.
+              {t("دریافت بازار پرونده‌ها ناموفق بود؛ اتصال اینترنت را بررسی کنید.")}
             </p>
           )}
           {!failed && !data && (
@@ -283,16 +287,16 @@ export function CaseBoardClient() {
                 <Icon name="folder" className="h-6 w-6" />
               </span>
               <p className="mt-3 text-sm font-bold text-foreground">
-                {data.cases.length === 0 ? "هنوز پروندهٔ بازی در بازار نیست" : "پرونده‌ای با این فیلترها پیدا نشد"}
+                {data.cases.length === 0 ? t("هنوز پروندهٔ بازی در بازار نیست") : t("پرونده‌ای با این فیلترها پیدا نشد")}
               </p>
               <p className="mx-auto mt-1 max-w-md text-xs leading-6 text-muted">
                 {data.cases.length === 0
-                  ? "اولین پرونده را ثبت کنید — وکلای متخصص دادبان به‌محض ثبت، پروندهٔ شما را می‌بینند و پیشنهاد قیمت می‌دهند."
-                  : "فیلتر شهر یا عبارت جستجو را تغییر دهید."}
+                  ? t("اولین پرونده را ثبت کنید — وکلای متخصص دادبان به‌محض ثبت، پروندهٔ شما را می‌بینند و پیشنهاد قیمت می‌دهند.")
+                  : t("فیلتر شهر یا عبارت جستجو را تغییر دهید.")}
               </p>
               {data.cases.length === 0 && (
                 <Button href="/case/new" icon="plus" className="mt-4" >
-                  ثبت پروندهٔ جدید
+                  {t("ثبت پروندهٔ جدید")}
                 </Button>
               )}
             </div>
@@ -309,7 +313,7 @@ export function CaseBoardClient() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-sm font-black leading-7 text-foreground transition-colors group-hover:text-primary">{c.subject}</h3>
-                      {c.inMyProvince != null && c.inMyProvince && <Badge tone="primary" >استان شما</Badge>}
+                      {c.inMyProvince != null && c.inMyProvince && <Badge tone="primary" >{t("استان شما")}</Badge>}
                     </div>
                     {c.description && <p className="mt-1.5 line-clamp-2 flex-1 text-xs leading-6 text-muted">{c.description}</p>}
                     <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
@@ -325,16 +329,16 @@ export function CaseBoardClient() {
                         }`}
                       >
                         <Icon name="mail" className="h-3 w-3" />
-                        {c.offersCount > 0 ? `${faNum(c.offersCount)} پیشنهاد قیمت` : "بی‌پیشنهاد"}
+                        {c.offersCount > 0 ? tf("{n} پیشنهاد قیمت", { n: faNum(c.offersCount) }) : t("بی‌پیشنهاد")}
                       </span>
                     </div>
                     {c.budget && (
                       <p className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-foreground-soft">
-                        <Icon name="money" className="h-3.5 w-3.5 text-primary" /> بودجهٔ اعلامی موکل: {c.budget}
+                        <Icon name="money" className="h-3.5 w-3.5 text-primary" /> {tf("بودجهٔ اعلامی موکل: {budget}", { budget: c.budget })}
                       </p>
                     )}
                     <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary transition-all duration-300 group-hover:gap-2">
-                      مشاهده و ثبت پیشنهاد
+                      {t("مشاهده و ثبت پیشنهاد")}
                       <Icon name="arrow" className="h-3.5 w-3.5" />
                     </span>
                   </button>
@@ -347,7 +351,7 @@ export function CaseBoardClient() {
         {data && data.cases.length > 0 && (
           <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[11px] leading-5 text-muted">
             <Icon name="clock" className="h-3.5 w-3.5" />
-            این برد هر ۲۰ ثانیه خودکار به‌روز می‌شود — پرونده‌هایی که موکل وکیلش را انتخاب کرده باشد از برد حذف می‌شوند.
+            {t("این برد هر ۲۰ ثانیه خودکار به‌روز می‌شود — پرونده‌هایی که موکل وکیلش را انتخاب کرده باشد از برد حذف می‌شوند.")}
           </p>
         )}
       </Container>
@@ -367,19 +371,19 @@ export function CaseBoardClient() {
           <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-border bg-surface p-5 shadow-2xl sm:rounded-3xl sm:p-6">
             <div className="flex items-start justify-between gap-3">
               <h2 className="text-lg font-black text-foreground">
-                {detail?.case.subject ?? "در حال دریافت پرونده…"}
+                {detail?.case.subject ?? t("در حال دریافت پرونده…")}
               </h2>
               <button
                 type="button"
                 onClick={closeDetail}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
-                aria-label="بستن"
+                aria-label={t("بستن")}
               >
                 <Icon name="x" className="h-4 w-4" />
               </button>
             </div>
 
-            {detailLoading && <p className="mt-6 text-center text-sm text-muted">در حال دریافت جزئیات…</p>}
+            {detailLoading && <p className="mt-6 text-center text-sm text-muted">{t("در حال دریافت جزئیات…")}</p>}
             {detailError && (
               <p className="mt-4 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2.5 text-xs font-bold text-danger" role="alert">{detailError}</p>
             )}
@@ -389,32 +393,32 @@ export function CaseBoardClient() {
                 <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px]">
                   <Badge tone="neutral" ><Icon name="location" className="h-3 w-3" />{detail.case.city}</Badge>
                   <Badge tone="neutral" >{detail.case.stage}</Badge>
-                  <Badge tone="accent" >{faNum(detail.case.offersCount)} پیشنهاد قیمت</Badge>
+                  <Badge tone="accent" >{tf("{n} پیشنهاد قیمت", { n: faNum(detail.case.offersCount) })}</Badge>
                   <span className="text-muted">{relativeTimeJalali(detail.case.createdAt)}</span>
                 </div>
 
                 {detail.case.budget && (
                   <p className="mt-3 flex items-center gap-2 rounded-xl bg-primary-soft/50 px-3 py-2.5 text-xs font-bold text-foreground-soft">
                     <Icon name="money" className="h-4 w-4 shrink-0 text-primary" />
-                    بودجهٔ اعلامی موکل: {detail.case.budget}
+                    {tf("بودجهٔ اعلامی موکل: {budget}", { budget: detail.case.budget })}
                   </p>
                 )}
 
                 <div className="mt-4 rounded-2xl border border-border bg-surface-2/40 p-4">
-                  <h3 className="text-xs font-black text-foreground">توضیحات پرونده</h3>
+                  <h3 className="text-xs font-black text-foreground">{t("توضیحات پرونده")}</h3>
                   <p className="mt-2 whitespace-pre-line text-xs leading-7 text-foreground-soft">
-                    {detail.case.description || "موکل توضیحات تکمیلی ثبت نکرده است."}
+                    {detail.case.description || t("موکل توضیحات تکمیلی ثبت نکرده است.")}
                   </p>
                 </div>
 
                 <p className="mt-3 flex items-start gap-2 rounded-xl border border-success/25 bg-success/5 px-3 py-2.5 text-[11px] leading-5 text-foreground-soft">
                   <Icon name="lock" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
-                  نام، شمارهٔ تماس و کد پیگیری موکل محرمانه است؛ پس از انتخاب شما توسط موکل، گفتگوی رایگان همان‌جا آغاز می‌شود.
+                  {t("نام، شمارهٔ تماس و کد پیگیری موکل محرمانه است؛ پس از انتخاب شما توسط موکل، گفتگوی رایگان همان‌جا آغاز می‌شود.")}
                 </p>
 
                 {detail.case.closed ? (
                   <p className="mt-4 rounded-xl border border-border bg-surface-2/60 px-3 py-3 text-center text-xs font-bold text-muted">
-                    این پرونده موکلش وکیل را انتخاب کرده و از بازار خارج شده است.
+                    {t("این پرونده موکلش وکیل را انتخاب کرده و از بازار خارج شده است.")}
                   </p>
                 ) : isLawyer ? (
                   /* ─── فرم پیشنهاد وکیل ─── */
@@ -422,13 +426,13 @@ export function CaseBoardClient() {
                     {detail.myOffer && (
                       <p className="mb-3 flex flex-wrap items-center gap-2 rounded-xl bg-accent-soft px-3 py-2 text-[11px] font-bold text-accent-text">
                         <Icon name="check" className="h-3.5 w-3.5" />
-                        پیشنهاد شما قبلاً ثبت شده — می‌توانید آن را به‌روزرسانی کنید
+                        {t("پیشنهاد شما قبلاً ثبت شده — می‌توانید آن را به‌روزرسانی کنید")}
                       </p>
                     )}
                     {provinceMismatch && (
                       <p className="mb-3 flex items-start gap-2 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-[11px] leading-5 text-danger" role="alert">
                         <Icon name="alert" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                        این پرونده در استان شما ({actor?.city}) ثبت نشده است؛ پیشنهاد فقط برای پرونده‌های استان خودتان پذیرفته می‌شود.
+                        {tf("این پرونده در استان شما ({city}) ثبت نشده است؛ پیشنهاد فقط برای پرونده‌های استان خودتان پذیرفته می‌شود.", { city: actor?.city ?? "" })}
                       </p>
                     )}
                     {bidFlash && (
@@ -438,32 +442,32 @@ export function CaseBoardClient() {
                       <p className="mb-3 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs font-bold text-danger" role="alert">{bidError}</p>
                     )}
                     <label className="block">
-                      <span className="text-xs font-bold text-foreground">نظر و راهکار شما برای این پرونده *</span>
+                      <span className="text-xs font-bold text-foreground">{t("نظر و راهکار شما برای این پرونده *")}</span>
                       <textarea
                         value={bidMsg}
                         onChange={(e) => setBidMsg(e.target.value)}
                         rows={3}
-                        placeholder="چطور این پرونده را پیش می‌برید؟ شانس موفقیت و مسیر پیشنهادی خود را بنویسید…"
+                        placeholder={t("چطور این پرونده را پیش می‌برید؟ شانس موفقیت و مسیر پیشنهادی خود را بنویسید…")}
                         className={fieldCls + " mt-1.5 min-h-[80px] resize-y"}
-                        aria-label="نظر و راهکار شما"
+                        aria-label={t("نظر و راهکار شما برای این پرونده *")}
                         data-testid="bid-message"
                       />
                     </label>
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                       <label className="flex-1">
-                        <span className="text-xs font-bold text-foreground">پیشنهاد قیمت (تومان) *</span>
+                        <span className="text-xs font-bold text-foreground">{t("پیشنهاد قیمت (تومان) *")}</span>
                         <input
                           value={bidPrice}
                           onChange={(e) => setBidPrice(e.target.value.replace(/[^\d]/g, ""))}
                           type="text"
                           inputMode="numeric"
                           dir="ltr"
-                          placeholder="مثلاً 5000000"
+                          placeholder={t("مثلاً 5000000")}
                           className={fieldCls + " mt-1.5 text-end"}
-                          aria-label="پیشنهاد قیمت به تومان"
+                          aria-label={t("پیشنهاد قیمت (تومان) *")}
                           data-testid="bid-price"
                         />
-                        {bidPrice && <span className="mt-1 block text-[10px] text-muted">{faNum(Number(bidPrice).toLocaleString("en-US"))} تومان</span>}
+                        {bidPrice && <span className="mt-1 block text-[10px] text-muted">{tf("{price} تومان", { price: faNum(Number(bidPrice).toLocaleString("en-US")) })}</span>}
                       </label>
                       <Button
                         onClick={submitBid}
@@ -472,24 +476,24 @@ export function CaseBoardClient() {
                         className="shrink-0 self-end"
                         data-testid="bid-submit"
                       >
-                        {bidBusy ? "در حال ثبت…" : detail.myOffer ? "به‌روزرسانی پیشنهاد" : "ثبت پیشنهاد قیمت"}
+                        {bidBusy ? t("در حال ثبت…") : detail.myOffer ? t("به‌روزرسانی پیشنهاد") : t("ثبت پیشنهاد قیمت")}
                       </Button>
                     </div>
                     <p className="mt-2 text-[10px] leading-5 text-muted">
-                      ثبت پیشنهاد برای وکیل رایگان است؛ پس از انتخاب موکل، گفتگو و توافق مالی مستقیم بین شما و موکل انجام می‌شود.
+                      {t("ثبت پیشنهاد برای وکیل رایگان است؛ پس از انتخاب موکل، گفتگو و توافق مالی مستقیم بین شما و موکل انجام می‌شود.")}
                     </p>
                   </div>
                 ) : (
                   /* ─── مهمان / موکل ─── */
                   <div className="mt-4 flex flex-col gap-2 rounded-2xl border border-border bg-primary-soft/30 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-xs font-black text-foreground">وکیل هستید؟ همین‌جا پیشنهاد قیمت بدهید</p>
+                      <p className="text-xs font-black text-foreground">{t("وکیل هستید؟ همین‌جا پیشنهاد قیمت بدهید")}</p>
                       <p className="mt-0.5 text-[11px] leading-5 text-muted">
-                        با حساب وکیل وارد شوید و روی پرونده‌های استان خودتان نظر و قیمت ثبت کنید.
+                        {t("با حساب وکیل وارد شوید و روی پرونده‌های استان خودتان نظر و قیمت ثبت کنید.")}
                       </p>
                     </div>
                     <Button href="/login" size="sm" icon="user" className="shrink-0" data-testid="lawyer-login-cta">
-                      ورود وکیل
+                      {t("ورود وکیل")}
                     </Button>
                   </div>
                 )}

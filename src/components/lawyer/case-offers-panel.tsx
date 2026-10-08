@@ -133,7 +133,7 @@ export function CaseOffersPanel() {
       <p className="mt-1 text-xs leading-6 text-muted">
         {t("پرونده‌های تازه در استان شما — نظر و قیمت خود را اعلام کنید؛ موکل بهترین گزینه را انتخاب می‌کند و گفتگو رایگان ادامه می‌یابد.")}
         <Link href="/case-board" className="ms-1 inline-flex items-center gap-0.5 font-bold text-primary transition-colors hover:text-primary-hover">
-          دیدن همهٔ پرونده‌های باز در بازار پرونده‌ها
+          {t("دیدن همهٔ پرونده‌های باز در بازار پرونده‌ها")}
           <Icon name="arrow" className="h-3 w-3" />
         </Link>
       </p>
