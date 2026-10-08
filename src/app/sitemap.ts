@@ -44,6 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "lawyers", priority: 0.9, changeFreq: "daily" as const, lastMod: NOW },
     { path: "consultation", priority: 0.9, changeFreq: "weekly" as const, lastMod: NOW },
     { path: "case/new", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
+    { path: "case-board", priority: 0.9, changeFreq: "hourly" as const, lastMod: NOW },
     { path: "contracts", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
     { path: "contracts/builder", priority: 0.7, changeFreq: "monthly" as const, lastMod: NOW },
     { path: "contracts/review", priority: 0.7, changeFreq: "monthly" as const, lastMod: NOW },

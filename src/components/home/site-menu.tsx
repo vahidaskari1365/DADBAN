@@ -24,6 +24,7 @@ const MENU_GROUPS: MenuGroup[] = [
       { label: "وکیل‌یابی", href: "/lawyers", icon: "search", desc: "جست‌وجوی وکیل با فیلتر تخصص و شهر" },
       { label: "رزرو مشاوره", href: "/consultation", icon: "calendar", desc: "متنی، صوتی و تصویری" },
       { label: "ثبت پرونده", href: "/case/new", icon: "folder", desc: "ارزیابی اولیه و معرفی وکیل" },
+      { label: "بازار پرونده‌ها", href: "/case-board", icon: "gavel", desc: "پرونده‌های باز و پیشنهاد قیمت وکلا" },
       { label: "پیگیری پرونده", href: "/track-case", icon: "clock", desc: "وضعیت لحظه‌ای پرونده" },
     ],
   },

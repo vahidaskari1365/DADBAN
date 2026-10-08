@@ -13,6 +13,7 @@ import { SituationRouter } from "@/components/home/situation-router";
 import { LegalServices } from "@/components/home/legal-services";
 import { CommonProblems } from "@/components/home/common-problems";
 import { HowItWorks } from "@/components/home/journey";
+import { CaseMarketplace } from "@/components/home/case-marketplace";
 import { AISpotlight } from "@/components/home/ai-spotlight";
 import { LawyerCard } from "@/components/lawyer-card";
 import { PinMasonry } from "@/components/pin-masonry";
@@ -136,6 +137,13 @@ export default async function HomePage() {
           <div className="mt-10">
             <LegalServices />
           </div>
+        </Container>
+      </section>
+
+      {/* CASE MARKETPLACE — پرونده را به رقابت بگذارید؛ وکلا قیمت بدهند */}
+      <section className="mt-24" aria-label="بازار پرونده‌ها">
+        <Container>
+          <CaseMarketplace />
         </Container>
       </section>
 

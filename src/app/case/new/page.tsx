@@ -260,10 +260,10 @@ function NewCaseContent() {
               {[
                 t("پرونده با شماره پیگیری ثبت می‌شود"),
                 t("درگاه پرداخت را انتخاب می‌کنید"),
-                t("کارشناسان هزینه نهایی را تعیین و پرونده را به وکلای متخصص معرفی می‌کنند"),
-                t("روند پرونده در پنل موکل قابل پیگیری است"),
+                t("خلاصهٔ پرونده (بدون اطلاعات تماس) در بازار پرونده‌ها دیده می‌شود و وکلای متخصص نظر و پیشنهاد قیمت ثبت می‌کنند"),
+                t("شما پیشنهادها را مقایسه و بهترین وکیل را انتخاب می‌کنید — گفتگو رایگان شروع می‌شود"),
               ].map((step, i) => (
-                <li key={step} className="flex items-start gap-2">
+                <li key={i} className="flex items-start gap-2">
                   <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-soft text-[10px] font-bold text-primary">{faNum(i + 1)}</span>
                   {step}
                 </li>
@@ -273,7 +273,7 @@ function NewCaseContent() {
           <Card hover={false} className="bg-primary-soft/50">
             <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft">
               <Icon name="lock" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-              {t("اطلاعات پرونده شما کاملاً محرمانه است و تنها در اختیار وکلای موردنظر قرار می‌گیرد.")}
+              فقط خلاصهٔ پرونده (موضوع، شهر، مرحله و توضیحات بدون نام و شمارهٔ تماس) در <Link href="/case-board" className="font-bold text-primary">بازار پرونده‌ها</Link> به وکلای متخصص نمایش داده می‌شود تا پیشنهاد قیمت بدهند؛ اطلاعات تماس شما تنها در اختیار وکیلِ انتخابی قرار می‌گیرد و شماره‌هایی که در توضیحات بنویسید خودکار ماسک می‌شوند.
             </p>
           </Card>
         </aside>

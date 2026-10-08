@@ -7,6 +7,7 @@ import { faNum, faPrice } from "@/lib/data";
 import { relativeTimeJalali, formatJalaliDateTime } from "@/lib/jalali";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
+import Link from "next/link";
 
 /**
  * پیشنهادهای پروندهٔ استان — وکیل پرونده‌های جدید استان خودش را می‌بیند،
@@ -131,6 +132,10 @@ export function CaseOffersPanel() {
       </div>
       <p className="mt-1 text-xs leading-6 text-muted">
         {t("پرونده‌های تازه در استان شما — نظر و قیمت خود را اعلام کنید؛ موکل بهترین گزینه را انتخاب می‌کند و گفتگو رایگان ادامه می‌یابد.")}
+        <Link href="/case-board" className="ms-1 inline-flex items-center gap-0.5 font-bold text-primary transition-colors hover:text-primary-hover">
+          دیدن همهٔ پرونده‌های باز در بازار پرونده‌ها
+          <Icon name="arrow" className="h-3 w-3" />
+        </Link>
       </p>
 
       {flash && <p className="mt-3 rounded-xl border border-success/30 bg-success/5 px-3 py-2 text-xs font-bold text-success" role="status">{flash}</p>}
