@@ -69,7 +69,10 @@ export async function GET(req: Request) {
       actorName = me?.name ?? actor.user.name;
     }
 
-    /* پرونده‌های باز = new/reviewing و بدون پیشنهادِ پذیرفته‌شده */
+    /* پرونده‌های باز = new/reviewing و بدون پیشنهادِ پذیرفته‌شده
+       نکته: در sql`` درizzle نام ستون‌ها را بدون پیشوند جدول رندر می‌کند و
+       «id» به id جدولِ داخلی (case_offers) اشاره می‌شد — برای همین زیرکوئری
+       با نام‌های صریح/alias نوشته شده تا correlation با cases.id درست باشد. */
     const rows = await db
       .select({
         id: cases.id,
@@ -80,8 +83,8 @@ export async function GET(req: Request) {
         budget: cases.budget,
         createdAt: cases.createdAt,
         acceptedAt: sql<string | null>`(
-          select min(${caseOffers.createdAt})::text from ${caseOffers}
-          where ${caseOffers.caseId} = ${cases.id} and ${caseOffers.status} = 'accepted'
+          select min(co.created_at)::text from case_offers co
+          where co.case_id = cases.id and co.status = 'accepted'
         )`,
       })
       .from(cases)

@@ -23,9 +23,11 @@ export async function CaseMarketplace() {
     const rows = await db
       .select({
         id: cases.id,
+        // زیرکوئری با نام صریح — drizzle ستون‌ها را در sql`` بدون پیشوند جدول
+        // رندر می‌کند و «id» به case_offers.id اشاره می‌شد (باگ فیلتر پذیرفته‌شده‌ها)
         accepted: sql<boolean>`exists (
-          select 1 from ${caseOffers}
-          where ${caseOffers.caseId} = ${cases.id} and ${caseOffers.status} = 'accepted'
+          select 1 from case_offers co
+          where co.case_id = cases.id and co.status = 'accepted'
         )`,
       })
       .from(cases)
