@@ -322,6 +322,8 @@ export const lawyers = pgTable("lawyers", {
   avatarColor: text("avatar_color").notNull().default("#15365d"),
   photoUrl: text("photo_url"),
   title: text("title").notNull().default("وکیل پایه یک دادگستری"),
+  /** نوع وکیل: «wakil» وکیل رسمی، «karamooz» کارآموز وکالت (ثبت‌نام مستقیم) */
+  lawyerType: text("lawyer_type").notNull().default("wakil"),
   licenseNo: text("license_no").notNull(),
   city: text("city").notNull(),
   province: text("province").notNull(),

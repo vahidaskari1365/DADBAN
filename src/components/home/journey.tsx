@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * «مسیر حقوقی در دادبان ساده است» — سه گام بسیار ساده.
@@ -12,12 +13,13 @@ import type { IconKey } from "@/lib/data";
 const STEPS: { icon: IconKey; title: string; desc: string }[] = [
   { icon: "chat", title: "مسئله‌تان را بگویید", desc: "شرح کوتاه مشکل را بنویسید یا موضوع را انتخاب کنید." },
   { icon: "search", title: "مسیر مناسب را پیدا کنید", desc: "دادبان گام‌های بعدی، هزینه و وکیل یا خدمت مناسب را روشن می‌کند." },
-  { icon: "gavel", title: "با وکیل یا خدمت مناسب اقدام کنید", desc: "کار را با اطمینان شروع کنید و پیشرفتش را پیگیری کنید." },
+  { icon: "handshake", title: "با وکیل یا خدمت مناسب اقدام کنید", desc: "کار را با اطمینان شروع کنید و پیشرفتش را پیگیری کنید." },
 ];
 
 const spring = { type: "spring" as const, stiffness: 190, damping: 22 };
 
 export function HowItWorks() {
+  const t = useT();
   return (
     <div className="relative">
       {/* خط اتصال افقی دسکتاپ + نقطهٔ سیار */}
@@ -50,8 +52,8 @@ export function HowItWorks() {
               </span>
             </span>
             <div className="sm:mt-4">
-              <h3 className="text-[15px] font-black text-foreground">{s.title}</h3>
-              <p className="mt-1 text-xs leading-6 text-muted sm:max-w-[30ch] sm:text-[13px]">{s.desc}</p>
+              <h3 className="text-[15px] font-black text-foreground">{t(s.title)}</h3>
+              <p className="mt-1 text-xs leading-6 text-muted sm:max-w-[30ch] sm:text-[13px]">{t(s.desc)}</p>
             </div>
           </motion.li>
         ))}

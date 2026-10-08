@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * منوی «همه خدمات» — دکمه شناور همبرگری که یک منوی تمام‌صفحه با همهٔ
@@ -38,9 +39,9 @@ const MENU_GROUPS: MenuGroup[] = [
   {
     title: "خدمات ویژه",
     items: [
-      { label: "خدمات حضوری و اداری", href: "/services", icon: "building", desc: "نماینده دادبان به‌جای شما" },
-      { label: "وکیل کارمندان", href: "/employee-lawyers", icon: "user", desc: "حقوق کار و تأمین اجتماعی" },
-      { label: "تعرفه خدمات", href: "/pricing", icon: "money", desc: "قیمت شفاف پیش از تصمیم" },
+      { label: "خدمات حضوری و اداری", href: "/services", icon: "signature", desc: "نماینده دادبان به‌جای شما" },
+      { label: "وکیل کارمندان", href: "/employee-lawyers", icon: "briefcase", desc: "حقوق کار و تأمین اجتماعی" },
+      { label: "تعرفه خدمات", href: "/pricing", icon: "coins", desc: "قیمت شفاف پیش از تصمیم" },
       { label: "برای کسب‌وکارها", href: "/business", icon: "briefcase", desc: "حقوق شرکت‌ها و B2B" },
     ],
   },
@@ -57,6 +58,7 @@ const MENU_GROUPS: MenuGroup[] = [
 ];
 
 export function SiteMenu() {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   /* Intopia Keyboard & Focus: فوکوس هنگام باز شدن به دکمهٔ بستن،
@@ -97,7 +99,7 @@ export function SiteMenu() {
         ref={fabRef}
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="همه خدمات دادبان"
+        aria-label={t("همه خدمات دادبان")}
         aria-haspopup="dialog"
         aria-expanded={open}
         initial={{ opacity: 0, scale: 0.6 }}
@@ -126,7 +128,7 @@ export function SiteMenu() {
               transition={{ duration: 0.25 }}
               role="dialog"
               aria-modal="true"
-              aria-label="همه خدمات دادبان"
+              aria-label={t("همه خدمات دادبان")}
             >
               {/* پس‌زمینه */}
               <motion.div
@@ -152,8 +154,8 @@ export function SiteMenu() {
                       <Icon name="menu" className="h-5 w-5" />
                     </span>
                     <div>
-                      <p className="text-sm font-black text-foreground">همه خدمات دادبان</p>
-                      <p className="text-[11px] text-muted">هر بخش سایت، یک‌جا در دسترس</p>
+                      <p className="text-sm font-black text-foreground">{t("همه خدمات دادبان")}</p>
+                      <p className="text-[11px] text-muted">{t("هر بخش سایت، یک‌جا در دسترس")}</p>
                     </div>
                   </div>
                   <button
@@ -163,7 +165,7 @@ export function SiteMenu() {
                       setOpen(false);
                       fabRef.current?.focus();
                     }}
-                    aria-label="بستن منو"
+                    aria-label={t("بستن منو")}
                     className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted transition-all hover:bg-surface-2 hover:text-foreground active:scale-90"
                   >
                     <Icon name="x" className="h-5 w-5" />
@@ -179,7 +181,7 @@ export function SiteMenu() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.08 + gi * 0.07, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                     >
-                      <p className="mb-2 px-1 text-xs font-black uppercase tracking-wide text-muted">{group.title}</p>
+                      <p className="mb-2 px-1 text-xs font-black uppercase tracking-wide text-muted">{t(group.title)}</p>
                       <div className="overflow-hidden rounded-2xl border border-border">
                         {group.items.map((item, ii) => (
                           <motion.div
@@ -202,8 +204,8 @@ export function SiteMenu() {
                                 <Icon name={item.icon} className="h-4 w-4" />
                               </span>
                               <span className="min-w-0 flex-1">
-                                <span className="block text-sm font-bold text-foreground">{item.label}</span>
-                                {item.desc && <span className="block truncate text-[11px] text-muted">{item.desc}</span>}
+                                <span className="block text-sm font-bold text-foreground">{t(item.label)}</span>
+                                {item.desc && <span className="block truncate text-[11px] text-muted">{t(item.desc)}</span>}
                               </span>
                               <Icon name="chevron" className="h-4 w-4 shrink-0 rotate-180 text-muted opacity-40 transition-opacity group-hover:opacity-100" />
                             </Link>
@@ -221,7 +223,7 @@ export function SiteMenu() {
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-bold text-primary-foreground transition-all hover:bg-primary-hover active:scale-[0.98]"
                   >
                     <Icon name="user" className="h-4 w-4" />
-                    ورود / ثبت‌نام
+                    {t("ورود / ثبت‌نام")}
                   </Link>
                 </div>
               </motion.div>

@@ -15,6 +15,7 @@ import { TrustLine } from "@/components/amazon/trust-line";
 import { FavoriteButton } from "@/components/profile/favorites-panel";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
+import { getT } from "@/lib/i18n/server";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -46,6 +47,7 @@ export default async function LawyerProfile({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const t = await getT();
   let l: typeof lawyers.$inferSelect | undefined;
   try {
     const rows = await db.select().from(lawyers).where(eq(lawyers.slug, slug)).limit(1);
@@ -78,22 +80,25 @@ export default async function LawyerProfile({
   try {
     me = await getCurrentUser();
   } catch {}
+  // ستون lawyerType به‌زودی به جدول lawyers اضافه می‌شود؛ تا آن زمان با cast امن خوانده می‌شود تا tsc نشکند
+  const lawyerType = (l as { lawyerType?: string }).lawyerType;
+  const isKaramooz = lawyerType === "karamooz";
   const isOwner =
     !!me &&
     ((me.role === "lawyer" && me.lawyerId === l.id) || (me.role === "team" && me.parentLawyerId === l.id));
   const isLawyerViewer = !!me && !isOwner && isLawyerSideRole(me.role);
 
   const badges = [
-    l.verified && { label: "وکیل تأییدشده", icon: "badge" as const, tone: "primary" as const },
-    l.topRated && { label: "وکیل برتر", icon: "star" as const, tone: "accent" as const },
-    l.fastResponder && { label: "پاسخ‌گویی سریع", icon: "bolt" as const, tone: "success" as const },
-    l.contractExpert && { label: "متخصص قراردادها", icon: "document" as const, tone: "neutral" as const },
+    l.verified && { label: t("وکیل تأییدشده"), icon: "badge" as const, tone: "primary" as const },
+    l.topRated && { label: t("وکیل برتر"), icon: "star" as const, tone: "accent" as const },
+    l.fastResponder && { label: t("پاسخ‌گویی سریع"), icon: "bolt" as const, tone: "success" as const },
+    l.contractExpert && { label: t("متخصص قراردادها"), icon: "document" as const, tone: "neutral" as const },
   ].filter(Boolean) as { label: string; icon: "badge" | "star" | "bolt" | "document"; tone: "primary" | "accent" | "success" | "neutral" }[];
 
   const pricing = [
-    { key: "chat", label: "مشاوره متنی", price: l.priceChat, icon: "chat" as const, features: ["پاسخ مکتوب", "ارسال فایل"] },
-    { key: "voice", label: "مشاوره صوتی", price: l.priceVoice, icon: "phone" as const, features: ["تماس تلفنی", "۳۰ دقیقه"] },
-    { key: "video", label: "مشاوره تصویری", price: l.priceVideo, icon: "video" as const, features: ["جلسه ویدئویی", "اشتراک فایل"] },
+    { key: "chat", label: t("مشاوره متنی"), price: l.priceChat, icon: "chat" as const, features: [t("پاسخ مکتوب"), t("ارسال فایل")] },
+    { key: "voice", label: t("مشاوره صوتی"), price: l.priceVoice, icon: "phone" as const, features: [t("تماس تلفنی"), t("۳۰ دقیقه")] },
+    { key: "video", label: t("مشاوره تصویری"), price: l.priceVideo, icon: "video" as const, features: [t("جلسه ویدئویی"), t("اشتراک فایل")] },
   ];
 
   const jsonLd = {
@@ -112,11 +117,16 @@ export default async function LawyerProfile({
       addressCountry: "IR",
     },
     knowsAbout: l.specialties,
-    hasCredential: {
-      "@type": "EducationalOccupationalCredential",
-      name: `پروانه وکالت شماره ${l.licenseNo}`,
-      recognizedBy: "کانون وکلای دادگستری",
-    },
+    /* کارآموز وکالت پروانهٔ رسمی ندارد — hasCredential فقط برای وکیل رسمی صادر می‌شود */
+    ...(isKaramooz
+      ? {}
+      : {
+          hasCredential: {
+            "@type": "EducationalOccupationalCredential" as const,
+            name: `پروانه وکالت شماره ${l.licenseNo}`,
+            recognizedBy: "کانون وکلای دادگستری",
+          },
+        }),
     aggregateRating: l.reviewCount > 0 ? {
       "@type": "AggregateRating",
       ratingValue: l.rating,
@@ -167,13 +177,13 @@ export default async function LawyerProfile({
         <Container className="py-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
-              <Link href="/" className="hover:text-primary">خانه</Link>
+              <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
               <Icon name="chevron" className="h-3 w-3 rotate-180" />
-              <Link href="/lawyers" className="hover:text-primary">وکلا</Link>
+              <Link href="/lawyers" className="hover:text-primary">{t("وکلا")}</Link>
               <Icon name="chevron" className="h-3 w-3 rotate-180" />
               <span className="text-foreground-soft">{l.name}</span>
             </nav>
-            <BackButton variant="bar" label="بازگشت به فهرست وکلا" fallback="/lawyers" />
+            <BackButton variant="bar" label={t("بازگشت به فهرست وکلا")} fallback="/lawyers" />
           </div>
 
           <div className="relative mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -185,13 +195,22 @@ export default async function LawyerProfile({
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">{l.name}</h1>
                   {l.verified && <Icon name="badge" className="h-6 w-6 text-primary" />}
+                  {isKaramooz && (
+                    <span
+                      title={t("کارآموز وکالت — تحت نظارت وکیل پایه یک")}
+                      className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-[11px] font-bold text-accent-text ring-1 ring-accent/30"
+                    >
+                      <Icon name="sparkles" className="h-3 w-3" />
+                      {t("کارآموز وکالت")}
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 text-sm text-foreground-soft">{l.title}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {[
                     { icon: "location" as const, text: `${l.city} — ${l.province}` },
-                    { icon: "briefcase" as const, text: `${faNum(l.experienceYears)} سال سابقه` },
-                    { icon: "folder" as const, text: `${faNum(l.caseCount)} پرونده` },
+                    { icon: "briefcase" as const, text: `${faNum(l.experienceYears)} ${t("سال سابقه")}` },
+                    { icon: "folder" as const, text: `${faNum(l.caseCount)} ${t("پرونده")}` },
                   ].map((c) => (
                     <span key={c.text} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground-soft">
                       <Icon name={c.icon} className="h-3.5 w-3.5 text-primary" />
@@ -217,7 +236,7 @@ export default async function LawyerProfile({
           {/* Specialties */}
           <section>
             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-              <Icon name="scale" className="h-5 w-5 text-accent-text" /> حوزه‌های تخصص
+              <Icon name="scale" className="h-5 w-5 text-accent-text" /> {t("حوزه‌های تخصص")}
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {l.specialties.map((s) => (
@@ -231,15 +250,17 @@ export default async function LawyerProfile({
           {/* About */}
           <section>
             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-              <Icon name="user" className="h-5 w-5 text-primary" /> درباره وکیل
+              <Icon name="user" className="h-5 w-5 text-primary" /> {t("درباره وکیل")}
             </h2>
             <p className="mt-3 text-sm leading-8 text-foreground-soft">{l.about}</p>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
-                { icon: "badge" as const, label: "پروانه", value: l.licenseNo, ltr: true },
-                { icon: "clock" as const, label: "زمان پاسخ", value: l.responseTime, ltr: false },
-                { icon: "star" as const, label: "امتیاز", value: faNum(l.rating.toFixed(1)), ltr: false },
-                { icon: "search" as const, label: "بازدید", value: faNum(l.views.toLocaleString("en-US")), ltr: false },
+                isKaramooz
+                  ? { icon: "book" as const, label: t("وضعیت"), value: t("کارآموز وکالت"), ltr: false }
+                  : { icon: "certificate" as const, label: t("پروانه"), value: l.licenseNo, ltr: true },
+                { icon: "clock" as const, label: t("زمان پاسخ"), value: l.responseTime, ltr: false },
+                { icon: "star" as const, label: t("امتیاز"), value: faNum(l.rating.toFixed(1)), ltr: false },
+                { icon: "search" as const, label: t("بازدید"), value: faNum(l.views.toLocaleString("en-US")), ltr: false },
               ].map((c) => (
                 <div key={c.label} className="rounded-xl border border-border bg-surface p-3 text-center transition-colors hover:border-primary/30">
                   <Icon name={c.icon} className="mx-auto h-4 w-4 text-accent-text" />
@@ -253,7 +274,7 @@ export default async function LawyerProfile({
           {/* Services */}
           <section>
             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-              <Icon name="check" className="h-5 w-5 text-success" /> خدمات
+              <Icon name="check" className="h-5 w-5 text-success" /> {t("خدمات")}
             </h2>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {l.services.map((s) => (
@@ -264,16 +285,42 @@ export default async function LawyerProfile({
             </div>
           </section>
 
+          {/* پرداخت قسطی حق‌الوکاله — باکس فشرده نزدیک خدمات/تعرفه */}
+          <section aria-label={t("پرداخت قسطی حق‌الوکاله")}>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent/30 bg-accent-soft/50 p-4">
+              <div className="flex min-w-0 items-start gap-3">
+                <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+                  <Icon name="balance" className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground">
+                    {t("پرداخت قسطی حق‌الوکاله برای این وکیل در دسترس است")}
+                  </p>
+                  <p className="mt-0.5 text-xs leading-6 text-foreground-soft">
+                    {t("با توافق وکیل، حق‌الوکاله را می‌توانید یکجا، قسطی یا مرحله‌ای بپردازید؛ شرایط نهایی در قرارداد ثبت می‌شود.")}
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/fee-payment"
+                className="inline-flex min-h-11 shrink-0 items-center gap-1.5 px-1 text-sm font-bold text-accent-text transition-colors hover:text-accent-hover"
+              >
+                {t("جزئیات پرداخت قسطی")}
+                <Icon name="arrow" className="h-4 w-4" />
+              </Link>
+            </div>
+          </section>
+
           {/* Reviews */}
           <section>
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-                <Icon name="star" className="h-5 w-5 text-accent-text" /> نظرات کاربران
+                <Icon name="star" className="h-5 w-5 text-accent-text" /> {t("نظرات کاربران")}
               </h2>
-              <span className="text-sm text-muted">{faNum(lawyerReviews.length)} نظر</span>
+              <span className="text-sm text-muted">{faNum(lawyerReviews.length)} {t("نظر")}</span>
             </div>
             {lawyerReviews.length === 0 ? (
-              <div className="mt-3"><EmptyState title="هنوز نظری ثبت نشده است" icon="chat" /></div>
+              <div className="mt-3"><EmptyState title={t("هنوز نظری ثبت نشده است")} icon="chat" /></div>
             ) : (
               <div className="mt-3 space-y-3">
                 {lawyerReviews.map((r) => (
@@ -298,7 +345,7 @@ export default async function LawyerProfile({
         {/* Sidebar */}
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <Card hover={false} className="space-y-3">
-            <h3 className="font-bold text-foreground">تعرفه مشاوره</h3>
+            <h3 className="font-bold text-foreground">{t("تعرفه مشاوره")}</h3>
             <div className="space-y-2">
               {pricing.map((p, i) => (
                 <div
@@ -313,7 +360,7 @@ export default async function LawyerProfile({
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-foreground">
                       {p.label}
-                      {i === 0 && <span className="mr-2 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold text-primary-foreground">شروع قیمت</span>}
+                      {i === 0 && <span className="mr-2 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold text-primary-foreground">{t("شروع قیمت")}</span>}
                     </p>
                     <p className="text-xs text-muted">{p.features.join(" • ")}</p>
                   </div>
@@ -324,7 +371,7 @@ export default async function LawyerProfile({
             <FavoriteButton lawyerId={l.id} lawyerName={l.name} />
             {isOwner ? (
               <Button href="/dashboard/lawyer/profile" icon="badge" className="w-full">
-                ویرایش پروفایل من
+                {t("ویرایش پروفایل من")}
               </Button>
             ) : isLawyerViewer ? (
               <>
@@ -334,24 +381,24 @@ export default async function LawyerProfile({
                   className="w-full"
                   data-testid="refer-cta"
                 >
-                  درخواست همکاری / ارجاع پرونده
+                  {t("درخواست همکاری / ارجاع پرونده")}
                 </Button>
                 <p className="flex items-start gap-1.5 text-[10px] leading-5 text-muted">
                   <Icon name="shield" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
-                  درخواست در کارتابل «همکاری و ارجاع» این همکار ثبت می‌شود؛ پاسخ او در پنل شما نمایش داده می‌شود.
+                  {t("درخواست در کارتابل «همکاری و ارجاع» این همکار ثبت می‌شود؛ پاسخ او در پنل شما نمایش داده می‌شود.")}
                 </p>
               </>
             ) : (
               <>
                 <Button href={`/consultation/book?lawyer=${l.slug}`} icon="calendar" className="w-full">
-                  رزرو مشاوره
+                  {t("رزرو مشاوره")}
                 </Button>
                 <div className="grid grid-cols-2 gap-2">
                   <Button href={`/consultation/book?lawyer=${l.slug}&type=chat`} variant="outline" size="sm" icon="chat">
-                    پیام
+                    {t("پیام")}
                   </Button>
                   <Button href={`/case/new?lawyer=${l.slug}`} variant="outline" size="sm" icon="folder">
-                    درخواست وکالت
+                    {t("درخواست وکالت")}
                   </Button>
                 </div>
               </>
@@ -361,7 +408,7 @@ export default async function LawyerProfile({
 
           <Card hover={false}>
             <h3 className="flex items-center gap-2 font-bold text-foreground">
-              <Icon name="clock" className="h-4 w-4 text-accent-text" /> زمان‌های آزاد
+              <Icon name="clock" className="h-4 w-4 text-accent-text" /> {t("زمان‌های آزاد")}
             </h3>
             <div className="mt-3">
               <AvailabilityPanel lawyerSlug={l.slug} />
@@ -371,8 +418,7 @@ export default async function LawyerProfile({
           <Card hover={false} className="bg-primary-soft/50">
             <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft">
               <Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-              هویت و پروانه این وکیل توسط کارشناسان دادبان راستی‌آزمایی شده است. مبلغ نهایی پیش از
-              پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.
+              {t("هویت و پروانه این وکیل توسط کارشناسان دادبان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.")}
             </p>
           </Card>
         </aside>
@@ -381,7 +427,7 @@ export default async function LawyerProfile({
       {/* Related */}
       {related.length > 0 && (
         <Container className="pb-12">
-          <h2 className="text-xl font-bold text-foreground">وکلای مرتبط</h2>
+          <h2 className="text-xl font-bold text-foreground">{t("وکلای مرتبط")}</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((r) => {
               const relatedLawyer = r;
@@ -390,7 +436,7 @@ export default async function LawyerProfile({
                   <LawyerPhoto name={relatedLawyer.name} color={relatedLawyer.avatarColor} photoUrl={relatedLawyer.photoUrl} size="md" />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold text-foreground">{relatedLawyer.name}</p>
-                    <p className="text-xs text-muted">{relatedLawyer.city} • {faNum(relatedLawyer.experienceYears)} سال</p>
+                    <p className="text-xs text-muted">{relatedLawyer.city} • {faNum(relatedLawyer.experienceYears)} {t("سال")}</p>
                   </div>
                   <Icon name="chevron" className="mr-auto h-4 w-4 rotate-180 text-muted" />
                 </a>

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { ROLE_FA, panelHomeForRole } from "@/lib/roles";
 import type { IconKey } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * منوی اکانت هدر — جایگزین دکمهٔ «ورود» برای کاربر واردشده.
@@ -59,6 +60,7 @@ function MenuItem({
 }
 
 export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boolean }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -104,7 +106,7 @@ export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boo
     return (
       <span className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm text-foreground-soft" aria-hidden>
         <Icon name="user" className="h-4 w-4" />
-        ورود
+        {t("ورود")}
       </span>
     );
   }
@@ -118,7 +120,7 @@ export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boo
         data-testid="header-login"
       >
         <Icon name="user" className="h-4 w-4" />
-        ورود
+        {t("ورود")}
       </Link>
     );
   }
@@ -162,7 +164,7 @@ export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boo
         onClick={toggleFromClick}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`حساب کاربری — ${user.name}`}
+        aria-label={`${t("حساب کاربری")} — ${user.name}`}
         data-testid="account-trigger"
         className="group flex items-center gap-2 rounded-full border border-border bg-surface py-1 pl-3 pr-1 transition-all hover:border-primary/40 hover:shadow-sm active:scale-[0.98]"
       >
@@ -179,7 +181,7 @@ export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boo
       {open && (
         <div
           role="menu"
-          aria-label="منوی حساب کاربری"
+          aria-label={t("منوی حساب کاربری")}
           data-testid="account-menu"
           className="absolute left-0 top-full z-[80] w-64 animate-scale-in pt-2"
         >
@@ -195,22 +197,22 @@ export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boo
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-bold text-foreground">{user.name}</span>
-                <span className="block text-[11px] text-muted">{ROLE_FA[user.role ?? "client"] ?? "کاربر"}</span>
+                <span className="block text-[11px] text-muted">{t(ROLE_FA[user.role ?? "client"] ?? "کاربر")}</span>
               </span>
             </div>
 
             <MenuItem
               href={dashboardHref}
               icon="home"
-              label={isLawyer ? "پنل وکیل" : isTeam ? "پنل همکاران" : "داشبورد موکل"}
+              label={t(isLawyer ? "پنل وکیل" : isTeam ? "پنل همکاران" : "داشبورد موکل")}
               testid="account-dashboard"
               onNavigate={closeMenu}
             />
             {profileHref && (
-              <MenuItem href={profileHref} icon="badge" label="پروفایل من" testid="account-profile" onNavigate={closeMenu} />
+              <MenuItem href={profileHref} icon="badge" label={t("پروفایل من")} testid="account-profile" onNavigate={closeMenu} />
             )}
-            <MenuItem href="/track-case" icon="clock" label="پیگیری پرونده" testid="account-track" onNavigate={closeMenu} />
-            <MenuItem href="/support" icon="shield" label="پشتیبانی" testid="account-support" onNavigate={closeMenu} />
+            <MenuItem href="/track-case" icon="clock" label={t("پیگیری پرونده")} testid="account-track" onNavigate={closeMenu} />
+            <MenuItem href="/support" icon="shield" label={t("پشتیبانی")} testid="account-support" onNavigate={closeMenu} />
             <div className="my-1 h-px bg-border" aria-hidden />
             <button
               type="button"
@@ -222,7 +224,7 @@ export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boo
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-danger/10 text-danger">
                 <Icon name="x" className="h-4 w-4" />
               </span>
-              خروج از حساب
+              {t("خروج از حساب")}
             </button>
           </div>
         </div>

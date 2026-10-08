@@ -1,6 +1,7 @@
 import { Reveal } from "@/components/reveal";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * «مسائل حقوقی رایج» — بخش Landing-oriented:
@@ -12,13 +13,14 @@ const PROBLEMS: { text: string; href: string; icon: IconKey }[] = [
   { text: "چک برگشتی دارم", href: "/lawyers?sp=چک و اسناد", icon: "money" },
   { text: "از من شکایت شده", href: "/lawyers?sp=کیفری", icon: "shield" },
   { text: "می‌خواهم طلاق بگیرم", href: "/lawyers?sp=خانواده", icon: "family" },
-  { text: "قراردادم را قبل از امضا بررسی کنم", href: "/contracts/review", icon: "file" },
+  { text: "قراردادم را قبل از امضا بررسی کنم", href: "/contracts/review", icon: "signature" },
   { text: "مشکل حقوق و مزایا دارم", href: "/employee-lawyers", icon: "briefcase" },
   { text: "درباره ارث اختلاف داریم", href: "/lawyers?sp=ارث", icon: "scale" },
   { text: "می‌خواهم شرکت ثبت کنم", href: "/pricing", icon: "building" },
 ];
 
-export function CommonProblems() {
+export async function CommonProblems() {
+  const t = await getT();
   return (
     <div className="grid gap-2.5 sm:grid-cols-2">
       {PROBLEMS.map((p, i) => (
@@ -31,7 +33,7 @@ export function CommonProblems() {
               <Icon name={p.icon} className="h-4 w-4" />
             </span>
             <span className="flex-1 text-sm font-semibold text-foreground-soft transition-colors group-hover:text-foreground">
-              {p.text}
+              {t(p.text)}
             </span>
             <Icon name="arrow" className="h-4 w-4 shrink-0 text-muted opacity-50 transition-all duration-300 group-hover:-translate-x-1 group-hover:opacity-100 group-hover:text-accent-text" />
           </a>

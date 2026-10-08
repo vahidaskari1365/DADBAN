@@ -1,10 +1,12 @@
 import { Container } from "@/components/ui";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Loading سراسری — skeleton spinner برای صفحات داینامیک.
  * وقتی Next.js در حال بارگذاری داده‌ها هست، این صفحه نمایش داده می‌شه.
  */
-export default function Loading() {
+export default async function Loading() {
+  const t = await getT();
   return (
     <Container className="flex min-h-[60vh] items-center justify-center py-16">
       <div className="flex flex-col items-center gap-4">
@@ -15,7 +17,7 @@ export default function Loading() {
         </div>
 
         {/* متن */}
-        <p className="text-sm font-medium text-muted">در حال بارگذاری...</p>
+        <p className="text-sm font-medium text-muted">{t("در حال بارگذاری...")}</p>
 
         {/* skeleton خطوط */}
         <div className="mt-4 w-full max-w-md space-y-2">

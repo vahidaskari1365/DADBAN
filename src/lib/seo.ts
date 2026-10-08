@@ -287,6 +287,7 @@ ${SITE_NAME} پلتفرم هوشمند خدمات حقوقی ایران است �
 - تنظیم و بررسی قرارداد: ${SEO_BASE}/contracts
 - دستیار حقوقی هوش مصنوعی: ${SEO_BASE}/ai-assistant
 - خدمات ثبتی و اداری: ${SEO_BASE}/services
+- حق‌الوکاله و پرداخت قسطی: ${SEO_BASE}/fee-payment
 
 ## حوزه‌های تخصصی
 ${LEGAL_ENTITIES.practiceAreas.map((p) => `- ${p}`).join("\n")}

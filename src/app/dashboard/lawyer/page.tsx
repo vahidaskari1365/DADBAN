@@ -20,6 +20,8 @@ import { ConsultRequestsPanel } from "@/components/lawyer/consult-requests-panel
 import { ReferralPanel } from "@/components/lawyer/referral-panel";
 import { TeamPanel } from "@/components/lawyer/team-panel";
 import { RemindersPanel } from "@/components/lawyer/reminders-panel";
+import { FeeCard } from "@/components/fee/fee-card";
+import { getT } from "@/lib/i18n/server";
 import Link from "next/link";
 
 /** کاشی کلیک‌پذیر — کل کاشی به مقصد تیترش می‌رود (درخواست مالک: هر کارت باید لینک باشد) */
@@ -67,6 +69,7 @@ function IconChip({ icon, tone, size = "md" }: { icon: IconKey; tone: Tone; size
 }
 
 export default async function LawyerDashboard() {
+  const t = await getT();
   await ensureProfileSchema();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -180,32 +183,32 @@ export default async function LawyerDashboard() {
   );
 
   const stats: { label: string; value: string; icon: IconKey; tone: Tone; href: string }[] = [];
-  if (can("cases")) stats.push({ label: isTeam ? "پرونده‌های سپرده‌شده به شما" : "پرونده‌های اخیر پلتفرم", value: faNum(activeCases.length), icon: "folder", tone: "primary", href: "#cases" });
-  if (can("consultations")) stats.push({ label: "درخواست‌های مشاوره در انتظار", value: faNum(pendingRequests.length), icon: "mail", tone: "accent", href: "#consult-requests" });
-  if (can("services")) stats.push({ label: "درخواست‌های خدمات فعال", value: faNum(serviceReqs.filter((r) => !["COMPLETED", "DELIVERED"].includes(r.req.status)).length), icon: "briefcase", tone: "success", href: "#services" });
-  if (can("reminders")) stats.push({ label: isBoss && teamMembersCount ? "اعضای تیم" : "یادآورهای باز", value: faNum(isBoss ? teamMembersCount : 0), icon: "user", tone: "neutral", href: isBoss && teamMembersCount ? "#team" : "#reminders" });
+  if (can("cases")) stats.push({ label: isTeam ? t("پرونده‌های سپرده‌شده به شما") : t("پرونده‌های اخیر پلتفرم"), value: faNum(activeCases.length), icon: "folder", tone: "primary", href: "#cases" });
+  if (can("consultations")) stats.push({ label: t("درخواست‌های مشاوره در انتظار"), value: faNum(pendingRequests.length), icon: "mail", tone: "accent", href: "#consult-requests" });
+  if (can("services")) stats.push({ label: t("درخواست‌های خدمات فعال"), value: faNum(serviceReqs.filter((r) => !["COMPLETED", "DELIVERED"].includes(r.req.status)).length), icon: "briefcase", tone: "success", href: "#services" });
+  if (can("reminders")) stats.push({ label: isBoss && teamMembersCount ? t("اعضای تیم") : t("یادآورهای باز"), value: faNum(isBoss ? teamMembersCount : 0), icon: "user", tone: "neutral", href: isBoss && teamMembersCount ? "#team" : "#reminders" });
 
   /** دستورهای سریع وکیل — با فیلتر دسترسی */
   const quickActions: { label: string; desc: string; icon: IconKey; tone: Tone; href: string }[] = [
-    ...(isBoss ? [{ label: "پروفایل حرفه‌ای", desc: "ویرایش اطلاعات عمومی", icon: "badge" as IconKey, tone: "primary" as Tone, href: "/dashboard/lawyer/profile" }] : []),
-    ...(can("consultations") ? [{ label: "کارتابل مشاوره", desc: "تأیید و مدیریت درخواست‌ها", icon: "chat" as IconKey, tone: "accent" as Tone, href: "#consult-requests" }] : []),
-    { label: "دایرکتوری وکلا", desc: "جستجوی همکاران", icon: "search", tone: "primary", href: "/lawyers" },
-    { label: "همکاری و ارجاع", desc: referralPending ? `${faNum(referralPending)} درخواست در انتظار پاسخ` : "درخواست‌های همکاران", icon: "link" as IconKey, tone: "accent" as Tone, href: "/dashboard/lawyer#collab" },
-    { label: "پرسش‌های موکلان", desc: "مرجع پاسخ‌های تخصصی", icon: "shield", tone: "success", href: "/qa" },
-    { label: "پشتیبانی", desc: "تیکت و پیام", icon: "mail", tone: "neutral", href: "/support" },
+    ...(isBoss ? [{ label: t("پروفایل حرفه‌ای"), desc: t("ویرایش اطلاعات عمومی"), icon: "badge" as IconKey, tone: "primary" as Tone, href: "/dashboard/lawyer/profile" }] : []),
+    ...(can("consultations") ? [{ label: t("کارتابل مشاوره"), desc: t("تأیید و مدیریت درخواست‌ها"), icon: "chat" as IconKey, tone: "accent" as Tone, href: "#consult-requests" }] : []),
+    { label: t("دایرکتوری وکلا"), desc: t("جستجوی همکاران"), icon: "search", tone: "primary", href: "/lawyers" },
+    { label: t("همکاری و ارجاع"), desc: referralPending ? `${faNum(referralPending)} ${t("درخواست در انتظار پاسخ")}` : t("درخواست‌های همکاران"), icon: "link" as IconKey, tone: "accent" as Tone, href: "/dashboard/lawyer#collab" },
+    { label: t("پرسش‌های موکلان"), desc: t("مرجع پاسخ‌های تخصصی"), icon: "shield", tone: "success", href: "/qa" },
+    { label: t("پشتیبانی"), desc: t("تیکت و پیام"), icon: "mail", tone: "neutral", href: "/support" },
   ];
 
   const nav: NavItem[] = [
-    { label: "نمای کلی", icon: "home", active: true, href: "/dashboard/lawyer" },
-    ...(isBoss ? [{ label: "پروفایل حرفه‌ای من", icon: "badge" as const, href: "/dashboard/lawyer/profile" }] : []),
-    ...(can("offers") ? [{ label: "پیشنهادهای پرونده", icon: "mail" as const, href: "/dashboard/lawyer#offers" }] : []),
-    ...(can("consultations") ? [{ label: "کارتابل مشاوره", icon: "chat" as const, href: "/dashboard/lawyer#consult-requests" }] : []),
-    ...(can("offers") ? [{ label: "همکاری و ارجاع", icon: "link" as const, badge: referralPending ? faNum(referralPending) : undefined, href: "/dashboard/lawyer#collab" }] : []),
-    ...(can("services") ? [{ label: "درخواست‌های خدمات", icon: "briefcase" as const, badge: serviceReqs.length ? faNum(serviceReqs.length) : undefined, href: "/dashboard/lawyer#services" }] : []),
-    ...(can("reminders") ? [{ label: "یادآورها", icon: "clock" as const, href: "/dashboard/lawyer#reminders" }] : []),
-    ...(isBoss ? [{ label: "تیم من", icon: "user" as const, href: "/dashboard/lawyer#team" }] : []),
-    { label: "دایرکتوری وکلا", icon: "user", href: "/lawyers" },
-    { label: "پشتیبانی", icon: "shield", href: "/support" },
+    { label: t("نمای کلی"), icon: "home", active: true, href: "/dashboard/lawyer" },
+    ...(isBoss ? [{ label: t("پروفایل حرفه‌ای من"), icon: "badge" as const, href: "/dashboard/lawyer/profile" }] : []),
+    ...(can("offers") ? [{ label: t("پیشنهادهای پرونده"), icon: "mail" as const, href: "/dashboard/lawyer#offers" }] : []),
+    ...(can("consultations") ? [{ label: t("کارتابل مشاوره"), icon: "chat" as const, href: "/dashboard/lawyer#consult-requests" }] : []),
+    ...(can("offers") ? [{ label: t("همکاری و ارجاع"), icon: "link" as const, badge: referralPending ? faNum(referralPending) : undefined, href: "/dashboard/lawyer#collab" }] : []),
+    ...(can("services") ? [{ label: t("درخواست‌های خدمات"), icon: "briefcase" as const, badge: serviceReqs.length ? faNum(serviceReqs.length) : undefined, href: "/dashboard/lawyer#services" }] : []),
+    ...(can("reminders") ? [{ label: t("یادآورها"), icon: "clock" as const, href: "/dashboard/lawyer#reminders" }] : []),
+    ...(isBoss ? [{ label: t("تیم من"), icon: "user" as const, href: "/dashboard/lawyer#team" }] : []),
+    { label: t("دایرکتوری وکلا"), icon: "user", href: "/lawyers" },
+    { label: t("پشتیبانی"), icon: "shield", href: "/support" },
   ];
 
   const showConsultCards = can("consultations");
@@ -214,7 +217,7 @@ export default async function LawyerDashboard() {
   return (
     <DashboardShell
       role="وکیل"
-      title={isTeam ? "پنل همکاران" : "پنل مدیریت وکالت"}
+      title={isTeam ? t("پنل همکاران") : t("پنل مدیریت وکالت")}
       name={user.name}
       nav={nav}
       back={{ fallback: "/" }}
@@ -227,10 +230,10 @@ export default async function LawyerDashboard() {
             <IconChip icon={isTeam ? "shield" : "mail"} tone={isTeam ? "neutral" : "accent"} />
             <p className="min-w-0 text-sm leading-7 text-foreground-soft">
               {isTeam
-                ? <>دسترسی شما توسط وکیل تعیین شده است؛ فقط بخش‌های مجاز نمایش داده می‌شود.</>
+                ? <>{t("دسترسی شما توسط وکیل تعیین شده است؛ فقط بخش‌های مجاز نمایش داده می‌شود.")}</>
                 : pendingRequests.length > 0
-                  ? <><b className="text-foreground">{faNum(pendingRequests.length)} درخواست مشاوره</b> در انتظار بررسی است.</>
-                  : <>در حال حاضر <b className="text-foreground">درخواست مشاورهٔ در انتظاری</b> ثبت نشده است.</>}
+                  ? <><b className="text-foreground">{faNum(pendingRequests.length)} {t("درخواست مشاوره")}</b> {t("در انتظار بررسی است.")}</>
+                  : <>{t("در حال حاضر")} <b className="text-foreground">{t("درخواست مشاورهٔ در انتظاری")}</b> {t("ثبت نشده است.")}</>}
             </p>
           </div>
           {isBoss && (
@@ -239,7 +242,7 @@ export default async function LawyerDashboard() {
               <div className="flex items-center gap-3">
                 <IconChip icon="money" tone="success" />
                 <div>
-                  <p className="text-[11px] text-muted">تسویه تأییدشده (واقعی)</p>
+                  <p className="text-[11px] text-muted">{t("تسویه تأییدشده (واقعی)")}</p>
                   <p className="text-lg font-extrabold text-foreground">{faPrice(verifiedRevenue)}</p>
                 </div>
               </div>
@@ -258,9 +261,9 @@ export default async function LawyerDashboard() {
       )}
 
       {/* دستورهای سریع وکیل — کاشی‌های گرافیکی */}
-      <section aria-label="دسترسی سریع وکیل">
+      <section aria-label={t("دسترسی سریع وکیل")}>
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground-soft">
-          <Icon name="bolt" className="h-4 w-4 text-accent-text" /> دسترسی سریع
+          <Icon name="bolt" className="h-4 w-4 text-accent-text" /> {t("دسترسی سریع")}
         </h2>
         <div data-testid="quick-actions" className="grid grid-cols-2 gap-3 sm:grid-cols-3 [&>*]:min-w-0">
           {quickActions.map((q) => (
@@ -282,22 +285,25 @@ export default async function LawyerDashboard() {
         </div>
       </section>
 
+      {/* پرداخت قسطی حق‌الوکاله — برای وکلا: موکلان می‌توانند قسطی بپردازند */}
+      <FeeCard audience="lawyer" />
+
       {/* اتصال حساب به پروفایل حرفه‌ای — CTA صادقانه (فقط خود وکیل) */}
       {isBoss && !linked && (
         <Card hover={false} className="border-accent/30 bg-accent-soft/40">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold uppercase tracking-wide text-accent-text">گام بعدی برای وکلا</p>
-              <h3 className="mt-1 font-bold text-foreground">حساب شما به پروفایل حرفه‌ای متصل نیست</h3>
+              <p className="text-xs font-bold uppercase tracking-wide text-accent-text">{t("گام بعدی برای وکلا")}</p>
+              <h3 className="mt-1 font-bold text-foreground">{t("حساب شما به پروفایل حرفه‌ای متصل نیست")}</h3>
               <p className="mt-1 text-sm leading-7 text-foreground-soft">
-                با اتصال حساب، پروفایل عمومی‌تان را ویرایش کنید: تخصص‌ها، خدمات، تعرفه مشاوره متنی/صوتی/تصویری و استان.
+                {t("با اتصال حساب، پروفایل عمومی‌تان را ویرایش کنید: تخصص‌ها، خدمات، تعرفه مشاوره متنی/صوتی/تصویری و استان.")}
               </p>
             </div>
             <a
               href="/dashboard/lawyer/profile"
               className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover"
             >
-              تکمیل پروفایل حرفه‌ای
+              {t("تکمیل پروفایل حرفه‌ای")}
             </a>
           </div>
         </Card>
@@ -314,9 +320,9 @@ export default async function LawyerDashboard() {
         <Card hover={false} id="services" className="scroll-mt-20">
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 font-bold text-foreground">
-              <Icon name="briefcase" className="h-5 w-5 text-primary" /> درخواست‌های خدمات موکلان
+              <Icon name="briefcase" className="h-5 w-5 text-primary" /> {t("درخواست‌های خدمات موکلان")}
             </h2>
-            {serviceReqs.length > 0 && <Badge tone="primary">{faNum(serviceReqs.length)} مورد اخیر</Badge>}
+            {serviceReqs.length > 0 && <Badge tone="primary">{faNum(serviceReqs.length)} {t("مورد اخیر")}</Badge>}
           </div>
           <div className="mt-4 space-y-3">
             {serviceReqs.length > 0 ? serviceReqs.map(({ req, serviceTitle, clientName }) => (
@@ -325,7 +331,7 @@ export default async function LawyerDashboard() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-foreground">{req.title}</p>
                     <p className="mt-0.5 text-xs text-muted">
-                      {serviceTitle ?? "خدمت"} • موکل: {clientName ?? "—"} • <span className="font-mono" dir="ltr">{req.requestNumber}</span>
+                      {serviceTitle ?? t("خدمت")} • {t("موکل:")} {clientName ?? "—"} • <span className="font-mono" dir="ltr">{req.requestNumber}</span>
                     </p>
                     <p className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted">
                       {req.city && <span className="inline-flex items-center gap-1"><Icon name="location" className="h-3 w-3" />{req.city}</span>}
@@ -342,7 +348,7 @@ export default async function LawyerDashboard() {
               </a>
             )) : (
               <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
-                درخواست خدمتی ثبت نشده است؛ به‌محض ثبت توسط موکل، موضوع و جزئیات آن همین‌جا نمایش داده می‌شود.
+                {t("درخواست خدمتی ثبت نشده است؛ به‌محض ثبت توسط موکل، موضوع و جزئیات آن همین‌جا نمایش داده می‌شود.")}
               </p>
             )}
           </div>
@@ -363,7 +369,7 @@ export default async function LawyerDashboard() {
           {/* Upcoming schedule — real booked slots */}
           <Card hover={false}>
             <h2 className="flex items-center gap-2 font-bold text-foreground">
-              <Icon name="calendar" className="h-5 w-5 text-primary" /> نوبت‌های آینده
+              <Icon name="calendar" className="h-5 w-5 text-primary" /> {t("نوبت‌های آینده")}
             </h2>
             <div className="mt-4 space-y-2">
               {scheduled.length > 0 ? scheduled.slice(0, 5).map((c) => (
@@ -376,13 +382,13 @@ export default async function LawyerDashboard() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">{c.subject}</p>
                     <p className="text-xs text-muted">
-                      {c.startsAt ? faDate(c.startsAt) : "زمان در حال هماهنگی"} • {c.clientName}
+                      {c.startsAt ? faDate(c.startsAt) : t("زمان در حال هماهنگی")} • {c.clientName}
                     </p>
                   </div>
                 </div>
               )) : (
                 <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
-                  نوبت قطعی‌شده‌ای وجود ندارد؛ با تأیید درخواست در کارتابل مشاوره، نوبت این‌جا می‌نشیند.
+                  {t("نوبت قطعی‌شده‌ای وجود ندارد؛ با تأیید درخواست در کارتابل مشاوره، نوبت این‌جا می‌نشیند.")}
                 </p>
               )}
             </div>
@@ -395,9 +401,9 @@ export default async function LawyerDashboard() {
         <Card hover={false} id="cases" className="scroll-mt-24">
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 font-bold text-foreground">
-              <Icon name="folder" className="h-5 w-5 text-primary" /> {isTeam ? "پرونده‌های سپرده‌شده به شما" : "پرونده‌های اخیر پلتفرم"}
+              <Icon name="folder" className="h-5 w-5 text-primary" /> {isTeam ? t("پرونده‌های سپرده‌شده به شما") : t("پرونده‌های اخیر پلتفرم")}
             </h2>
-            {allCases.length > 0 && <Badge tone="primary">{faNum(allCases.length)} مورد اخیر</Badge>}
+            {allCases.length > 0 && <Badge tone="primary">{faNum(allCases.length)} {t("مورد اخیر")}</Badge>}
           </div>
           <div className="mt-4 space-y-3">
             {allCases.length > 0 ? allCases.map((c) => (
@@ -414,16 +420,16 @@ export default async function LawyerDashboard() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <Badge tone="primary">{c.stage}</Badge>
-                  <Badge tone="success">{CASE_STATUS_FA[c.status] ?? c.status}</Badge>
+                  <Badge tone="primary">{t(c.stage)}</Badge>
+                  <Badge tone="success">{t(CASE_STATUS_FA[c.status] ?? c.status)}</Badge>
                   <Icon name="chevron" className="h-4 w-4 rotate-180 text-muted" />
                 </div>
               </Link>
             )) : (
               <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
                 {isTeam
-                  ? "هنوز پرونده‌ای به شما سپرده نشده است؛ وکیل از بخش «تیم من» پرونده‌ها را به شما واگذار می‌کند."
-                  : "پرونده‌ای ثبت نشده است؛ به‌محض ثبت موکل، موضوع و مرحله آن همین‌جا نمایش داده می‌شود."}
+                  ? t("هنوز پرونده‌ای به شما سپرده نشده است؛ وکیل از بخش «تیم من» پرونده‌ها را به شما واگذار می‌کند.")
+                  : t("پرونده‌ای ثبت نشده است؛ به‌محض ثبت موکل، موضوع و مرحله آن همین‌جا نمایش داده می‌شود.")}
               </p>
             )}
           </div>

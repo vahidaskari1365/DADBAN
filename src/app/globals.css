@@ -449,6 +449,14 @@ input, select, textarea {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
 }
+.animate-slide-in-left { animation: slide-in-left 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ═══ i18n — چندزبانه (fa/en/ar/tr/zh) ═══
+   dir روی <html> ست می‌شود؛ این قواعد فقط تفاوت‌های فیزیکی RTL/LTR را جبران می‌کنند. */
+/* آیکن فلشِ CTA در RTL به چپ اشاره می‌کند (جلو) — در LTR باید آینه شود تا «جلو» بماند */
+[dir="ltr"] .icon-arrow { transform: scaleX(-1); }
+/* جبران ظریف فیزیکال‌کلاس‌های پرتکرار کدبیس در حالت LTR (بدون بازنویسی کامپوننت‌ها) */
+[dir="ltr"] .drawer-side-fix { inset-inline-start: 0; inset-inline-end: auto; }
 
 /* انیمیشن ورود محتوا (stagger) برای حس اپ نیتیو */
 @keyframes app-fade-up {

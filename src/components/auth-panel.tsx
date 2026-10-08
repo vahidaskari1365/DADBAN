@@ -6,9 +6,12 @@ import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { isRedirectSafeForRole, isLawyerSideRole, panelHomeForRole } from "@/lib/roles";
+import { useT } from "@/lib/i18n/provider";
 
 type Tab = "client" | "lawyer";
 type Mode = "login" | "register";
+/** مسیر عضویت در تب وکیل — رسمی (احراز هویت) یا کارآموز (ثبت‌نام مستقیم) */
+type LawyerTrack = "wakil" | "karamooz";
 
 /** یکسان‌سازی ارقام فارسی/عربی به لاتین برای ارسال به API */
 const toEnDigits = (s: string) =>
@@ -43,9 +46,18 @@ const LAWYER_STEPS = [
 
 const TRUST_ITEMS = ["وکلای احراز هویت‌شده", "پیگیری شفاف", "پشتیبانی ۲۴/۷"];
 
+/** شهرهای پرتکرار برای انتخاب سریع شهر کارآموز — اختیاری؛ مراکز استان‌ها */
+const POPULAR_CITIES = [
+  "تهران", "مشهد", "اصفهان", "شیراز", "کرج", "تبریز", "اهواز", "قم", "رشت",
+  "کرمانشاه", "یزد", "اردبیل", "بندرعباس", "زاهدان", "سنندج", "همدان", "اراک",
+  "گرگان", "ساری", "کرمان", "ارومیه", "خرم‌آباد", "زنجان", "قزوین", "بوشهر",
+  "شهرکرد", "بیرجند", "بجنورد", "سمنان", "یاسوج", "ایلام",
+];
+
 /* ─────────────── پنل برند — سرمه‌ای/طلایی تم خود سایت + عکس هیرو ─────────────── */
 
 function BrandPane({ mode, priority = false }: { mode: Mode; priority?: boolean }) {
+  const t = useT();
   const b = BRAND[mode];
   return (
     <div
@@ -95,16 +107,16 @@ function BrandPane({ mode, priority = false }: { mode: Mode; priority?: boolean 
 
         <p className="mt-10 text-[11px] font-extrabold tracking-[0.45em] text-[var(--auth-gold)]">دادبان</p>
         <h1 className="mt-3 text-[2.6rem] font-black leading-[1.3] text-[var(--auth-onbrand)] xl:text-[2.9rem]">
-          {b.title}{" "}
-          <span className="text-[var(--auth-gold)]">{b.gold}</span>
+          {t(b.title)}{" "}
+          <span className="text-[var(--auth-gold)]">{t(b.gold)}</span>
         </h1>
-        <p className="mt-4 text-sm leading-8 text-[var(--auth-onbrand-soft)]">{b.sub}</p>
+        <p className="mt-4 text-sm leading-8 text-[var(--auth-onbrand-soft)]">{t(b.sub)}</p>
 
         <ul className="mt-10 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-[11px] font-bold text-[var(--auth-onbrand-soft)]">
-          {TRUST_ITEMS.map((t, i) => (
-            <li key={t} className="flex items-center gap-2.5">
+          {TRUST_ITEMS.map((item, i) => (
+            <li key={item} className="flex items-center gap-2.5">
               {i > 0 && <span aria-hidden className="text-[var(--auth-gold)]">•</span>}
-              {t}
+              {t(item)}
             </li>
           ))}
         </ul>
@@ -116,6 +128,7 @@ function BrandPane({ mode, priority = false }: { mode: Mode; priority?: boolean 
 /* ─────────────── نوار برند موبایل — لبه پایین مورب ─────────────── */
 
 function BrandBand({ mode }: { mode: Mode }) {
+  const t = useT();
   const b = BRAND[mode];
   return (
     <div
@@ -155,10 +168,10 @@ function BrandBand({ mode }: { mode: Mode }) {
           <p className="text-[10px] font-extrabold tracking-[0.4em] text-[var(--auth-gold)]">دادبان</p>
         </div>
         <h1 className="mt-5 text-2xl font-black leading-relaxed text-[var(--auth-onbrand)]">
-          {b.title}{" "}
-          <span className="text-[var(--auth-gold)]">{b.gold}</span>
+          {t(b.title)}{" "}
+          <span className="text-[var(--auth-gold)]">{t(b.gold)}</span>
         </h1>
-        <p className="mt-2 text-xs leading-6 text-[var(--auth-onbrand-soft)]">{b.sub}</p>
+        <p className="mt-2 text-xs leading-6 text-[var(--auth-onbrand-soft)]">{t(b.sub)}</p>
       </div>
     </div>
   );
@@ -167,6 +180,7 @@ function BrandBand({ mode }: { mode: Mode }) {
 /* ─────────────── صحنه تمام‌صفحه با برش مورب ─────────────── */
 
 export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
+  const t = useT();
   const [tab, setTab] = useState<Tab>("client");
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState("");
@@ -178,6 +192,9 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  /* مسیر عضویت وکیل — فقط در تب وکیلِ register استفاده می‌شود */
+  const [lawyerTrack, setLawyerTrack] = useState<LawyerTrack>("wakil");
+  const [lawyerCity, setLawyerCity] = useState("");
 
   /* تیغه: یک انیمیشن در هر لحظه؛ سوییچ محتوا زیر پوشش کامل آن */
   const [sweep, setSweep] = useState<{ dir: 1 | -1; id: number; mode: Mode; tab: Tab } | null>(null);
@@ -286,7 +303,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
           else localStorage.removeItem("dadban:remember");
         } catch {}
         if (tab === "lawyer" && !isLawyerSideRole(data.user?.role)) {
-          setNotice("این حساب به‌عنوان «وکیل» ثبت نشده است — از تب «موکل» برای ورود استفاده کنید.");
+          setNotice(t("این حساب به‌عنوان «وکیل» ثبت نشده است — از تب «موکل» برای ورود استفاده کنید."));
           setTab("client");
           setLoading(false);
           return;
@@ -294,9 +311,9 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         hardNavigate(destinationFor(data.user?.role));
         return; // در حال هدایت — لودینگ باقی می‌ماند
       }
-      setError(data.error ?? "خطا در ورود");
+      setError(data.error ?? t("خطا در ورود"));
     } catch {
-      setError("خطا در ارتباط با سرور");
+      setError(t("خطا در ارتباط با سرور"));
     }
     setLoading(false);
   };
@@ -306,11 +323,11 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
     const mobile = toEnDigits(phone).trim();
     if (!name.trim() || !mobile || !password || loading) return;
     if (!/^09\d{9}$/.test(mobile)) {
-      setError("شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.");
+      setError(t("شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد."));
       return;
     }
     if (password.length < 8) {
-      setError("رمز عبور باید حداقل ۸ کاراکتر باشد.");
+      setError(t("رمز عبور باید حداقل ۸ کاراکتر باشد."));
       return;
     }
     setLoading(true);
@@ -338,9 +355,50 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         hardNavigate("/login");
         return;
       }
-      setError(data.error ?? "خطا در ثبت‌نام");
+      setError(data.error ?? t("خطا در ثبت‌نام"));
     } catch {
-      setError("خطا در ارتباط با سرور");
+      setError(t("خطا در ارتباط با سرور"));
+    }
+    setLoading(false);
+  };
+
+  /** ثبت‌نام مستقیم کارآموز وکالت — سرور حساب role=lawyer + پروفایل کارآموز می‌سازد و سشن صادر می‌کند */
+  const submitKaramooz = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const mobile = toEnDigits(phone).trim();
+    if (!name.trim() || !mobile || !password || loading) return;
+    if (!/^09\d{9}$/.test(mobile)) {
+      setError(t("شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد."));
+      return;
+    }
+    if (password.length < 8) {
+      setError(t("رمز عبور باید حداقل ۸ کاراکتر باشد."));
+      return;
+    }
+    setLoading(true);
+    setError("");
+    setNotice("");
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: mobile,
+          password,
+          lawyerType: "karamooz",
+          ...(lawyerCity ? { city: lawyerCity } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        // سشن server-side ست شده — ناوبری کامل مثل بعد از لاگین (نقش وکیل → پنل وکیل)
+        hardNavigate(destinationFor("lawyer"));
+        return;
+      }
+      setError(data.error ?? t("خطا در ثبت‌نام"));
+    } catch {
+      setError(t("خطا در ارتباط با سرور"));
     }
     setLoading(false);
   };
@@ -349,7 +407,9 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
     tab === "lawyer"
       ? mode === "login"
         ? { title: "ورود وکلا", sub: "با شماره موبایل یا ایمیلِ حساب وکیل خود وارد شوید." }
-        : { title: "عضویت وکلا", sub: "پس از احراز هویت، پنل اختصاصی وکیل برای شما فعال می‌شود." }
+        : lawyerTrack === "karamooz"
+          ? { title: "عضویت کارآموز وکالت", sub: "حساب و پروفایل کارآموزی شما فوری ساخته می‌شود." }
+          : { title: "عضویت وکلا", sub: "پس از احراز هویت، پنل اختصاصی وکیل برای شما فعال می‌شود." }
       : mode === "login"
         ? { title: "ورود به حساب", sub: "به پرونده‌ها، مشاوره‌ها و اسناد خود دسترسی داشته باشید." }
         : { title: "ساخت حساب موکل", sub: "رایگان ثبت‌نام کنید و پرونده‌تان را همین امروز شروع کنید." };
@@ -378,35 +438,35 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                   className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-bold text-[var(--auth-ink-soft)] transition-colors hover:text-[var(--accent-text)]"
                 >
                   <Icon name="arrow" className="h-4 w-4 -scale-x-100" />
-                  بازگشت به صفحه اصلی
+                  {t("بازگشت به صفحه اصلی")}
                 </Link>
               </div>
 
               {/* تب نوع حساب */}
-              <div role="tablist" aria-label="نوع حساب" className="mb-8 grid grid-cols-2 gap-1 rounded-full bg-[color-mix(in_oklab,var(--primary)_8%,var(--auth-form-bg))] p-1 ring-1 ring-[var(--border)]">
-                {TABS.map((t) => (
+              <div role="tablist" aria-label={t("نوع حساب")} className="mb-8 grid grid-cols-2 gap-1 rounded-full bg-[color-mix(in_oklab,var(--primary)_8%,var(--auth-form-bg))] p-1 ring-1 ring-[var(--border)]">
+                {TABS.map((tb) => (
                   <button
-                    key={t.id}
+                    key={tb.id}
                     type="button"
                     role="tab"
-                    aria-selected={tab === t.id}
-                    onClick={() => sweepTo(mode, t.id)}
+                    aria-selected={tab === tb.id}
+                    onClick={() => sweepTo(mode, tb.id)}
                     className={`flex h-10 items-center justify-center gap-1.5 rounded-full text-[13px] font-extrabold transition-all duration-300 ${
-                      tab === t.id
+                      tab === tb.id
                         ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md"
                         : "text-[var(--auth-ink-soft)] hover:text-[var(--auth-ink)]"
                     }`}
                   >
-                    <Icon name={t.icon} className="h-4 w-4" />
-                    {t.label}
+                    <Icon name={tb.icon} className="h-4 w-4" />
+                    {t(tb.label)}
                   </button>
                 ))}
               </div>
 
               {/* سرتیتر + خط طلایی */}
-              <h2 className="text-[1.5rem] font-black text-[var(--auth-ink)]">{heading.title}</h2>
+              <h2 className="text-[1.5rem] font-black text-[var(--auth-ink)]">{t(heading.title)}</h2>
               <span aria-hidden className="mt-3 block h-[3px] w-12 rounded-full bg-gradient-to-l from-[var(--accent)] to-[var(--auth-gold)]" />
-              <p className="mt-3 text-[13px] leading-7 text-[var(--auth-ink-soft)]">{heading.sub}</p>
+              <p className="mt-3 text-[13px] leading-7 text-[var(--auth-ink-soft)]">{t(heading.sub)}</p>
 
               {/* بنر خطا / اطلاع */}
               {banner && (
@@ -426,7 +486,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
               {/* ── فرم‌ها ── */}
               {tab === "client" && mode === "login" && (
                 <form onSubmit={submitLogin} className="mt-7 space-y-5" noValidate>
-                  <AuthField label="موبایل یا ایمیل" icon="user">
+                  <AuthField label={t("موبایل یا ایمیل")} icon="user">
                     <input
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
@@ -455,30 +515,30 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                       >
                         {remember && <Icon name="check" className="h-3 w-3 text-[var(--primary-foreground)]" strokeWidth={3.2} />}
                       </span>
-                      مرا به خاطر بسپار
+                      {t("مرا به خاطر بسپار")}
                     </label>
                     <Link
                       href="/contact"
                       className="text-xs font-extrabold text-[var(--accent-text)] transition-colors hover:text-[var(--auth-gold)]"
                     >
-                      فراموشی رمز؟
+                      {t("فراموشی رمز؟")}
                     </Link>
                   </div>
-                  <AuthSubmit loading={loading} label="ورود به دادبان" loadingLabel="در حال ورود…" />
+                  <AuthSubmit loading={loading} label={t("ورود به دادبان")} loadingLabel={t("در حال ورود…")} />
                 </form>
               )}
 
               {tab === "client" && mode === "register" && (
                 <form onSubmit={submitRegister} className="mt-7 space-y-5" noValidate>
-                  <AuthField label="نام و نام خانوادگی" icon="id">
+                  <AuthField label={t("نام و نام خانوادگی")} icon="id">
                     <input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="مثلاً سارا محمدی"
+                      placeholder={t("مثلاً سارا محمدی")}
                       autoComplete="name"
                     />
                   </AuthField>
-                  <AuthField label="شماره موبایل" icon="phone">
+                  <AuthField label={t("شماره موبایل")} icon="phone">
                     <input
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -512,18 +572,18 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                           ))}
                         </span>
                         <span className="text-[10px] font-extrabold text-[var(--auth-ink-soft)]">
-                          {["", "ضعیف", "متوسط", "خوب", "عالی"][pwScore]}
+                          {t(["", "ضعیف", "متوسط", "خوب", "عالی"][pwScore])}
                         </span>
                       </span>
                     )}
                   </div>
-                  <AuthSubmit loading={loading} label="ساخت حساب رایگان" loadingLabel="در حال ساخت حساب…" />
+                  <AuthSubmit loading={loading} label={t("ساخت حساب رایگان")} loadingLabel={t("در حال ساخت حساب…")} />
                 </form>
               )}
 
               {tab === "lawyer" && mode === "login" && (
                 <form onSubmit={submitLogin} className="mt-7 space-y-5" noValidate>
-                  <AuthField label="موبایل یا ایمیل حساب وکیل" icon="briefcase">
+                  <AuthField label={t("موبایل یا ایمیل حساب وکیل")} icon="briefcase">
                     <input
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
@@ -534,44 +594,137 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                     />
                   </AuthField>
                   <AuthPwField idPrefix="lawyer" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} />
-                  <AuthSubmit loading={loading} label="ورود به پنل وکیل" loadingLabel="در حال ورود…" />
+                  <AuthSubmit loading={loading} label={t("ورود به پنل وکیل")} loadingLabel={t("در حال ورود…")} />
                   <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-center text-xs leading-6 text-[var(--auth-ink-soft)]">
-                    هنوز عضو دادبان نشده‌اید؟{" "}
+                    {t("هنوز عضو دادبان نشده‌اید؟")}{" "}
                     <button type="button" onClick={() => sweepTo("register", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">
-                      درخواست عضویت وکیل
+                      {t("درخواست عضویت وکیل")}
                     </button>
                   </p>
                 </form>
               )}
 
               {tab === "lawyer" && mode === "register" && (
-                <div className="mt-7">
-                  <ol className="space-y-3">
-                    {LAWYER_STEPS.map((s, i) => (
-                      <li key={s.title} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3.5">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-black text-[var(--primary-foreground)] shadow-md">
-                          {faNum(i + 1)}
+                <div className="mt-7 space-y-5">
+                  {/* انتخاب مسیر: وکیل رسمی (احراز هویت) یا کارآموز وکالت (ثبت‌نام مستقیم) */}
+                  <div role="radiogroup" aria-label={t("نوع عضویت وکیل")} className="grid grid-cols-2 gap-3">
+                    {([
+                      { id: "wakil" as const, icon: "gavel" as const, title: "وکیل رسمی", desc: "دارای پروانه وکالت" },
+                      { id: "karamooz" as const, icon: "book" as const, title: "کارآموز وکالت", desc: "ثبت‌نام فوری" },
+                    ]).map((o) => (
+                      <button
+                        key={o.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={lawyerTrack === o.id}
+                        onClick={() => setLawyerTrack(o.id)}
+                        className={`btn-press rounded-2xl border p-3.5 text-start transition-all duration-300 ${
+                          lawyerTrack === o.id
+                            ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] shadow-[0_10px_24px_-14px_rgba(176,125,18,0.55)]"
+                            : "border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_4%,transparent)] hover:border-[color-mix(in_oklab,var(--accent)_45%,transparent)]"
+                        }`}
+                      >
+                        <span
+                          className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+                            lawyerTrack === o.id
+                              ? "bg-[var(--accent)] text-white"
+                              : "bg-[color-mix(in_oklab,var(--primary)_10%,transparent)] text-[var(--auth-ink-soft)]"
+                          }`}
+                        >
+                          <Icon name={o.icon} className="h-[18px] w-[18px]" />
                         </span>
-                        <span className="flex flex-col gap-0.5">
-                          <span className="text-sm font-bold text-[var(--auth-ink)]">{s.title}</span>
-                          <span className="text-xs leading-6 text-[var(--auth-ink-soft)]">{s.desc}</span>
+                        <span className={`mt-2.5 block text-[13px] font-extrabold ${lawyerTrack === o.id ? "text-[var(--auth-ink)]" : "text-[var(--auth-ink-soft)]"}`}>
+                          {t(o.title)}
                         </span>
-                      </li>
+                        <span className="mt-0.5 block text-[11px] leading-5 text-[var(--auth-ink-soft)]">{t(o.desc)}</span>
+                      </button>
                     ))}
-                  </ol>
-                  <a
-                    href="/contact"
-                    className="btn-press mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] text-sm font-extrabold text-[var(--primary-foreground)] shadow-[0_14px_30px_-12px_rgba(21,54,93,0.55)] transition-all hover:bg-[var(--primary-hover)] hover:shadow-[0_18px_36px_-12px_rgba(21,54,93,0.65)]"
-                  >
-                    <Icon name="chat" className="h-4 w-4" />
-                    شروع درخواست عضویت
-                  </a>
-                  <p className="mt-4 text-center text-xs text-[var(--auth-ink-soft)]">
-                    پروانه‌تان قبلاً تأیید شده؟{" "}
-                    <button type="button" onClick={() => sweepTo("login", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">
-                      ورود وکیل
-                    </button>
-                  </p>
+                  </div>
+
+                  {lawyerTrack === "wakil" ? (
+                    /* ── مسیر وکیل رسمی — همان فرآیند احراز هویت از طریق پشتیبانی ── */
+                    <div>
+                      <ol className="space-y-3">
+                        {LAWYER_STEPS.map((s, i) => (
+                          <li key={s.title} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3.5">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-black text-[var(--primary-foreground)] shadow-md">
+                              {faNum(i + 1)}
+                            </span>
+                            <span className="flex flex-col gap-0.5">
+                              <span className="text-sm font-bold text-[var(--auth-ink)]">{t(s.title)}</span>
+                              <span className="text-xs leading-6 text-[var(--auth-ink-soft)]">{t(s.desc)}</span>
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                      <a
+                        href="/contact"
+                        className="btn-press mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] text-sm font-extrabold text-[var(--primary-foreground)] shadow-[0_14px_30px_-12px_rgba(21,54,93,0.55)] transition-all hover:bg-[var(--primary-hover)] hover:shadow-[0_18px_36px_-12px_rgba(21,54,93,0.65)]"
+                      >
+                        <Icon name="chat" className="h-4 w-4" />
+                        {t("شروع درخواست عضویت")}
+                      </a>
+                      <p className="mt-4 text-center text-xs text-[var(--auth-ink-soft)]">
+                        {t("پروانه‌تان قبلاً تأیید شده؟")}{" "}
+                        <button type="button" onClick={() => sweepTo("login", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">
+                          {t("ورود وکیل")}
+                        </button>
+                      </p>
+                    </div>
+                  ) : (
+                    /* ── مسیر کارآموز وکالت — فرم ثبت‌نام مستقیم ── */
+                    <form onSubmit={submitKaramooz} className="space-y-5" noValidate>
+                      <AuthField label={t("نام و نام خانوادگی")} icon="id">
+                        <input
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder={t("مثلاً رضا کریمی")}
+                          autoComplete="name"
+                        />
+                      </AuthField>
+                      <AuthField label={t("شماره موبایل")} icon="phone">
+                        <input
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="09123456789"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          dir="ltr"
+                          style={{ textAlign: "right" }}
+                        />
+                      </AuthField>
+                      <AuthPwField idPrefix="karamooz" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} autoComplete="new-password" />
+                      <label className="block">
+                        <span className="mb-1.5 block text-[11px] font-extrabold text-[var(--auth-ink-soft)]">{t("شهر (اختیاری)")}</span>
+                        <span className="relative block">
+                          <Icon name="location" className="pointer-events-none absolute right-0 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--auth-ink-soft)]" />
+                          <select
+                            value={lawyerCity}
+                            onChange={(e) => setLawyerCity(e.target.value)}
+                            className="h-12 w-full appearance-none border-0 border-b-[1.5px] border-[var(--auth-line)] bg-transparent ps-10 pe-6 text-[0.925rem] font-semibold text-[var(--auth-ink)] outline-none transition-colors duration-300 focus:border-[var(--accent)]"
+                          >
+                            <option value="">{t("انتخاب شهر — اختیاری")}</option>
+                            {POPULAR_CITIES.map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </select>
+                          <Icon name="chevron" className="pointer-events-none absolute left-1 top-1/2 h-4 w-4 -translate-y-1/2 rotate-90 text-[var(--auth-ink-soft)]" />
+                        </span>
+                      </label>
+                      <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-[11px] font-bold leading-6 text-[var(--auth-ink-soft)]">
+                        {t("حساب و پروفایل کارآموزی شما فوری ساخته می‌شود؛ بعداً از پنل، تخصص‌ها و معرفی خود را کامل کنید.")}
+                      </p>
+                      <AuthSubmit loading={loading} label={t("ساخت حساب کارآموز")} loadingLabel={t("در حال ساخت حساب کارآموزی…")} />
+                      <p className="text-center text-xs text-[var(--auth-ink-soft)]">
+                        {t("پروانه‌تان قبلاً تأیید شده؟")}{" "}
+                        <button type="button" onClick={() => sweepTo("login", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">
+                          {t("ورود وکیل")}
+                        </button>
+                      </p>
+                    </form>
+                  )}
                 </div>
               )}
 
@@ -580,16 +733,16 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                 <p className="mt-7 text-center text-xs text-[var(--auth-ink-soft)]">
                   {mode === "login" ? (
                     <>
-                      تازه به دادبان آمده‌اید؟{" "}
+                      {t("تازه به دادبان آمده‌اید؟")}{" "}
                       <button type="button" onClick={() => sweepTo("register", tab)} className="auth-switch">
-                        حساب بسازید
+                        {t("حساب بسازید")}
                       </button>
                     </>
                   ) : (
                     <>
-                      قبلاً ثبت‌نام کرده‌اید؟{" "}
+                      {t("قبلاً ثبت‌نام کرده‌اید؟")}{" "}
                       <button type="button" onClick={() => sweepTo("login", tab)} className="auth-switch">
-                        وارد شوید
+                        {t("وارد شوید")}
                       </button>
                     </>
                   )}
@@ -597,15 +750,15 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
               )}
 
               <p className="mt-4 text-center text-[10px] leading-5 text-[var(--auth-ink-soft)]">
-                با ورود یا ثبت‌نام،{" "}
+                {t("با ورود یا ثبت‌نام،")}{" "}
                 <Link href="/legal/terms" className="font-bold text-[var(--accent-text)] hover:underline">
-                  قوانین و مقررات
+                  {t("قوانین و مقررات")}
                 </Link>{" "}
-                و{" "}
+                {t("و")}{" "}
                 <Link href="/legal/privacy" className="font-bold text-[var(--accent-text)] hover:underline">
-                  حریم خصوصی
+                  {t("حریم خصوصی")}
                 </Link>{" "}
-                دادبان را می‌پذیرید.
+                {t("دادبان را می‌پذیرید.")}
               </p>
             </div>
           </div>
@@ -682,10 +835,11 @@ function AuthPwField({
   autoComplete?: string;
 }) {
   const inputId = `pw-${idPrefix}`;
+  const pwT = useT();
   return (
     <div>
       <label htmlFor={inputId} className="mb-1.5 block text-[11px] font-extrabold text-[var(--auth-ink-soft)]">
-        رمز عبور
+        {pwT("رمز عبور")}
       </label>
       <div className="verso-field">
         <Icon name="lock" className="pointer-events-none absolute right-0 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[var(--auth-ink-soft)]" />
@@ -700,7 +854,7 @@ function AuthPwField({
         <button
           type="button"
           onClick={onToggle}
-          aria-label={show ? "پنهان‌کردن رمز" : "نمایش رمز"}
+          aria-label={show ? pwT("پنهان‌کردن رمز") : pwT("نمایش رمز")}
           className="absolute left-0 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--auth-ink-soft)] transition-colors hover:text-[var(--auth-ink)]"
         >
         {show ? (

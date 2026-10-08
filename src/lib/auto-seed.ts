@@ -111,6 +111,7 @@ const DDL = [
   `DO $$ BEGIN CREATE TYPE consultation_status AS ENUM ('pending','confirmed','completed','cancelled'); EXCEPTION WHEN duplicate_object THEN null; END $$`,
   `CREATE TABLE IF NOT EXISTS lawyers (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL, avatar_color TEXT NOT NULL DEFAULT '#15365d', photo_url TEXT, title TEXT NOT NULL DEFAULT 'وکیل پایه یک دادگستری', license_no TEXT NOT NULL, city TEXT NOT NULL, province TEXT NOT NULL, gender TEXT NOT NULL DEFAULT 'male', experience_years INTEGER NOT NULL DEFAULT 0, specialties TEXT[] NOT NULL DEFAULT '{}', rating REAL NOT NULL DEFAULT 0, review_count INTEGER NOT NULL DEFAULT 0, case_count INTEGER NOT NULL DEFAULT 0, price_chat INTEGER NOT NULL DEFAULT 0, price_voice INTEGER NOT NULL DEFAULT 0, price_video INTEGER NOT NULL DEFAULT 0, verified BOOLEAN NOT NULL DEFAULT true, top_rated BOOLEAN NOT NULL DEFAULT false, fast_responder BOOLEAN NOT NULL DEFAULT false, contract_expert BOOLEAN NOT NULL DEFAULT false, response_time TEXT NOT NULL DEFAULT 'کمتر از یک ساعت', bio TEXT NOT NULL DEFAULT '', about TEXT NOT NULL DEFAULT '', services TEXT[] NOT NULL DEFAULT '{}', views INTEGER NOT NULL DEFAULT 0, featured BOOLEAN NOT NULL DEFAULT false, created_at TIMESTAMP NOT NULL DEFAULT now())`,
   `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS photo_url TEXT`,
+  `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS lawyer_type TEXT NOT NULL DEFAULT 'wakil'`,
   `CREATE TABLE IF NOT EXISTS reviews (id SERIAL PRIMARY KEY, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, client_name TEXT NOT NULL, rating INTEGER NOT NULL, comment TEXT NOT NULL, service TEXT, created_at TIMESTAMP NOT NULL DEFAULT now())`,
   `CREATE TABLE IF NOT EXISTS contracts (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, category TEXT NOT NULL, icon TEXT NOT NULL DEFAULT 'file', description TEXT NOT NULL, use_case TEXT NOT NULL, risks TEXT[] NOT NULL DEFAULT '{}', key_clauses TEXT[] NOT NULL DEFAULT '{}', sample_price INTEGER NOT NULL DEFAULT 0, custom_price INTEGER NOT NULL DEFAULT 0, popular BOOLEAN NOT NULL DEFAULT false, steps TEXT[] NOT NULL DEFAULT '{}')`,
   `CREATE TABLE IF NOT EXISTS articles (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, category TEXT NOT NULL, excerpt TEXT NOT NULL, content TEXT NOT NULL, quick_answer TEXT NOT NULL DEFAULT '', faq TEXT NOT NULL DEFAULT '[]', image_url TEXT, image_alt TEXT, read_time INTEGER NOT NULL DEFAULT 5, author TEXT NOT NULL DEFAULT 'تیم تحریریه دادبان', author_role TEXT NOT NULL DEFAULT 'پژوهشگر حقوق', views INTEGER NOT NULL DEFAULT 0, published_at TIMESTAMP NOT NULL DEFAULT now())`,
@@ -296,6 +297,8 @@ let profileSchemaReady = false;
 export async function ensureProfileSchema(): Promise<void> {
   if (profileSchemaReady) return;
   const stmts = [
+    // نوع وکیل — پیش‌نیاز ثبت‌نام مستقیم کارآموز وکالت (الگوی photo_url)
+    `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS lawyer_type TEXT NOT NULL DEFAULT 'wakil'`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS province TEXT`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS city TEXT`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS avatar_color TEXT NOT NULL DEFAULT '#15365d'`,

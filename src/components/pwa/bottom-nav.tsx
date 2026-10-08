@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * نوار ناوبری پایین — طراحی بیضی شناور (floating oval) مثل اپ‌های مدرن.
@@ -45,6 +46,7 @@ const LAWYER_TABS: Tab[] = [
 ];
 
 export function BottomNav() {
+  const t = useT();
   const pathname = usePathname();
   const [isLawyer, setIsLawyer] = useState(false);
 
@@ -75,7 +77,7 @@ export function BottomNav() {
 
   return (
     <nav
-      aria-label="ناوبری اصلی موبایل"
+      aria-label={t("ناوبری اصلی موبایل")}
       className="fixed inset-x-0 bottom-0 z-50 flex justify-center lg:hidden"
       style={{
         paddingBottom: "max(env(safe-area-inset-bottom, 0px), 12px)",
@@ -106,7 +108,7 @@ export function BottomNav() {
               <Link
                 key={tab.label}
                 href={tab.href}
-                aria-label={tab.label}
+                aria-label={t(tab.label)}
                 aria-current={active ? "page" : undefined}
                 className="group flex flex-col items-center"
                 style={{ marginTop: "-22px" }}
@@ -132,7 +134,7 @@ export function BottomNav() {
                   className="mt-1 text-[10px] font-bold transition-colors"
                   style={{ color: active ? "var(--primary)" : "var(--accent)" }}
                 >
-                  {tab.label}
+                  {t(tab.label)}
                 </span>
               </Link>
             );
@@ -142,7 +144,7 @@ export function BottomNav() {
             <Link
               key={tab.label}
               href={tab.href}
-              aria-label={tab.label}
+              aria-label={t(tab.label)}
               aria-current={active ? "page" : undefined}
               className="group flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-transform duration-200 active:scale-90"
             >
@@ -173,7 +175,7 @@ export function BottomNav() {
                   fontWeight: active ? 700 : 500,
                 }}
               >
-                {tab.label}
+                {t(tab.label)}
               </span>
               {/* active indicator dot */}
               <span

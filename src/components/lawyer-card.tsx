@@ -7,6 +7,7 @@ import { Badge } from "./ui";
 import { Icon } from "./icons";
 import { faNum, faPrice } from "@/lib/data";
 import type { Lawyer } from "@/db/schema";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * کارت معرفی وکیل — سبک پینترست (تصویرمحور، عمودی، آماده چیدمان masonry).
@@ -27,6 +28,7 @@ export function LawyerCard({
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const t = useT();
   const hasPhoto = !!lawyer.photoUrl && !failed;
   const aspect = PHOTO_ASPECTS[index % PHOTO_ASPECTS.length];
   const initials = lawyer.name
@@ -35,6 +37,8 @@ export function LawyerCard({
     .slice(-2)
     .map((w) => w[0])
     .join("");
+  // نوع وکیل — ستون lawyer_type ممکن است هنوز مهاجرت نشده باشد؛ اختیاری خوانده می‌شود
+  const isKaramooz = (lawyer as { lawyerType?: string }).lawyerType === "karamooz";
 
   return (
     <Link
@@ -46,7 +50,7 @@ export function LawyerCard({
         {hasPhoto ? (
           <Image
             src={lawyer.photoUrl as string}
-            alt={`عکس ${lawyer.name}`}
+            alt={`${t("عکس")} ${lawyer.name}`}
             fill
             priority={priority}
             sizes="(min-width: 80rem) 25vw, (min-width: 64rem) 33vw, (min-width: 40rem) 50vw, 100vw"
@@ -82,7 +86,7 @@ export function LawyerCard({
         {lawyer.verified && (
           <span
             className="absolute top-3 end-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md"
-            title="احراز هویت‌شده"
+            title={t("احراز هویت‌شده")}
           >
             <Icon name="badge" className="h-4 w-4" />
           </span>
@@ -92,7 +96,19 @@ export function LawyerCard({
       {/* بدنه کارت — در ستون‌های باریک موبایل فشرده می‌شود */}
       <div className="flex flex-col gap-2 p-3 sm:gap-2.5 sm:p-4">
         <div>
-          <h3 className="truncate text-sm font-bold text-foreground sm:text-base">{lawyer.name}</h3>
+          <div className="flex items-center gap-1.5">
+            <h3 className="min-w-0 flex-1 truncate text-sm font-bold text-foreground sm:text-base">{lawyer.name}</h3>
+            {/* نشان طلایی کارآموز وکالت — شماره پروانه (K-…) برای کارآموز نمایش داده نمی‌شود */}
+            {isKaramooz && (
+              <span
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--accent)_14%,transparent)] px-2 py-0.5 text-[10px] font-extrabold text-[var(--accent-text)] ring-1 ring-[color-mix(in_oklab,var(--accent)_35%,transparent)]"
+                title={t("پروفایل کارآموز وکالت — ثبت‌نام مستقیم")}
+              >
+                <Icon name="book" className="h-3 w-3" />
+                {t("کارآموز وکالت")}
+              </span>
+            )}
+          </div>
           <p className="mt-0.5 line-clamp-1 text-[11px] text-muted sm:text-xs">{lawyer.title}</p>
         </div>
 
@@ -101,10 +117,10 @@ export function LawyerCard({
             <Icon name="location" className="h-3.5 w-3.5" /> {lawyer.city}
           </span>
           <span className="inline-flex items-center gap-1">
-            <Icon name="briefcase" className="h-3.5 w-3.5" /> {faNum(lawyer.experienceYears)} سال سابقه
+            <Icon name="briefcase" className="h-3.5 w-3.5" /> {faNum(lawyer.experienceYears)} {t("سال سابقه")}
           </span>
           <span className="inline-flex items-center gap-1">
-            <Icon name="folder" className="h-3.5 w-3.5" /> {faNum(lawyer.caseCount)} پرونده
+            <Icon name="folder" className="h-3.5 w-3.5" /> {faNum(lawyer.caseCount)} {t("پرونده")}
           </span>
         </div>
 
@@ -121,11 +137,11 @@ export function LawyerCard({
 
         <div className="mt-1 flex items-center justify-between gap-2 border-t border-border pt-2 sm:pt-3">
           <div>
-            <p className="text-[10px] text-muted sm:text-[11px]">مشاوره متنی از</p>
+            <p className="text-[10px] text-muted sm:text-[11px]">{t("مشاوره متنی از")}</p>
             <p className="text-xs font-bold text-foreground sm:text-sm">{faPrice(lawyer.priceChat)}</p>
           </div>
           <span className="hidden items-center gap-1 rounded-lg bg-primary-soft px-3 py-1.5 text-xs font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground sm:inline-flex">
-            مشاهده پروفایل
+            {t("مشاهده پروفایل")}
             <Icon name="arrow" className="h-3.5 w-3.5" />
           </span>
         </div>

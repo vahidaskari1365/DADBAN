@@ -12,6 +12,9 @@ import { BottomNav } from "@/components/pwa/bottom-nav";
 import { ConsultCompanion } from "@/components/consult-companion";
 import { LiveActivity } from "@/components/amazon/live-activity";
 import { SW_REGISTER_SCRIPT } from "@/components/pwa/sw-register-script";
+import { LocaleProvider } from "@/lib/i18n/provider";
+import { dirFor } from "@/lib/i18n";
+import { getServerLocale, getT } from "@/lib/i18n/server";
 import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/brand";
 import { SITE_URL } from "@/lib/site";
 import { organizationSchema, websiteSchema, jsonLd } from "@/lib/seo";
@@ -142,9 +145,12 @@ export const viewport: Viewport = {
 const orgJsonLd = organizationSchema;
 const siteJsonLd = websiteSchema;
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  /* زبان از کوکی خوانده می‌شود تا بدون تغییر URL (حفظ SEO) کل سایت همان زبان شود */
+  const locale = await getServerLocale();
+  const t = await getT();
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning data-scroll-behavior="smooth" className={vazirmatn.variable}>
+    <html lang={locale} dir={dirFor(locale)} suppressHydrationWarning data-scroll-behavior="smooth" className={vazirmatn.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashScript }} />
         {/* ثبت Service Worker برای PWA — inline تا مستقل از React hydration باشد */}
@@ -224,12 +230,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           />
         </div>
         <ThemeProvider>
+          <LocaleProvider locale={locale}>
           <MotionProvider>
           <a
             href="#main"
             className="sr-only focus:not-sr-only focus:fixed focus:right-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
           >
-            پرش به محتوای اصلی
+            {t("پرش به محتوای اصلی")}
           </a>
           <div className="flex min-h-screen flex-col">
             <Header />
@@ -246,6 +253,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {/* اثبات اجتماعی زنده — فقط فعالیت واقعی پلتفرم (سبک آمازون) */}
           <LiveActivity />
           </MotionProvider>
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>

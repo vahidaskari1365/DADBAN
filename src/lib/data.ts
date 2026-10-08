@@ -6,7 +6,10 @@ export type IconKey =
   | "stamp" | "family" | "home" | "shield" | "building" | "truck" | "calculator"
   | "book" | "balance" | "lock" | "chat" | "phone" | "user" | "sparkles"
   | "check" | "clock" | "star" | "badge" | "bolt" | "document" | "landmark"
-  | "money" | "alert" | "scale" | "briefcase" | "id" | "arrow" | "chevron" | "plus" | "filter" | "x" | "send" | "menu" | "location" | "share" | "quote" | "link";
+  | "money" | "alert" | "scale" | "briefcase" | "id" | "arrow" | "chevron" | "plus" | "filter" | "x" | "send" | "menu" | "location" | "share" | "quote" | "link"
+  /* آیکن‌های حقوقی افزودهٔ تسک 2-c — امضا/توافق/احراز/پروانه/تعرفه */
+  | "signature" | "handshake" | "fingerprint" | "certificate" | "coins"
+  | "globe";
 
 /* ---------------- Legal topics (hero selector) ---------------- */
 export const LEGAL_TOPICS: { label: string; icon: IconKey; hint: string }[] = [

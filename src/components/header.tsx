@@ -12,6 +12,8 @@ import { AccountMenu, type MeUser } from "./account-menu";
 import { NAV } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { panelHomeForRole } from "@/lib/roles";
+import { useT } from "@/lib/i18n/provider";
+import { LanguageSwitcher } from "./language-switcher";
 
 const childIcon = (label: string): IconKey => {
   const m: Record<string, IconKey> = {
@@ -20,10 +22,10 @@ const childIcon = (label: string): IconKey => {
     "وکیل کارمندان": "user",
     "ثبت پرونده و درخواست وکیل": "folder",
     "پیگیری پرونده": "clock",
-    "انجام امور اداری": "building",
+    "انجام امور اداری": "signature",
     "تنظیم دادخواست و شکواییه": "gavel",
     "تنظیم اسناد": "document",
-    "بررسی قرارداد": "file",
+    "بررسی قرارداد": "signature",
     "همه قراردادها": "file",
     "خدمات ثبتی": "stamp",
     "همه وکلا": "search",
@@ -41,10 +43,10 @@ const childIcon = (label: string): IconKey => {
     "واژه‌نامه حقوقی": "book",
     "دستیار حقوقی AI": "sparkles",
     "دستیار هوش مصنوعی": "sparkles",
-    "تحلیل قرارداد": "file",
+    "تحلیل قرارداد": "signature",
     "قراردادساز": "document",
     "فرم‌های حقوقی": "file",
-    "تعرفه خدمات": "money",
+    "تعرفه خدمات": "coins",
   };
   return m[label] ?? "arrow";
 };
@@ -54,6 +56,7 @@ const childIcon = (label: string): IconKey => {
 const MOBILE_NAV = [...NAV].sort((a, b) => Number(Boolean(b.ai)) - Number(Boolean(a.ai)));
 
 export function Header() {
+  const t = useT();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -146,7 +149,7 @@ export function Header() {
         <Link
           href="/"
           className="shrink-0 transition-opacity hover:opacity-85"
-          aria-label="دادبان — خانه"
+          aria-label={t("دادبان — خانه")}
           onClick={() => {
             // Clicking the logo always goes home; if already there, scroll back to top.
             if (pathname === "/") window.scrollTo({ top: 0, behavior: "smooth" });
@@ -168,7 +171,8 @@ export function Header() {
                     onClick={() => setOpenMenu(openMenu === item.label ? null : item.label)}
                     aria-expanded={openMenu === item.label}
                   >
-                    {item.label}
+                    {t(item.label)}
+                    <span className="sr-only">{t("زیرمنو")}</span>
                     <Icon name="check" className="h-3 w-3 rotate-90 opacity-60" />
                   </button>
                   {openMenu === item.label && (
@@ -187,8 +191,8 @@ export function Header() {
                               <Icon name={childIcon(c.label)} className="h-4 w-4" />
                             </span>
                             <span className="flex flex-col">
-                              <span className="text-sm font-semibold text-foreground">{c.label}</span>
-                              {c.desc && <span className="text-xs text-muted">{c.desc}</span>}
+                              <span className="text-sm font-semibold text-foreground">{t(c.label)}</span>
+                              {c.desc && <span className="text-xs text-muted">{t(c.desc)}</span>}
                             </span>
                           </Link>
                         ))}
@@ -213,7 +217,7 @@ export function Header() {
                     }
                   >
                     {item.ai && <Icon name="sparkles" className="h-4 w-4" />}
-                    {item.label}
+                    {t(item.label)}
                   </Link>
                 </li>
               )
@@ -226,13 +230,15 @@ export function Header() {
           {/* دکمهٔ بازگشت — همه‌جا جز خانه */}
           {pathname !== "/" && (
             <div className="lg:block">
-              <BackButton variant="icon" label="بازگشت" fallback="/" />
+              <BackButton variant="icon" label={t("بازگشت")} fallback="/" />
             </div>
           )}
           {/* تم‌تاگل فقط روی دسکتاپ */}
           <div className="hidden lg:block">
             <ThemeToggle compact />
           </div>
+          {/* سوییچر زبان — همه‌جا */}
+          <LanguageSwitcher compact />
           {/* اکانت — مهمان: ورود | واردشده: آواتار با منوی کشویی */}
           <div className="hidden lg:block">
             <AccountMenu user={me} loaded={meLoaded} />
@@ -240,7 +246,7 @@ export function Header() {
           {/* CTA اصلی هدر — شروع مسیر حقوقی (فقط دسکتاپ) */}
           <div className="hidden lg:block">
             <Button href="/ai-assistant" size="sm" icon="arrow">
-              شروع مسیر حقوقی
+              {t("شروع مسیر حقوقی")}
             </Button>
           </div>
           {/* CTA کوچک موبایل — کنار آیکون منو */}
@@ -248,7 +254,7 @@ export function Header() {
             href="/ai-assistant"
             className="inline-flex items-center gap-1 rounded-xl border border-accent/30 bg-accent-soft px-3 py-2.5 text-xs font-bold text-accent-text transition-all active:scale-95 lg:hidden"
           >
-            شروع مسیر
+            {t("شروع مسیر")}
             <Icon name="arrow" className="h-3.5 w-3.5" />
           </Link>
           {/* آیکون منو — موبایل/تبلت، حداقل 44px touch target */}
@@ -257,7 +263,7 @@ export function Header() {
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
             className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface text-foreground transition-all active:scale-90 lg:hidden"
-            aria-label={mobileOpen ? "بستن منو" : "باز کردن منو"}
+            aria-label={mobileOpen ? t("بستن منو") : t("باز کردن منو")}
             aria-expanded={mobileOpen}
             aria-controls="mobile-main-menu"
           >
@@ -284,8 +290,8 @@ export function Header() {
               id="mobile-main-menu"
               role="dialog"
               aria-modal="true"
-              aria-label="منوی اصلی"
-              className="absolute inset-y-0 right-0 w-[85%] max-w-sm overflow-y-auto bg-surface shadow-[var(--shadow-lift)] animate-slide-in-right"
+              aria-label={t("منوی اصلی")}
+              className="absolute inset-y-0 start-0 w-[85%] max-w-sm overflow-y-auto bg-surface shadow-[var(--shadow-lift)] rtl:animate-slide-in-right ltr:animate-slide-in-left"
             >
             {/* هدر drawer */}
             <div className="flex items-center justify-between border-b border-border p-4">
@@ -298,7 +304,7 @@ export function Header() {
                   hamburgerRef.current?.focus();
                 }}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted hover:bg-surface-2 active:scale-90"
-                aria-label="بستن منو"
+                aria-label={t("بستن منو")}
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M6 6l12 12M6 18 18 6" />
@@ -310,7 +316,7 @@ export function Header() {
               {MOBILE_NAV.map((item) =>
                 item.children ? (
                   <div key={item.label} className="border-b border-border pb-2 last:border-0">
-                    <p className="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-muted">{item.label}</p>
+                    <p className="px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-muted">{t(item.label)}</p>
                     <div className="flex flex-col">
                       {item.children.map((c) => (
                         <Link
@@ -321,7 +327,7 @@ export function Header() {
                           <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
                             <Icon name={childIcon(c.label)} className="h-4 w-4" />
                           </span>
-                          {c.label}
+                          {t(c.label)}
                         </Link>
                       ))}
                     </div>
@@ -337,7 +343,7 @@ export function Header() {
                     }
                   >
                     {item.ai && <Icon name="sparkles" className="h-4 w-4" />}
-                    {item.label}
+                    {t(item.label)}
                   </Link>
                 )
               )}
@@ -345,11 +351,15 @@ export function Header() {
             {/* پایین drawer — اقلام اکانت */}
             <div className="border-t border-border p-3">
               <div className="mb-3 flex items-center justify-between px-3">
-                <span className="text-xs font-bold uppercase tracking-wide text-muted">حالت نمایش</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">{t("حالت نمایش")}</span>
                 <ThemeToggle compact />
               </div>
-              <Button href="/ai-assistant" icon="arrow" className="w-full">شروع مسیر حقوقی</Button>
-              <Button href="/consultation" variant="outline" icon="calendar" className="mt-2 w-full">رزرو مشاوره</Button>
+              <div className="mb-3 flex items-center justify-between px-3">
+                <span className="text-xs font-bold uppercase tracking-wide text-muted">{t("زبان")}</span>
+                <LanguageSwitcher />
+              </div>
+              <Button href="/ai-assistant" icon="arrow" className="w-full">{t("شروع مسیر حقوقی")}</Button>
+              <Button href="/consultation" variant="outline" icon="calendar" className="mt-2 w-full">{t("رزرو مشاوره")}</Button>
               {meLoaded && me ? (
                 <div className="mt-3 space-y-2 rounded-2xl border border-border bg-surface-2/60 p-3">
                   <div className="flex items-center gap-3">
@@ -362,10 +372,10 @@ export function Header() {
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-bold text-foreground">{me.name}</span>
-                      <span className="block text-[11px] text-muted">حساب کاربری فعال</span>
+                      <span className="block text-[11px] text-muted">{t("حساب کاربری فعال")}</span>
                     </span>
                   </div>
-                  <Button href={panelHomeForRole(me.role)} variant="outline" icon="home" className="w-full">داشبورد من</Button>
+                  <Button href={panelHomeForRole(me.role)} variant="outline" icon="home" className="w-full">{t("داشبورد من")}</Button>
                   <button
                     type="button"
                     onClick={logout}
@@ -373,11 +383,11 @@ export function Header() {
                     className="flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-danger/30 bg-danger/5 text-sm font-bold text-danger transition-colors hover:bg-danger/10"
                   >
                     <Icon name="x" className="h-4 w-4" />
-                    خروج از حساب
+                    {t("خروج از حساب")}
                   </button>
                 </div>
               ) : (
-                <Button href="/login" variant="outline" icon="user" className="mt-2 w-full">ورود / ثبت‌نام</Button>
+                <Button href="/login" variant="outline" icon="user" className="mt-2 w-full">{t("ورود / ثبت‌نام")}</Button>
               )}
             </div>
             </div>

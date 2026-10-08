@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * «مسیریاب موضوعی دادبان» — قلب هدفمند صفحهٔ اول:
@@ -261,6 +262,7 @@ const PLANS: SituationPlan[] = [
 const spring = { type: "spring" as const, stiffness: 210, damping: 24 };
 
 export function SituationRouter() {
+  const t = useT();
   const [active, setActive] = useState<string>(PLANS[0].key);
   const plan = PLANS.find((p) => p.key === active) ?? PLANS[0];
 
@@ -283,7 +285,7 @@ export function SituationRouter() {
               }`}
             >
               <Icon name={p.icon} className="h-4 w-4" />
-              {p.label}
+              {t(p.label)}
             </button>
           );
         })}
@@ -311,11 +313,11 @@ export function SituationRouter() {
                     <Icon name={plan.icon} className="h-5.5 w-5.5" />
                   </span>
                   <div>
-                    <span className="text-[11px] font-bold text-accent-text">مسیر پیشنهادی دادبان</span>
-                    <h3 className="text-lg font-black text-foreground sm:text-xl">{plan.headline}</h3>
+                    <span className="text-[11px] font-bold text-accent-text">{t("مسیر پیشنهادی دادبان")}</span>
+                    <h3 className="text-lg font-black text-foreground sm:text-xl">{t(plan.headline)}</h3>
                   </div>
                 </div>
-                <p className="text-xs leading-6 text-muted sm:max-w-[34ch]">{plan.intro}</p>
+                <p className="text-xs leading-6 text-muted sm:max-w-[34ch]">{t(plan.intro)}</p>
               </div>
 
               {/* گام‌ها با خط اتصال عمودی */}
@@ -334,19 +336,19 @@ export function SituationRouter() {
                     </span>
                     <div className="min-w-0 flex-1 rounded-2xl border border-border bg-background/60 p-4 transition-colors duration-300 hover:border-accent/30">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h4 className="text-sm font-black text-foreground">{s.title}</h4>
+                        <h4 className="text-sm font-black text-foreground">{t(s.title)}</h4>
                         {s.tag && (
                           <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold text-accent-text">
-                            {s.tag}
+                            {t(s.tag)}
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 text-xs leading-6 text-muted sm:text-[13px]">{s.desc}</p>
+                      <p className="mt-1 text-xs leading-6 text-muted sm:text-[13px]">{t(s.desc)}</p>
                       <Link
                         href={s.href}
                         className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-primary/25 bg-primary-soft px-3.5 py-2 text-xs font-bold text-primary transition-all duration-300 hover:bg-primary hover:text-primary-foreground active:scale-95"
                       >
-                        {s.cta}
+                        {t(s.cta)}
                         <Icon name="arrow" className="h-3.5 w-3.5" />
                       </Link>
                     </div>
@@ -357,9 +359,9 @@ export function SituationRouter() {
               {/* مسیر جایگزین */}
               <p className="mt-6 flex flex-wrap items-center gap-1.5 border-t border-border pt-4 text-xs text-muted">
                 <Icon name="sparkles" className="h-3.5 w-3.5 text-accent-text" />
-                موضوعت در فهرست نیست؟
+                {t("موضوعت در فهرست نیست؟")}
                 <Link href="/ai-assistant" className="font-bold text-primary hover:text-primary-hover">
-                  همین‌جا از دستیار بپرس — رایگان
+                  {t("همین‌جا از دستیار بپرس — رایگان")}
                 </Link>
               </p>
             </div>

@@ -48,7 +48,7 @@ const paths: Record<IconKey, (p: P) => ReactElement> = {
   scale: (p) => (<svg {...base(p)}><path d="M12 3v18M5 21h14M12 3 6 5M12 3l6 2M6 5 3 12a3 3 0 0 0 6 0L6 5M18 5l-3 7a3 3 0 0 0 6 0l-3-7" /></svg>),
   briefcase: (p) => (<svg {...base(p)}><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16M2 13h20" /></svg>),
   id: (p) => (<svg {...base(p)}><rect x="2" y="4" width="20" height="16" rx="2" /><circle cx="8" cy="10" r="2" /><path d="M5 16a3 3 0 0 1 6 0M14 9h5M14 13h5M14 16h3" /></svg>),
-  arrow: (p) => (<svg {...base(p)}><path d="M19 12H5M12 5l-7 7 7 7" /></svg>),
+  arrow: (p) => (<svg {...base(p)} className={`icon-arrow ${p.className ?? ""}`}><path d="M19 12H5M12 5l-7 7 7 7" /></svg>),
   chevron: (p) => (<svg {...base(p)}><path d="m9 18 6-6-6-6" /></svg>),
   plus: (p) => (<svg {...base(p)}><path d="M12 5v14M5 12h14" /></svg>),
   filter: (p) => (<svg {...base(p)}><path d="M22 3H2l8 9.5V19l4 2v-8.5z" /></svg>),
@@ -59,6 +59,14 @@ const paths: Record<IconKey, (p: P) => ReactElement> = {
   share: (p) => (<svg {...base(p)}><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" /></svg>),
   quote: (p) => (<svg {...base(p)}><path d="M10 11H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6a4 4 0 0 1-4 4" /><path d="M20 11h-4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6a4 4 0 0 1-4 4" /></svg>),
   link: (p) => (<svg {...base(p)}><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" /><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" /></svg>),
+  globe: (p) => (<svg {...base(p)}><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18" /><path d="M12 3a15 15 0 0 0 0 18" /></svg>),
+  /* — آیکن‌های حقوقی (تسک 2-c): امضا، توافق، احراز، پروانه، تعرفه — */
+  // هندسهٔ handshake با الگوی اثبات‌خوردهٔ lucide (ISC) بازطراحی و ساده‌سازی شده است.
+  signature: (p) => (<svg {...base(p)}><path d="M4.5 19.5l1-4L16.5 4.5a2.12 2.12 0 0 1 3 3L8.5 18.5l-4 1z" /><path d="m13.5 7.5 3 3" /><path d="M3 21.5h12" /></svg>),
+  handshake: (p) => (<svg {...base(p)}><path d="m11 17 2 2a1 1 0 1 0 3-3" /><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4" /><path d="m21 3 1 11h-2" /><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3" /><path d="M3 4h8" /></svg>),
+  fingerprint: (p) => (<svg {...base(p)}><path d="M4.5 16.5v-4.5a7.5 7.5 0 0 1 15 0v4.5" /><path d="M8 15v-3a4 4 0 0 1 8 0v6.5" /><path d="M12 12.5a1.9 1.9 0 0 1 1.9 1.9c0 2.4-.4 4.4-1.3 6.2" /></svg>),
+  certificate: (p) => (<svg {...base(p)}><path d="M12.5 20.5H6.5a2 2 0 0 1-2-2V6.2a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2V10.5" /><circle cx="17" cy="16.5" r="3.2" /><path d="m15.6 19-1.2 2.5 2.6-1 2.6 1-1.2-2.5" /><path d="M7.5 8h9M7.5 11.5h5" /></svg>),
+  coins: (p) => (<svg {...base(p)}><circle cx="9.5" cy="14" r="6" /><path d="M6.9 13a2.8 2.8 0 0 1 3.1-1.8" /><path d="M9.2 7.8A6.2 6.2 0 1 1 15.4 15.7" /></svg>),
 };
 
 export function Icon({ name, ...props }: { name: IconKey } & P) {

@@ -9,6 +9,7 @@ import { LEGAL_TOPICS, ALL_PROVINCES, faNum } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
 import { buildFunnelOptions, saveFunnelSelections, type FunnelRecommendation } from "@/lib/recommendation";
 import { STAGES, ResultCard } from "./quick-start";
+import { useT } from "@/lib/i18n/provider";
 
 /* فانل درجایی هیرو — پس از انتخاب موضوع، مراحل بعدی همین‌جا ادامه می‌یابد (بدون پرش به پایین صفحه) */
 const FSTEP_TITLES = [
@@ -22,6 +23,7 @@ const FUNNEL_TOTAL = 2; // مرحله/استان — انتخاب موضوع گ�
 const HERO_TOPIC_LABELS = ["ملک و اجاره", "طلاق", "کیفری", "کار", "قرارداد", "ارث", "چک", "مهریه"];
 
 export function HomeHero() {
+  const t = useT();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [fstep, setFstep] = useState(0); // 0=انتخاب موضوع، 1..2 مراحل، 3=پیشنهاد سه‌گزینه‌ای
@@ -83,10 +85,10 @@ export function HomeHero() {
         <h1
           className="animate-fade-up text-balance text-4xl font-extrabold leading-[1.2] tracking-tight text-foreground sm:text-5xl md:text-6xl"
         >
-          مشکل حقوقی دارید؟{" "}
+          {t("مشکل حقوقی دارید؟")}{" "}
           <span className="relative inline-block">
             <span className="bg-gradient-to-l from-primary via-accent to-primary bg-clip-text text-transparent">
-              اول مسیر درست
+              {t("اول مسیر درست")}
             </span>
             <svg
               className="absolute -bottom-2 right-0 h-3 w-full text-accent-text/50"
@@ -97,15 +99,16 @@ export function HomeHero() {
               <path d="M2 9C40 3 160 3 198 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
             </svg>
           </span>{" "}
-          را پیدا کنید.
+          {t("را پیدا کنید.")}
         </h1>
 
         <p
           className="animate-fade-up mx-auto mt-6 max-w-xl text-base leading-8 text-muted sm:text-lg"
           style={{ animationDelay: "0.12s" }}
         >
-          مسئله‌تان را برای دادبان بنویسید؛ مسیر مناسب را پیدا کنید و اگر لازم بود،
-          به وکیل یا خدمت حقوقی مناسب وصل شوید.
+          {t(
+            "مسئله‌تان را برای دادبان بنویسید؛ مسیر مناسب را پیدا کنید و اگر لازم بود، به وکیل یا خدمت حقوقی مناسب وصل شوید.",
+          )}
         </p>
 
         {/* Legal Problem Search — ورودی اصلی؛ پس از Enter به مسیر بررسی مشکل می‌رود */}
@@ -125,29 +128,29 @@ export function HomeHero() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && search()}
-                    placeholder="مثلاً: مستأجرم چند ماه اجاره نداده، چه کار کنم؟"
-                    aria-label="شرح مشکل حقوقی شما"
+                    placeholder={t("مثلاً: مستأجرم چند ماه اجاره نداده، چه کار کنم؟")}
+                    aria-label={t("شرح مشکل حقوقی شما")}
                     className="h-11 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-soft"
                   />
                 </div>
                 <Button onClick={search} size="sm" icon="arrow" className="h-11 w-full justify-center sm:w-auto">
-                  بررسی مشکل من
+                  {t("بررسی مشکل من")}
                 </Button>
               </div>
 
               <div className="mt-4">
-                <p className="mb-2 text-xs font-medium text-muted">یا موضوع را انتخاب کنید — مسیر همین‌جا ادامه می‌یابد:</p>
+                <p className="mb-2 text-xs font-medium text-muted">{t("یا موضوع را انتخاب کنید — مسیر همین‌جا ادامه می‌یابد:")}</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {heroTopics.map((t) => (
+                  {heroTopics.map((top) => (
                     <button
-                      key={t.label}
+                      key={top.label}
                       type="button"
-                      title={t.hint}
-                      onClick={() => pickTopic(t.label)}
+                      title={t(top.hint)}
+                      onClick={() => pickTopic(top.label)}
                       className="inline-flex min-h-[38px] items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 py-2 text-xs font-medium text-foreground-soft transition-all duration-200 cursor-pointer hover:border-primary/40 hover:bg-primary-soft hover:text-primary"
                     >
-                      <Icon name={t.icon} className="h-3.5 w-3.5" />
-                      {t.label}
+                      <Icon name={top.icon} className="h-3.5 w-3.5" />
+                      {t(top.label)}
                     </button>
                   ))}
                 </div>
@@ -163,7 +166,7 @@ export function HomeHero() {
                   <button
                     type="button"
                     onClick={resetFunnel}
-                    aria-label="تغییر موضوع"
+                    aria-label={t("تغییر موضوع")}
                     className="mr-1 cursor-pointer rounded-full p-0.5 text-primary/70 transition-colors hover:bg-primary/10 hover:text-primary"
                   >
                     <Icon name="x" className="h-3 w-3" />
@@ -182,7 +185,7 @@ export function HomeHero() {
               </div>
 
               {fstep <= 2 && (
-                <h4 className="mt-4 text-base font-bold text-foreground">{FSTEP_TITLES[fstep]}</h4>
+                <h4 className="mt-4 text-base font-bold text-foreground">{t(FSTEP_TITLES[fstep])}</h4>
               )}
 
               <div className="mt-3">
@@ -198,7 +201,7 @@ export function HomeHero() {
                         }}
                         className="flex cursor-pointer items-center justify-between rounded-xl border border-border px-4 py-3 text-sm font-medium text-foreground-soft transition-all hover:border-primary/40 hover:bg-primary-soft hover:text-primary"
                       >
-                        {s}
+                        {t(s)}
                         <Icon name="arrow" className="h-4 w-4 opacity-40" />
                       </button>
                     ))}
@@ -228,15 +231,15 @@ export function HomeHero() {
                             setFstep(3);
                           }
                         }}
-                        aria-label="انتخاب استان"
+                        aria-label={t("انتخاب استان")}
                         className="h-13 w-full cursor-pointer appearance-none rounded-xl border border-border-strong bg-background py-3.5 pl-4 pr-11 text-sm font-medium text-foreground outline-none transition-colors focus:border-primary"
                       >
                         <option value="" disabled>
-                          استان خود را از فهرست انتخاب کنید…
+                          {t("استان خود را از فهرست انتخاب کنید…")}
                         </option>
                         {ALL_PROVINCES.map((p) => (
                           <option key={p} value={p}>
-                            استان {p}
+                            {t("استان")} {p}
                           </option>
                         ))}
                       </select>
@@ -253,7 +256,7 @@ export function HomeHero() {
                       <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-success/15 text-success">
                         <Icon name="check" className="h-5 w-5" />
                       </span>
-                      <p className="text-sm font-bold text-foreground">پیشنهاد شما آماده است</p>
+                      <p className="text-sm font-bold text-foreground">{t("پیشنهاد شما آماده است")}</p>
                     </div>
                     <p className="mt-2 text-sm leading-7 text-muted">{rec.nextStep}</p>
                     <ul className="mt-2 space-y-1 text-xs leading-6 text-muted">
@@ -266,7 +269,7 @@ export function HomeHero() {
                     </ul>
                     <div className="mt-3 grid gap-3 sm:grid-cols-3">
                       {rec.options.map((o, i) => (
-                        <ResultCard key={o.key} label={`گزینه ${faNum(i + 1)}`} option={o} tone={i === 0 ? "primary" : i === 1 ? "neutral" : "accent"} />
+                        <ResultCard key={o.key} label={t(`گزینه ${faNum(i + 1)}`)} option={o} tone={i === 0 ? "primary" : i === 1 ? "neutral" : "accent"} />
                       ))}
                     </div>
                     <button
@@ -274,7 +277,7 @@ export function HomeHero() {
                       onClick={resetFunnel}
                       className="mt-4 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
                     >
-                      شروع دوباره
+                      {t("شروع دوباره")}
                     </button>
                   </div>
                 )}
@@ -287,7 +290,7 @@ export function HomeHero() {
                     onClick={back}
                     className="text-sm font-medium text-muted transition-colors hover:text-foreground"
                   >
-                    → قبلی
+                    {t("→ قبلی")}
                   </button>
                 </div>
               )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Icon } from "./icons";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * Hero background for a legal platform.
@@ -83,6 +84,7 @@ function FloatCard({
   sub: string;
   tone: "primary" | "accent" | "success";
 }) {
+  const fcT = useT();
   const toneCls =
     tone === "accent"
       ? "bg-accent-soft text-accent-text"
@@ -96,8 +98,8 @@ function FloatCard({
           <Icon name={icon} className="h-4 w-4" />
         </span>
         <div className="leading-tight">
-          <p className="text-xs font-bold text-foreground">{title}</p>
-          <p className="text-[10px] text-muted">{sub}</p>
+          <p className="text-xs font-bold text-foreground">{fcT(title)}</p>
+          <p className="text-[10px] text-muted">{fcT(sub)}</p>
         </div>
       </div>
     </div>

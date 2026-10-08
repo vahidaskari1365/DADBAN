@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * «همه‌چیز از یک‌جا» — هاب یکپارچهٔ اقدام‌های اصلی سایت (سبک بنتو).
@@ -25,7 +26,7 @@ type ActionItem = {
 
 const ACTIONS: ActionItem[] = [
   { title: "دستیار هوش مصنوعی", desc: "پاسخ فوری سؤال حقوقی با استناد به قانون — رایگان و ۲۴ ساعته", icon: "sparkles", href: "/ai-assistant", featured: true },
-  { title: "خدمات حضوری و اداری", desc: "نماینده دادبان با وکالت‌نامه رسمی به‌جای شما به اداره‌ها می‌رود", icon: "building", href: "/services", wide: true },
+  { title: "خدمات حضوری و اداری", desc: "نماینده دادبان با وکالت‌نامه رسمی به‌جای شما به اداره‌ها می‌رود", icon: "signature", href: "/services", wide: true },
   { title: "وکیل‌یابی", desc: "جست‌وجوی وکیل متخصص بر اساس تخصص و شهر", icon: "search", href: "/lawyers" },
   { title: "رزرو مشاوره", desc: "متنی، صوتی یا تصویری با وکیل", icon: "calendar", href: "/consultation" },
   { title: "ثبت پرونده", desc: "ارزیابی اولیه و معرفی وکیل", icon: "folder", href: "/case/new" },
@@ -37,6 +38,7 @@ const ACTIONS: ActionItem[] = [
 const spring = { type: "spring" as const, stiffness: 210, damping: 24 };
 
 export function ActionHub() {
+  const t = useT();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {ACTIONS.map((a, i) => {
@@ -78,24 +80,24 @@ export function ActionHub() {
                 {featured && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2.5 py-1 text-[10px] font-black text-accent-text ring-1 ring-accent/40">
                     <Icon name="sparkles" className="h-3 w-3" />
-                    پیشنهاد دادبان
+                    {t("پیشنهاد دادبان")}
                   </span>
                 )}
               </div>
 
               <div className="relative mt-auto pt-5">
                 <h3 className={`font-black ${featured ? "text-2xl sm:text-3xl" : "text-base"} ${featured ? "text-primary-foreground" : "text-foreground"}`}>
-                  {a.title}
+                  {t(a.title)}
                 </h3>
                 <p className={`mt-1.5 leading-6 ${featured ? "text-sm text-primary-foreground/80" : "text-sm text-muted"}`}>
-                  {a.desc}
+                  {t(a.desc)}
                 </p>
                 <span
                   className={`mt-4 inline-flex items-center gap-1.5 text-sm font-bold transition-all duration-300 group-hover:gap-3 ${
                     featured ? "text-accent-text" : "text-primary"
                   }`}
                 >
-                  شروع کنید
+                  {t("شروع کنید")}
                   <Icon name="arrow" className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
                 </span>
               </div>
@@ -109,7 +111,7 @@ export function ActionHub() {
 
 /** نوار متحرک اعتماد — باریک و یک‌خطی (جایگزین ۴ کارت بزرگ تکراری) */
 const TRUST_ITEMS: { icon: IconKey; text: string }[] = [
-  { icon: "badge", text: "راستی‌آزمایی پروانه وکلا" },
+  { icon: "certificate", text: "راستی‌آزمایی پروانه وکلا" },
   { icon: "lock", text: "محرمانگی اطلاعات" },
   { icon: "shield", text: "بازگشت وجه طبق سیاست شفاف" },
   { icon: "balance", text: "تعرفه شفاف پیش از تصمیم" },
@@ -117,14 +119,15 @@ const TRUST_ITEMS: { icon: IconKey; text: string }[] = [
 ];
 
 export function TrustStrip() {
+  const t = useT();
   const row = [...TRUST_ITEMS, ...TRUST_ITEMS];
   return (
     <div className="home-marquee relative overflow-hidden rounded-2xl border border-border bg-surface/70 py-3 backdrop-blur" dir="ltr">
       <div className="home-marquee-track flex w-max items-center gap-8 pl-8" dir="rtl">
-        {row.map((t, i) => (
-          <span key={`${t.text}-${i}`} className="inline-flex shrink-0 items-center gap-2 text-xs font-medium text-muted">
-            <Icon name={t.icon} className="h-4 w-4 text-accent-text" />
-            {t.text}
+        {row.map((item, i) => (
+          <span key={`${item.text}-${i}`} className="inline-flex shrink-0 items-center gap-2 text-xs font-medium text-muted">
+            <Icon name={item.icon} className="h-4 w-4 text-accent-text" />
+            {t(item.text)}
             <span className="mr-4 inline-block h-1 w-1 rounded-full bg-border" aria-hidden />
           </span>
         ))}

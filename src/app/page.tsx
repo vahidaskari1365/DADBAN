@@ -6,6 +6,7 @@ import { Container, SectionHeading, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { HomeHero } from "@/components/home-hero";
+import { FeeBanner } from "@/components/fee/fee-banner";
 import { TrustStrip } from "@/components/home/action-hub";
 import { MainPaths } from "@/components/home/main-paths";
 import { SituationRouter } from "@/components/home/situation-router";
@@ -17,6 +18,7 @@ import { LawyerCard } from "@/components/lawyer-card";
 import { PinMasonry } from "@/components/pin-masonry";
 import { ReviewsSpotlight } from "@/components/amazon/reviews-spotlight";
 import { SiteMenu } from "@/components/home/site-menu";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Homepage دادبان — Conversion-focused و خلوت.
@@ -30,6 +32,7 @@ import { SiteMenu } from "@/components/home/site-menu";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  const t = await getT();
   let featured: typeof lawyers.$inferSelect[] = [];
   let recentArticles: typeof articles.$inferSelect[] = [];
   try {
@@ -47,9 +50,16 @@ export default async function HomePage() {
       <HomeHero />
 
       {/* TRUST STRIP — باریک، فقط ادعاهای واقعی */}
-      <section className="-mt-6" aria-label="تضمین‌های دادبان">
+      <section className="-mt-6" aria-label={t("تضمین‌های دادبان")}>
         <Container>
           <TrustStrip />
+        </Container>
+      </section>
+
+      {/* FEE BANNER — حق‌الوکاله و پرداخت قسطی (تبلیغ برجسته به درخواست مالک) */}
+      <section className="mt-10" aria-label={t("حق‌الوکاله و پرداخت قسطی")}>
+        <Container>
+          <FeeBanner />
         </Container>
       </section>
 
@@ -58,9 +68,9 @@ export default async function HomePage() {
         <Container>
           <Reveal variant="blur">
             <SectionHeading
-              eyebrow="شروع کنید"
-              title="می‌خواهید از کجا شروع کنید؟"
-              desc="دادبان مسئله‌تان را می‌فهمد، مسیر درست را پیدا می‌کند و به وکیل یا خدمت مناسب وصلتان می‌کند."
+              eyebrow={t("شروع کنید")}
+              title={t("می‌خواهید از کجا شروع کنید؟")}
+              desc={t("دادبان مسئله‌تان را می‌فهمد، مسیر درست را پیدا می‌کند و به وکیل یا خدمت مناسب وصلتان می‌کند.")}
             />
           </Reveal>
           <div className="mt-10">
@@ -74,9 +84,9 @@ export default async function HomePage() {
         <Container>
           <Reveal variant="blur">
             <SectionHeading
-              eyebrow="مسیریاب دادبان"
-              title="اگر نمی‌دانید از کجا شروع کنید، موضوعتان را انتخاب کنید"
-              desc="دادبان مرحله بعدی را به شما نشان می‌دهد — برای هر موضوع یک مسیر ساده."
+              eyebrow={t("مسیریاب دادبان")}
+              title={t("اگر نمی‌دانید از کجا شروع کنید، موضوعتان را انتخاب کنید")}
+              desc={t("دادبان مرحله بعدی را به شما نشان می‌دهد — برای هر موضوع یک مسیر ساده.")}
             />
           </Reveal>
           <div className="mt-10">
@@ -93,12 +103,12 @@ export default async function HomePage() {
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <SectionHeading
                   align="start"
-                  eyebrow="وکلای دادبان"
-                  title="اگر به وکیل نیاز دارید، از همین‌جا شروع کنید"
-                  desc="وکلای واقعی دادبان با تخصص و شهر مشخص — پروفایل هر وکیل را ببینید."
+                  eyebrow={t("وکلای دادبان")}
+                  title={t("اگر به وکیل نیاز دارید، از همین‌جا شروع کنید")}
+                  desc={t("وکلای واقعی دادبان با تخصص و شهر مشخص — پروفایل هر وکیل را ببینید.")}
                 />
                 <Button href="/lawyers" variant="outline" icon="search" className="shrink-0">
-                  جستجوی همه وکلا
+                  {t("جستجوی همه وکلا")}
                 </Button>
               </div>
             </Reveal>
@@ -118,9 +128,9 @@ export default async function HomePage() {
         <Container>
           <Reveal variant="blur">
             <SectionHeading
-              eyebrow="پلتفرم خدمات حقوقی"
-              title="خدمات حقوقی دادبان"
-              desc="دادبان فقط برای پیدا کردن وکیل نیست — خدمت حقوقی موردنیازتان را همین‌جا دریافت کنید."
+              eyebrow={t("پلتفرم خدمات حقوقی")}
+              title={t("خدمات حقوقی دادبان")}
+              desc={t("دادبان فقط برای پیدا کردن وکیل نیست — خدمت حقوقی موردنیازتان را همین‌جا دریافت کنید.")}
             />
           </Reveal>
           <div className="mt-10">
@@ -141,9 +151,9 @@ export default async function HomePage() {
         <Container>
           <Reveal variant="blur">
             <SectionHeading
-              eyebrow="راهنمای مسیر"
-              title="مسائل حقوقی رایج"
-              desc="اگر یکی از این شرایط را دارید، مسیرتان از همین‌جا شروع می‌شود."
+              eyebrow={t("راهنمای مسیر")}
+              title={t("مسائل حقوقی رایج")}
+              desc={t("اگر یکی از این شرایط را دارید، مسیرتان از همین‌جا شروع می‌شود.")}
             />
           </Reveal>
           <div className="mt-8">
@@ -157,8 +167,8 @@ export default async function HomePage() {
         <Container>
           <Reveal variant="blur">
             <SectionHeading
-              eyebrow="چطور کار می‌کند"
-              title="مسیر حقوقی در دادبان ساده است"
+              eyebrow={t("چطور کار می‌کند")}
+              title={t("مسیر حقوقی در دادبان ساده است")}
             />
           </Reveal>
           <div className="mt-12">
@@ -173,9 +183,9 @@ export default async function HomePage() {
           <Container>
             <Reveal variant="blur">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-xl font-black text-foreground">از مجلهٔ حقوقی دادبان</h2>
+                <h2 className="text-xl font-black text-foreground">{t("از مجلهٔ حقوقی دادبان")}</h2>
                 <Link href="/knowledge" className="inline-flex items-center gap-1.5 text-sm font-bold text-primary transition-colors hover:text-primary-hover">
-                  مشاهده همه مطالب
+                  {t("مشاهده همه مطالب")}
                   <Icon name="arrow" className="h-4 w-4" />
                 </Link>
               </div>
@@ -196,7 +206,7 @@ export default async function HomePage() {
                     </h3>
                     <p className="mt-1.5 line-clamp-2 flex-1 text-xs leading-6 text-muted">{a.excerpt}</p>
                     <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-primary transition-all duration-300 group-hover:gap-2.5">
-                      ادامه مطلب
+                      {t("ادامه مطلب")}
                       <Icon name="arrow" className="h-3.5 w-3.5" />
                     </span>
                   </Link>
@@ -217,16 +227,16 @@ export default async function HomePage() {
             <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-8 text-center card-shadow sm:p-12">
               <div className="pointer-events-none absolute inset-0 opacity-50" style={{ background: "linear-gradient(110deg, color-mix(in oklab, var(--primary) 12%, transparent), color-mix(in oklab, var(--accent) 10%, transparent), color-mix(in oklab, var(--primary) 12%, transparent))" }} />
               <div className="relative">
-                <h2 className="text-2xl font-black text-foreground sm:text-3xl">نمی‌دانید از کجا شروع کنید؟</h2>
+                <h2 className="text-2xl font-black text-foreground sm:text-3xl">{t("نمی‌دانید از کجا شروع کنید؟")}</h2>
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-8 text-muted sm:text-base">
-                  مسئله حقوقی‌تان را برای دادبان بنویسید تا مسیر مناسب را پیدا کنید.
+                  {t("مسئله حقوقی‌تان را برای دادبان بنویسید تا مسیر مناسب را پیدا کنید.")}
                 </p>
                 <div className="mt-6 flex flex-wrap justify-center gap-3">
                   <Button href="/ai-assistant" size="lg" icon="arrow" className="shadow-[var(--shadow-lift)]">
-                    بررسی مشکل من
+                    {t("بررسی مشکل من")}
                   </Button>
                   <Button href="/lawyers" size="lg" variant="outline" icon="search">
-                    جستجوی وکیل
+                    {t("جستجوی وکیل")}
                   </Button>
                 </div>
               </div>

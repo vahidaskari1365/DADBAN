@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Container, Logo } from "./ui";
 import { Icon } from "./icons";
 import type { IconKey } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
 
 const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -63,7 +64,8 @@ const FEATURES: { icon: IconKey; label: string }[] = [
   { icon: "balance", label: "حل اختلاف شفاف" },
 ];
 
-export function Footer() {
+export async function Footer() {
+  const t = await getT();
   return (
     <footer className="mt-20 border-t border-border bg-surface">
       <Container className="py-12">
@@ -71,27 +73,28 @@ export function Footer() {
           <div>
             <Link
               href="/"
-              aria-label="دادبان — صفحه اصلی"
+              aria-label={t("دادبان — صفحه اصلی")}
               className="inline-block transition-opacity hover:opacity-85"
             >
               <Logo />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-7 text-muted">
-              دادبان، پلتفرم هوشمند خدمات حقوقی؛ از پیدا کردن وکیل متخصص و رزرو مشاوره تا مدیریت
-              پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی — همه در یک‌جا.
+              {t(
+                "دادبان، پلتفرم هوشمند خدمات حقوقی؛ از پیدا کردن وکیل متخصص و رزرو مشاوره تا مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی — همه در یک‌جا.",
+              )}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               {FEATURES.map((f) => (
                 <span key={f.label} className="inline-flex items-center gap-2 text-xs text-foreground-soft">
                   <Icon name={f.icon} className="h-4 w-4 text-accent-text" />
-                  {f.label}
+                  {t(f.label)}
                 </span>
               ))}
             </div>
           </div>
           {COLS.map((col) => (
             <div key={col.title}>
-              <h3 className="text-sm font-bold text-foreground">{col.title}</h3>
+              <h3 className="text-sm font-bold text-foreground">{t(col.title)}</h3>
               <ul className="mt-4 space-y-2.5">
                 {col.links.map((l) => (
                   <li key={l.label}>
@@ -99,7 +102,7 @@ export function Footer() {
                       href={l.href}
                       className="text-sm text-muted transition-colors hover:text-primary"
                     >
-                      {l.label}
+                      {t(l.label)}
                     </Link>
                   </li>
                 ))}
@@ -110,10 +113,10 @@ export function Footer() {
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
           <p className="text-xs text-muted">
-            © {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(new Date().getFullYear())} دادبان — تمامی حقوق محفوظ است.
+            © {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(new Date().getFullYear())} {t("دادبان — تمامی حقوق محفوظ است.")}
           </p>
           <p className="text-xs text-muted">
-            محتوای این پلتفرم صرفاً جنبه راهنمایی دارد و جایگزین مشاوره تخصصی وکیل نیست.
+            {t("محتوای این پلتفرم صرفاً جنبه راهنمایی دارد و جایگزین مشاوره تخصصی وکیل نیست.")}
           </p>
         </div>
       </Container>

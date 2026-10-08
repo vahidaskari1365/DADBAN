@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * اسپات‌لایت سینمایی «دستیار هوش مصنوعی حقوقی»:
@@ -26,35 +27,36 @@ const FEATURES: { icon: "chat" | "clock" | "balance" | "book"; text: string }[] 
 ];
 
 export function AISpotlight() {
+  const t = useT();
   const [qIndex, setQIndex] = useState(0);
   const [typed, setTyped] = useState("");
   const [phase, setPhase] = useState<"typing" | "hold" | "deleting">("typing");
 
   // ماشین‌تایپ سؤال‌های نمونه
   useEffect(() => {
-    const full = SAMPLE_QUESTIONS[qIndex % SAMPLE_QUESTIONS.length];
-    let t: ReturnType<typeof setTimeout>;
+    const full = t(SAMPLE_QUESTIONS[qIndex % SAMPLE_QUESTIONS.length]);
+    let timer: ReturnType<typeof setTimeout>;
     if (phase === "typing") {
       if (typed.length < full.length) {
-        t = setTimeout(() => setTyped(full.slice(0, typed.length + 1)), 42);
+        timer = setTimeout(() => setTyped(full.slice(0, typed.length + 1)), 42);
       } else {
-        t = setTimeout(() => setPhase("hold"), 1700);
+        timer = setTimeout(() => setPhase("hold"), 1700);
       }
     } else if (phase === "hold") {
-      t = setTimeout(() => setPhase("deleting"), 400);
+      timer = setTimeout(() => setPhase("deleting"), 400);
     } else {
       if (typed.length > 0) {
-        t = setTimeout(() => setTyped(full.slice(0, typed.length - 1)), 16);
+        timer = setTimeout(() => setTyped(full.slice(0, typed.length - 1)), 16);
       } else {
         // رفتن به سؤال بعدی — داخل تایمر تا setState سنکرون در effect رخ ندهد
-        t = setTimeout(() => {
+        timer = setTimeout(() => {
           setQIndex((i) => i + 1);
           setPhase("typing");
         }, 60);
       }
     }
-    return () => clearTimeout(t);
-  }, [typed, phase, qIndex]);
+    return () => clearTimeout(timer);
+  }, [typed, phase, qIndex, t]);
 
   return (
     <motion.section
@@ -63,14 +65,14 @@ export function AISpotlight() {
       viewport={{ once: true, margin: "0px 0px -80px 0px" }}
       transition={{ type: "spring", stiffness: 160, damping: 26 }}
       className="relative isolate overflow-hidden rounded-[2rem] border border-accent/30 bg-primary shadow-[var(--shadow-lift)]"
-      aria-label="دستیار هوش مصنوعی حقوقی دادبان"
+      aria-label={t("دستیار هوش مصنوعی حقوقی دادبان")}
     >
       {/* پس‌زمینه تصویری با ken-burns */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 animate-[kenburns_26s_ease-in-out_infinite_alternate]">
           <Image
             src="/images/ai-spotlight.png"
-            alt="ترازوی طلایی عدالت در فضای سرمه‌ای — نماد هوش مصنوعی حقوقی دادبان"
+            alt={t("ترازوی طلایی عدالت در فضای سرمه‌ای — نماد هوش مصنوعی حقوقی دادبان")}
             fill
             sizes="(max-width: 1024px) 100vw, 1200px"
             className="object-cover opacity-45"
@@ -102,7 +104,7 @@ export function AISpotlight() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
-            هوش مصنوعی حقوقی دادبان
+            {t("هوش مصنوعی حقوقی دادبان")}
           </motion.span>
 
           <motion.h2
@@ -112,9 +114,9 @@ export function AISpotlight() {
             transition={{ delay: 0.22, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             className="mt-5 text-balance text-3xl font-black leading-[1.25] text-primary-foreground sm:text-4xl"
           >
-            سؤال حقوقی‌ات را بپرس؛
+            {t("سؤال حقوقی‌ات را بپرس؛")}
             <span className="mt-1 block bg-gradient-to-l from-accent via-[color-mix(in_oklab,var(--accent)_75%,white)] to-accent bg-clip-text text-transparent">
-              جواب مستند بگیر
+              {t("جواب مستند بگیر")}
             </span>
           </motion.h2>
 
@@ -125,8 +127,9 @@ export function AISpotlight() {
             transition={{ delay: 0.3, duration: 0.5 }}
             className="mt-4 max-w-lg text-sm leading-8 text-primary-foreground/75 sm:text-base"
           >
-            دستیار هوشمند دادبان سؤال شما را می‌فهمد، مادهٔ قانونی مرتبط را پیدا می‌کند و
-            مسیر اقدام بعدی را به زبان ساده توضیح می‌دهد — قبل از اینکه هزینه‌ای بدهید.
+            {t(
+              "دستیار هوشمند دادبان سؤال شما را می‌فهمد، مادهٔ قانونی مرتبط را پیدا می‌کند و مسیر اقدام بعدی را به زبان ساده توضیح می‌دهد — قبل از اینکه هزینه‌ای بدهید.",
+            )}
           </motion.p>
 
           {/* افکت تایپ سؤال */}
@@ -152,7 +155,7 @@ export function AISpotlight() {
             {FEATURES.map((f) => (
               <span key={f.text} className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-foreground/70">
                 <Icon name={f.icon} className="h-4 w-4 text-accent-text" />
-                {f.text}
+                {t(f.text)}
               </span>
             ))}
           </div>
@@ -169,9 +172,9 @@ export function AISpotlight() {
               className="home-shimmer relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-accent px-6 py-3.5 text-sm font-black text-accent-foreground shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_-12px_color-mix(in_oklab,var(--accent)_60%,transparent)] active:scale-[0.98]"
             >
               <Icon name="sparkles" className="h-5 w-5" />
-              شروع گفتگو با دستیار
+              {t("شروع گفتگو با دستیار")}
             </Link>
-            <span className="text-xs text-primary-foreground/60">بدون نیاز به ثبت‌نام</span>
+            <span className="text-xs text-primary-foreground/60">{t("بدون نیاز به ثبت‌نام")}</span>
           </motion.div>
 
           {/* Disclaimer — دستیار جایگزین وکیل نیست */}
@@ -182,7 +185,7 @@ export function AISpotlight() {
             transition={{ delay: 0.55, duration: 0.5 }}
             className="mt-4 max-w-lg text-[11px] leading-5 text-primary-foreground/55"
           >
-            پاسخ‌های دستیار هوشمند برای راهنمایی اولیه هستند و جایگزین مشاوره تخصصی وکیل نمی‌شوند.
+            {t("پاسخ‌های دستیار هوشمند برای راهنمایی اولیه هستند و جایگزین مشاوره تخصصی وکیل نمی‌شوند.")}
           </motion.p>
         </div>
 
@@ -199,7 +202,7 @@ export function AISpotlight() {
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-accent/20 text-accent-text">
                 <Icon name="sparkles" className="h-4 w-4" />
               </span>
-              <p className="text-xs font-bold text-primary-foreground/85">پاسخ نمونهٔ دستیار</p>
+              <p className="text-xs font-bold text-primary-foreground/85">{t("پاسخ نمونهٔ دستیار")}</p>
             </div>
             <ul className="mt-3 space-y-2.5 text-xs leading-6 text-primary-foreground/75">
               {[
@@ -217,7 +220,7 @@ export function AISpotlight() {
                   className="flex items-start gap-2"
                 >
                   <Icon name="check" className="mt-1 h-3.5 w-3.5 shrink-0 text-accent-text" />
-                  {line}
+                  {t(line)}
                 </motion.li>
               ))}
             </ul>

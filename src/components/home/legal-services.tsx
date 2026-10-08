@@ -1,6 +1,7 @@
 import { Reveal } from "@/components/reveal";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * «خدمات حقوقی دادبان» — نشان می‌دهد دادبان یک Legal Services Platform است،
@@ -13,10 +14,11 @@ const SERVICES: { title: string; desc: string; href: string; icon: IconKey }[] =
   { title: "دادخواست و شکواییه", desc: "تنظیم تخصصی اسناد قانونی توسط وکیل", href: "/legal-forms", icon: "gavel" },
   { title: "خدمات ثبتی", desc: "ثبت شرکت، برند و علامت تجاری", href: "/pricing", icon: "stamp" },
   { title: "خدمات حقوقی کسب‌وکار", desc: "قراردادهای تجاری و مشاورهٔ B2B", href: "/business", icon: "building" },
-  { title: "امور اداری و حضوری", desc: "نمایندهٔ دادبان با وکالت‌نامهٔ رسمی", href: "/services", icon: "landmark" },
+  { title: "امور اداری و حضوری", desc: "نمایندهٔ دادبان با وکالت‌نامهٔ رسمی", href: "/services", icon: "signature" },
 ];
 
-export function LegalServices() {
+export async function LegalServices() {
+  const t = await getT();
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {SERVICES.map((s, i) => (
@@ -29,8 +31,8 @@ export function LegalServices() {
               <Icon name={s.icon} className="h-5 w-5" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-sm font-black text-foreground">{s.title}</span>
-              <span className="mt-0.5 block text-xs leading-5 text-muted">{s.desc}</span>
+              <span className="block text-sm font-black text-foreground">{t(s.title)}</span>
+              <span className="mt-0.5 block text-xs leading-5 text-muted">{t(s.desc)}</span>
             </span>
             <Icon name="arrow" className="h-4 w-4 shrink-0 text-muted transition-all duration-300 group-hover:-translate-x-1 group-hover:text-accent-text" />
           </a>
