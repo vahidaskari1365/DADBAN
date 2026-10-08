@@ -12,7 +12,9 @@
  */
 
 const API = 'https://api.vercel.com';
-const PROJECT = 'dadban-brown';
+const PROJECT = 'dadban';
+const TEAM = 'team_1Zo3YKNrfyyexTskIRXdouSJ';
+const qs = TEAM ? `?teamId=${TEAM}` : '';
 const GIT_ORG = 'vahidaskari1365';
 const GIT_REPO = 'DADBAN';
 const GIT_REF = 'main';
@@ -30,7 +32,7 @@ if (!token) {
 type Json = Record<string, unknown>;
 
 async function api<T = Json>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
+  const res = await fetch(`${API}${path}${qs}`, {
     ...init,
     headers: {
       Authorization: `Bearer ${token}`,
@@ -62,7 +64,7 @@ async function jjson(res: Response): Promise<Json> {
 }
 
 async function findProject(): Promise<{ id: string; orgId: string; name: string; link: unknown } | null> {
-  const data = await api<{ projects: Array<Json> }>('/v9/projects?limit=100');
+  const data = await api<{ projects: Array<Json> }>(`/v9/projects?limit=100${TEAM ? `&teamId=${TEAM}` : ''}`);
   for (const p of data.projects) {
     if (p.name === PROJECT) {
       console.log(`✓ پروژه پیدا شد: ${p.name} (id=${p.id})`);
@@ -77,7 +79,7 @@ async function findProject(): Promise<{ id: string; orgId: string; name: string;
 
 async function deployFromGit(): Promise<string> {
   console.log('→ تلاش دیپلوی از گیت (gitSource) …');
-  const res = await fetch(`${API}/v13/deployments?skipAutoDetectionConfirmation=1`, {
+  const res = await fetch(`${API}/v13/deployments${qs}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -134,7 +136,7 @@ async function deployFromFiles(): Promise<string> {
   for (let i = 0; i < manifest.length; i += CHUNK) {
     const chunk = manifest.slice(i, i + CHUNK);
     for (const f of chunk) {
-      const res = await fetch(`${API}/v2/files`, {
+      const res = await fetch(`${API}/v2/files${qs}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -161,7 +163,7 @@ async function deployFromFiles(): Promise<string> {
     projectSettings: { framework: 'nextjs' },
     skipAutoDetectionConfirmation: true,
   };
-  const res = await fetch(`${API}/v13/deployments`, {
+  const res = await fetch(`${API}/v13/deployments${qs}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -193,8 +195,12 @@ async function waitDeployment(id: string, timeoutMs = 600000): Promise<boolean> 
 }
 
 async function main() {
-  const proj = await findProject();
-  if (!proj) process.exit(2);
+  try {
+    const proj = await findProject();
+    void proj;
+  } catch (e) {
+    console.log(`⚠ شروع نشدن فهرست پروژه‌ها (محدودیت توکن) — ادامهٔ دیپلوی مستقیم: ${String(e).slice(0, 120)}`);
+  }
 
   let depId: string | null = null;
   if (mode === 'git' || mode === 'auto') {

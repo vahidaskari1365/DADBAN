@@ -1,0 +1,39 @@
+name: Deploy to Vercel (production)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel production deployment from main
+        run: |
+          RESP=$(curl -s -X POST "https://api.vercel.com/v13/deployments?teamId=${{ secrets.VERCEL_TEAM_ID }}" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "project": "dadban",
+              "name": "dadban",
+              "target": "production",
+              "gitSource": { "type": "github", "org": "vahidaskari1365", "repo": "DADBAN", "ref": "main" }
+            }')
+          DEP_ID=$(echo "$RESP" | grep -o '"id":"dpl_[^"]*"' | head -1 | cut -d'"' -f4)
+          READY=$(echo "$RESP" | grep -o '"readyState":"[^"]*"' | head -1 | cut -d'"' -f4)
+          echo "deployment: ${DEP_ID:-$RESP}"
+          if [ -z "$DEP_ID" ]; then echo "::error::deployment create failed"; exit 1; fi
+          # پایش تا ۱۰ دقیقه
+          for i in $(seq 1 60); do
+            sleep 10
+            S=$(curl -s "https://api.vercel.com/v13/deployments/$DEP_ID?teamId=${{ secrets.VERCEL_TEAM_ID }}" \
+              -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+              | grep -o '"readyState":"[^"]*"' | head -1 | cut -d'"' -f4)
+            echo "[$i] $S"
+            case "$S" in
+              READY) echo "✓ production deployed"; exit 0 ;;
+              ERROR|CANCELED) echo "::error::deploy $S"; exit 1 ;;
+            esac
+          done
+          echo "::error::timeout"; exit 1
