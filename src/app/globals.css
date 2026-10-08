@@ -914,3 +914,199 @@ input, select, textarea {
     animation: none;
   }
 }
+
+/* ============================================================
+ * FeeBanner — موشن گرافیک سینمایی (CSS خالص، بدون JS)
+ * لایه‌ها: تنفس گرادیان + نور لغزان + ذرات طلایی + تاب ترازو +
+ * ورود پله‌ای متن‌ها + تپش نور دکمه + درخشش نوار پایین
+ * ============================================================ */
+@keyframes fee-bg-pan {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+@keyframes fee-sweep {
+  0% {
+    transform: translateX(-140%) skewX(-18deg);
+  }
+  60%,
+  100% {
+    transform: translateX(320%) skewX(-18deg);
+  }
+}
+@keyframes fee-particle {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  85% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: translateY(-170px) translateX(var(--drift, 14px));
+    opacity: 0;
+  }
+}
+@keyframes fee-swing {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(-1deg);
+  }
+}
+@keyframes fee-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fee-glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 26px 3px color-mix(in oklab, var(--accent) 42%, transparent);
+  }
+}
+@keyframes fee-bar-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.fee-cine-bg {
+  animation: fee-bg-pan 13s ease-in-out infinite;
+}
+.fee-cine-sweep {
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    color-mix(in oklab, #fff 10%, transparent) 45%,
+    color-mix(in oklab, var(--accent) 22%, transparent) 55%,
+    transparent 100%
+  );
+  animation: fee-sweep 6.5s cubic-bezier(0.4, 0, 0.2, 1) 1.4s infinite;
+}
+.fee-cine-p {
+  position: absolute;
+  bottom: -6px;
+  left: var(--x, 10%);
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--accent) 85%, #fff);
+  filter: blur(0.4px);
+  opacity: 0;
+  animation: fee-particle var(--dur, 9s) linear var(--delay, 0s) infinite;
+}
+.fee-cine-p1 {
+  --x: 8%;
+  --dur: 9s;
+  --delay: 0.2s;
+  --drift: 18px;
+}
+.fee-cine-p2 {
+  --x: 22%;
+  --dur: 11s;
+  --delay: 2.1s;
+  --drift: -12px;
+  width: 4px;
+  height: 4px;
+}
+.fee-cine-p3 {
+  --x: 38%;
+  --dur: 8.4s;
+  --delay: 3.6s;
+  --drift: 22px;
+  width: 6px;
+  height: 6px;
+}
+.fee-cine-p4 {
+  --x: 55%;
+  --dur: 10s;
+  --delay: 1.2s;
+  --drift: -16px;
+}
+.fee-cine-p5 {
+  --x: 72%;
+  --dur: 9.4s;
+  --delay: 4.4s;
+  --drift: 12px;
+  width: 3.5px;
+  height: 3.5px;
+}
+.fee-cine-p6 {
+  --x: 88%;
+  --dur: 12s;
+  --delay: 2.8s;
+  --drift: -20px;
+}
+.fee-cine-swing {
+  transform-origin: 50% 8%;
+  animation: fee-swing 5.5s ease-in-out infinite;
+}
+.fee-cine-in {
+  animation: fee-rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.fee-cine-d1 {
+  animation-delay: 0.05s;
+}
+.fee-cine-d2 {
+  animation-delay: 0.18s;
+}
+.fee-cine-d3 {
+  animation-delay: 0.32s;
+}
+.fee-cine-d4 {
+  animation-delay: 0.46s;
+}
+.fee-cine-glow {
+  animation: fee-glow-pulse 3.4s ease-in-out 1.1s infinite;
+}
+.fee-cine-shimmer {
+  animation: fee-bar-shimmer 4.5s linear infinite;
+}
+
+/* کارت گزینهٔ قسطی در /fee-payment — هالهٔ طلایی آرام */
+@keyframes fee-option-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 22%, transparent), var(--card-shadow, 0 8px 24px -12px rgb(23 30 47 / 0.18));
+  }
+  50% {
+    box-shadow: 0 0 22px 2px color-mix(in oklab, var(--accent) 30%, transparent);
+  }
+}
+.fee-option-glow {
+  animation: fee-option-glow 4.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fee-cine-bg,
+  .fee-cine-sweep,
+  .fee-cine-p,
+  .fee-cine-swing,
+  .fee-cine-in,
+  .fee-cine-glow,
+  .fee-cine-shimmer,
+  .fee-option-glow {
+    animation: none;
+  }
+}

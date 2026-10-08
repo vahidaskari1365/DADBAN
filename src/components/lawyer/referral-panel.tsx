@@ -7,6 +7,8 @@ import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
 import { relativeTimeJalali } from "@/lib/jalali";
 import { LawyerPhoto } from "@/components/lawyer-photo";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * کارتابل «همکاری و ارجاع» — دو سوی جریان در یک کارت‌بوم:
@@ -36,7 +38,7 @@ const STATUS_FA: Record<string, string> = {
   accepted: "پذیرفته‌شده",
   declined: "ردشده",
   cancelled: "لغوشده توسط فرستنده",
-};
+}; // برچسب‌ها با t() ترجمه می‌شوند
 
 const statusTone = (s: string): "accent" | "success" | "neutral" =>
   s === "accepted" ? "success" : s === "declined" || s === "cancelled" ? "neutral" : "accent";
@@ -48,6 +50,8 @@ const KIND_ICON: Record<string, "folder" | "scale" | "link"> = {
 };
 
 export function ReferralPanel() {
+  const t = useT();
+  const tf = templateT(t);
   const [received, setReceived] = useState<ReferralItem[]>([]);
   const [sent, setSent] = useState<ReferralItem[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -85,11 +89,11 @@ export function ReferralPanel() {
         body: JSON.stringify({ id, action, responseNote: (note[id] ?? "").trim() }),
       });
       const d = await res.json();
-      if (!d.ok) throw new Error(d.error || "ثبت پاسخ انجام نشد.");
+      if (!d.ok) throw new Error(d.error || t("ثبت پاسخ انجام نشد."));
       setFlash(d.message as string);
       load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "ثبت پاسخ انجام نشد.");
+      setError(e instanceof Error ? e.message : t("ثبت پاسخ انجام نشد."));
     } finally {
       setBusy(null);
     }
@@ -101,42 +105,40 @@ export function ReferralPanel() {
     <Card hover={false} id="collab" className="scroll-mt-20" data-testid="referral-panel">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 font-bold text-foreground">
-          <Icon name="link" className="h-5 w-5 text-primary" /> همکاری و ارجاع پرونده
+          <Icon name="link" className="h-5 w-5 text-primary" /> {t("همکاری و ارجاع پرونده")}
         </h2>
         <div className="flex items-center gap-2">
-          {pendingCount > 0 && <Badge tone="accent">{faNum(pendingCount)} در انتظار پاسخ شما</Badge>}
+          {pendingCount > 0 && <Badge tone="accent">{tf("{n} در انتظار پاسخ شما", { n: faNum(pendingCount) })}</Badge>}
           <Link
             href="/lawyers"
             className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary-soft"
           >
-            جستجوی همکار
+            {t("جستجوی همکار")}
             <Icon name="chevron" className="h-3 w-3 rotate-180" />
           </Link>
         </div>
       </div>
       <p className="mt-1 text-xs leading-6 text-muted">
-        درخواست‌های همکاری دریافتی از همکاران و وضعیت ارجاع‌هایی که خودتان ارسال کرده‌اید — از پروفایل
-        هر همکار می‌توانید درخواست جدید ثبت کنید.
+        {t("درخواست‌های همکاری دریافتی از همکاران و وضعیت ارجاع‌هایی که خودتان ارسال کرده‌اید — از پروفایل هر همکار می‌توانید درخواست جدید ثبت کنید.")}
       </p>
 
       {flash && <p className="mt-3 rounded-xl border border-success/30 bg-success/5 px-3 py-2 text-xs font-bold text-success" role="status">{flash}</p>}
       {error && <p className="mt-3 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs font-bold text-danger" role="alert">{error}</p>}
 
       {!loaded ? (
-        <p className="mt-4 rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">در حال دریافت درخواست‌ها…</p>
+        <p className="mt-4 rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">{t("در حال دریافت درخواست‌ها…")}</p>
       ) : (
         <div className="mt-4 grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
           {/* ── دریافتی ── */}
-          <section aria-label="درخواست‌های همکاری دریافتی" className="min-w-0">
+          <section aria-label={t("درخواست‌های همکاری دریافتی")} className="min-w-0">
             <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-foreground-soft">
-              <Icon name="mail" className="h-3.5 w-3.5 text-accent-text" /> دریافتی از همکاران
+              <Icon name="mail" className="h-3.5 w-3.5 text-accent-text" /> {t("دریافتی از همکاران")}
               <Badge tone="neutral">{faNum(received.length)}</Badge>
             </h3>
             <div className="max-h-96 space-y-3 overflow-y-auto pl-1" data-testid="referral-received">
               {received.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-border p-5 text-center text-xs leading-6 text-muted">
-                  درخواست همکاری‌ای دریافت نکرده‌اید؛ پروفایل حرفه‌ای کامل‌تر، شانس دیده‌شدن شما در
-                  دایرکتوری را بیشتر می‌کند.
+                  {t("درخواست همکاری‌ای دریافت نکرده‌اید؛ پروفایل حرفه‌ای کامل‌تر، شانس دیده‌شدن شما در دایرکتوری را بیشتر می‌کند.")}
                 </p>
               ) : (
                 received.map((r) => (
@@ -151,12 +153,12 @@ export function ReferralPanel() {
                           <span>{relativeTimeJalali(r.createdAt)}</span>
                         </p>
                       </div>
-                      <Badge tone={statusTone(r.status)}>{STATUS_FA[r.status] ?? r.status}</Badge>
+                      <Badge tone={statusTone(r.status)}>{STATUS_FA[r.status] ? t(STATUS_FA[r.status]) : r.status}</Badge>
                     </div>
                     <p className="mt-1.5 line-clamp-3 text-xs leading-6 text-foreground-soft">{r.description}</p>
                     {r.message && (
                       <p className="mt-1.5 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] leading-5 text-muted">
-                        <span className="font-bold text-foreground-soft">پیام: </span>
+                        <span className="font-bold text-foreground-soft">{t("پیام: ")}</span>
                         {r.message}
                       </p>
                     )}
@@ -174,7 +176,7 @@ export function ReferralPanel() {
                         />
                         <span className="min-w-0">
                           <span className="block truncate text-[11px] font-bold text-foreground">{r.peer.name}</span>
-                          <span className="block text-[9px] text-muted">مشاهدهٔ پروفایل همکار</span>
+                          <span className="block text-[9px] text-muted">{t("مشاهدهٔ پروفایل همکار")}</span>
                         </span>
                         <Icon name="chevron" className="h-3 w-3 rotate-180 text-muted" />
                       </Link>
@@ -185,23 +187,23 @@ export function ReferralPanel() {
                         <input
                           value={note[r.id] ?? ""}
                           onChange={(e) => setNote((n) => ({ ...n, [r.id]: e.target.value }))}
-                          placeholder="یادداشت پاسخ (اختیاری) — مثلاً پیشنهاد حق‌الزحمه"
+                          placeholder={t("یادداشت پاسخ (اختیاری) — مثلاً پیشنهاد حق‌الزحمه")}
                           className="h-10 w-full rounded-xl border border-border-strong bg-background px-3 text-xs outline-none focus:border-primary"
-                          aria-label={`یادداشت پاسخ به درخواست ${r.subject}`}
+                          aria-label={tf("یادداشت پاسخ به درخواست {s}", { s: r.subject })}
                         />
                         <div className="flex gap-2">
                           <Button size="sm" onClick={() => respond(r.id, "accept")} disabled={busy === r.id} icon="check" className="shrink-0">
-                            پذیرش همکاری
+                            {t("پذیرش همکاری")}
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => respond(r.id, "decline")} disabled={busy === r.id} icon="x" className="shrink-0">
-                            رد
+                            {t("رد")}
                           </Button>
                         </div>
                       </div>
                     ) : (
                       r.responseNote && (
                         <p className="mt-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-[11px] leading-5 text-foreground-soft">
-                          <span className="font-bold">پاسخ شما: </span>{r.responseNote}
+                          <span className="font-bold">{t("پاسخ شما: ")}</span>{r.responseNote}
                         </p>
                       )
                     )}
@@ -212,16 +214,15 @@ export function ReferralPanel() {
           </section>
 
           {/* ── ارسالی ── */}
-          <section aria-label="ارجاع‌های ارسالی من" className="min-w-0">
+          <section aria-label={t("ارجاع‌های ارسالی من")} className="min-w-0">
             <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-foreground-soft">
-              <Icon name="send" className="h-3.5 w-3.5 text-primary" /> ارجاع‌های من
+              <Icon name="send" className="h-3.5 w-3.5 text-primary" /> {t("ارجاع‌های من")}
               <Badge tone="neutral">{faNum(sent.length)}</Badge>
             </h3>
             <div className="max-h-96 space-y-3 overflow-y-auto pl-1" data-testid="referral-sent">
               {sent.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-border p-5 text-center text-xs leading-6 text-muted">
-                  هنوز درخواست همکاری ارسال نکرده‌اید؛ از دایرکتوری همکاران پروفایل یک همکار را باز کنید
-                  و «درخواست همکاری / ارجاع پرونده» را بزنید.
+                  {t("هنوز درخواست همکاری ارسال نکرده‌اید؛ از دایرکتوری همکاران پروفایل یک همکار را باز کنید و «درخواست همکاری / ارجاع پرونده» را بزنید.")}
                 </p>
               ) : (
                 sent.map((r) => (
@@ -236,7 +237,7 @@ export function ReferralPanel() {
                           <span>{relativeTimeJalali(r.createdAt)}</span>
                         </p>
                       </div>
-                      <Badge tone={statusTone(r.status)}>{STATUS_FA[r.status] ?? r.status}</Badge>
+                      <Badge tone={statusTone(r.status)}>{STATUS_FA[r.status] ? t(STATUS_FA[r.status]) : r.status}</Badge>
                     </div>
                     <p className="mt-1.5 line-clamp-2 text-xs leading-6 text-foreground-soft">{r.description}</p>
                     {/* همکار مقصد — همیشه در ارجاع‌های من دیده می‌شود */}
@@ -253,14 +254,14 @@ export function ReferralPanel() {
                         />
                         <span className="min-w-0">
                           <span className="block truncate text-[11px] font-bold text-foreground">{r.peer.name}</span>
-                          <span className="block text-[9px] text-muted">همکار مقصد — پروفایل</span>
+                          <span className="block text-[9px] text-muted">{t("همکار مقصد — پروفایل")}</span>
                         </span>
                         <Icon name="chevron" className="h-3 w-3 rotate-180 text-muted" />
                       </Link>
                     )}
                     {r.responseNote && (
                       <p className="mt-1.5 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] leading-5 text-muted">
-                        <span className="font-bold text-foreground-soft">پاسخ همکار: </span>
+                        <span className="font-bold text-foreground-soft">{t("پاسخ همکار: ")}</span>
                         {r.responseNote}
                       </p>
                     )}
@@ -275,14 +276,13 @@ export function ReferralPanel() {
                           className="shrink-0"
                           data-testid={`referral-cancel-${r.id}`}
                         >
-                          لغو درخواست
+                          {t("لغو درخواست")}
                         </Button>
                       </div>
                     )}
                     {r.status === "accepted" && (
                       <p className="mt-1.5 rounded-lg bg-success/5 px-2.5 py-1.5 text-[10px] leading-5 text-success">
-                        درخواست پذیرفته شد — هماهنگی نهایی حق‌الزحمه و مستندات مستقیماً با همکار انجام
-                        شود؛ پشتیبانی دادبان ناظر جریان است.
+                        {t("درخواست پذیرفته شد — هماهنگی نهایی حق‌الزحمه و مستندات مستقیماً با همکار انجام شود؛ پشتیبانی دادبان ناظر جریان است.")}
                       </p>
                     )}
                   </article>

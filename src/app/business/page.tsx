@@ -3,13 +3,17 @@ import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 
-export const metadata: Metadata = {
-  title: "برای کسب‌وکارها — واحد حقوقی دیجیتال",
-  description:
-    "مدیریت قراردادها، پرونده‌ها، اسناد و مشاوره‌ی حقوقی کسب‌وکار شما در یک پلتفرم. پلن‌های اشتراکی Starter، Business و Enterprise.",
-  alternates: { canonical: "/business" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("برای کسب‌وکارها — واحد حقوقی دیجیتال"),
+    description: t("مدیریت قراردادها، پرونده‌ها، اسناد و مشاوره‌ی حقوقی کسب‌وکار شما در یک پلتفرم. پلن‌های اشتراکی Starter، Business و Enterprise."),
+    alternates: { canonical: "/business" },
+  };
+}
 
 const FEATURES = [
   { title: "مدیریت قراردادها", desc: "تنظیم، بررسی و آرشیو همه‌ی قراردادها در یک‌جا.", icon: "document" as const },
@@ -26,18 +30,21 @@ const PLANS = [
   { name: "Enterprise", price: "توافقی", period: "سالانه", features: ["مشاوره نامحدود", "تیم حقوقی اختصاصی", "API و یکپارچه‌سازی", "حساب‌مدیر اختصاصی"], highlight: false },
 ];
 
-export default function BusinessPage() {
+export default async function BusinessPage() {
+  const t = await getT();
+  const tt = templateT(t);
+
   return (
     <>
       <PageHero
-        badge="برای کسب‌وکارها"
-        title="واحد حقوقی کسب‌وکارتان را دیجیتال کنید"
-        desc="از قرارداد و پرونده تا اسناد و مشاوره؛ دادبان زیرساخت حقوقی آماده‌ی کسب‌وکار شما را فراهم می‌کند."
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "برای کسب‌وکارها" }]}
+        badge={t("برای کسب‌وکارها")}
+        title={t("واحد حقوقی کسب‌وکارتان را دیجیتال کنید")}
+        desc={t("از قرارداد و پرونده تا اسناد و مشاوره؛ دادبان زیرساخت حقوقی آماده‌ی کسب‌وکار شما را فراهم می‌کند.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("برای کسب‌وکارها") }]}
       >
         <div className="flex flex-wrap gap-2">
-          <Button href="/contact" icon="phone">تماس با فروش</Button>
-          <Button href="/pricing" variant="outline" icon="money">مشاهده تعرفه</Button>
+          <Button href="/contact" icon="phone">{t("تماس با فروش")}</Button>
+          <Button href="/pricing" variant="outline" icon="money">{t("مشاهده تعرفه")}</Button>
         </div>
       </PageHero>
 
@@ -47,8 +54,8 @@ export default function BusinessPage() {
             <Reveal key={f.title} delay={i * 50}>
               <Card className="h-full">
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary"><Icon name={f.icon} className="h-5 w-5" /></span>
-                <h3 className="mt-3 text-sm font-bold text-foreground">{f.title}</h3>
-                <p className="mt-1 text-xs leading-6 text-muted">{f.desc}</p>
+                <h3 className="mt-3 text-sm font-bold text-foreground">{t(f.title)}</h3>
+                <p className="mt-1 text-xs leading-6 text-muted">{t(f.desc)}</p>
               </Card>
             </Reveal>
           ))}
@@ -61,15 +68,15 @@ export default function BusinessPage() {
           {PLANS.map((p, i) => (
             <Reveal key={p.name} delay={i * 70}>
               <div className={`relative flex h-full flex-col rounded-3xl border p-6 card-shadow ${p.highlight ? "border-primary bg-primary-soft/40 lg:-translate-y-3" : "border-border bg-surface"}`}>
-                {p.highlight && <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">پیشنهاد ویژه</span>}
+                {p.highlight && <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">{t("پیشنهاد ویژه")}</span>}
                 <h3 className="text-lg font-bold text-foreground">{p.name}</h3>
-                <div className="mt-3"><span className="text-2xl font-extrabold text-foreground">{p.price}</span><span className="mr-1 text-xs text-muted"> تومان / {p.period}</span></div>
+                <div className="mt-3"><span className="text-2xl font-extrabold text-foreground">{p.price}</span><span className="mr-1 text-xs text-muted"> {tt("تومان / {period}", { period: p.period })}</span></div>
                 <ul className="mt-5 flex-1 space-y-2.5">
                   {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-foreground-soft"><Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-success" /> {f}</li>
+                    <li key={f} className="flex items-start gap-2 text-sm text-foreground-soft"><Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-success" /> {t(f)}</li>
                   ))}
                 </ul>
-                <Button href="/contact" variant={p.highlight ? "primary" : "outline"} className="mt-6 w-full">انتخاب پلن</Button>
+                <Button href="/contact" variant={p.highlight ? "primary" : "outline"} className="mt-6 w-full">{t("انتخاب پلن")}</Button>
               </div>
             </Reveal>
           ))}
@@ -80,12 +87,12 @@ export default function BusinessPage() {
         <Reveal>
           <Card hover={false} className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-right">
             <div>
-              <h2 className="text-xl font-bold text-foreground">آماده‌اید تیم حقوقی اختصاصی داشته باشید؟</h2>
-              <p className="mt-1 text-sm text-muted">کارشناسان فروش دادبان بهترین پلن را برای کسب‌وکار شما پیشنهاد می‌دهند.</p>
+              <h2 className="text-xl font-bold text-foreground">{t("آماده‌اید تیم حقوقی اختصاصی داشته باشید؟")}</h2>
+              <p className="mt-1 text-sm text-muted">{t("کارشناسان فروش دادبان بهترین پلن را برای کسب‌وکار شما پیشنهاد می‌دهند.")}</p>
             </div>
             <div className="flex shrink-0 flex-wrap justify-center gap-2">
-              <Badge tone="success" icon="shield">قرارداد سازمانی</Badge>
-              <Badge tone="primary" icon="lock">امنیت داده</Badge>
+              <Badge tone="success" icon="shield">{t("قرارداد سازمانی")}</Badge>
+              <Badge tone="primary" icon="lock">{t("امنیت داده")}</Badge>
             </div>
           </Card>
         </Reveal>

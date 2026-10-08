@@ -143,6 +143,8 @@ const DDL = [
   `CREATE TABLE IF NOT EXISTS payments (id SERIAL PRIMARY KEY, reference TEXT NOT NULL UNIQUE, order_type TEXT NOT NULL DEFAULT 'consultation', consultation_id INTEGER REFERENCES consultations(id) ON DELETE SET NULL, amount INTEGER NOT NULL, provider TEXT NOT NULL DEFAULT 'manual', status TEXT NOT NULL DEFAULT 'initiated', created_at TIMESTAMP NOT NULL DEFAULT now(), verified_at TIMESTAMP)`,
   `CREATE TABLE IF NOT EXISTS qa_submissions (id SERIAL PRIMARY KEY, name TEXT NOT NULL, phone TEXT, question TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending_review', created_at TIMESTAMP NOT NULL DEFAULT now())`,
   `CREATE TABLE IF NOT EXISTS events (id SERIAL PRIMARY KEY, event TEXT NOT NULL, path TEXT NOT NULL DEFAULT '', created_at TIMESTAMP NOT NULL DEFAULT now())`,
+  /* --- ترجمهٔ محتوای پویا (مقالات/وکلا) برای زبان‌های غیر فارسی --- */
+  `CREATE TABLE IF NOT EXISTS content_translations (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TIMESTAMP NOT NULL DEFAULT now())`,
   /* Race-condition guard: one (lawyer, slot) pairing can never be booked twice. */
   `CREATE UNIQUE INDEX IF NOT EXISTS consultations_timeslot_uniq ON consultations (lawyer_id, starts_at) WHERE starts_at IS NOT NULL AND lawyer_id IS NOT NULL`,
   /* --- Managed Services (خدمات پیگیری و انجام امور) --- */
@@ -321,6 +323,8 @@ export async function ensureProfileSchema(): Promise<void> {
     `CREATE TABLE IF NOT EXISTS lawyer_referrals (id SERIAL PRIMARY KEY, from_lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, to_lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, kind TEXT NOT NULL DEFAULT 'referral', subject TEXT NOT NULL, description TEXT NOT NULL, city TEXT, budget INTEGER, message TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'pending', response_note TEXT, responded_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE INDEX IF NOT EXISTS lawyer_referrals_to_idx ON lawyer_referrals (to_lawyer_id, status)`,
     `CREATE INDEX IF NOT EXISTS lawyer_referrals_from_idx ON lawyer_referrals (from_lawyer_id, status)`,
+    // ترجمهٔ محتوای پویا (مقالات/وکلا) — کش دائمی روی DB
+    `CREATE TABLE IF NOT EXISTS content_translations (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TIMESTAMP NOT NULL DEFAULT now())`,
   ];
   for (const stmt of stmts) {
     try {

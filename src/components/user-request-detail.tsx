@@ -6,6 +6,8 @@ import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
 import { StatusBadge, UrgencyBadge, Timeline, ClassificationBadge } from "@/components/managed";
 import { STATUS_LABELS, faNumSafe } from "@/lib/managed-labels";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 type Ev = { id: number; type: string; title: string; description: string; createdByName?: string | null; createdAt: string | Date };
 type Doc = { id: number; name: string; docType: string; size: number; uploaderRole: string; createdAt: string | Date };
@@ -39,6 +41,8 @@ export default function UserRequestDetail({
   canCancel: boolean;
 }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -57,7 +61,7 @@ export default function UserRequestDetail({
       const r = await fetch(`/api/service-requests/${id}/payment`, { method: "POST" });
       const d = await r.json();
       if (!r.ok || !d.ok) {
-        setErr(d.error || "خطا در ایجاد پرداخت");
+        setErr(d.error || t("خطا در ایجاد پرداخت"));
         return;
       }
       setMsg(d.message);
@@ -66,14 +70,14 @@ export default function UserRequestDetail({
       }
       router.refresh();
     } catch {
-      setErr("خطای شبکه");
+      setErr(t("خطای شبکه"));
     } finally {
       setBusy(false);
     }
   }
 
   async function cancel() {
-    if (!confirm("آیا از لغو این درخواست مطمئن هستید؟")) return;
+    if (!confirm(t("آیا از لغو این درخواست مطمئن هستید؟"))) return;
     setBusy(true);
     setErr(null);
     try {
@@ -84,12 +88,12 @@ export default function UserRequestDetail({
       });
       const d = await r.json();
       if (!r.ok || !d.ok) {
-        setErr(d.error || "لغو نشد");
+        setErr(d.error || t("لغو نشد"));
         return;
       }
       router.refresh();
     } catch {
-      setErr("خطای شبکه");
+      setErr(t("خطای شبکه"));
     } finally {
       setBusy(false);
     }
@@ -97,7 +101,7 @@ export default function UserRequestDetail({
 
   async function uploadDoc() {
     if (!docName.trim() && !docFile) {
-      setErr("نام سند را وارد کنید");
+      setErr(t("نام سند را وارد کنید"));
       return;
     }
     setBusy(true);
@@ -114,14 +118,14 @@ export default function UserRequestDetail({
       });
       const d = await r.json();
       if (!r.ok || !d.ok) {
-        setErr(d.error || "بارگذاری نشد");
+        setErr(d.error || t("بارگذاری نشد"));
         return;
       }
       setDocName("");
       setDocFile(null);
       router.refresh();
     } catch {
-      setErr("خطای شبکه");
+      setErr(t("خطای شبکه"));
     } finally {
       setBusy(false);
     }
@@ -134,7 +138,7 @@ export default function UserRequestDetail({
           <div>
             <div className="flex items-center gap-2 text-sm text-muted">
               <Icon name={(service?.icon as IconKey) ?? "briefcase"} className="h-4 w-4" />
-              <span>{service?.title ?? "خدمت"}</span>
+              <span>{service?.title ?? t("خدمت")}</span>
             </div>
             <h2 className="mt-1 text-xl font-bold text-foreground">{request.title}</h2>
             <p className="font-mono text-xs text-muted" dir="ltr">{request.requestNumber}</p>
@@ -147,16 +151,16 @@ export default function UserRequestDetail({
 
         {request.price ? (
           <div className="mt-4 flex items-center justify-between rounded-xl bg-surface-2 p-3 text-sm">
-            <span className="text-muted">هزینه خدمت</span>
-            <span className="font-semibold text-foreground">{faNumSafe(request.price)} تومان</span>
+            <span className="text-muted">{t("هزینه خدمت")}</span>
+            <span className="font-semibold text-foreground">{tf("{n} تومان", { n: faNumSafe(request.price) })}</span>
           </div>
         ) : null}
 
         {showPay && (
           <div className="mt-4 rounded-xl border border-accent/30 bg-accent-soft p-4">
-            <p className="text-sm text-foreground-soft">برای شروع انجام خدمت، هزینه آن را پرداخت کنید.</p>
+            <p className="text-sm text-foreground-soft">{t("برای شروع انجام خدمت، هزینه آن را پرداخت کنید.")}</p>
             <Button onClick={pay} disabled={busy} icon="money" className="mt-3">
-              {busy ? "در حال انتقال…" : "پرداخت هزینه خدمت"}
+              {busy ? t("در حال انتقال…") : t("پرداخت هزینه خدمت")}
             </Button>
             {msg && <p className="mt-2 text-xs text-muted">{msg}</p>}
           </div>
@@ -164,7 +168,7 @@ export default function UserRequestDetail({
 
         {canCancel && (
           <Button onClick={cancel} disabled={busy} variant="ghost" size="sm" icon="x" className="mt-4 text-danger">
-            لغو درخواست
+            {t("لغو درخواست")}
           </Button>
         )}
         {err && <p className="mt-3 text-sm text-danger">{err}</p>}
@@ -172,11 +176,11 @@ export default function UserRequestDetail({
         {request.finalReport && (request.status === "COMPLETED" || request.status === "DELIVERED") && (
           <div className="mt-4 rounded-xl border border-success/30 bg-[color-mix(in_oklab,var(--success)_8%,transparent)] p-4">
             <p className="flex items-center gap-2 font-bold text-foreground">
-              <Icon name="check" className="h-5 w-5 text-success" /> گزارش نهایی
+              <Icon name="check" className="h-5 w-5 text-success" /> {t("گزارش نهایی")}
             </p>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground-soft">{request.finalReport}</p>
             {request.resultFileLabel && (
-              <p className="mt-2 text-sm text-muted">فایل نتیجه: {request.resultFileLabel}</p>
+              <p className="mt-2 text-sm text-muted">{t("فایل نتیجه:")} {request.resultFileLabel}</p>
             )}
           </div>
         )}
@@ -184,7 +188,7 @@ export default function UserRequestDetail({
 
       <Card hover={false}>
         <h3 className="flex items-center gap-2 font-bold text-foreground">
-          <Icon name="document" className="h-5 w-5 text-primary" /> مدارک
+          <Icon name="document" className="h-5 w-5 text-primary" /> {t("مدارک")}
         </h3>
         <div className="mt-3 space-y-2">
           {docs.length ? (
@@ -195,24 +199,24 @@ export default function UserRequestDetail({
               </div>
             ))
           ) : (
-            <p className="text-sm text-muted">هنوز سندی بارگذاری نشده است.</p>
+            <p className="text-sm text-muted">{t("هنوز سندی بارگذاری نشده است.")}</p>
           )}
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
           <input
             className="rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
-            placeholder="نام سند (مثال: کپی شناسنامه)"
+            placeholder={t("نام سند (مثال: کپی شناسنامه)")}
             value={docName}
             onChange={(e) => setDocName(e.target.value)}
           />
-          <Button onClick={uploadDoc} disabled={busy} icon="plus" variant="soft">بارگذاری</Button>
+          <Button onClick={uploadDoc} disabled={busy} icon="plus" variant="soft">{t("بارگذاری")}</Button>
         </div>
-        <p className="mt-2 text-xs text-muted">در حال حاضر فراداده سند ضبط می‌شود؛ بارگذاری فایل واقعی پس از اتصال فضای ذخیره‌سازی فعال خواهد شد.</p>
+        <p className="mt-2 text-xs text-muted">{t("در حال حاضر فراداده سند ضبط می‌شود؛ بارگذاری فایل واقعی پس از اتصال فضای ذخیره‌سازی فعال خواهد شد.")}</p>
       </Card>
 
       <Card hover={false}>
         <h3 className="flex items-center gap-2 font-bold text-foreground">
-          <Icon name="clock" className="h-5 w-5 text-accent-text" /> تاریخچه درخواست
+          <Icon name="clock" className="h-5 w-5 text-accent-text" /> {t("تاریخچه درخواست")}
         </h3>
         <div className="mt-4">
           <Timeline events={events} />

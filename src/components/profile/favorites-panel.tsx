@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Icon } from "@/components/icons";
 import { Button, EmptyState, StarRating } from "@/components/ui";
 import { LawyerPhoto } from "@/components/lawyer-photo";
 import { faNum, faPrice } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 type FavLawyer = {
   id: number;
@@ -27,6 +30,9 @@ type FavLawyer = {
 
 /** وکلای نشان‌شده موکل — GET/DELETE /api/favorites */
 export function FavoritesPanel() {
+  const t = useT();
+  const tf = templateT(t);
+  const router = useRouter();
   const [items, setItems] = useState<FavLawyer[] | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
 
@@ -53,12 +59,12 @@ export function FavoritesPanel() {
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
         setItems((prev) => prev?.filter((x) => x.id !== id) ?? []);
-        toast.success("از فهرست نشان‌شده‌ها حذف شد.");
+        toast.success(t("از فهرست نشان‌شده‌ها حذف شد."));
       } else {
-        toast.error(data.error ?? "حذف ناموفق بود.");
+        toast.error(data.error ?? t("حذف ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setBusyId(null);
     }
@@ -79,11 +85,11 @@ export function FavoritesPanel() {
       <div className="space-y-4">
         <EmptyState
           icon="star"
-          title="هنوز وکیلی نشان نکرده‌اید"
-          desc="با زدن نشان در پروفایل هر وکیل، آن را برای مراجعه بعدی اینجا ذخیره کنید."
+          title={t("هنوز وکیلی نشان نکرده‌اید")}
+          desc={t("با زدن نشان در پروفایل هر وکیل، آن را برای مراجعه بعدی اینجا ذخیره کنید.")}
         />
         <div className="text-center">
-          <Button href="/lawyers" variant="soft" icon="search">مرور وکلای پلتفرم</Button>
+          <Button href="/lawyers" variant="soft" icon="search">{t("مرور وکلای پلتفرم")}</Button>
         </div>
       </div>
     );
@@ -102,18 +108,18 @@ export function FavoritesPanel() {
               {l.verified && <Icon name="badge" className="h-4 w-4 shrink-0 text-primary" />}
             </div>
             <p className="mt-0.5 truncate text-xs text-muted">
-              {l.city} • {faNum(l.experienceYears)} سال سابقه
+              {l.city} • {tf("{n} سال سابقه", { n: faNum(l.experienceYears) })}
             </p>
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <StarRating rating={l.rating} count={l.reviewCount} />
             </div>
             <p className="mt-1.5 text-xs font-medium text-foreground-soft">
-              مشاوره متنی از {faPrice(l.priceChat)}
+              {tf("مشاوره متنی از {n}", { n: faPrice(l.priceChat) })}
             </p>
           </div>
           <div className="flex shrink-0 flex-col gap-1.5">
             <Button href={`/consultation/book?lawyer=${l.slug}`} size="sm" variant="soft" icon="calendar">
-              رزرو
+              {t("رزرو")}
             </Button>
             <button
               type="button"
@@ -121,7 +127,7 @@ export function FavoritesPanel() {
               disabled={busyId === l.id}
               className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl px-3 text-xs font-medium text-muted transition-colors hover:bg-accent-soft hover:text-accent-text disabled:opacity-50"
             >
-              <Icon name="x" className="h-3.5 w-3.5" /> حذف
+              <Icon name="x" className="h-3.5 w-3.5" /> {t("حذف")}
             </button>
           </div>
         </div>
@@ -135,6 +141,9 @@ export function FavoritesPanel() {
  * کاربر واردنشده به /login هدایت می‌شود.
  */
 export function FavoriteButton({ lawyerId, lawyerName }: { lawyerId: number; lawyerName: string }) {
+  const t = useT();
+  const tf = templateT(t);
+  const router = useRouter();
   const [saved, setSaved] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -170,25 +179,25 @@ export function FavoriteButton({ lawyerId, lawyerName }: { lawyerId: number; law
         body: JSON.stringify({ lawyerId }),
       });
       if (res.status === 401) {
-        toast.info("برای نشان‌کردن وکیل ابتدا وارد حساب شوید.");
-        window.location.href = "/login";
+        toast.info(t("برای نشان‌کردن وکیل ابتدا وارد حساب شوید."));
+        router.push("/login");
         return;
       }
       const data = (await res.json()) as { ok: boolean; saved?: boolean; error?: string };
       if (data.ok) {
         setSaved(!!data.saved);
-        toast.success(data.saved ? `«${lawyerName}» به نشان‌شده‌ها اضافه شد.` : `«${lawyerName}» از نشان‌شده‌ها حذف شد.`);
+        toast.success(data.saved ? tf("«{name}» به نشان‌شده‌ها اضافه شد.", { name: lawyerName }) : tf("«{name}» از نشان‌شده‌ها حذف شد.", { name: lawyerName }));
       } else {
-        toast.error(data.error ?? "عملیات ناموفق بود.");
+        toast.error(data.error ?? t("عملیات ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setBusy(false);
     }
   }
 
-  const label = saved === null ? "…" : saved ? "نشان‌شده" : "نشان‌کردن";
+  const label = saved === null ? "…" : saved ? t("نشان‌شده") : t("نشان‌کردن");
 
   return (
     <button
@@ -196,7 +205,7 @@ export function FavoriteButton({ lawyerId, lawyerName }: { lawyerId: number; law
       onClick={() => void toggle()}
       disabled={saved === null || busy}
       aria-pressed={saved === true}
-      aria-label={saved ? `حذف ${lawyerName} از نشان‌شده‌ها` : `افزودن ${lawyerName} به نشان‌شده‌ها`}
+      aria-label={saved ? tf("حذف {name} از نشان‌شده‌ها", { name: lawyerName }) : tf("افزودن {name} به نشان‌شده‌ها", { name: lawyerName })}
       className={`inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border text-sm font-semibold transition-all disabled:opacity-60 ${
         saved
           ? "border-accent/40 bg-accent-soft text-accent-text"

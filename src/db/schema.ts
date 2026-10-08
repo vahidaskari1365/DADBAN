@@ -757,3 +757,13 @@ export const teamCaseAssignments = pgTable("team_case_assignments", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => [uniqueIndex("team_case_assign_uniq").on(t.memberUserId, t.caseId)]);
 export type TeamCaseAssignment = typeof teamCaseAssignments.$inferSelect;
+
+/* ---------------- Content translations (کش ترجمهٔ محتوای پویا) ---------------- */
+// ترجمهٔ فیلدهای فارسیِ DB (مقالات، پروفایل وکلا و…) برای زبان‌های en/ar/tr/zh.
+// کلید = «<locale>:<sha1 متن فارسی>» — با هر ویرایش متن، کلید عوض می‌شود (بی‌اعتبارسازی خودکار).
+export const contentTranslations = pgTable("content_translations", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export type ContentTranslation = typeof contentTranslations.$inferSelect;

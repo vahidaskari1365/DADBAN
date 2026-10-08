@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { askLLM } from "@/lib/llm";
 import { rateLimit } from "@/lib/api-security";
 import { logger } from "@/lib/logger";
+import { detectQueryLang } from "@/lib/i18n/lang-detect";
+import { tdyn } from "@/lib/i18n/dynamic";
 import { detectSpecialtiesFromMessage, detectProvinceFromMessage, hasLawyerIntent, matchLawyers, type MatchedLawyer } from "@/lib/lawyer-match";
 
 export const runtime = "nodejs";
@@ -117,6 +119,23 @@ export async function POST(req: Request) {
         matched = await matchLawyers(specialties, 10, province);
       } catch {
         /* non-fatal — پاسخ بدون پیشنهاد وکیل */
+      }
+    }
+
+    // چندزبانه: پاسخ LLM به زبان خودِ پیام کاربر می‌آید؛ فیلدهای وکلا هم همان‌طور
+    const lang = detectQueryLang(message);
+    if (lang !== "fa" && matched.length) {
+      try {
+        matched = await Promise.all(
+          matched.map(async (l) => ({
+            ...l,
+            name: await tdyn(lang, l.name, 300),
+            title: await tdyn(lang, l.title, 300),
+            city: await tdyn(lang, l.city, 200),
+          })),
+        );
+      } catch {
+        /* non-fatal */
       }
     }
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
+import { useT } from "@/lib/i18n/provider";
 
 interface Day {
   date: string;
@@ -21,6 +22,7 @@ interface Slot {
  */
 export function AvailabilityPanel({ lawyerSlug, durationMin = 30 }: { lawyerSlug: string; durationMin?: number }) {
   const router = useRouter();
+  const t = useT();
   const [days, setDays] = useState<Day[]>([]);
   const [date, setDate] = useState("");
   const [slots, setSlots] = useState<Slot[]>([]);
@@ -114,7 +116,7 @@ export function AvailabilityPanel({ lawyerSlug, durationMin = 30 }: { lawyerSlug
         <div className="mt-3">
           {loading ? (
             <p className="flex items-center gap-2 text-xs text-muted">
-              <Icon name="clock" className="h-3.5 w-3.5 animate-pulse" /> در حال بررسی نوبت‌ها…
+              <Icon name="clock" className="h-3.5 w-3.5 animate-pulse" /> {t("در حال بررسی نوبت‌ها…")}
             </p>
           ) : slots.length > 0 ? (
             <div className="grid grid-cols-3 gap-1.5">
@@ -124,7 +126,7 @@ export function AvailabilityPanel({ lawyerSlug, durationMin = 30 }: { lawyerSlug
                   type="button"
                   onClick={() => pick(s)}
                   className="rounded-lg border border-success/30 bg-success/5 px-2 py-2 text-center text-[11px] font-bold text-success transition-all cursor-pointer hover:bg-success/10 hover:shadow-sm"
-                  title="انتخاب این نوبت"
+                  title={t("انتخاب این نوبت")}
                 >
                   {faNum(s.label.split("— ")[1] ?? s.label)}
                 </button>
@@ -132,14 +134,14 @@ export function AvailabilityPanel({ lawyerSlug, durationMin = 30 }: { lawyerSlug
             </div>
           ) : loaded ? (
             <p className="mt-1 rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted">
-              برای این روز نوبت آزاد ثبت نشده است؛ روز دیگری را انتخاب کنید.
+              {t("برای این روز نوبت آزاد ثبت نشده است؛ روز دیگری را انتخاب کنید.")}
             </p>
           ) : null}
         </div>
       )}
       {!days.length && loaded && !loading && (
         <p className="mt-1 rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted">
-          تقویم نوبت‌های این وکیل هنوز فعال نشده است؛ می‌توانید مستقیم درخواست مشاوره ثبت کنید.
+          {t("تقویم نوبت‌های این وکیل هنوز فعال نشده است؛ می‌توانید مستقیم درخواست مشاوره ثبت کنید.")}
         </p>
       )}
     </div>

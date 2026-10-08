@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Badge, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 import {
   STATUS_LABELS,
   STATUS_TONE,
@@ -24,19 +26,23 @@ const TONE_MAP: Record<string, "neutral" | "accent" | "success" | "primary" | "d
 };
 
 export function StatusBadge({ status }: { status: string }) {
-  return <Badge tone={TONE_MAP[STATUS_TONE[status] ?? "muted"] ?? "neutral"}>{STATUS_LABELS[status] ?? status}</Badge>;
+  const t = useT();
+  return <Badge tone={TONE_MAP[STATUS_TONE[status] ?? "muted"] ?? "neutral"}>{t(STATUS_LABELS[status] ?? status)}</Badge>;
 }
 
 export function UrgencyBadge({ urgency }: { urgency: string }) {
+  const t = useT();
   const tone =
     urgency === "URGENT" || urgency === "HIGH" ? "danger" : urgency === "LOW" ? "neutral" : "accent";
-  return <Badge tone={tone as any}>{URGENCY_LABELS[urgency] ?? urgency}</Badge>;
+  return <Badge tone={tone as any}>{t(URGENCY_LABELS[urgency] ?? urgency)}</Badge>;
 }
 
 export function PriceTag({ price, priceType }: { price?: number | null; priceType?: string }) {
-  if (priceType === "FIXED" && price) return <span className="font-semibold text-foreground">{faNumSafe(price)} تومان</span>;
-  if (priceType === "FROM" && price) return <span className="font-semibold text-foreground">از {faNumSafe(price)} تومان</span>;
-  return <span className="text-sm text-muted">{PRICE_TYPE_LABELS[priceType ?? ""] ?? "پس از بررسی اعلام می‌شود"}</span>;
+  const t = useT();
+  const tf = templateT(t);
+  if (priceType === "FIXED" && price) return <span className="font-semibold text-foreground">{tf("{n} تومان", { n: faNumSafe(price) })}</span>;
+  if (priceType === "FROM" && price) return <span className="font-semibold text-foreground">{tf("از {n} تومان", { n: faNumSafe(price) })}</span>;
+  return <span className="text-sm text-muted">{t(PRICE_TYPE_LABELS[priceType ?? ""] ?? "پس از بررسی اعلام می‌شود")}</span>;
 }
 
 export function ServiceCard({
@@ -54,6 +60,7 @@ export function ServiceCard({
     requiresLawyer?: boolean;
   };
 }) {
+  const t = useT();
   return (
     <Link href={`/services/${service.slug}`} className="block">
       <Card hover className="flex h-full flex-col gap-3">
@@ -63,7 +70,7 @@ export function ServiceCard({
           </span>
           {service.requiresLawyer && (
             <Badge tone="accent" icon="scale">
-              با نظارت وکیل
+              {t("با نظارت وکیل")}
             </Badge>
           )}
         </div>
@@ -73,7 +80,7 @@ export function ServiceCard({
         </div>
         <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-1 border-t border-border pt-2">
           <span className="text-[11px] text-muted">
-            {service.category ? CATEGORY_LABELS[service.category] ?? "" : ""}
+            {service.category ? t(CATEGORY_LABELS[service.category] ?? "") : ""}
           </span>
           <span className="flex items-center gap-2 whitespace-nowrap">
             {service.estimatedTime && (
@@ -90,7 +97,8 @@ export function ServiceCard({
 }
 
 export function Timeline({ events }: { events: { id: number; type: string; title: string; description: string; createdByName?: string | null; createdAt: string | Date }[] }) {
-  if (!events.length) return <p className="text-sm text-muted">هنوز رویدادی ثبت نشده است.</p>;
+  const t = useT();
+  if (!events.length) return <p className="text-sm text-muted">{t("هنوز رویدادی ثبت نشده است.")}</p>;
   return (
     <ol className="relative space-y-4 border-r border-border pr-5">
       {events.map((e) => (
@@ -111,6 +119,7 @@ export function Timeline({ events }: { events: { id: number; type: string; title
 }
 
 export function ClassificationBadge({ classification }: { classification?: string }) {
+  const t = useT();
   if (!classification) return null;
-  return <Badge tone="primary">{CLASSIFICATION_LABELS[classification] ?? classification}</Badge>;
+  return <Badge tone="primary">{t(CLASSIFICATION_LABELS[classification] ?? classification)}</Badge>;
 }

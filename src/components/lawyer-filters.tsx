@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "./icons";
-import { SPECIALTIES, ALL_CITIES, ALL_PROVINCES } from "@/lib/data";
+import { SPECIALTIES, ALL_CITIES, ALL_PROVINCES, faNum } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -27,6 +29,8 @@ export interface LawyerFiltersProps {
 
 export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState(initial.q ?? "");
 
@@ -54,7 +58,7 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && update("q", q)}
-            placeholder="جستجوی نام یا تخصص…"
+            placeholder={t("جستجوی نام یا تخصص…")}
             className="h-10 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-soft"
           />
         </div>
@@ -64,65 +68,65 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
           className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border-strong bg-background px-3 text-sm font-medium text-foreground-soft lg:hidden"
         >
           <Icon name="filter" className="h-4 w-4" />
-          فیلتر
+          {t("فیلتر")}
         </button>
       </div>
 
       <div className={`mt-3 ${open ? "block" : "hidden"} lg:block`}>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Field label="حوزه تخصص">
+          <Field label={t("حوزه تخصص")}>
             <select
               value={initial.sp ?? "all"}
               onChange={(e) => update("sp", e.target.value)}
               className={selectCls}
             >
-              <option value="all">همه تخصص‌ها</option>
+              <option value="all">{t("همه تخصص‌ها")}</option>
               {SPECIALTIES.map((s) => (
-                <option key={s} value={s}>{s}</option>
+                <option key={s} value={s}>{t(s)}</option>
               ))}
             </select>
           </Field>
-          <Field label="استان / شهر">
+          <Field label={t("استان / شهر")}>
             <select
               value={initial.city ?? "all"}
               onChange={(e) => update("city", e.target.value)}
               className={selectCls}
             >
-              <option value="all">همه استان‌ها و شهرها</option>
-              <optgroup label="استان‌ها">
+              <option value="all">{t("همه استان‌ها و شهرها")}</option>
+              <optgroup label={t("استان‌ها")}>
                 {ALL_PROVINCES.map((p) => (
-                  <option key={p} value={p}>استان {p}</option>
+                  <option key={p} value={p}>{tf("استان {city}", { city: p })}</option>
                 ))}
               </optgroup>
-              <optgroup label="شهرها">
+              <optgroup label={t("شهرها")}>
                 {ALL_CITIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>{t(c)}</option>
                 ))}
               </optgroup>
             </select>
           </Field>
-          <Field label="جنسیت">
+          <Field label={t("جنسیت")}>
             <select
               value={initial.gender ?? "all"}
               onChange={(e) => update("gender", e.target.value)}
               className={selectCls}
             >
-              <option value="all">همه</option>
-              <option value="male">آقا</option>
-              <option value="female">خانم</option>
+              <option value="all">{t("همه")}</option>
+              <option value="male">{t("آقا")}</option>
+              <option value="female">{t("خانم")}</option>
             </select>
           </Field>
-          <Field label="مرتب‌سازی">
+          <Field label={t("مرتب‌سازی")}>
             <select
               value={initial.sort ?? "rating"}
               onChange={(e) => update("sort", e.target.value)}
               className={selectCls}
             >
-              <option value="rating">بالاترین امتیاز</option>
-              <option value="experience">بیشترین سابقه</option>
-              <option value="cases">بیشترین پرونده</option>
-              <option value="priceLow">ارزان‌ترین مشاوره</option>
-              <option value="reviews">بیشترین نظرات</option>
+              <option value="rating">{t("بالاترین امتیاز")}</option>
+              <option value="experience">{t("بیشترین سابقه")}</option>
+              <option value="cases">{t("بیشترین پرونده")}</option>
+              <option value="priceLow">{t("ارزان‌ترین مشاوره")}</option>
+              <option value="reviews">{t("بیشترین نظرات")}</option>
             </select>
           </Field>
         </div>
@@ -139,20 +143,20 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
                   : "border-border text-foreground-soft hover:bg-primary-soft hover:text-primary"
               }`}
             >
-              {s}
+              {t(s)}
             </button>
           ))}
         </div>
 
         <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-          <span className="text-xs text-muted">{total > 0 ? `${total} وکیل` : "نتیجه‌ای یافت نشد"}</span>
+          <span className="text-xs text-muted">{total > 0 ? `${faNum(total)} ${t("وکیل")}` : t("نتیجه‌ای یافت نشد")}</span>
           <button
             type="button"
             onClick={reset}
             className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-hover"
           >
             <Icon name="x" className="h-3.5 w-3.5" />
-            پاک کردن فیلترها
+            {t("پاک کردن فیلترها")}
           </button>
         </div>
       </div>

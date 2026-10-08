@@ -4,38 +4,58 @@ import { PageHero } from "@/components/page-hero";
 import { Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { tdyn } from "@/lib/i18n/dynamic";
 import { GLOSSARY } from "@/lib/content";
 
-export const metadata: Metadata = {
-  title: "واژه‌نامه حقوقی",
-  description: "تعریف ساده و تخصصی اصطلاحات حقوقی مانند اعسار، واخواهی، تجدیدنظر، خیانت در امانت و... با مثال و قوانین مرتبط.",
-  alternates: { canonical: "/glossary" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("واژه‌نامه حقوقی"),
+    description: t("تعریف ساده و تخصصی اصطلاحات حقوقی مانند اعسار، واخواهی، تجدیدنظر، خیانت در امانت و... با مثال و قوانین مرتبط."),
+    alternates: { canonical: "/glossary" },
+  };
+}
 
-export default function GlossaryPage() {
-  const sorted = [...GLOSSARY].sort((a, b) => a.term.localeCompare(b.term, "fa"));
+export default async function GlossaryPage() {
+  const t = await getT();
+  const locale = await getServerLocale();
+
+  // ترجمهٔ اصطلاح/تعریف ساده برای زبان غیرفارسی (موازی، با کش)
+  const translated = await Promise.all(
+    GLOSSARY.map(async (g) => {
+      if (locale === "fa") return g;
+      const [term, simple] = await Promise.all([
+        tdyn(locale, g.term, 200),
+        tdyn(locale, g.simple, 600),
+      ]);
+      return { ...g, term, simple };
+    }),
+  );
+  const sorted = [...translated].sort((a, b) => a.term.localeCompare(b.term, locale));
+
   return (
     <>
       <PageHero
-        badge="واژه‌نامه حقوقی"
-        title="اصطلاحات حقوقی، به زبان ساده"
-        desc="تعریف ساده و تخصصی اصطلاحات حقوقی همراه با مثال و قوانین مرتبط؛ مرجعی برای دانش حقوقی شما."
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "واژه‌نامه حقوقی" }]}
+        badge={t("واژه‌نامه حقوقی")}
+        title={t("اصطلاحات حقوقی، به زبان ساده")}
+        desc={t("تعریف ساده و تخصصی اصطلاحات حقوقی همراه با مثال و قوانین مرتبط؛ مرجعی برای دانش حقوقی شما.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("واژه‌نامه حقوقی") }]}
       />
       <Container className="py-12">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sorted.map((t, i) => (
-            <Reveal key={t.slug} delay={(i % 6) * 40}>
+          {sorted.map((g, i) => (
+            <Reveal key={g.slug} delay={(i % 6) * 40}>
               <Link
-                href={`/glossary/${t.slug}`}
+                href={`/glossary/${g.slug}`}
                 className="group flex h-full flex-col rounded-2xl border border-border bg-surface p-5 card-shadow transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]"
               >
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-bold text-foreground">{t.term}</h2>
+                  <h2 className="text-lg font-bold text-foreground">{g.term}</h2>
                   <Icon name="book" className="h-4 w-4 text-accent-text" />
                 </div>
-                <p className="mt-2 flex-1 text-sm leading-6 text-muted">{t.simple}</p>
-                <span className="mt-3 text-xs font-semibold text-primary">مشاهده تعریف کامل ←</span>
+                <p className="mt-2 flex-1 text-sm leading-6 text-muted">{g.simple}</p>
+                <span className="mt-3 text-xs font-semibold text-primary">{t("مشاهده تعریف کامل ←")}</span>
               </Link>
             </Reveal>
           ))}

@@ -6,6 +6,8 @@ import { Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice, CONSULT_TYPE_FA } from "@/lib/data";
 import { formatJalaliDateTime } from "@/lib/jalali";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * کارتابل مشاورهٔ وکیل — چرخهٔ کامل درخواست‌های موکل، همه‌چیز از این‌جا:
@@ -38,13 +40,15 @@ const STATUS_FA: Record<string, string> = {
   cancelled: "لغوشده",
   expired: "منقضی",
   refunded: "عودت‌شده",
-};
+}; // برچسب‌ها با t() ترجمه می‌شوند
 
 function typeIcon(t: string): "chat" | "phone" | "video" {
   return t === "video" ? "video" : t === "voice" ? "phone" : "chat";
 }
 
 export function ConsultRequestsPanel() {
+  const t = useT();
+  const tf = templateT(t);
   const [open, setOpen] = useState<Row[]>([]);
   const [history, setHistory] = useState<Row[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -99,10 +103,10 @@ export function ConsultRequestsPanel() {
         toast.success(okMsg);
         await load();
       } else {
-        toast.error(data.error ?? "اقدام انجام نشد.");
+        toast.error(data.error ?? t("اقدام انجام نشد."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setBusyId(null);
     }
@@ -115,22 +119,22 @@ export function ConsultRequestsPanel() {
     <Card hover={false} id="consult-requests" className="scroll-mt-24">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 font-bold text-foreground">
-          <Icon name="mail" className="h-5 w-5 text-accent-text" /> کارتابل مشاوره — درخواست‌های موکلان
+          <Icon name="mail" className="h-5 w-5 text-accent-text" /> {t("کارتابل مشاوره — درخواست‌های موکلان")}
         </h2>
         <button
           type="button"
           onClick={() => void load()}
           className="inline-flex items-center gap-1 rounded-lg bg-primary-soft px-2.5 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary-soft/70"
         >
-          <Icon name="clock" className="h-3.5 w-3.5" /> به‌روزرسانی
+          <Icon name="clock" className="h-3.5 w-3.5" /> {t("به‌روزرسانی")}
         </button>
       </div>
 
       {!loaded ? (
-        <p className="mt-4 rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">در حال دریافت…</p>
+        <p className="mt-4 rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">{t("در حال دریافت…")}</p>
       ) : unauthed ? (
         <p className="mt-4 rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
-          برای مشاهدهٔ کارتابل با حساب وکیل (دارای دسترسی مشاوره) وارد شوید.
+          {t("برای مشاهدهٔ کارتابل با حساب وکیل (دارای دسترسی مشاوره) وارد شوید.")}
         </p>
       ) : (
         <>
@@ -152,15 +156,15 @@ export function ConsultRequestsPanel() {
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                      <Badge tone="accent">{CONSULT_TYPE_FA[r.type] ?? r.type}</Badge>
-                      <Badge tone="neutral">{faNum(r.duration)} دقیقه</Badge>
+                      <Badge tone="accent">{t(CONSULT_TYPE_FA[r.type] ?? r.type)}</Badge>
+                      <Badge tone="neutral">{tf("{n} دقیقه", { n: faNum(r.duration) })}</Badge>
                       <Badge tone="primary">{faPrice(r.price)}</Badge>
-                      <Badge tone="neutral">{STATUS_FA[r.status] ?? r.status}</Badge>
+                      <Badge tone="neutral">{STATUS_FA[r.status] ? t(STATUS_FA[r.status]) : r.status}</Badge>
                     </div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
                     <label className="flex items-center gap-2 text-xs text-muted">
-                      نوبت (اختیاری):
+                      {t("نوبت (اختیاری):")}
                       <input
                         type="datetime-local"
                         value={slotDraft[r.id] ?? ""}
@@ -169,11 +173,11 @@ export function ConsultRequestsPanel() {
                       />
                     </label>
                     <span className="mr-auto flex items-center gap-2">
-                      <Button size="sm" disabled={busyId === r.id} onClick={() => void act(r.id, "confirm", "درخواست مشاوره تأیید شد.")} icon="check">
-                        تأیید
+                      <Button size="sm" disabled={busyId === r.id} onClick={() => void act(r.id, "confirm", t("درخواست مشاوره تأیید شد."))} icon="check">
+                        {t("تأیید")}
                       </Button>
-                      <Button size="sm" variant="ghost" disabled={busyId === r.id} onClick={() => void act(r.id, "cancel", "درخواست لغو شد.")} className="!text-danger">
-                        لغو
+                      <Button size="sm" variant="ghost" disabled={busyId === r.id} onClick={() => void act(r.id, "cancel", t("درخواست لغو شد."))} className="!text-danger">
+                        {t("لغو")}
                       </Button>
                     </span>
                   </div>
@@ -181,7 +185,7 @@ export function ConsultRequestsPanel() {
               ))
             ) : (
               <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
-                درخواست در انتظار تصمیمی نیست؛ به‌محض ثبت موکل، همین‌جا نمایش داده می‌شود.
+                {t("درخواست در انتظار تصمیمی نیست؛ به‌محض ثبت موکل، همین‌جا نمایش داده می‌شود.")}
               </p>
             )}
           </div>
@@ -189,7 +193,7 @@ export function ConsultRequestsPanel() {
           {/* ۲) نوبت‌های قطعی‌شده */}
           {booked.length > 0 && (
             <div className="mt-6">
-              <p className="text-xs font-bold text-foreground-soft">تأییدشده‌ها و نوبت‌های پیش‌رو</p>
+              <p className="text-xs font-bold text-foreground-soft">{t("تأییدشده‌ها و نوبت‌های پیش‌رو")}</p>
               <div className="mt-2 space-y-2">
                 {booked.map((r) => (
                   <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-success/25 bg-success/5 p-3">
@@ -200,17 +204,17 @@ export function ConsultRequestsPanel() {
                       <div className="min-w-0">
                         <p className="truncate text-sm font-bold text-foreground">{r.clientName}</p>
                         <p className="truncate text-xs text-muted">
-                          {STATUS_FA[r.status] ?? r.status}
-                          {r.startsAt ? ` • ${formatJalaliDateTime(new Date(r.startsAt))}` : " • بدون نوبت ثابت"}
+                          {STATUS_FA[r.status] ? t(STATUS_FA[r.status]) : r.status}
+                          {r.startsAt ? ` • ${formatJalaliDateTime(new Date(r.startsAt))}` : ` • ${t("بدون نوبت ثابت")}`}
                         </p>
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                      <Button size="sm" variant="ghost" disabled={busyId === r.id} onClick={() => void act(r.id, "complete", "مشاوره تکمیل شد.")}>
-                        تکمیل شد
+                      <Button size="sm" variant="ghost" disabled={busyId === r.id} onClick={() => void act(r.id, "complete", t("مشاوره تکمیل شد."))}>
+                        {t("تکمیل شد")}
                       </Button>
-                      <Button size="sm" variant="ghost" disabled={busyId === r.id} onClick={() => void act(r.id, "cancel", "درخواست لغو شد.")} className="!text-danger">
-                        لغو
+                      <Button size="sm" variant="ghost" disabled={busyId === r.id} onClick={() => void act(r.id, "cancel", t("درخواست لغو شد."))} className="!text-danger">
+                        {t("لغو")}
                       </Button>
                     </div>
                   </div>
@@ -224,7 +228,7 @@ export function ConsultRequestsPanel() {
             <div className="mt-5 border-t border-border pt-4">
               <button type="button" onClick={() => setShowHistory((v) => !v)} className="flex items-center gap-1.5 text-xs font-bold text-muted transition-colors hover:text-foreground">
                 <Icon name="chevron" className={`h-3.5 w-3.5 ${showHistory ? "" : "rotate-180"}`} />
-                تاریخچهٔ اخیر ({faNum(history.length)} مورد)
+                {tf("تاریخچهٔ اخیر ({n} مورد)", { n: faNum(history.length) })}
               </button>
               {showHistory && (
                 <div className="mt-2 space-y-1.5">
@@ -233,7 +237,7 @@ export function ConsultRequestsPanel() {
                       <span className="font-medium text-foreground">{r.clientName} — {r.subject.slice(0, 40)}</span>
                       <span className="flex items-center gap-2 text-muted">
                         <span dir="ltr">{formatJalaliDateTime(new Date(r.createdAt))}</span>
-                        <Badge tone={r.status === "completed" ? "success" : "neutral"}>{STATUS_FA[r.status] ?? r.status}</Badge>
+                        <Badge tone={r.status === "completed" ? "success" : "neutral"}>{STATUS_FA[r.status] ? t(STATUS_FA[r.status]) : r.status}</Badge>
                       </span>
                     </div>
                   ))}

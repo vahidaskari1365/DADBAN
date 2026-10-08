@@ -74,7 +74,7 @@ export function LawyerPicksFlow({
   );
 
   return (
-    <div className="w-full space-y-3" role="region" aria-label="پیشنهاد وکیل توسط هوش مصنوعی">
+    <div className="w-full space-y-3" role="region" aria-label={t("پیشنهاد وکیل توسط هوش مصنوعی")}>
       {/* مرحله ۱ — پرسش گزینه‌ای: معرفی ۱۰ وکیل برتر؟ */}
       {stage === "ask10" && (
         <>

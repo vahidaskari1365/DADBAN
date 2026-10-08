@@ -4,8 +4,12 @@ import { Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { faNum } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "مرکز اعلان‌ها" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t("مرکز اعلان‌ها") };
+}
 
 const NOTIFS = [
   { icon: "calendar" as const, title: "جلسه دادگاه فردا", desc: "پرونده طلاق — ساعت ۱۰:۰۰", time: "۱۰ دقیقه پیش", unread: true, tone: "primary" as const },
@@ -16,13 +20,14 @@ const NOTIFS = [
   { icon: "folder" as const, title: "به‌روزرسانی پرونده", desc: "وضعیت پرونده ۱۲۵۸ تغییر کرد.", time: "۳ روز پیش", unread: false, tone: "neutral" as const },
 ];
 
-export default function NotificationsPage() {
+export default async function NotificationsPage() {
+  const t = await getT();
   return (
     <>
       <PageHero
-        title="مرکز اعلان‌ها"
-        desc="جدیدترین اعلان‌های پرونده، مشاوره، پیام‌ها و مهلت‌های شما."
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "اعلان‌ها" }]}
+        title={t("مرکز اعلان‌ها")}
+        desc={t("جدیدترین اعلان‌های پرونده، مشاوره، پیام‌ها و مهلت‌های شما.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("اعلان‌ها") }]}
       />
       <Container className="py-10">
         <div className="space-y-3">
@@ -39,17 +44,17 @@ export default function NotificationsPage() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold text-foreground">{n.title}</p>
+                    <p className="text-sm font-bold text-foreground">{t(n.title)}</p>
                     {n.unread && <span className="h-2 w-2 rounded-full bg-primary" />}
                   </div>
-                  <p className="text-xs text-muted">{n.desc}</p>
+                  <p className="text-xs text-muted">{t(n.desc)}</p>
                 </div>
-                <span className="shrink-0 text-[11px] text-muted">{n.time}</span>
+                <span className="shrink-0 text-[11px] text-muted">{t(n.time)}</span>
               </div>
             </Reveal>
           ))}
         </div>
-        <p className="mt-6 text-center text-xs text-muted">{faNum(NOTIFS.length)} اعلان</p>
+        <p className="mt-6 text-center text-xs text-muted">{faNum(NOTIFS.length)} {t("اعلان")}</p>
       </Container>
     </>
   );

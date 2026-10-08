@@ -6,6 +6,7 @@ import { Container, Button, Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LawyerPicksFlow } from "@/components/ai/lawyer-picks";
 import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 import type { LegalGuidance } from "@/lib/legal-engine";
 import type { MatchedLawyer } from "@/lib/lawyer-match";
 import type { IconKey } from "@/lib/data";
@@ -41,6 +42,8 @@ const EXAMPLES = [
 ];
 
 function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
+  const t = useT();
+  const tt = templateT(t);
   return (
     <div className="space-y-5 animate-fade-up">
       {echo && (
@@ -55,11 +58,11 @@ function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
       <div className="flex flex-wrap items-center gap-2">
         {g.matched ? (
           <>
-            <Badge tone="primary" icon="scale">موضوع شناسایی‌شده: {g.topic}</Badge>
-            <Badge tone="accent">اطمینان: {Math.round(g.confidence * 100)}٪</Badge>
+            <Badge tone="primary" icon="scale">{tt("موضوع شناسایی‌شده: {topic}", { topic: g.topic })}</Badge>
+            <Badge tone="accent">{tt("اطمینان: {pct}٪", { pct: String(Math.round(g.confidence * 100)) })}</Badge>
           </>
         ) : (
-          <Badge tone="neutral">راهنمای عمومی</Badge>
+          <Badge tone="neutral">{t("راهنمای عمومی")}</Badge>
         )}
       </div>
 
@@ -68,7 +71,7 @@ function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Icon name="sparkles" className="h-4 w-4" />
           </span>
-          <h3 className="font-bold text-foreground">تحلیل اولیه</h3>
+          <h3 className="font-bold text-foreground">{t("تحلیل اولیه")}</h3>
         </div>
         <p className="mt-3 text-sm leading-7 text-foreground-soft">{g.summary}</p>
       </div>
@@ -76,7 +79,7 @@ function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-border bg-surface p-5">
           <h4 className="flex items-center gap-2 text-sm font-bold text-foreground">
-            <Icon name="bolt" className="h-4 w-4 text-accent-text" /> مراحل اقدام
+            <Icon name="bolt" className="h-4 w-4 text-accent-text" /> {t("مراحل اقدام")}
           </h4>
           <ol className="mt-3 space-y-3">
             {g.steps.map((s, i) => (
@@ -96,7 +99,7 @@ function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
         <div className="space-y-4">
           <div className="rounded-2xl border border-border bg-surface p-5">
             <h4 className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Icon name="folder" className="h-4 w-4 text-primary" /> مدارک موردنیاز
+              <Icon name="folder" className="h-4 w-4 text-primary" /> {t("مدارک موردنیاز")}
             </h4>
             <ul className="mt-3 space-y-1.5">
               {g.documents.map((d) => (
@@ -108,7 +111,7 @@ function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
           </div>
           <div className="rounded-2xl border border-[color-mix(in_oklab,var(--warning)_30%,transparent)] bg-[color-mix(in_oklab,var(--warning)_8%,transparent)] p-5">
             <h4 className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Icon name="alert" className="h-4 w-4 text-warning" /> ریسک‌ها و هشدارها
+              <Icon name="alert" className="h-4 w-4 text-warning" /> {t("ریسک‌ها و هشدارها")}
             </h4>
             <ul className="mt-3 space-y-1.5">
               {g.risks.map((r) => (
@@ -128,8 +131,8 @@ function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
               <Icon name="landmark" className="h-4 w-4" />
             </span>
             <div>
-              <h4 className="text-sm font-bold text-foreground">مواد و تبصره‌های قانونی مرتبط</h4>
-              <p className="text-[11px] text-muted">متن مواد به‌صورت خلاصه‌شده ذکر شده است</p>
+              <h4 className="text-sm font-bold text-foreground">{t("مواد و تبصره‌های قانونی مرتبط")}</h4>
+              <p className="text-[11px] text-muted">{t("متن مواد به‌صورت خلاصه‌شده ذکر شده است")}</p>
             </div>
           </div>
           <ul className="mt-4 space-y-3">
@@ -151,7 +154,7 @@ function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
       {g.laws.length > 0 && (
         <div className="rounded-2xl border border-border bg-surface-2 p-5">
           <h4 className="flex items-center gap-2 text-sm font-bold text-foreground">
-            <Icon name="landmark" className="h-4 w-4 text-primary" /> قوانین مرتبط
+            <Icon name="landmark" className="h-4 w-4 text-primary" /> {t("قوانین مرتبط")}
           </h4>
           <div className="mt-3 flex flex-wrap gap-2">
             {g.laws.map((l) => (
@@ -163,7 +166,7 @@ function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
 
       <div className="rounded-2xl bg-gradient-to-br from-primary to-primary-hover p-5 text-primary-foreground">
         <h4 className="flex items-center gap-2 text-sm font-bold">
-          <Icon name="user" className="h-4 w-4" /> اقدام بعدی پیشنهادی
+          <Icon name="user" className="h-4 w-4" /> {t("اقدام بعدی پیشنهادی")}
         </h4>
         <div className="mt-3 flex flex-wrap gap-2">
           {g.nextActions.map((a) => (
@@ -181,14 +184,14 @@ function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
 
       <p className="rounded-xl bg-surface-2 p-3 text-center text-xs leading-5 text-muted">
         <Icon name="alert" className="ml-1 inline h-3.5 w-3.5 text-warning" />
-        این راهنما صرفاً جنبه اطلاعاتی دارد و جایگزین مشاوره تخصصی وکیل نیست. برای تصمیم نهایی با وکیل
-        مشورت کنید.
+        {t("این راهنما صرفاً جنبه اطلاعاتی دارد و جایگزین مشاوره تخصصی وکیل نیست. برای تصمیم نهایی با وکیل مشورت کنید.")}
       </p>
     </div>
   );
 }
 
 function ContractView({ findings, riskScore }: { findings: ClauseFinding[]; riskScore: number }) {
+  const t = useT();
   const risks = findings.filter((f) => f.type === "risk");
   const level = riskScore === 0 ? "کم" : riskScore <= 2 ? "متوسط" : "زیاد";
   const color = riskScore === 0 ? "success" : riskScore <= 2 ? "warning" : "danger";
@@ -197,15 +200,15 @@ function ContractView({ findings, riskScore }: { findings: ClauseFinding[]; risk
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-2xl border border-border bg-surface p-4 text-center">
           <p className="text-2xl font-extrabold text-foreground">{findings.length}</p>
-          <p className="text-xs text-muted">مورد شناسایی‌شده</p>
+          <p className="text-xs text-muted">{t("مورد شناسایی‌شده")}</p>
         </div>
         <div className="rounded-2xl border border-border bg-surface p-4 text-center">
           <p className="text-2xl font-extrabold text-foreground">{risks.length}</p>
-          <p className="text-xs text-muted">بند پرریسک</p>
+          <p className="text-xs text-muted">{t("بند پرریسک")}</p>
         </div>
         <div className="rounded-2xl border border-border bg-surface p-4 text-center">
-          <p className={`text-2xl font-extrabold text-${color}`}>{level}</p>
-          <p className="text-xs text-muted">سطح ریسک</p>
+          <p className={`text-2xl font-extrabold text-${color}`}>{t(level)}</p>
+          <p className="text-xs text-muted">{t("سطح ریسک")}</p>
         </div>
       </div>
       <div className="space-y-3">
@@ -234,10 +237,10 @@ function ContractView({ findings, riskScore }: { findings: ClauseFinding[]; risk
       </div>
       <div className="rounded-2xl bg-primary-soft p-4 text-center">
         <p className="text-sm text-foreground">
-          برای بازبینی دقیق‌تر قرارداد و رفع بندهای پرریسک، با وکیل متخصص مشورت کنید.
+          {t("برای بازبینی دقیق‌تر قرارداد و رفع بندهای پرریسک، با وکیل متخصص مشورت کنید.")}
         </p>
         <Button href="/contracts" variant="soft" icon="user" className="mt-3">
-          دریافت مشاوره تنظیم قرارداد
+          {t("دریافت مشاوره تنظیم قرارداد")}
         </Button>
       </div>
     </div>
@@ -250,6 +253,7 @@ const CONTRACT_ACCEPT = ".txt,.md,.csv,.docx,.pdf,.png,.jpg,.jpeg,.webp,image/*"
 function AIAssistantContent() {
   const search = useSearchParams();
   const t = useT();
+  const tt = templateT(t);
   const [tab, setTab] = useState<"guide" | "contract">(search.get("tab") === "contract" ? "contract" : "guide");
   const [input, setInput] = useState(search.get("q") ?? "");
   /** استان کاربر — از ویزارد «شروع مسیر من»، پارامتر لینک، یا استان ثبت‌شده در پروفایل موکل */
@@ -314,7 +318,7 @@ function AIAssistantContent() {
     const query = (q ?? input).trim();
     /* skill-kit submit-button-state: اعتبارسنجی هنگام submit + پیام قابل‌فهم */
     if (!query) {
-      setError("برای شروع گفتگو، لطفاً سؤال حقوقی خود را بنویسید.");
+      setError(t("برای شروع گفتگو، لطفاً سؤال حقوقی خود را بنویسید."));
       return;
     }
     if (loading || roundsFull) return;
@@ -361,7 +365,7 @@ function AIAssistantContent() {
       // پیام ناموفق حذف می‌شود تا سقف دورها بی‌جهت مصرف نشود؛ خطا بالای فرم نشان داده می‌شود
       setMsgs((prev) => prev.filter((m) => m.id !== uid && m.id !== aid));
       setInput(query);
-      setError(e instanceof Error ? e.message : "خطا در ارتباط با سرور");
+      setError(e instanceof Error ? e.message : t("خطا در ارتباط با سرور"));
     } finally {
       setLoading(false);
     }
@@ -380,7 +384,7 @@ function AIAssistantContent() {
       setContractResult({ findings: data.findings ?? [], riskScore: data.riskScore ?? 0 });
       if (data.analysis) setContractAnalysis(data.analysis);
     } catch (e) {
-      setContractError(e instanceof Error ? e.message : "خطا در تحلیل");
+      setContractError(e instanceof Error ? e.message : t("خطا در تحلیل"));
     } finally {
       setContractLoading(false);
     }
@@ -395,7 +399,7 @@ function AIAssistantContent() {
       setContractOcr(null);
       setContractFile(null);
       if (txt.length < 30) {
-        throw new Error("متنی از این عکس خوانده نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر بچسبانید.");
+        throw new Error(t("متنی از این عکس خوانده نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر بچسبانید."));
       }
       const clipped = txt.slice(0, 6000);
       setContractText(clipped);
@@ -407,14 +411,14 @@ function AIAssistantContent() {
     } catch (e) {
       setContractOcr(null);
       setContractFile(null);
-      setContractError(e instanceof Error ? e.message : "خواندن متن از عکس ممکن نشد.");
+      setContractError(e instanceof Error ? e.message : t("خواندن متن از عکس ممکن نشد."));
     }
   };
 
   const pickContractFile = (f: File | undefined | null) => {
     if (!f) return;
     if (f.size > CONTRACT_MAX_MB * 1024 * 1024) {
-      setContractError(`حجم فایل باید کمتر از ${CONTRACT_MAX_MB} مگابایت باشد.`);
+      setContractError(tt("حجم فایل باید کمتر از {mb} مگابایت باشد.", { mb: String(CONTRACT_MAX_MB) }));
       return;
     }
     setContractError(null);
@@ -431,7 +435,7 @@ function AIAssistantContent() {
   const analyze = async () => {
     if (contractLoading) return;
     if (!contractFile && !contractText.trim()) {
-      setError("برای تحلیل قرارداد، فایل بارگذاری کنید یا متن قرارداد را وارد کنید.");
+      setError(t("برای تحلیل قرارداد، فایل بارگذاری کنید یا متن قرارداد را وارد کنید."));
       return;
     }
     if (contractFile) {
@@ -466,14 +470,13 @@ function AIAssistantContent() {
         <Container>
           <div className="mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
-              <Icon name="sparkles" className="h-4 w-4" /> دستیار هوش مصنوعی حقوقی دادبان
+              <Icon name="sparkles" className="h-4 w-4" /> {t("دستیار هوش مصنوعی حقوقی دادبان")}
             </span>
             <h1 className="mt-4 text-2xl font-extrabold text-foreground sm:text-3xl">
-              سؤال حقوقی‌تان را بپرسید یا قراردادتان را تحلیل کنید
+              {t("سؤال حقوقی‌تان را بپرسید یا قراردادتان را تحلیل کنید")}
             </h1>
             <p className="mt-3 text-sm leading-7 text-muted">
-              دستیار دادبان موضوع را تشخیص می‌دهد، مراحل و مدارک را توضیح می‌دهد و با استناد به
-              مواد و تبصره‌های قانونی مرتبط، شما را به وکیل متخصص وصل می‌کند. هوشمند، سریع و محرمانه.
+              {t("دستیار دادبان موضوع را تشخیص می‌دهد، مراحل و مدارک را توضیح می‌دهد و با استناد به مواد و تبصره‌های قانونی مرتبط، شما را به وکیل متخصص وصل می‌کند. هوشمند، سریع و محرمانه.")}
             </p>
           </div>
         </Container>
@@ -486,17 +489,17 @@ function AIAssistantContent() {
             {([
               { key: "guide" as const, label: "راهنمای حقوقی", icon: "chat" as IconKey },
               { key: "contract" as const, label: "تحلیل قرارداد", icon: "file" as IconKey },
-            ]).map((t) => (
+            ]).map((tb) => (
               <button
-                key={t.key}
+                key={tb.key}
                 type="button"
-                onClick={() => setTab(t.key)}
+                onClick={() => setTab(tb.key)}
                 className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
-                  tab === t.key ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground-soft hover:bg-surface-2"
+                  tab === tb.key ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground-soft hover:bg-surface-2"
                 }`}
               >
-                <Icon name={t.icon} className="h-4 w-4" />
-                {t.label}
+                <Icon name={tb.icon} className="h-4 w-4" />
+                {t(tb.label)}
               </button>
             ))}
           </div>
@@ -506,12 +509,12 @@ function AIAssistantContent() {
               <Card hover={false} className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <label htmlFor="ai-input" className="text-sm font-bold text-foreground">
-                    {msgs.length > 0 ? "ادامهٔ گفتگو با دستیار" : "مشکل حقوقی خود را شرح دهید"}
+                    {msgs.length > 0 ? t("ادامهٔ گفتگو با دستیار") : t("مشکل حقوقی خود را شرح دهید")}
                   </label>
                   {msgs.length > 0 && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-bold text-muted">
                       <Icon name="chat" className="h-3 w-3" />
-                      {faNum(roundsUsed)} از {faNum(MAX_ROUNDS)} پرسش
+                      {tt("{used} از {max} پرسش", { used: faNum(roundsUsed), max: faNum(MAX_ROUNDS) })}
                     </span>
                   )}
                 </div>
@@ -528,7 +531,7 @@ function AIAssistantContent() {
                     }}
                     rows={2}
                     disabled={roundsFull}
-                    placeholder="مثلاً: چک برگشتی دارم و نمی‌دانم چطور طلبم را بگیرم…"
+                    placeholder={t("مثلاً: چک برگشتی دارم و نمی‌دانم چطور طلبم را بگیرم…")}
                     className="w-full resize-none rounded-xl border border-border-strong bg-background p-3 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:opacity-60"
                   />
                 </div>
@@ -542,22 +545,22 @@ function AIAssistantContent() {
                           onClick={() => ask(ex)}
                           className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-foreground-soft transition-colors hover:border-primary/40 hover:text-primary"
                         >
-                          {ex}
+                          {t(ex)}
                         </button>
                       ))}
                     </div>
                     <Button onClick={() => ask()} disabled={loading} icon="send">
-                      {loading ? "در حال بررسی…" : "بپرس"}
+                      {loading ? t("در حال بررسی…") : t("بپرس")}
                     </Button>
                   </div>
                 )}
                 {roundsFull && (
                   <div className="rounded-2xl border border-accent/30 bg-accent-soft/40 p-4 text-center">
                     <p className="text-sm font-bold text-accent-text">
-                      به سقف ۳ پرسش در این گفتگو رسیدید — برای ادامه، گفتگوی جدید شروع کنید.
+                      {t("به سقف ۳ پرسش در این گفتگو رسیدید — برای ادامه، گفتگوی جدید شروع کنید.")}
                     </p>
                     <Button variant="soft" icon="sparkles" onClick={resetChat} className="mt-3">
-                      شروع گفتگوی جدید
+                      {t("شروع گفتگوی جدید")}
                     </Button>
                   </div>
                 )}
@@ -571,7 +574,7 @@ function AIAssistantContent() {
 
               {/* نخ گفتگو با دستیار — سؤال کاربر حباب‌وار، پاسخ دستیار کارت کامل */}
               {msgs.length > 0 && (
-                <div className="space-y-4" aria-live="polite" aria-label="گفتگو با دستیار هوشمند">
+                <div className="space-y-4" aria-live="polite" aria-label={t("گفتگو با دستیار هوشمند")}>
                   {msgs.map((m) =>
                     m.role === "user" ? (
                       <div key={m.id} className="flex justify-start">
@@ -589,14 +592,14 @@ function AIAssistantContent() {
                               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent-text">
                                 <Icon name="sparkles" className="h-4 w-4" />
                               </span>
-                              <span className="text-sm font-bold text-foreground">پاسخ دستیار هوشمند</span>
+                              <span className="text-sm font-bold text-foreground">{t("پاسخ دستیار هوشمند")}</span>
                             </div>
                             <p className="whitespace-pre-line text-sm leading-7 text-foreground-soft" dir="auto">
                               {m.text}
                             </p>
                             {m.sources && m.sources.length > 0 && (
                               <div className="rounded-xl border border-border bg-surface-2 p-3">
-                                <p className="mb-1.5 text-xs font-bold text-muted">منابع وب:</p>
+                                <p className="mb-1.5 text-xs font-bold text-muted">{t("منابع وب:")}</p>
                                 <ul className="space-y-1">
                                   {m.sources.slice(0, 6).map((s, i) => (
                                     <li key={`${m.id}-src-${i}`}>
@@ -615,7 +618,7 @@ function AIAssistantContent() {
                               </div>
                             )}
                             <p className="border-t border-border pt-3 text-xs text-muted">
-                              این پاسخ توسط هوش مصنوعی تولید شده و جنبه اطلاع‌رسانی دارد؛ برای اقدام حقوقی با وکیل متخصص مشورت کنید.
+                              {t("این پاسخ توسط هوش مصنوعی تولید شده و جنبه اطلاع‌رسانی دارد؛ برای اقدام حقوقی با وکیل متخصص مشورت کنید.")}
                             </p>
                             {m.lawyerMatch && (
                               <div className="border-t border-border pt-4">
@@ -643,7 +646,7 @@ function AIAssistantContent() {
                   <span className="h-3 w-3 animate-pulse-dot rounded-full bg-primary" />
                   <span className="h-3 w-3 animate-pulse-dot rounded-full bg-primary" style={{ animationDelay: "0.2s" }} />
                   <span className="h-3 w-3 animate-pulse-dot rounded-full bg-primary" style={{ animationDelay: "0.4s" }} />
-                  <span className="text-sm text-muted">دستیار در حال تحلیل موضوع شماست…</span>
+                  <span className="text-sm text-muted">{t("دستیار در حال تحلیل موضوع شماست…")}</span>
                 </Card>
               )}
             </div>
@@ -660,22 +663,22 @@ function AIAssistantContent() {
                   <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
                     <Icon name="document" className="h-5 w-5" />
                   </span>
-                  <p className="mt-2 text-sm font-bold text-foreground">بارگذاری متن قرارداد</p>
-                  <p className="mt-1 text-xs text-muted">PDF، Word (docx)، متن ساده یا عکس قرارداد — حتی عکس؛ متن آن با هوش مصنوعی خوانده می‌شود (حداکثر {CONTRACT_MAX_MB} مگابایت)</p>
+                  <p className="mt-2 text-sm font-bold text-foreground">{t("بارگذاری متن قرارداد")}</p>
+                  <p className="mt-1 text-xs text-muted">{tt("PDF، Word (docx)، متن ساده یا عکس قرارداد — حتی عکس؛ متن آن با هوش مصنوعی خوانده می‌شود (حداکثر {mb} مگابایت)", { mb: String(CONTRACT_MAX_MB) })}</p>
                   <button
                     type="button"
                     onClick={() => contractInputRef.current?.click()}
                     className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-2 text-sm font-bold text-foreground transition-all hover:border-primary/40 hover:bg-primary-soft hover:text-primary"
                   >
                     <Icon name="file" className="h-4 w-4" />
-                    انتخاب فایل از دستگاه
+                    {t("انتخاب فایل از دستگاه")}
                   </button>
                   <input
                     ref={contractInputRef}
                     type="file"
                     accept={CONTRACT_ACCEPT}
                     className="hidden"
-                    aria-label="آپلود فایل قرارداد"
+                    aria-label={t("آپلود فایل قرارداد")}
                     onChange={(e) => {
                       pickContractFile(e.target.files?.[0]);
                       e.target.value = "";
@@ -685,7 +688,7 @@ function AIAssistantContent() {
 
                 {contractOcr !== null && (
                   <div className="rounded-xl border border-accent/30 bg-accent-soft/30 px-4 py-3 text-center">
-                    <p className="text-sm font-bold text-accent-text">در حال خواندن متن عکس با هوش مصنوعی… {contractOcr}٪</p>
+                    <p className="text-sm font-bold text-accent-text">{tt("در حال خواندن متن عکس با هوش مصنوعی… {pct}٪", { pct: String(contractOcr) })}</p>
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
                       <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(5, contractOcr)}%` }} />
                     </div>
@@ -700,11 +703,11 @@ function AIAssistantContent() {
                     </span>
                     <div className="min-w-0 flex-1 text-right">
                       <p className="truncate text-sm font-bold text-foreground">{contractFile.name}</p>
-                      <p className="text-xs text-muted">{(contractFile.size / 1024).toFixed(0)} کیلوبایت</p>
+                      <p className="text-xs text-muted">{tt("{kb} کیلوبایت", { kb: (contractFile.size / 1024).toFixed(0) })}</p>
                     </div>
                     <button
                       type="button"
-                      aria-label="حذف فایل"
+                      aria-label={t("حذف فایل")}
                       onClick={() => setContractFile(null)}
                       className="cursor-pointer rounded-lg p-1.5 text-muted transition-colors hover:bg-danger/10 hover:text-danger"
                     >
@@ -714,34 +717,34 @@ function AIAssistantContent() {
                 )}
 
                 <label htmlFor="contract-input" className="text-sm font-bold text-foreground">
-                  یا متن قرارداد را درج کنید (کپی/پیست)
+                  {t("یا متن قرارداد را درج کنید (کپی/پیست)")}
                 </label>
                 <textarea
                   id="contract-input"
                   value={contractText}
                   onChange={(e) => setContractText(e.target.value)}
                   rows={8}
-                  placeholder="متن قرارداد خود را اینجا قرار دهید تا بندهای پرریسک، تعهدات، جریمه‌ها و ابهامات شناسایی شوند…"
+                  placeholder={t("متن قرارداد خود را اینجا قرار دهید تا بندهای پرریسک، تعهدات، جریمه‌ها و ابهامات شناسایی شوند…")}
                   className="w-full resize-y rounded-xl border border-border-strong bg-background p-3 text-sm leading-7 text-foreground outline-none transition-colors focus:border-primary"
                 />
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted">
                     {contractFile
                       ? contractFile.type.startsWith("image/")
-                        ? "عکس آماده خواندن و تحلیل است"
-                        : "فایل انتخاب‌شده آماده تحلیل است"
-                      : `${contractText.length} کاراکتر`}
+                        ? t("عکس آماده خواندن و تحلیل است")
+                        : t("فایل انتخاب‌شده آماده تحلیل است")
+                      : tt("{n} کاراکتر", { n: String(contractText.length) })}
                   </p>
                   <Button onClick={analyze} disabled={contractLoading} icon="file">
                     {contractLoading
                       ? contractFile && contractFile.type.startsWith("image/")
-                        ? "در حال خواندن عکس و تحلیل…"
-                        : "در حال تحلیل…"
+                        ? t("در حال خواندن عکس و تحلیل…")
+                        : t("در حال تحلیل…")
                       : contractFile
                         ? contractFile.type.startsWith("image/")
-                          ? "تحلیل عکس قرارداد"
-                          : "تحلیل فایل قرارداد"
-                        : "تحلیل قرارداد"}
+                          ? t("تحلیل عکس قرارداد")
+                          : t("تحلیل فایل قرارداد")
+                        : t("تحلیل قرارداد")}
                   </Button>
                 </div>
               </Card>
@@ -764,18 +767,18 @@ function AIAssistantContent() {
                     <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent-text">
                       <Icon name="sparkles" className="h-4 w-4" />
                     </span>
-                    <span className="text-sm font-bold text-foreground">تحلیل هوشمند قرارداد</span>
+                    <span className="text-sm font-bold text-foreground">{t("تحلیل هوشمند قرارداد")}</span>
                   </div>
                   <p className="whitespace-pre-line text-sm leading-7 text-foreground-soft">{contractAnalysis}</p>
                   <p className="border-t border-border pt-3 text-xs text-muted">
-                    این تحلیل توسط هوش مصنوعی تولید شده و جایگزین نظر کارشناسی وکیل نیست.
+                    {t("این تحلیل توسط هوش مصنوعی تولید شده و جایگزین نظر کارشناسی وکیل نیست.")}
                   </p>
                 </Card>
               )}
 
               {!contractResult && !contractAnalysis && !contractLoading && (
                 <div className="rounded-2xl border border-dashed border-border bg-surface-2/50 p-6 text-center text-sm text-muted">
-                  متن قرارداد را وارد کنید یا فایل/عکس قرارداد را بارگذاری کنید تا تحلیل هوشمند بندهای پرریسک، جریمه‌ها و ابهامات نمایش داده شود.
+                  {t("متن قرارداد را وارد کنید یا فایل/عکس قرارداد را بارگذاری کنید تا تحلیل هوشمند بندهای پرریسک، جریمه‌ها و ابهامات نمایش داده شود.")}
                 </div>
               )}
             </div>
@@ -787,11 +790,12 @@ function AIAssistantContent() {
 }
 
 export default function AIAssistantPage() {
+  const t = useT();
   return (
     <Suspense
       fallback={
         <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted">
-          در حال بارگذاری…
+          {t("در حال بارگذاری…")}
         </div>
       }
     >

@@ -3,14 +3,18 @@ import { Container, Button, Badge, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faPrice, faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "تعرفه خدمات و فروشگاه خدمات حقوقی",
-  description:
-    "فروشگاه خدمات حقوقی دادبان: مشاوره، تنظیم قرارداد، بررسی قرارداد، تنظیم دادخواست و شکواییه، ثبت شرکت و خدمات ثبتی. پلن‌های اشتراکی کسب‌وکار.",
-  alternates: { canonical: "/pricing" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("تعرفه خدمات و فروشگاه خدمات حقوقی"),
+    description: t("فروشگاه خدمات حقوقی دادبان: مشاوره، تنظیم قرارداد، بررسی قرارداد، تنظیم دادخواست و شکواییه، ثبت شرکت و خدمات ثبتی. پلن‌های اشتراکی کسب‌وکار."),
+    alternates: { canonical: "/pricing" },
+  };
+}
 
 const SERVICES: { title: string; desc: string; price: number; icon: IconKey; popular?: boolean }[] = [
   { title: "مشاوره ۳۰ دقیقه‌ای", desc: "تماس تلفنی با وکیل متخصص", price: 350000, icon: "phone", popular: true },
@@ -50,26 +54,29 @@ const REGISTRY: { title: string; desc: string; icon: IconKey }[] = [
   { title: "امور ثبتی", desc: "انحلال و تغییرات", icon: "folder" },
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const t = await getT();
+  const tt = templateT(t);
+
   return (
     <>
       <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
         <Container>
           <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">خانه</Link>
+            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
             <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">تعرفه خدمات</span>
+            <span className="text-foreground-soft">{t("تعرفه خدمات")}</span>
           </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">فروشگاه و تعرفه خدمات حقوقی</h1>
+          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("فروشگاه و تعرفه خدمات حقوقی")}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            خدمات حقوقی را به‌صورت شفاف و با قیمت مشخص سفارش دهید؛ یا برای کسب‌وکار خود اشتراک حقوقی بگیرید.
+            {t("خدمات حقوقی را به‌صورت شفاف و با قیمت مشخص سفارش دهید؛ یا برای کسب‌وکار خود اشتراک حقوقی بگیرید.")}
           </p>
         </Container>
       </section>
 
       {/* Services marketplace */}
       <Container className="py-10">
-        <h2 className="text-xl font-bold text-foreground">خدمات واحد (Marketplace)</h2>
+        <h2 className="text-xl font-bold text-foreground">{t("خدمات واحد (Marketplace)")}</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {SERVICES.map((s) => (
             <Card key={s.title} className="flex flex-col">
@@ -77,13 +84,13 @@ export default function PricingPage() {
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary">
                   <Icon name={s.icon} className="h-5 w-5" />
                 </span>
-                {s.popular && <Badge tone="accent" icon="star">پرفروش</Badge>}
+                {s.popular && <Badge tone="accent" icon="star">{t("پرفروش")}</Badge>}
               </div>
-              <h3 className="mt-4 text-base font-bold text-foreground">{s.title}</h3>
-              <p className="mt-1 flex-1 text-xs text-muted">{s.desc}</p>
+              <h3 className="mt-4 text-base font-bold text-foreground">{t(s.title)}</h3>
+              <p className="mt-1 flex-1 text-xs text-muted">{t(s.desc)}</p>
               <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
                 <p className="text-sm font-bold text-foreground">{faPrice(s.price)}</p>
-                <Button href="/consultation" size="sm" variant="soft" icon="plus">سفارش</Button>
+                <Button href="/consultation" size="sm" variant="soft" icon="plus">{t("سفارش")}</Button>
               </div>
             </Card>
           ))}
@@ -93,9 +100,9 @@ export default function PricingPage() {
       {/* Subscription plans */}
       <Container className="py-10">
         <div className="text-center">
-          <Badge tone="primary" icon="briefcase">اشتراک حقوقی کسب‌وکار</Badge>
-          <h2 className="mt-3 text-2xl font-bold text-foreground">پلن‌های حقوقی سازمانی</h2>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-muted">وکیل دائم، مدیریت قراردادها و اسناد و مشاوره نامحدود برای کسب‌وکار شما.</p>
+          <Badge tone="primary" icon="briefcase">{t("اشتراک حقوقی کسب‌وکار")}</Badge>
+          <h2 className="mt-3 text-2xl font-bold text-foreground">{t("پلن‌های حقوقی سازمانی")}</h2>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-muted">{t("وکیل دائم، مدیریت قراردادها و اسناد و مشاوره نامحدود برای کسب‌وکار شما.")}</p>
         </div>
         <div className="mt-8 grid gap-5 lg:grid-cols-3">
           {PLANS.map((p) => (
@@ -107,19 +114,19 @@ export default function PricingPage() {
             >
               {p.highlight && (
                 <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">
-                  پیشنهاد ویژه
+                  {t("پیشنهاد ویژه")}
                 </span>
               )}
               <h3 className="text-lg font-bold text-foreground">{p.name}</h3>
-              <p className="mt-1 text-xs text-muted">{p.desc}</p>
+              <p className="mt-1 text-xs text-muted">{t(p.desc)}</p>
               <div className="mt-4">
                 <span className="text-2xl font-extrabold text-foreground">{p.price}</span>
-                <span className="mr-1 text-xs text-muted">تومان / {p.period}</span>
+                <span className="mr-1 text-xs text-muted">{tt("تومان / {period}", { period: p.period })}</span>
               </div>
               <ul className="mt-5 flex-1 space-y-2.5">
                 {p.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-foreground-soft">
-                    <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-success" /> {f}
+                    <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-success" /> {t(f)}
                   </li>
                 ))}
               </ul>
@@ -128,7 +135,7 @@ export default function PricingPage() {
                 variant={p.highlight ? "primary" : "outline"}
                 className="mt-6 w-full"
               >
-                {p.cta}
+                {t(p.cta)}
               </Button>
             </div>
           ))}
@@ -137,7 +144,7 @@ export default function PricingPage() {
 
       {/* Registry services */}
       <Container className="py-10">
-        <h2 className="text-xl font-bold text-foreground">خدمات ثبتی</h2>
+        <h2 className="text-xl font-bold text-foreground">{t("خدمات ثبتی")}</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {REGISTRY.map((r) => (
             <a key={r.title} href="/consultation" className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">
@@ -145,8 +152,8 @@ export default function PricingPage() {
                 <Icon name={r.icon} className="h-5 w-5" />
               </span>
               <div>
-                <p className="text-sm font-bold text-foreground">{r.title}</p>
-                <p className="text-xs text-muted">{r.desc}</p>
+                <p className="text-sm font-bold text-foreground">{t(r.title)}</p>
+                <p className="text-xs text-muted">{t(r.desc)}</p>
               </div>
               <Icon name="chevron" className="mr-auto h-4 w-4 rotate-180 text-muted" />
             </a>
@@ -156,11 +163,11 @@ export default function PricingPage() {
 
       <Container className="py-12">
         <div className="rounded-3xl border border-border bg-surface p-8 text-center card-shadow">
-          <h2 className="text-xl font-bold text-foreground">سؤال درباره تعرفه‌ها دارید؟</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">کارشناسان فروش دادبان برای مشاوره انتخاب پلن مناسب در خدمت شما هستند.</p>
+          <h2 className="text-xl font-bold text-foreground">{t("سؤال درباره تعرفه‌ها دارید؟")}</h2>
+          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">{t("کارشناسان فروش دادبان برای مشاوره انتخاب پلن مناسب در خدمت شما هستند.")}</p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <Button href="/contact" icon="phone">تماس با فروش</Button>
-            <Button href="/consultation" variant="outline" icon="chat">مشاوره آنلاین</Button>
+            <Button href="/contact" icon="phone">{t("تماس با فروش")}</Button>
+            <Button href="/consultation" variant="outline" icon="chat">{t("مشاوره آنلاین")}</Button>
           </div>
         </div>
       </Container>

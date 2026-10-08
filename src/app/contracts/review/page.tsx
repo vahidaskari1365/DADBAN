@@ -5,6 +5,8 @@ import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { ocrImageFileClient } from "@/lib/ocr-client";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 interface Finding { type: "risk" | "info"; label: string; detail: string }
 interface ReviewResult { analysis?: string | null; findings: Finding[]; riskScore: number }
@@ -13,6 +15,8 @@ const MAX_MB = 5;
 const ACCEPT = ".txt,.md,.csv,.docx,.pdf,.png,.jpg,.jpeg,.webp,image/*";
 
 export default function ContractReviewPage() {
+  const t = useT();
+  const tt = templateT(t);
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -37,7 +41,7 @@ export default function ContractReviewPage() {
       setResult({ analysis: data.analysis ?? null, findings: data.findings ?? [], riskScore: data.riskScore ?? 0 });
       setSourceName(typeof data.fileName === "string" ? data.fileName : null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "خطا در تحلیل");
+      setError(e instanceof Error ? e.message : t("خطا در تحلیل"));
     } finally {
       setLoading(false);
     }
@@ -52,7 +56,7 @@ export default function ContractReviewPage() {
       setOcrPct(null);
       setFile(null);
       if (txt.length < 30) {
-        throw new Error("متنی از این عکس خوانده نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر بچسبانید.");
+        throw new Error(t("متنی از این عکس خوانده نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر بچسبانید."));
       }
       const clipped = txt.slice(0, 6000);
       setText(clipped);
@@ -64,14 +68,14 @@ export default function ContractReviewPage() {
     } catch (e) {
       setOcrPct(null);
       setFile(null);
-      setError(e instanceof Error ? e.message : "خواندن متن از عکس ممکن نشد.");
+      setError(e instanceof Error ? e.message : t("خواندن متن از عکس ممکن نشد."));
     }
   };
 
   const pickFile = (f: File | undefined | null) => {
     if (!f) return;
     if (f.size > MAX_MB * 1024 * 1024) {
-      setError(`حجم فایل باید کمتر از ${MAX_MB} مگابایت باشد.`);
+      setError(tt("حجم فایل باید کمتر از {mb} مگابایت باشد.", { mb: String(MAX_MB) }));
       return;
     }
     setError(null);
@@ -103,7 +107,7 @@ export default function ContractReviewPage() {
 
   return (
     <>
-      <PageHero badge="بررسی قرارداد" title="قرارداد خود را هوشمندانه تحلیل کنید" desc="فایل یا عکس قرارداد را آپلود کنید یا متن آن را درج کنید تا بندهای پرریسک، جریمه‌ها، تعهدات و ابهامات شناسایی شوند — حتی عکس قرارداد؛ متنش با هوش مصنوعی خوانده می‌شود. برای دقت نهایی، وکیل آن را بررسی می‌کند." breadcrumb={[{ label: "خانه", href: "/" }, { label: "قراردادها", href: "/contracts" }, { label: "بررسی قرارداد" }]} />
+      <PageHero badge={t("بررسی قرارداد")} title={t("قرارداد خود را هوشمندانه تحلیل کنید")} desc={t("فایل یا عکس قرارداد را آپلود کنید یا متن آن را درج کنید تا بندهای پرریسک، جریمه‌ها، تعهدات و ابهامات شناسایی شوند — حتی عکس قرارداد؛ متنش با هوش مصنوعی خوانده می‌شود. برای دقت نهایی، وکیل آن را بررسی می‌کند.")} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قراردادها"), href: "/contracts" }, { label: t("بررسی قرارداد") }]} />
 
       <Container className="py-12">
         <div className="mx-auto max-w-3xl space-y-6">
@@ -125,25 +129,25 @@ export default function ContractReviewPage() {
               <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary">
                 <Icon name="document" className="h-5 w-5" />
               </span>
-              <p className="mt-2 text-sm font-bold text-foreground">فایل قرارداد را اینجا رها کنید</p>
+              <p className="mt-2 text-sm font-bold text-foreground">{t("فایل قرارداد را اینجا رها کنید")}</p>
               <p className="mt-1 text-xs text-muted">
-                فرمت‌های مجاز: PDF، Word (docx)، متن ساده یا عکس قرارداد — حداکثر {MAX_MB} مگابایت
+                {tt("فرمت‌های مجاز: PDF، Word (docx)، متن ساده یا عکس قرارداد — حداکثر {mb} مگابایت", { mb: String(MAX_MB) })}
               </p>
-              <p className="mt-1 text-xs font-medium text-primary">عکس قرارداد هم قبول است — متن آن با هوش مصنوعی خوانده می‌شود.</p>
+              <p className="mt-1 text-xs font-medium text-primary">{t("عکس قرارداد هم قبول است — متن آن با هوش مصنوعی خوانده می‌شود.")}</p>
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
                 className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-2 text-sm font-bold text-foreground transition-all hover:border-primary/40 hover:bg-primary-soft hover:text-primary"
               >
                 <Icon name="file" className="h-4 w-4" />
-                انتخاب فایل از دستگاه
+                {t("انتخاب فایل از دستگاه")}
               </button>
               <input
                 ref={inputRef}
                 type="file"
                 accept={ACCEPT}
                 className="hidden"
-                aria-label="آپلود فایل قرارداد"
+                aria-label={t("آپلود فایل قرارداد")}
                 onChange={(e) => {
                   pickFile(e.target.files?.[0]);
                   e.target.value = "";
@@ -153,7 +157,7 @@ export default function ContractReviewPage() {
 
             {ocrPct !== null && (
               <div className="rounded-xl border border-accent/30 bg-accent-soft/30 px-4 py-3 text-center">
-                <p className="text-sm font-bold text-accent-text">در حال خواندن متن عکس با هوش مصنوعی… {ocrPct}٪</p>
+                <p className="text-sm font-bold text-accent-text">{tt("در حال خواندن متن عکس با هوش مصنوعی… {pct}٪", { pct: String(ocrPct) })}</p>
                 <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
                   <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(5, ocrPct)}%` }} />
                 </div>
@@ -168,11 +172,11 @@ export default function ContractReviewPage() {
                 </span>
                 <div className="min-w-0 flex-1 text-right">
                   <p className="truncate text-sm font-bold text-foreground">{file.name}</p>
-                  <p className="text-xs text-muted">{(file.size / 1024).toFixed(0)} کیلوبایت</p>
+                  <p className="text-xs text-muted">{tt("{size} کیلوبایت", { size: (file.size / 1024).toFixed(0) })}</p>
                 </div>
                 <button
                   type="button"
-                  aria-label="حذف فایل"
+                  aria-label={t("حذف فایل")}
                   onClick={() => {
                     setFile(null);
                     setSourceName(null);
@@ -186,15 +190,15 @@ export default function ContractReviewPage() {
 
             <div className="flex items-center gap-2 text-xs text-muted">
               <span className="h-px flex-1 bg-border" />
-              یا متن قرارداد را درج کنید
+              {t("یا متن قرارداد را درج کنید")}
               <span className="h-px flex-1 bg-border" />
             </div>
 
-            <label htmlFor="cr" className="sr-only">متن قرارداد</label>
-            <textarea id="cr" value={text} onChange={(e) => setText(e.target.value)} rows={9} placeholder="متن قرارداد خود را اینجا قرار دهید…" className="w-full resize-y rounded-xl border border-border-strong bg-background p-3 text-sm leading-7 text-foreground outline-none transition-colors focus:border-primary" />
+            <label htmlFor="cr" className="sr-only">{t("متن قرارداد")}</label>
+            <textarea id="cr" value={text} onChange={(e) => setText(e.target.value)} rows={9} placeholder={t("متن قرارداد خود را اینجا قرار دهید…")} className="w-full resize-y rounded-xl border border-border-strong bg-background p-3 text-sm leading-7 text-foreground outline-none transition-colors focus:border-primary" />
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">{file ? (isImg ? "عکس انتخاب‌شده آماده تحلیل است" : "فایل انتخاب‌شده آماده تحلیل است") : `${text.length} کاراکتر`}</span>
-              <Button onClick={analyze} disabled={loading || (!file && !text.trim())} icon="file">{loading ? (isImg ? "در حال خواندن عکس و تحلیل…" : file ? "در حال تحلیل فایل…" : "در حال تحلیل…") : isImg ? "تحلیل عکس قرارداد" : file ? "تحلیل فایل قرارداد" : "تحلیل قرارداد"}</Button>
+              <span className="text-xs text-muted">{file ? (isImg ? t("عکس انتخاب‌شده آماده تحلیل است") : t("فایل انتخاب‌شده آماده تحلیل است")) : tt("{count} کاراکتر", { count: String(text.length) })}</span>
+              <Button onClick={analyze} disabled={loading || (!file && !text.trim())} icon="file">{loading ? (isImg ? t("در حال خواندن عکس و تحلیل…") : file ? t("در حال تحلیل فایل…") : t("در حال تحلیل…")) : isImg ? t("تحلیل عکس قرارداد") : file ? t("تحلیل فایل قرارداد") : t("تحلیل قرارداد")}</Button>
             </div>
           </Card>
 
@@ -206,9 +210,9 @@ export default function ContractReviewPage() {
                 {[
                   { v: result.findings.length, l: "مورد شناسایی‌شده" },
                   { v: result.findings.filter((f) => f.type === "risk").length, l: "بند پرریسک" },
-                  { v: result.riskScore === 0 ? "کم" : result.riskScore <= 2 ? "متوسط" : "زیاد", l: "سطح ریسک" },
+                  { v: result.riskScore === 0 ? t("کم") : result.riskScore <= 2 ? t("متوسط") : t("زیاد"), l: "سطح ریسک" },
                 ].map((s) => (
-                  <div key={s.l} className="rounded-2xl border border-border bg-surface p-4 text-center"><p className="text-2xl font-extrabold text-foreground">{s.v}</p><p className="text-xs text-muted">{s.l}</p></div>
+                  <div key={s.l} className="rounded-2xl border border-border bg-surface p-4 text-center"><p className="text-2xl font-extrabold text-foreground">{s.v}</p><p className="text-xs text-muted">{t(s.l)}</p></div>
                 ))}
               </div>
 
@@ -217,9 +221,9 @@ export default function ContractReviewPage() {
                   <div className="flex items-center gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary"><Icon name="sparkles" className="h-4 w-4" /></span>
                     <div>
-                      <p className="text-sm font-bold text-foreground">تحلیل هوش مصنوعی با استناد به مواد قانونی</p>
+                      <p className="text-sm font-bold text-foreground">{t("تحلیل هوش مصنوعی با استناد به مواد قانونی")}</p>
                       <p className="text-xs text-muted">
-                        {sourceName ? `فایل «${sourceName}» بررسی شد — ` : ""}دستیار دادبان بندهای قرارداد را با مستند قانونی بررسی کرد
+                        {sourceName ? tt("فایل «{name}» بررسی شد — ", { name: sourceName }) : ""}{t("دستیار دادبان بندهای قرارداد را با مستند قانونی بررسی کرد")}
                       </p>
                     </div>
                   </div>
@@ -234,8 +238,8 @@ export default function ContractReviewPage() {
                 </div>
               ))}
               <Card hover={false} className="bg-primary-soft/50 text-center">
-                <p className="text-sm text-foreground">برای رفع بندهای پرریسک و تنظیم نهایی، با وکیل مشورت کنید.</p>
-                <Button href="/consultation" className="mt-3" icon="user">دریافت مشاوره</Button>
+                <p className="text-sm text-foreground">{t("برای رفع بندهای پرریسک و تنظیم نهایی، با وکیل مشورت کنید.")}</p>
+                <Button href="/consultation" className="mt-3" icon="user">{t("دریافت مشاوره")}</Button>
               </Card>
             </div>
           )}

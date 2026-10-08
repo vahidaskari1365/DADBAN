@@ -7,6 +7,8 @@ import { Container, Button, Badge, Avatar } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { formatJalaliDateTime, relativeTimeJalali } from "@/lib/jalali";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * صفحه‌ی مشاوره زنده — دو نقش:
@@ -73,6 +75,8 @@ const INBOX_POLL_MS = 5_000;
 
 export default function LiveConsultationPage() {
   /* ─── انتخاب نقش ─── */
+  const t = useT();
+  const tf = templateT(t);
   const [mode, setMode] = useState<"client" | "lawyer">("client");
 
   /* ─── حالت موکل (تماس تصویری با کد) ─── */
@@ -160,11 +164,11 @@ export default function LiveConsultationPage() {
       <Container className="py-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold text-foreground">مشاوره زنده</h1>
-            <p className="text-xs text-muted">Room: {roomId} · نقش: موکل</p>
+            <h1 className="text-lg font-bold text-foreground">{t("مشاوره زنده")}</h1>
+            <p className="text-xs text-muted">Room: {roomId} · {t("نقش: موکل")}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => setStarted(false)}>
-            خروج
+            {t("خروج")}
           </Button>
         </div>
         <ConsultationClient roomId={roomId} role="client" name={name} />
@@ -185,10 +189,10 @@ export default function LiveConsultationPage() {
               <Avatar name={me.name} color={me.avatarColor} size="sm" />
             )}
             <div>
-              <h1 className="text-lg font-bold text-foreground">پنل وکیل — {me.name}</h1>
+              <h1 className="text-lg font-bold text-foreground">{tf("پنل وکیل — {name}", { name: me.name })}</h1>
               <p className="flex items-center gap-1.5 text-xs text-success">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-success" />
-                آنلاین هستید — در فهرست وکلای صفحه مشاوره سبز دیده می‌شوید
+                {t("آنلاین هستید — در فهرست وکلای صفحه مشاوره سبز دیده می‌شوید")}
               </p>
             </div>
           </div>
@@ -197,7 +201,7 @@ export default function LiveConsultationPage() {
             size="sm"
             onClick={() => { ping("offline"); setPanelOn(false); }}
           >
-            خروج و آفلاین شدن
+            {t("خروج و آفلاین شدن")}
           </Button>
         </div>
 
@@ -206,16 +210,16 @@ export default function LiveConsultationPage() {
           <div className="mb-3 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Icon name="calendar" className="h-4 w-4 text-primary" />
-              کارتابل درخواست‌های مشاوره
+              {t("کارتابل درخواست‌های مشاوره")}
             </h2>
             <Badge tone={requests.length ? "primary" : "neutral"} data-testid="requests-count">
-              {requests.length ? `${faNum(requests.length)} درخواست` : "بدون درخواست"}
+              {requests.length ? tf("{n} درخواست", { n: faNum(requests.length) }) : t("بدون درخواست")}
             </Badge>
           </div>
 
           {requests.length === 0 ? (
             <p className="rounded-xl border border-border bg-surface-2/50 px-4 py-5 text-center text-xs leading-6 text-muted">
-              هنوز درخواست مشاوره‌ای برای شما ثبت نشده. به‌محض ثبت و پرداخت، درخواست همین‌جا نمایش داده می‌شود.
+              {t("هنوز درخواست مشاوره‌ای برای شما ثبت نشده. به‌محض ثبت و پرداخت، درخواست همین‌جا نمایش داده می‌شود.")}
             </p>
           ) : (
             <>
@@ -226,7 +230,7 @@ export default function LiveConsultationPage() {
                   role="status"
                 >
                   <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0" />
-                  شما {faNum(paidCount)} درخواست مشاورهٔ پرداخت‌شده دارید — از طریق گفتگو یا هماهنگی با موکل پیگیری کنید.
+                  {tf("شما {n} درخواست مشاورهٔ پرداخت‌شده دارید — از طریق گفتگو یا هماهنگی با موکل پیگیری کنید.", { n: faNum(paidCount) })}
                 </p>
               )}
               <ul className="max-h-96 space-y-2 overflow-y-auto" data-testid="lawyer-requests">
@@ -245,19 +249,19 @@ export default function LiveConsultationPage() {
                         <span className="flex flex-wrap items-center gap-2 text-sm font-bold text-foreground">
                           <Icon name="user" className="h-4 w-4 shrink-0 text-primary" />
                           {rq.clientName}
-                          <Badge tone={st.tone}>{st.label}</Badge>
+                          <Badge tone={st.tone}>{t(st.label)}</Badge>
                         </span>
                         <span className="shrink-0 text-[10px] text-muted">{relativeTimeJalali(rq.createdAt)}</span>
                       </div>
                       <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
-                        <span>مشاورهٔ {TYPE_LABEL[rq.type]} · {faNum(rq.duration)} دقیقه</span>
+                        <span>{tf("مشاورهٔ {type} · {n} دقیقه", { type: TYPE_LABEL[rq.type], n: faNum(rq.duration) })}</span>
                         <span className="tnum font-bold text-foreground">
-                          {faNum(rq.price.toLocaleString("en-US"))} تومان
+                          {faNum(rq.price.toLocaleString("en-US"))} {t("تومان")}
                         </span>
                         {rq.startsAt ? (
-                          <span>نوبت: {formatJalaliDateTime(rq.startsAt)}</span>
+                          <span>{tf("نوبت: {d}", { d: formatJalaliDateTime(rq.startsAt) })}</span>
                         ) : (
-                          <span>زمان: هماهنگی توسط کارشناسان</span>
+                          <span>{t("زمان: هماهنگی توسط کارشناسان")}</span>
                         )}
                         <span dir="ltr" className="font-mono">{rq.phoneMasked}</span>
                       </p>
@@ -277,36 +281,36 @@ export default function LiveConsultationPage() {
           <div className="mb-3 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Icon name="chat" className="h-4 w-4 text-primary" />
-              صندوق گفتگوهای موکل‌ها
+              {t("صندوق گفتگوهای موکل‌ها")}
             </h2>
-            <Badge tone="neutral">{threads.length ? `${threads.length} گفتگو` : "بدون گفتگو"}</Badge>
+            <Badge tone="neutral">{threads.length ? tf("{n} گفتگو", { n: String(threads.length) }) : t("بدون گفتگو")}</Badge>
           </div>
 
           {threads.length === 0 ? (
             <p className="rounded-xl border border-border bg-surface-2/50 px-4 py-6 text-center text-xs leading-6 text-muted">
-              هنوز گفتگویی ندارید. با آنلاین بودن، گفتگوهای شروع‌شده از صفحه مشاوره همین‌جا نمایش داده می‌شود.
+              {t("هنوز گفتگویی ندارید. با آنلاین بودن، گفتگوهای شروع‌شده از صفحه مشاوره همین‌جا نمایش داده می‌شود.")}
             </p>
           ) : (
             <ul className="max-h-[55vh] space-y-2 overflow-y-auto" data-testid="lawyer-inbox">
-              {threads.map((t) => (
-                <li key={t.roomId}>
+              {threads.map((th) => (
+                <li key={th.roomId}>
                   <button
-                    onClick={() => setOpenThread(t)}
+                    onClick={() => setOpenThread(th)}
                     className="w-full cursor-pointer rounded-xl border border-border bg-surface-2/40 p-3 text-right transition-colors hover:border-primary/40 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-2 text-sm font-bold text-foreground">
                         <Icon name="user" className="h-4 w-4 text-primary" />
-                        {t.clientName}
-                        {t.lastSender === "client" && (
-                          <Badge tone="primary">پیام جدید</Badge>
+                        {th.clientName}
+                        {th.lastSender === "client" && (
+                          <Badge tone="primary">{t("پیام جدید")}</Badge>
                         )}
                       </span>
-                      <span className="shrink-0 text-[10px] text-muted">{relativeTimeJalali(t.lastAt)}</span>
+                      <span className="shrink-0 text-[10px] text-muted">{relativeTimeJalali(th.lastAt)}</span>
                     </div>
-                    <p className="mt-1 line-clamp-1 text-xs text-muted">{t.lastBody}</p>
+                    <p className="mt-1 line-clamp-1 text-xs text-muted">{th.lastBody}</p>
                     <p className="mt-1 text-[10px] text-muted">
-                      {formatJalaliDateTime(t.lastAt)} · {t.total} پیام
+                      {formatJalaliDateTime(th.lastAt)} · {th.total} {t("پیام")}
                     </p>
                   </button>
                 </li>
@@ -327,7 +331,7 @@ export default function LiveConsultationPage() {
         )}
 
         <p className="mt-4 text-center text-[11px] leading-5 text-muted">
-          تا وقتی این صفحه باز است، وضعیت شما «آنلاین» است. با بستن صفحه یا زدن «خروج»، آفلاین می‌شوید.
+          {t("تا وقتی این صفحه باز است، وضعیت شما «آنلاین» است. با بستن صفحه یا زدن «خروج»، آفلاین می‌شوید.")}
         </p>
       </Container>
     );
@@ -341,14 +345,14 @@ export default function LiveConsultationPage() {
           <span className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-soft text-primary">
             <Icon name="video" className="h-8 w-8" />
           </span>
-          <h1 className="text-xl font-bold text-foreground sm:text-2xl">مشاوره تصویری و متنی زنده</h1>
+          <h1 className="text-xl font-bold text-foreground sm:text-2xl">{t("مشاوره تصویری و متنی زنده")}</h1>
           <p className="mt-2 text-sm leading-7 text-muted">
-            موکل: با کد مشاوره وارد تماس شوید. وکیل: پنل خود را باز کنید تا آنلاین شوید و به گفتگوهای موکل‌ها پاسخ دهید.
+            {t("موکل: با کد مشاوره وارد تماس شوید. وکیل: پنل خود را باز کنید تا آنلاین شوید و به گفتگوهای موکل‌ها پاسخ دهید.")}
           </p>
         </div>
 
         {/* انتخاب نقش */}
-        <div className="mb-4 grid grid-cols-2 gap-2" role="group" aria-label="انتخاب نقش">
+        <div className="mb-4 grid grid-cols-2 gap-2" role="group" aria-label={t("انتخاب نقش")}>
           <button
             onClick={() => setMode("client")}
             aria-pressed={mode === "client"}
@@ -358,7 +362,7 @@ export default function LiveConsultationPage() {
                 : "border-border bg-surface text-foreground-soft hover:border-primary/40"
             }`}
           >
-            <Icon name="user" className="ml-1 inline h-4 w-4" /> موکل هستم
+            <Icon name="user" className="ml-1 inline h-4 w-4" /> {t("موکل هستم")}
           </button>
           <button
             onClick={() => setMode("lawyer")}
@@ -369,7 +373,7 @@ export default function LiveConsultationPage() {
                 : "border-border bg-surface text-foreground-soft hover:border-primary/40"
             }`}
           >
-            <Icon name="badge" className="ml-1 inline h-4 w-4" /> وکیل هستم
+            <Icon name="badge" className="ml-1 inline h-4 w-4" /> {t("وکیل هستم")}
           </button>
         </div>
 
@@ -377,22 +381,22 @@ export default function LiveConsultationPage() {
           {mode === "client" ? (
             <div className="space-y-4">
               <div>
-                <label htmlFor="lc-name" className="mb-1.5 block text-sm font-medium text-foreground">نام شما</label>
+                <label htmlFor="lc-name" className="mb-1.5 block text-sm font-medium text-foreground">{t("نام شما")}</label>
                 <input
                   id="lc-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="مثلاً: علی رضایی"
+                  placeholder={t("مثلاً: علی رضایی")}
                   className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
               <div>
-                <label htmlFor="lc-room" className="mb-1.5 block text-sm font-medium text-foreground">کد مشاوره (Room ID)</label>
+                <label htmlFor="lc-room" className="mb-1.5 block text-sm font-medium text-foreground">{t("کد مشاوره (Room ID)")}</label>
                 <input
                   id="lc-room"
                   value={roomId}
                   onChange={(e) => setRoomId(e.target.value)}
-                  placeholder="کد را از وکیل خود بگیرید"
+                  placeholder={t("کد را از وکیل خود بگیرید")}
                   className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
@@ -402,16 +406,18 @@ export default function LiveConsultationPage() {
                 icon="video"
                 className="w-full"
               >
-                ورود به مشاوره تصویری
+                {t("ورود به مشاوره تصویری")}
               </Button>
               <p className="text-center text-xs leading-6 text-muted">
-                برای گفتگوی متنی با وکیل، از <a href="/consultation" className="font-bold text-primary underline underline-offset-4">صفحه مشاوره</a> وکیل را انتخاب کنید.
+                {t("برای گفتگوی متنی با وکیل، از")}{" "}
+                <a href="/consultation" className="font-bold text-primary underline underline-offset-4">{t("صفحه مشاوره")}</a>{" "}
+                {t("وکیل را انتخاب کنید.")}
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               <div>
-                <label htmlFor="lc-profile" className="mb-1.5 block text-sm font-medium text-foreground">پروفایل وکیل خود را انتخاب کنید</label>
+                <label htmlFor="lc-profile" className="mb-1.5 block text-sm font-medium text-foreground">{t("پروفایل وکیل خود را انتخاب کنید")}</label>
                 <select
                   id="lc-profile"
                   value={mySlug}
@@ -419,9 +425,9 @@ export default function LiveConsultationPage() {
                   className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
                   data-testid="lawyer-profile-select"
                 >
-                  <option value="">انتخاب پروفایل…</option>
+                  <option value="">{t("انتخاب پروفایل…")}</option>
                   {lawyers.map((l) => (
-                    <option key={l.slug} value={l.slug}>{l.name} — {l.city}</option>
+                    <option key={l.slug} value={l.slug}>{l.name} — {t(l.city)}</option>
                   ))}
                 </select>
               </div>
@@ -432,10 +438,10 @@ export default function LiveConsultationPage() {
                 className="w-full"
                 data-testid="lawyer-panel-enter"
               >
-                ورود به پنل و آنلاین شدن
+                {t("ورود به پنل و آنلاین شدن")}
               </Button>
               <p className="text-center text-[11px] leading-5 text-muted">
-                با ورود، وضعیت شما در صفحه مشاوره «آنلاین» نمایش داده می‌شود و گفتگوهای موکل‌ها در صندوق شما می‌آید.
+                {t("با ورود، وضعیت شما در صفحه مشاوره «آنلاین» نمایش داده می‌شود و گفتگوهای موکل‌ها در صندوق شما می‌آید.")}
               </p>
             </div>
           )}

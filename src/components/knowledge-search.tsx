@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
 import { faNum, relativeTime } from "@/lib/data";
 
 export interface KnowledgeItem {
@@ -31,6 +32,7 @@ function normalizeFa(s: string): string {
 }
 
 export function KnowledgeSearch({ items }: { items: KnowledgeItem[] }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
 
@@ -62,15 +64,15 @@ export function KnowledgeSearch({ items }: { items: KnowledgeItem[] }) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            aria-label="جستجوی مقاله بر اساس موضوع"
-            placeholder="موضوع موردنظر را جستجو کنید؛ مثلاً مهریه، چک برگشتی، تقسیم ارث…"
+            aria-label={t("جستجوی مقاله بر اساس موضوع")}
+            placeholder={t("موضوع موردنظر را جستجو کنید؛ مثلاً مهریه، چک برگشتی، تقسیم ارث…")}
             className="w-full rounded-2xl border border-border-strong bg-surface py-3.5 pl-4 pr-12 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-primary"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery("")}
-              aria-label="پاک کردن جستجو"
+              aria-label={t("پاک کردن جستجو")}
               className="absolute left-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
             >
               <Icon name="x" className="h-4 w-4" />
@@ -88,7 +90,7 @@ export function KnowledgeSearch({ items }: { items: KnowledgeItem[] }) {
                 : "border-border bg-surface text-foreground-soft hover:border-primary/40"
             }`}
           >
-            همه
+            {t("همه")}
           </button>
           {categories.map((c) => (
             <button
@@ -111,15 +113,17 @@ export function KnowledgeSearch({ items }: { items: KnowledgeItem[] }) {
       {filtered.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border-strong bg-surface p-10 text-center">
           <Icon name="search" className="mx-auto h-8 w-8 text-muted" />
-          <p className="mt-3 text-sm font-bold text-foreground">موردی یافت نشد</p>
+          <p className="mt-3 text-sm font-bold text-foreground">{t("موردی یافت نشد")}</p>
           <p className="mt-1 text-xs text-muted">
-            با عبارت دیگری جستجو کنید یا فیلتر دسته‌بندی را بردارید.
+            {t("با عبارت دیگری جستجو کنید یا فیلتر دسته‌بندی را بردارید.")}
           </p>
         </div>
       ) : (
         <>
           <p className="mb-3 text-xs text-muted" aria-live="polite">
-            {faNum(filtered.length)} مقاله {query || category ? "یافت شد" : ""}
+            {query || category
+              ? t("{n} مقاله یافت شد").replace("{n}", faNum(filtered.length))
+              : `${faNum(filtered.length)} ${t("مقاله")}`}
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((a) => (

@@ -37,4 +37,25 @@ export const makeT =
   (fa: string) =>
     locale === "fa" ? fa : (DICTS[locale]?.[fa] ?? fa);
 
+export type TTemplateFn = (
+  template: string,
+  params: Record<string, string>,
+) => string;
+
+/**
+ * ترجمهٔ قالب‌های مرکب (مثل «وکیل {sp} در {city}») —
+ * اول خود قالب ترجمه می‌شود (کلیدش در واژه‌نامه است) و بعد هر پارامتر با
+ * ترجمهٔ مقدارش جایگزین می‌شود. در زبان‌های LTR ترتیب جایگزینی از خودِ
+ * ترجمهٔ قالب می‌آید و به جهت متن دست نمی‌زنیم.
+ */
+export const templateT =
+  (t: TFn): TTemplateFn =>
+  (template, params) => {
+    let out = t(template);
+    for (const [k, v] of Object.entries(params)) {
+      out = out.split(`{${k}}`).join(t(v));
+    }
+    return out;
+  };
+
 import { DICTS } from "./dicts";

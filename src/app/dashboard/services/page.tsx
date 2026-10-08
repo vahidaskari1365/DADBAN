@@ -13,11 +13,18 @@ import { getCurrentUser } from "@/lib/user-auth";
 import { StatusBadge, UrgencyBadge } from "@/components/managed";
 import { nextBestAction, faNumSafe } from "@/lib/managed-labels";
 import { isOperative } from "@/lib/managed-services";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { tdyn } from "@/lib/i18n/dynamic";
 
-export const metadata: Metadata = { title: "خدمات من — دادبان" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t("خدمات من — دادبان") };
+}
 export const dynamic = "force-dynamic";
 
 export default async function MyServices() {
+  const t = await getT();
+  const locale = await getServerLocale();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -39,32 +46,41 @@ export default async function MyServices() {
     /* degraded */
   }
 
+  // ترجمهٔ محتوای DB (عنوان خدمت کاتالوگ و موضوع درخواست) برای زبان‌های غیرفارسی
+  const rowsView = await Promise.all(
+    rows.map(async (r) => ({
+      ...r,
+      titleT: r.title ? await tdyn(locale, r.title, 300) : r.title,
+      reqTitleT: r.req.title ? await tdyn(locale, r.req.title, 300) : r.req.title,
+    })),
+  );
+
   const nav = [
-    { label: "نمای کلی", icon: "home" as IconKey, href: isOperative(user.role) ? "/dashboard/lawyer" : "/dashboard/client" },
-    { label: "پرونده‌های من", icon: "folder" as IconKey, href: "/dashboard/cases" },
-    { label: "خدمات من", icon: "briefcase" as IconKey, active: true, href: "/dashboard/services" },
-    { label: "اسناد و مدارک", icon: "document" as IconKey, href: "/dashboard/documents" },
-    { label: "رزرو مشاوره", icon: "calendar" as IconKey, href: "/consultation" },
-    { label: "پیام‌ها", icon: "mail" as IconKey, href: "/support" },
+    { label: t("نمای کلی"), icon: "home" as IconKey, href: isOperative(user.role) ? "/dashboard/lawyer" : "/dashboard/client" },
+    { label: t("پرونده‌های من"), icon: "folder" as IconKey, href: "/dashboard/cases" },
+    { label: t("خدمات من"), icon: "briefcase" as IconKey, active: true, href: "/dashboard/services" },
+    { label: t("اسناد و مدارک"), icon: "document" as IconKey, href: "/dashboard/documents" },
+    { label: t("رزرو مشاوره"), icon: "calendar" as IconKey, href: "/consultation" },
+    { label: t("پیام‌ها"), icon: "mail" as IconKey, href: "/support" },
   ];
 
   return (
     <DashboardShell
       role={isOperative(user.role) ? "وکیل" : "موکل"}
-      title="خدمات من"
+      title={t("خدمات من")}
       name={user.name}
-      back={{ fallback: isOperative(user.role) ? "/dashboard/lawyer" : "/dashboard/client", label: "بازگشت به داشبورد" }}
+      back={{ fallback: isOperative(user.role) ? "/dashboard/lawyer" : "/dashboard/client", label: t("بازگشت به داشبورد") }}
       nav={nav}
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm leading-7 text-muted">درخواست‌های پیگیری و انجام امور خود را اینجا مدیریت کنید.</p>
-        <Button href="/services" icon="plus" variant="primary" className="shrink-0">ثبت درخواست جدید</Button>
+        <p className="text-sm leading-7 text-muted">{t("درخواست‌های پیگیری و انجام امور خود را اینجا مدیریت کنید.")}</p>
+        <Button href="/services" icon="plus" variant="primary" className="shrink-0">{t("ثبت درخواست جدید")}</Button>
       </div>
 
       <div className="mt-6">
         {rows.length ? (
           <div className="space-y-3">
-            {rows.map((r) => {
+            {rowsView.map((r) => {
               const na = nextBestAction(r.req);
               return (
                 <Link key={r.req.id} href={`/dashboard/services/${r.req.id}`} className="block">
@@ -74,13 +90,13 @@ export default async function MyServices() {
                         <Icon name={(r.icon as IconKey) ?? "briefcase"} className="h-5 w-5" />
                       </span>
                       <div>
-                        <p className="font-bold text-foreground">{r.title ?? "خدمت"}</p>
+                        <p className="font-bold text-foreground">{r.titleT ?? t("خدمت")}</p>
                         {/* موضوع واقعی درخواست — همان‌طور که موکل نوشته */}
                         {r.req.title && r.req.title !== r.title && (
-                          <p className="mt-0.5 text-sm font-bold text-foreground">{r.req.title}</p>
+                          <p className="mt-0.5 text-sm font-bold text-foreground">{r.reqTitleT}</p>
                         )}
                         <p className="text-xs text-muted" dir="ltr">{r.req.requestNumber}</p>
-                        <p className="mt-1 text-sm text-muted">{na.label}</p>
+                        <p className="mt-1 text-sm text-muted">{t(na.label)}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -95,8 +111,8 @@ export default async function MyServices() {
         ) : (
           <Card hover={false} className="text-center">
             <Icon name="briefcase" className="mx-auto h-10 w-10 text-muted" />
-            <p className="mt-3 text-sm text-muted">هنوز درخواستی ثبت نکرده‌اید.</p>
-            <Button href="/services" icon="plus" className="mt-4">مشاهده خدمات</Button>
+            <p className="mt-3 text-sm text-muted">{t("هنوز درخواستی ثبت نکرده‌اید.")}</p>
+            <Button href="/services" icon="plus" className="mt-4">{t("مشاهده خدمات")}</Button>
           </Card>
         )}
       </div>

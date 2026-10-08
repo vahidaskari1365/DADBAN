@@ -504,7 +504,7 @@ export const en: Record<string, string> = {
   "نوع حساب": "Account type",
   "نوع عضویت وکیل": "Lawyer membership type",
   "نوع:": "Type:",
-  "نگران هزینهٔ حق‌الوکاله نیستید؟": "Worried about attorney fees?",
+  "نگران هزینهٔ حق‌الوکاله نباشید": "Don't worry about attorney fees",
   "هر بخش سایت، یک‌جا در دسترس": "Every part of the site, one place",
   "همه خدمات دادبان": "All DADBAN services",
   "همکار یا تخصص موردنظر را نیافتید؟": "Didn't find the peer or specialty you need?",

@@ -6,30 +6,56 @@ import { Container, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { AskForm } from "@/components/ask-form";
 import { faNum } from "@/lib/data";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { makeT } from "@/lib/i18n/core";
+import { tdyn } from "@/lib/i18n/dynamic";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "پرسش و پاسخ حقوقی",
-  description:
-    "پاسخ وکلای متخصص به پرسش‌های رایج حقوقی: چک برگشتی، طلاق، ملک، قرارداد، کلاهبرداری و ارث. سؤال خود را بپرسید.",
-  alternates: { canonical: "/qa" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  // metadata با زبان جاری ساخته می‌شود (fallback: فارسی)
+  const st = makeT(await getServerLocale());
+  return {
+    title: st("پرسش و پاسخ حقوقی"),
+    description: st(
+      "پاسخ وکلای متخصص به پرسش‌های رایج حقوقی: چک برگشتی، طلاق، ملک، قرارداد، کلاهبرداری و ارث. سؤال خود را بپرسید.",
+    ),
+    alternates: { canonical: "/qa" },
+  };
+}
 
 export default async function QaPage() {
+  const t = await getT();
+  const locale = await getServerLocale();
   let all: typeof qaQuestions.$inferSelect[] = [];
   try {
     all = await db.select().from(qaQuestions).orderBy(desc(qaQuestions.helpful));
   } catch (err) {
     console.error("[dadban] qa list query failed:", err);
   }
-  const categories = Array.from(new Set(all.map((q) => q.category)));
+
+  // ترجمهٔ سؤال/شرح/پاسخ/دسته/نام‌ونشان وکیل برای زبان غیرفارسی (موازی)
+  const rows = await Promise.all(
+    all.map(async (q) => {
+      if (locale === "fa") return q;
+      const [question, body, answer, category, lawyerName, lawyerTitle] = await Promise.all([
+        tdyn(locale, q.question, 400),
+        q.body ? tdyn(locale, q.body, 800) : Promise.resolve(q.body),
+        tdyn(locale, q.answer, 1200),
+        tdyn(locale, q.category, 200),
+        tdyn(locale, q.lawyerName, 200),
+        tdyn(locale, q.lawyerTitle, 200),
+      ]);
+      return { ...q, question, body, answer, category, lawyerName, lawyerTitle };
+    }),
+  );
+  const categories = Array.from(new Set(rows.map((q) => q.category)));
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: all.map((q) => ({
+    mainEntity: rows.map((q) => ({
       "@type": "Question",
       name: q.question,
       acceptedAnswer: { "@type": "Answer", text: q.answer, author: { "@type": "Person", name: q.lawyerName } },
@@ -41,13 +67,13 @@ export default async function QaPage() {
       <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
         <Container>
           <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">خانه</Link>
+            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
             <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">پرسش و پاسخ</span>
+            <span className="text-foreground-soft">{t("پرسش و پاسخ")}</span>
           </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">پرسش و پاسخ حقوقی</h1>
+          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("پرسش و پاسخ حقوقی")}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            پاسخ وکلای متخصص دادبان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.
+            {t("پاسخ وکلای متخصص دادبان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.")}
           </p>
         </Container>
       </section>
@@ -60,7 +86,7 @@ export default async function QaPage() {
             ))}
           </div>
 
-          {all.map((q) => (
+          {rows.map((q) => (
             <div
               key={q.slug}
               id={q.slug}
@@ -85,14 +111,14 @@ export default async function QaPage() {
                     <p className="text-xs font-bold text-foreground">{q.lawyerName}</p>
                     <p className="text-[11px] text-muted">{q.lawyerTitle}</p>
                   </div>
-                  {q.verified && <Badge tone="success" icon="badge">تأییدشده</Badge>}
+                  {q.verified && <Badge tone="success" icon="badge">{t("تأییدشده")}</Badge>}
                 </div>
                 <p className="mt-3 text-sm leading-7 text-foreground-soft">{q.answer}</p>
               </div>
 
               <div className="mt-3 flex items-center gap-4 text-xs text-muted">
-                <span className="inline-flex items-center gap-1"><Icon name="star" className="h-3.5 w-3.5 text-accent-text" /> {faNum(q.helpful)} مفید</span>
-                <span className="inline-flex items-center gap-1"><Icon name="book" className="h-3.5 w-3.5" /> {faNum(q.views.toLocaleString("en-US"))} بازدید</span>
+                <span className="inline-flex items-center gap-1"><Icon name="star" className="h-3.5 w-3.5 text-accent-text" /> {faNum(q.helpful)} {t("مفید")}</span>
+                <span className="inline-flex items-center gap-1"><Icon name="book" className="h-3.5 w-3.5" /> {faNum(q.views.toLocaleString("en-US"))} {t("بازدید")}</span>
                 <Badge tone="neutral">{q.category}</Badge>
               </div>
             </div>
@@ -103,11 +129,11 @@ export default async function QaPage() {
           <AskForm />
           <div className="rounded-2xl border border-border bg-primary-soft/50 p-5">
             <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Icon name="bolt" className="h-4 w-4 text-accent-text" /> پاسخ فوری می‌خواهید؟
+              <Icon name="bolt" className="h-4 w-4 text-accent-text" /> {t("پاسخ فوری می‌خواهید؟")}
             </h3>
-            <p className="mt-1.5 text-xs leading-5 text-muted">برای پاسخ آنی و تخصصی، مشاوره آنلاین رزرو کنید.</p>
+            <p className="mt-1.5 text-xs leading-5 text-muted">{t("برای پاسخ آنی و تخصصی، مشاوره آنلاین رزرو کنید.")}</p>
             <Link href="/consultation" className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover">
-              <Icon name="chat" className="h-4 w-4" /> رزرو مشاوره آنلاین
+              <Icon name="chat" className="h-4 w-4" /> {t("رزرو مشاوره آنلاین")}
             </Link>
           </div>
         </aside>

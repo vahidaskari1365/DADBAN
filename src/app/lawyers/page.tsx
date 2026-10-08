@@ -12,7 +12,9 @@ import { StickyCta } from "@/components/amazon/sticky-cta";
 import { LOCATIONS, faNum } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
-import { getT } from "@/lib/i18n/server";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { makeT, templateT } from "@/lib/i18n/core";
+import { tdyn } from "@/lib/i18n/dynamic";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -25,16 +27,30 @@ export async function generateMetadata({
   const sp = await searchParams;
   const specialty = sp.sp;
   const city = sp.city;
+  const locale = await getServerLocale();
+  const st = makeT(locale);
+  const tf = templateT(st);
+  const isProvince = city ? LOCATIONS.some((l) => l.province === city) : false;
   const title = specialty
     ? city
-      ? `وکیل ${specialty} در ${city}`
-      : `وکیل ${specialty}`
+      ? isProvince
+        ? tf("وکیل {sp} در استان {city}", { sp: specialty, city })
+        : tf("وکیل {sp} در {city}", { sp: specialty, city })
+      : tf("وکیل {sp}", { sp: specialty })
     : city
-      ? `وکیل در ${city}`
-      : "جستجوی وکیل متخصص";
+      ? isProvince
+        ? tf("وکیل در استان {city}", { city })
+        : tf("وکیل در {city}", { city })
+      : st("جستجوی وکیل متخصص");
+  const description =
+    [st("جستجو و رزرو وکیل"), specialty ? tf("متخصص {sp}", { sp: specialty }) : "", city ? tf("در شهر {city}", { city }) : ""]
+      .filter(Boolean)
+      .join(" ") +
+    ". " +
+    st("احراز هویت‌شده، با امتیاز کاربران و رزرو آنلاین مشاوره.");
   return {
     title,
-    description: `جستجو و رزرو وکیل${specialty ? ` متخصص ${specialty}` : ""}${city ? ` در شهر ${city}` : ""}. احراز هویت‌شده، با امتیاز کاربران و رزرو آنلاین مشاوره.`,
+    description,
     alternates: { canonical: "/lawyers" },
   };
 }
@@ -46,6 +62,9 @@ export default async function LawyersPage({
 }) {
   const params = await searchParams;
   const t = await getT();
+  const locale = await getServerLocale();
+  const st = makeT(locale);
+  const tf = templateT(t);
   const { sp, city, gender, sort, q, type } = params;
   // فیلتر نوع وکیل: همه | وکیل رسمی (wakil) | کارآموز (karamooz) — سمت سرور روی ستون lawyer_type
   const typeFilter = type === "karamooz" || type === "wakil" ? type : null;
@@ -94,6 +113,19 @@ export default async function LawyersPage({
 
   const isProvince = city ? LOCATIONS.some((l) => l.province === city) : false;
 
+  // ترجمهٔ داینامیک فیلدهای وکلا پیش از رسیدن به کارت‌ها (کارت کلاینت است):
+  // نام/عنوان با tdyn (کش سه‌لایه) — شهر/استان/تخصص با واژه‌نامهٔ ایستا
+  list = await Promise.all(
+    list.map(async (l) => ({
+      ...l,
+      name: await tdyn(locale, l.name, 300),
+      title: await tdyn(locale, l.title, 300),
+      city: st(l.city),
+      province: st(l.province),
+      specialties: l.specialties.map((s) => st(s)),
+    })),
+  );
+
   /** لینک چیپ فیلتر نوع — بقیهٔ فیلترهای فعال حفظ می‌شوند */
   const typeHref = (t: string) => {
     const qs = new URLSearchParams();
@@ -114,18 +146,31 @@ export default async function LawyersPage({
 
   const heading = sp
     ? city
-      ? `وکیل ${sp} در ${isProvince ? `استان ${city}` : city}`
-      : `وکیل ${sp}`
+      ? isProvince
+        ? tf("وکیل {sp} در استان {city}", { sp, city })
+        : tf("وکیل {sp} در {city}", { sp, city })
+      : tf("وکیل {sp}", { sp })
     : city
-      ? `وکیل در ${isProvince ? `استان ${city}` : city}`
-      : "همه وکلا";
+      ? isProvince
+        ? tf("وکیل در استان {city}", { city })
+        : tf("وکیل در {city}", { city })
+      : t("همه وکلا");
 
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
-      { "@type": "Question", name: `چگونه وکیل${sp ? ` ${sp}` : ""} پیدا کنم؟`, acceptedAnswer: { "@type": "Answer", text: `از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل${sp ? ` ${sp}` : ""} مناسب پیدا و مشاوره رزرو کنید.` } },
-      { "@type": "Question", name: "آیا وکلای دادبان احراز هویت شده‌اند؟", acceptedAnswer: { "@type": "Answer", text: "بله، هویت و پروانه همه وکلا توسط کارشناسان دادبان راستی‌آزمایی می‌شود." } },
+      {
+        "@type": "Question",
+        name: sp ? tf("چگونه وکیل {sp} پیدا کنم؟", { sp }) : t("چگونه وکیل پیدا کنم؟"),
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: sp
+            ? tf("از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل {sp} مناسب پیدا و مشاوره رزرو کنید.", { sp })
+            : t("از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل مناسب پیدا و مشاوره رزرو کنید."),
+        },
+      },
+      { "@type": "Question", name: t("آیا وکلای دادبان احراز هویت شده‌اند؟"), acceptedAnswer: { "@type": "Answer", text: t("بله، هویت و پروانه همه وکلا توسط کارشناسان دادبان راستی‌آزمایی می‌شود.") } },
     ],
   };
 
@@ -139,7 +184,7 @@ export default async function LawyersPage({
             <span className="text-foreground-soft">{t("وکیل‌یابی")}</span>
           </nav>
           <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">
-            {lawyerSide ? (sp || city ? heading : t("دایرکتوری وکلا — جستجوی همکاران")) : t(heading)}
+            {lawyerSide ? (sp || city ? heading : t("دایرکتوری وکلا — جستجوی همکاران")) : heading}
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
             {lawyerSide

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { trackEvent } from "@/lib/analytics";
+import { useT } from "@/lib/i18n/provider";
 import { ConsultLawyerDirectory } from "@/components/consultation/consult-lawyer-directory";
 import { ConsultChatPanel } from "@/components/consultation/consult-chat-panel";
 
@@ -25,6 +26,7 @@ interface DirectoryLawyer {
  */
 export default function ConsultationPage() {
   const router = useRouter();
+  const t = useT();
   const [chatLawyer, setChatLawyer] = useState<DirectoryLawyer | null>(null);
 
   // «رزرو مشاوره» روی کارت وکیل → صفحهٔ اختصاصی رزرو با پیش‌پر کردن وکیل
@@ -37,14 +39,14 @@ export default function ConsultationPage() {
     <>
       <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
         <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted" aria-label="مسیر صفحه">
-            <Link href="/" className="hover:text-primary">خانه</Link>
+          <nav className="flex items-center gap-1.5 text-xs text-muted" aria-label={t("مسیر صفحه")}>
+            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
             <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">مشاوره حقوقی</span>
+            <span className="text-foreground-soft">{t("مشاوره حقوقی")}</span>
           </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">رزرو مشاوره حقوقی آنلاین</h1>
+          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("رزرو مشاوره حقوقی آنلاین")}</h1>
           <p className="mt-2 text-sm leading-7 text-muted">
-            وکیل متخصص خود را انتخاب کنید؛ وضعیت آنلاین بودن وکلا واقعی است — همین‌جا گفتگو کنید یا نوبت مشاوره بگیرید.
+            {t("وکیل متخصص خود را انتخاب کنید؛ وضعیت آنلاین بودن وکلا واقعی است — همین‌جا گفتگو کنید یا نوبت مشاوره بگیرید.")}
           </p>
         </Container>
       </section>

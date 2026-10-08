@@ -14,12 +14,17 @@ import { ensureProfileSchema } from "@/lib/auto-seed";
 import { nextActionForCase, CASE_STATUS_FA, CASE_STAGE_FLOW } from "@/lib/case-facts";
 import DocumentsManager from "@/components/documents-manager";
 import { FeeCard } from "@/components/fee/fee-card";
-import { getT } from "@/lib/i18n/server";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { tdyn } from "@/lib/i18n/dynamic";
+import { templateT } from "@/lib/i18n/core";
 import Link from "next/link";
-export const metadata: Metadata = {
-  title: "پنل موکل — داشبورد حقوقی من",
-  description: "مدیریت پرونده‌ها، مشاوره‌ها، اسناد، قراردادها، پرداخت‌ها و پیام‌های شما.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("پنل موکل — داشبورد حقوقی من"),
+    description: t("مدیریت پرونده‌ها، مشاوره‌ها، اسناد، قراردادها، پرداخت‌ها و پیام‌های شما."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 type Tone = "primary" | "accent" | "success" | "neutral";
@@ -42,6 +47,8 @@ function IconChip({ icon, tone, size = "md" }: { icon: IconKey; tone: Tone; size
 
 export default async function ClientDashboard() {
   const t = await getT();
+  const tf = templateT(t);
+  const locale = await getServerLocale();
   await ensureProfileSchema();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -67,7 +74,7 @@ export default async function ClientDashboard() {
     { label: t("مشاوره‌های من"), value: faNum(myConsults.length), icon: "chat", tone: "accent", href: "/consultation" },
     { label: t("تیکت‌های پشتیبانی"), value: faNum(myTickets.length), icon: "mail", tone: "success", href: "/support" },
     {
-      label: user.province ? `${t("استان شما")}: ${user.province}` : t("استان شما"),
+      label: user.province ? tf("استان شما: {p}", { p: user.province }) : t("استان شما"),
       value: user.province ? "✓" : t("تنظیم کنید"),
       icon: "location",
       tone: "neutral",
@@ -103,8 +110,17 @@ export default async function ClientDashboard() {
   const recentItems = [
     ...myCases.map((c) => ({ kind: "پرونده", title: c.subject, meta: c.caseNumber + " • " + c.city, tone: "primary" as const })),
     ...myConsults.map((c) => ({ kind: "مشاوره", title: c.subject, meta: c.type + " • " + c.status, tone: "accent" as const })),
-    ...myTickets.map((t) => ({ kind: "تیکت", title: t.message.slice(0, 60), meta: t.ticketNumber + " • " + t.status, tone: "neutral" as const })),
+    ...myTickets.map((tk) => ({ kind: "تیکت", title: tk.message.slice(0, 60), meta: tk.ticketNumber + " • " + tk.status, tone: "neutral" as const })),
   ].slice(0, 6);
+
+  // ترجمهٔ محتوای DB (موضوع/شهر پرونده) برای زبان‌های غیرفارسی — قبل از رندر
+  const myCasesView = await Promise.all(
+    myCases.map(async (c) => ({
+      ...c,
+      subjectT: await tdyn(locale, c.subject, 300),
+      cityT: await tdyn(locale, c.city, 120),
+    })),
+  );
 
   return (
     <DashboardShell
@@ -205,20 +221,20 @@ export default async function ClientDashboard() {
             <Link href="/case/new" className="text-xs font-medium text-primary hover:text-primary-hover">{t("+ پرونده جدید")}</Link>
           </div>
           <div className="mt-4 space-y-3">
-            {myCases.length > 0 ? myCases.map((c) => {
+            {myCasesView.length > 0 ? myCasesView.map((c) => {
               const idx = CASE_STAGE_FLOW.indexOf(c.stage as (typeof CASE_STAGE_FLOW)[number]);
               const stageIdx = idx === -1 ? 0 : idx;
               const pct = Math.round(((stageIdx + 1) / CASE_STAGE_FLOW.length) * 100);
               return (
                 <Link key={c.id} href={`/dashboard/cases/${c.caseNumber}`} className="block rounded-xl border border-border p-3 transition-colors hover:border-primary/30 hover:bg-surface-2/60">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-bold text-foreground">{c.subject}</p>
+                    <p className="truncate text-sm font-bold text-foreground">{c.subjectT}</p>
                     <span className="shrink-0 font-mono text-xs text-muted" dir="ltr">{c.caseNumber}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <Badge tone="primary">{t(c.stage)}</Badge>
                     <Badge tone="success">{t(CASE_STATUS_FA[c.status] ?? c.status)}</Badge>
-                    <span className="mr-auto text-xs text-muted">{c.city}</span>
+                    <span className="mr-auto text-xs text-muted">{c.cityT}</span>
                   </div>
                   <div className="mt-3">
                     <div className="flex items-center justify-between text-[11px] font-medium text-muted">

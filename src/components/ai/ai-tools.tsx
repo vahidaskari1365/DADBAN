@@ -3,6 +3,8 @@
 import { useCallback, useRef, useState } from "react";
 import { Button, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 import type { IconKey } from "@/lib/data";
 
 /* ============================================================
@@ -30,6 +32,8 @@ function Spinner({ label }: { label: string }) {
 /* ─── ۱) تحلیل سند با بینایی ماشین ─────────────────────────────────────── */
 
 function VisionTool() {
+  const t = useT();
+  const tt = templateT(t);
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
   const [question, setQuestion] = useState("");
@@ -42,12 +46,12 @@ function VisionTool() {
   const readFile = useCallback((file: File) => {
     setError("");
     setResult("");
-    if (!file.type.startsWith("image/")) { setError("لطفاً یک فایل تصویری انتخاب کنید."); return; }
-    if (file.size > 7 * 1024 * 1024) { setError("حجم تصویر باید کمتر از ۷ مگابایت باشد."); return; }
+    if (!file.type.startsWith("image/")) { setError(t("لطفاً یک فایل تصویری انتخاب کنید.")); return; }
+    if (file.size > 7 * 1024 * 1024) { setError(t("حجم تصویر باید کمتر از ۷ مگابایت باشد.")); return; }
     const reader = new FileReader();
     reader.onload = () => { setImage(String(reader.result)); setFileName(file.name); };
     reader.readAsDataURL(file);
-  }, []);
+  }, [t]);
 
   async function analyze() {
     if (!image || loading) return;
@@ -60,9 +64,9 @@ function VisionTool() {
       });
       const data = await res.json();
       if (data?.ok) setResult(String(data.analysis));
-      else setError(data?.error ?? "تحلیل ناموفق بود. دوباره تلاش کنید.");
+      else setError(data?.error ?? t("تحلیل ناموفق بود. دوباره تلاش کنید."));
     } catch {
-      setError("ارتباط با سرور برقرار نشد.");
+      setError(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setLoading(false);
     }
@@ -74,7 +78,7 @@ function VisionTool() {
         <div
           role="button"
           tabIndex={0}
-          aria-label="بارگذاری تصویر سند"
+          aria-label={t("بارگذاری تصویر سند")}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") inputRef.current?.click(); }}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
@@ -85,30 +89,30 @@ function VisionTool() {
           {image ? (
             <div className="w-full space-y-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={image} alt={`پیش‌نمایش سند: ${fileName}`} className="mx-auto max-h-64 rounded-xl border border-border object-contain" />
+              <img src={image} alt={tt("پیش‌نمایش سند: {name}", { name: fileName })} className="mx-auto max-h-64 rounded-xl border border-border object-contain" />
               <p className="truncate text-xs text-muted">{fileName}</p>
             </div>
           ) : (
             <>
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-soft text-primary"><Icon name="document" className="h-6 w-6" /></span>
-              <p className="text-sm font-semibold text-foreground">تصویر سند را اینجا بکشید یا کلیک کنید</p>
-              <p className="text-xs text-muted">دادخواست، ابلاغیه، چک، قرارداد، سند — PNG یا JPEG تا ۷ مگابایت</p>
+              <p className="text-sm font-semibold text-foreground">{t("تصویر سند را اینجا بکشید یا کلیک کنید")}</p>
+              <p className="text-xs text-muted">{t("دادخواست، ابلاغیه، چک، قرارداد، سند — PNG یا JPEG تا ۷ مگابایت")}</p>
             </>
           )}
         </div>
         <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) readFile(f); }} />
 
-        <label htmlFor="vision-question" className="block text-sm font-semibold text-foreground">سؤال اختیاری از سند</label>
+        <label htmlFor="vision-question" className="block text-sm font-semibold text-foreground">{t("سؤال اختیاری از سند")}</label>
         <textarea
           id="vision-question"
           value={question}
           onChange={(e) => setQuestion(e.target.value.slice(0, 500))}
           rows={3}
-          placeholder="مثلاً: مهلت اعتراض در این ابلاغیه چقدر است؟"
+          placeholder={t("مثلاً: مهلت اعتراض در این ابلاغیه چقدر است؟")}
           className="w-full resize-none rounded-xl border border-border bg-surface p-3.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
         />
         <Button onClick={analyze} disabled={!image || loading} icon="sparkles" className="w-full">
-          {loading ? "در حال تحلیل…" : "تحلیل سند"}
+          {loading ? t("در حال تحلیل…") : t("تحلیل سند")}
         </Button>
         {error && <p className="rounded-xl bg-danger/10 p-3 text-sm text-danger">{error}</p>}
       </div>
@@ -116,17 +120,17 @@ function VisionTool() {
       <div>
         <Card className="min-h-56" hover={false}>
           {loading ? (
-            <div className="flex h-full min-h-56 items-center justify-center"><Spinner label="هوش مصنوعی در حال مطالعه‌ی سند است…" /></div>
+            <div className="flex h-full min-h-56 items-center justify-center"><Spinner label={t("هوش مصنوعی در حال مطالعه‌ی سند است…")} /></div>
           ) : result ? (
             <div className="space-y-3">
-              <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="sparkles" className="h-4 w-4 text-accent-text" /> تحلیل هوش مصنوعی</h4>
+              <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="sparkles" className="h-4 w-4 text-accent-text" /> {t("تحلیل هوش مصنوعی")}</h4>
               <p className="whitespace-pre-wrap text-sm leading-7 text-foreground-soft">{result}</p>
             </div>
           ) : (
             <div className="flex h-full min-h-56 flex-col items-center justify-center gap-2 text-center text-muted">
               <Icon name="file" className="h-8 w-8 opacity-40" />
-              <p className="text-sm">تحلیل سند اینجا نمایش داده می‌شود</p>
-              <p className="text-xs text-muted-soft">نوع سند، طرفین، ریسک‌ها، مواد قانونی مرتبط و اقدام پیشنهادی</p>
+              <p className="text-sm">{t("تحلیل سند اینجا نمایش داده می‌شود")}</p>
+              <p className="text-xs text-muted-soft">{t("نوع سند، طرفین، ریسک‌ها، مواد قانونی مرتبط و اقدام پیشنهادی")}</p>
             </div>
           )}
         </Card>
@@ -140,6 +144,7 @@ function VisionTool() {
 type SearchHit = { title: string; url: string; snippet: string; host: string; date: string };
 
 function SearchTool() {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -157,9 +162,9 @@ function SearchTool() {
       });
       const data = await res.json();
       if (data?.ok) setHits(data.results ?? []);
-      else setError(data?.error ?? "جستجو ناموفق بود.");
+      else setError(data?.error ?? t("جستجو ناموفق بود."));
     } catch {
-      setError("ارتباط با سرور برقرار نشد.");
+      setError(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setLoading(false);
     }
@@ -176,20 +181,20 @@ function SearchTool() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="مثلاً: مهلت واخواهی چقدر است؟"
-          aria-label="عبارت جستجو"
+          placeholder={t("مثلاً: مهلت واخواهی چقدر است؟")}
+          aria-label={t("عبارت جستجو")}
           className="h-12 flex-1 rounded-xl border border-border bg-surface px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
         />
-        <Button type="submit" disabled={loading || !query.trim()} icon="search" size="lg">جستجو</Button>
+        <Button type="submit" disabled={loading || !query.trim()} icon="search" size="lg">{t("جستجو")}</Button>
       </form>
 
-      {loading && <div className="flex justify-center py-8"><Spinner label="در حال جستجوی منابع حقوقی…" /></div>}
+      {loading && <div className="flex justify-center py-8"><Spinner label={t("در حال جستجوی منابع حقوقی…")} /></div>}
       {error && <p className="rounded-xl bg-danger/10 p-3 text-sm text-danger">{error}</p>}
 
-      {hits && hits.length === 0 && <p className="py-8 text-center text-sm text-muted">نتیجه‌ای یافت نشد. عبارت دیگری را امتحان کنید.</p>}
+      {hits && hits.length === 0 && <p className="py-8 text-center text-sm text-muted">{t("نتیجه‌ای یافت نشد. عبارت دیگری را امتحان کنید.")}</p>}
 
       {hits && hits.length > 0 && (
-        <ul className="space-y-3" aria-label="نتایج جستجو">
+        <ul className="space-y-3" aria-label={t("نتایج جستجو")}>
           {hits.map((h, i) => (
             <li key={`${h.url}-${i}`}>
               <a href={h.url} target="_blank" rel="noopener noreferrer nofollow" className="block rounded-2xl border border-border bg-surface p-4 transition-all hover:border-primary hover:shadow-[var(--shadow-card)]">
@@ -210,6 +215,7 @@ function SearchTool() {
 /* ─── ۳) استودیوی صدا (TTS + ASR) ──────────────────────────────────────── */
 
 function VoiceTool() {
+  const t = useT();
   // متن به گفتار
   const [text, setText] = useState("");
   const [ttsLoading, setTtsLoading] = useState(false);
@@ -226,18 +232,18 @@ function VoiceTool() {
   const chunksRef = useRef<Blob[]>([]);
 
   async function speak() {
-    const t = text.trim();
-    if (!t || ttsLoading) return;
+    const spoken = text.trim();
+    if (!spoken || ttsLoading) return;
     setTtsLoading(true); setTtsError("");
     try {
       const res = await fetch("/api/ai/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: t }),
+        body: JSON.stringify({ text: spoken }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        setTtsError(data?.error ?? "تولید صدا ناموفق بود.");
+        setTtsError(data?.error ?? t("تولید صدا ناموفق بود."));
         return;
       }
       const blob = await res.blob();
@@ -246,7 +252,7 @@ function VoiceTool() {
       setAudioUrl(url);
       setTimeout(() => audioRef.current?.play().catch(() => {}), 60);
     } catch {
-      setTtsError("ارتباط با سرور برقرار نشد.");
+      setTtsError(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setTtsLoading(false);
     }
@@ -260,7 +266,7 @@ function VoiceTool() {
       chunksRef.current = [];
       rec.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       rec.onstop = async () => {
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach((track) => track.stop());
         setRecording(false);
         setAsrLoading(true);
         try {
@@ -270,9 +276,9 @@ function VoiceTool() {
           const res = await fetch("/api/ai/asr", { method: "POST", body: form });
           const data = await res.json();
           if (data?.ok) setTranscript(String(data.text));
-          else setAsrError(data?.error ?? "تبدیل گفتار ناموفق بود.");
+          else setAsrError(data?.error ?? t("تبدیل گفتار ناموفق بود."));
         } catch {
-          setAsrError("ارتباط با سرور برقرار نشد.");
+          setAsrError(t("ارتباط با سرور برقرار نشد."));
         } finally {
           setAsrLoading(false);
         }
@@ -281,7 +287,7 @@ function VoiceTool() {
       rec.start();
       setRecording(true);
     } catch {
-      setAsrError("دسترسی به میکروفون داده نشد. لطفاً مجوز میکروفون را فعال کنید.");
+      setAsrError(t("دسترسی به میکروفون داده نشد. لطفاً مجوز میکروفون را فعال کنید."));
     }
   }
 
@@ -293,35 +299,35 @@ function VoiceTool() {
     <div className="grid gap-6 lg:grid-cols-2">
       {/* متن به گفتار */}
       <Card hover={false} className="space-y-4">
-        <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="video" className="h-4 w-4 text-accent-text" /> متن به گفتار</h4>
+        <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="video" className="h-4 w-4 text-accent-text" /> {t("متن به گفتار")}</h4>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value.slice(0, 1024))}
           rows={5}
-          placeholder="متنی به فارسی بنویسید تا به گفتار تبدیل شود… (حداکثر ۱۰۲۴ کاراکتر)"
-          aria-label="متن برای تبدیل به گفتار"
+          placeholder={t("متنی به فارسی بنویسید تا به گفتار تبدیل شود… (حداکثر ۱۰۲۴ کاراکتر)")}
+          aria-label={t("متن برای تبدیل به گفتار")}
           className="w-full resize-none rounded-xl border border-border bg-surface-2 p-3.5 text-sm leading-7 text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
         />
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted">{text.length}/۱۰۲۴</span>
           <Button onClick={speak} disabled={ttsLoading || !text.trim()} icon="video" size="sm">
-            {ttsLoading ? "در حال تولید…" : "تبدیل و پخش"}
+            {ttsLoading ? t("در حال تولید…") : t("تبدیل و پخش")}
           </Button>
         </div>
-        {audioUrl && <audio ref={audioRef} src={audioUrl} controls className="w-full" aria-label="پخش گفتار تولیدشده" />}
+        {audioUrl && <audio ref={audioRef} src={audioUrl} controls className="w-full" aria-label={t("پخش گفتار تولیدشده")} />}
         {ttsError && <p className="rounded-xl bg-danger/10 p-3 text-sm text-danger">{ttsError}</p>}
       </Card>
 
       {/* گفتار به متن */}
       <Card hover={false} className="space-y-4">
-        <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="chat" className="h-4 w-4 text-accent-text" /> گفتار به متن</h4>
-        <p className="text-xs leading-6 text-muted">دکمه را بزنید، سؤال حقوقی خود را بگویید و دوباره بزنید تا متن آن استخراج شود.</p>
+        <h4 className="flex items-center gap-2 font-bold text-foreground"><Icon name="chat" className="h-4 w-4 text-accent-text" /> {t("گفتار به متن")}</h4>
+        <p className="text-xs leading-6 text-muted">{t("دکمه را بزنید، سؤال حقوقی خود را بگویید و دوباره بزنید تا متن آن استخراج شود.")}</p>
         <div className="flex items-center justify-center py-2">
           <button
             type="button"
             onClick={recording ? stopRecording : startRecording}
             aria-pressed={recording}
-            aria-label={recording ? "توقف ضبط" : "شروع ضبط"}
+            aria-label={recording ? t("توقف ضبط") : t("شروع ضبط")}
             className={`flex h-20 w-20 items-center justify-center rounded-full transition-all ${recording ? "bg-danger text-white shadow-lg" : "bg-primary text-primary-foreground hover:bg-primary-hover shadow-md"} cursor-pointer`}
           >
             {recording ? (
@@ -331,14 +337,14 @@ function VoiceTool() {
             )}
           </button>
         </div>
-        <p className="text-center text-xs text-muted">{recording ? "در حال ضبط… برای پایان دکمه را بزنید" : asrLoading ? "در حال تبدیل…" : "برای شروع ضبط دکمه را بزنید"}</p>
-        {asrLoading && <div className="flex justify-center"><Spinner label="تبدیل صدای شما به متن…" /></div>}
+        <p className="text-center text-xs text-muted">{recording ? t("در حال ضبط… برای پایان دکمه را بزنید") : asrLoading ? t("در حال تبدیل…") : t("برای شروع ضبط دکمه را بزنید")}</p>
+        {asrLoading && <div className="flex justify-center"><Spinner label={t("تبدیل صدای شما به متن…")} /></div>}
         {transcript && (
           <div className="rounded-xl border border-border bg-surface-2 p-4">
-            <p className="mb-2 text-xs font-semibold text-muted">متن استخراج‌شده:</p>
+            <p className="mb-2 text-xs font-semibold text-muted">{t("متن استخراج‌شده:")}</p>
             <p className="text-sm leading-7 text-foreground">{transcript}</p>
             <a href={`/ai-assistant?q=${encodeURIComponent(transcript)}`} className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
-              پرسش از دستیار حقوقی <Icon name="arrow" className="h-3.5 w-3.5" />
+              {t("پرسش از دستیار حقوقی")} <Icon name="arrow" className="h-3.5 w-3.5" />
             </a>
           </div>
         )}
@@ -351,29 +357,30 @@ function VoiceTool() {
 /* ─── کامپوننت اصلی با تب‌ها ───────────────────────────────────────────── */
 
 export function AiTools({ initialTab = "vision" }: { initialTab?: TabKey }) {
+  const t = useT();
   const [tab, setTab] = useState<TabKey>(initialTab);
-  const active = TABS.find((t) => t.key === tab)!;
+  const active = TABS.find((item) => item.key === tab)!;
 
   return (
     <div className="space-y-6">
-      <div role="tablist" aria-label="ابزارهای هوش مصنوعی" className="flex flex-wrap gap-2">
-        {TABS.map((t) => (
+      <div role="tablist" aria-label={t("ابزارهای هوش مصنوعی")} className="flex flex-wrap gap-2">
+        {TABS.map((tb) => (
           <button
-            key={t.key}
+            key={tb.key}
             role="tab"
-            aria-selected={tab === t.key}
-            onClick={() => setTab(t.key)}
-            className={`inline-flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${tab === t.key ? "bg-primary text-primary-foreground shadow-sm" : "bg-surface-2 text-foreground-soft hover:bg-surface-3"}`}
+            aria-selected={tab === tb.key}
+            onClick={() => setTab(tb.key)}
+            className={`inline-flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${tab === tb.key ? "bg-primary text-primary-foreground shadow-sm" : "bg-surface-2 text-foreground-soft hover:bg-surface-3"}`}
           >
-            <Icon name={t.icon} className="h-4 w-4" />
-            {t.label}
+            <Icon name={tb.icon} className="h-4 w-4" />
+            {t(tb.label)}
           </button>
         ))}
       </div>
 
-      <p className="text-sm text-muted">{active.desc}</p>
+      <p className="text-sm text-muted">{t(active.desc)}</p>
 
-      <div role="tabpanel" aria-label={active.label}>
+      <div role="tabpanel" aria-label={t(active.label)}>
         {tab === "vision" && <VisionTool />}
         {tab === "search" && <SearchTool />}
         {tab === "voice" && <VoiceTool />}

@@ -14,6 +14,8 @@ import { Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LOCATIONS, faNum } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 interface LawyerOpt {
   slug: string;
@@ -33,6 +35,8 @@ interface MatchItem {
 }
 
 function LawyerRow({ l, reason }: { l: LawyerOpt; reason?: string }) {
+  const t = useT();
+  const tt = templateT(t);
   const [failed, setFailed] = useState(false);
   const hasPhoto = !!l.photoUrl && !failed;
   const initials = l.name
@@ -52,7 +56,7 @@ function LawyerRow({ l, reason }: { l: LawyerOpt; reason?: string }) {
         {hasPhoto ? (
           <Image
             src={l.photoUrl as string}
-            alt={`عکس ${l.name}`}
+            alt={tt("عکس {name}", { name: l.name })}
             fill
             sizes="96px"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -85,27 +89,29 @@ function LawyerRow({ l, reason }: { l: LawyerOpt; reason?: string }) {
               ★ {faNum(l.rating.toFixed(1))}
             </span>
           )}
-          {!!l.experienceYears && <span>{faNum(l.experienceYears)} سال سابقه</span>}
+          {!!l.experienceYears && <span>{tt("{years} سال سابقه", { years: faNum(l.experienceYears) })}</span>}
         </span>
         {reason && (
           <span className="mt-1.5 flex items-start gap-1 rounded-xl bg-accent-soft px-2 py-1 text-[11px] font-semibold leading-5 text-accent-text">
             <Icon name="sparkles" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            پیشنهاد برای مشکل شما: {reason}
+            {tt("پیشنهاد برای مشکل شما: {reason}", { reason })}
           </span>
         )}
       </span>
 
       <span className="flex shrink-0 flex-col items-center gap-1">
         <span className="inline-flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-colors group-hover:bg-primary/90">
-          رزرو مشاوره
+          {t("رزرو مشاوره")}
         </span>
-        <span className="hidden text-[10px] text-muted sm:block">پرداخت پس از تأیید نوبت</span>
+        <span className="hidden text-[10px] text-muted sm:block">{t("پرداخت پس از تأیید نوبت")}</span>
       </span>
     </Link>
   );
 }
 
 export function EmployeeLawyerFinder() {
+  const t = useT();
+  const tt = templateT(t);
   const [lawyers, setLawyers] = useState<LawyerOpt[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -162,7 +168,7 @@ export function EmployeeLawyerFinder() {
 
   async function suggest() {
     if (problem.trim().length < 5) {
-      setMatchErr("لطفاً مشکل خود را کمی دقیق‌تر بنویسید.");
+      setMatchErr(t("لطفاً مشکل خود را کمی دقیق‌تر بنویسید."));
       return;
     }
     setMatching(true);
@@ -183,7 +189,7 @@ export function EmployeeLawyerFinder() {
           window.scrollTo({ top: listRef.current.offsetTop - 88, behavior: "smooth" });
       }, 120);
     } catch {
-      setMatchErr("پیشنهاد هوشمند الان در دسترس نیست؛ از فهرست پایین وکیل را انتخاب کنید.");
+      setMatchErr(t("پیشنهاد هوشمند الان در دسترس نیست؛ از فهرست پایین وکیل را انتخاب کنید."));
     } finally {
       setMatching(false);
     }
@@ -194,17 +200,17 @@ export function EmployeeLawyerFinder() {
       {/* جست‌وجو — فقط انتخاب استان */}
       <Card hover={false} className="p-4 sm:p-5">
         <label className="flex flex-col gap-1.5 sm:max-w-xs">
-          <span className="text-xs font-semibold text-muted">انتخاب استان</span>
+          <span className="text-xs font-semibold text-muted">{t("انتخاب استان")}</span>
           <span className="relative">
             <select
               value={province}
               onChange={(e) => setProvince(e.target.value)}
               className="w-full appearance-none rounded-xl border border-border bg-background py-2.5 ps-9 pe-8 text-sm font-semibold text-foreground outline-none transition-colors focus:border-primary"
             >
-              <option value="">همه استان‌ها</option>
+              <option value="">{t("همه استان‌ها")}</option>
               {LOCATIONS.map((l) => (
                 <option key={l.province} value={l.province}>
-                  {l.province}
+                  {t(l.province)}
                 </option>
               ))}
             </select>
@@ -221,10 +227,10 @@ export function EmployeeLawyerFinder() {
           </span>
           <div className="min-w-0">
             <h2 className="text-sm font-extrabold text-foreground sm:text-base">
-              مشکلتو بگو تا بر اساس مشکلت بهترین وکیل رو پیشنهاد بدم
+              {t("مشکلتو بگو تا بر اساس مشکلت بهترین وکیل رو پیشنهاد بدم")}
             </h2>
             <p className="mt-1 text-xs leading-6 text-muted">
-              مثلاً: «۸ ماه اخراج شدم و سنوات و بیمه‌ام پرداخت نشده» — هرچه دقیق‌تر بنویسی، پیشنهاد دقیق‌تر است.
+              {t("مثلاً: «۸ ماه اخراج شدم و سنوات و بیمه‌ام پرداخت نشده» — هرچه دقیق‌تر بنویسی، پیشنهاد دقیق‌تر است.")}
             </p>
           </div>
         </div>
@@ -233,12 +239,12 @@ export function EmployeeLawyerFinder() {
           onChange={(e) => setProblem(e.target.value)}
           rows={3}
           maxLength={800}
-          placeholder="مشکل کاری‌ات را همین‌جا بنویس…"
+          placeholder={t("مشکل کاری‌ات را همین‌جا بنویس…")}
           className="mt-3 w-full resize-none rounded-2xl border border-border bg-background p-3 text-sm leading-6 text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
         />
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <Button onClick={suggest} disabled={matching} icon={matching ? undefined : "sparkles"}>
-            {matching ? "در حال تحلیل مشکل شما…" : "پیشنهاد بهترین وکیل"}
+            {matching ? t("در حال تحلیل مشکل شما…") : t("پیشنهاد بهترین وکیل")}
           </Button>
           {matchErr && <p className="text-xs font-semibold text-danger">{matchErr}</p>}
         </div>
@@ -248,10 +254,10 @@ export function EmployeeLawyerFinder() {
       <div ref={listRef} className="mt-6 scroll-mt-24">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-sm font-bold text-foreground sm:text-base">
-            {matched && matches.length > 0 ? "پیشنهاد هوشمند و سایر وکلای کارمندان" : "وکلای کارمندان"}
+            {matched && matches.length > 0 ? t("پیشنهاد هوشمند و سایر وکلای کارمندان") : t("وکلای کارمندان")}
           </h2>
           <span className="text-xs text-muted">
-            {loading ? "" : `${faNum(ordered.length)} وکیل`}
+            {loading ? "" : tt("{count} وکیل", { count: faNum(ordered.length) })}
           </span>
         </div>
 
@@ -263,19 +269,19 @@ export function EmployeeLawyerFinder() {
           </div>
         ) : loadFailed ? (
           <Card hover={false} className="mt-3 p-6 text-center">
-            <p className="text-sm font-semibold text-foreground">دریافت فهرست وکلا ناموفق بود.</p>
-            <p className="mt-1 text-xs text-muted">اتصال اینترنت را بررسی کنید و صفحه را دوباره باز کنید.</p>
+            <p className="text-sm font-semibold text-foreground">{t("دریافت فهرست وکلا ناموفق بود.")}</p>
+            <p className="mt-1 text-xs text-muted">{t("اتصال اینترنت را بررسی کنید و صفحه را دوباره باز کنید.")}</p>
           </Card>
         ) : ordered.length === 0 ? (
           <Card hover={false} className="mt-3 p-6 text-center">
             <p className="text-sm font-semibold text-foreground">
-              {province ? `هنوز وکیل کارمندی در استان ${province} ثبت‌نام نکرده است.` : "هنوز وکیلی برای این حوزه ثبت‌نام نکرده است."}
+              {province ? tt("هنوز وکیل کارمندی در استان {province} ثبت‌نام نکرده است.", { province }) : t("هنوز وکیلی برای این حوزه ثبت‌نام نکرده است.")}
             </p>
             <p className="mt-1 text-xs leading-6 text-muted">
-              استان دیگری را امتحان کنید یا از فهرست همه وکلا استفاده کنید.
+              {t("استان دیگری را امتحان کنید یا از فهرست همه وکلا استفاده کنید.")}
             </p>
             <Link href="/lawyers" className="mt-3 inline-block text-xs font-bold text-primary hover:underline">
-              مشاهده همه وکلا ←
+              {t("مشاهده همه وکلا ←")}
             </Link>
           </Card>
         ) : (

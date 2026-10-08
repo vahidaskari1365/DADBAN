@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = {
-  title: "قوانین و مقررات استفاده — دادبان",
-  description: "قوانین و شرایط استفاده از خدمات پلتفرم حقوقی دادبان.",
-};
+/** چندزبانه: تیتر/توضیح با generateMetadata و getT به زبان انتخابی کاربر می‌رود */
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("قوانین و مقررات استفاده — دادبان"),
+    description: t("قوانین و شرایط استفاده از خدمات پلتفرم حقوقی دادبان."),
+  };
+}
 
 const SECTIONS = [
   ["۱. پذیرش شرایط", "استفاده از خدمات دادبان به معنای پذیرش کامل این قوانین است. چنانچه با هر یک از بندها موافق نیستید، از استفاده از خدمات خودداری کنید."],
@@ -16,17 +21,18 @@ const SECTIONS = [
   ["۷. خاتمه خدمات", "دادبان می‌تواند در صورت نقض قوانین، دسترسی کاربر را موقتاً یا دائم مسدود کند."],
 ];
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const t = await getT();
   return (
     <Container className="py-12">
       <div className="mx-auto max-w-3xl">
-        <h1 className="text-2xl font-extrabold text-foreground">قوانین و مقررات استفاده</h1>
-        <p className="mt-2 text-sm text-muted">آخرین به‌روزرسانی: بهار ۱۴۰۴</p>
+        <h1 className="text-2xl font-extrabold text-foreground">{t("قوانین و مقررات استفاده")}</h1>
+        <p className="mt-2 text-sm text-muted">{t("آخرین به‌روزرسانی: بهار ۱۴۰۴")}</p>
         <div className="mt-6 space-y-5">
-          {SECTIONS.map(([t, b]) => (
-            <div key={t} className="rounded-2xl border border-border bg-surface p-5">
-              <h2 className="text-base font-bold text-foreground">{t}</h2>
-              <p className="mt-2 text-sm leading-7 text-muted">{b}</p>
+          {SECTIONS.map(([heading, body]) => (
+            <div key={heading} className="rounded-2xl border border-border bg-surface p-5">
+              <h2 className="text-base font-bold text-foreground">{t(heading)}</h2>
+              <p className="mt-2 text-sm leading-7 text-muted">{t(body)}</p>
             </div>
           ))}
         </div>

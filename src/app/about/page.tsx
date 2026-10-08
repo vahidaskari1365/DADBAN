@@ -3,14 +3,24 @@ import { Container, Card, Badge, Stat } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { getPlatformStats } from "@/lib/stats";
 import { faNum } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "درباره دادبان",
-  description:
-    "دادبان پلتفرم هوشمند خدمات حقوقی برای اتصال موکلان به وکلای متخصص، با مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی.",
-  alternates: { canonical: "/about" },
-};
+/**
+ * چندزبانه: با generateMetadata و getT، تیتر/توضیح به زبان انتخابی کاربر می‌رود
+ * (کلید = عین رشتهٔ فارسی منبع؛ بدون ترجمه همان فارسی برمی‌گردد).
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("درباره دادبان"),
+    description: t(
+      "دادبان پلتفرم هوشمند خدمات حقوقی برای اتصال موکلان به وکلای متخصص، با مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی.",
+    ),
+    alternates: { canonical: "/about" },
+  };
+}
 
 const LAYERS = [
   { title: "لایه جذب", desc: "SEO، مقالات، جستجوی وکیل و پرسش و پاسخ", icon: "search" as const },
@@ -30,23 +40,24 @@ const VALUES = [
 export const dynamic = "force-dynamic";
 
 export default async function AboutPage() {
+  const t = await getT();
+  const tt = templateT(t);
   const stats = await getPlatformStats();
   const statItems = [
-    { value: stats.verifiedLawyers != null ? faNum(stats.verifiedLawyers) : "—", label: "وکیل تأییدشده", icon: "badge" as const },
-    { value: stats.registeredCases != null ? faNum(stats.registeredCases) : "—", label: "پرونده ثبت‌شده", icon: "folder" as const },
-    { value: stats.answeredQuestions != null ? faNum(stats.answeredQuestions) : "—", label: "پرسش حقوقی", icon: "chat" as const },
-    { value: stats.publishedArticles != null ? faNum(stats.publishedArticles) : "—", label: "مقاله منتشرشده", icon: "document" as const },
+    { value: stats.verifiedLawyers != null ? faNum(stats.verifiedLawyers) : "—", label: t("وکیل تأییدشده"), icon: "badge" as const },
+    { value: stats.registeredCases != null ? faNum(stats.registeredCases) : "—", label: t("پرونده ثبت‌شده"), icon: "folder" as const },
+    { value: stats.answeredQuestions != null ? faNum(stats.answeredQuestions) : "—", label: t("پرسش حقوقی"), icon: "chat" as const },
+    { value: stats.publishedArticles != null ? faNum(stats.publishedArticles) : "—", label: t("مقاله منتشرشده"), icon: "document" as const },
   ];
   return (
     <>
       <section className="border-b border-border bg-gradient-to-b from-primary-soft/40 to-background py-12">
         <Container>
           <div className="mx-auto max-w-2xl text-center">
-            <Badge tone="primary" icon="balance">درباره ما</Badge>
-            <h1 className="mt-3 text-3xl font-extrabold text-foreground sm:text-4xl">عدالت، در دسترس همه</h1>
+            <Badge tone="primary" icon="balance">{t("درباره ما")}</Badge>
+            <h1 className="mt-3 text-3xl font-extrabold text-foreground sm:text-4xl">{t("عدالت، در دسترس همه")}</h1>
             <p className="mt-4 text-base leading-8 text-muted">
-              دادبان با هدف دموکراتیزه‌کردن دسترسی به خدمات حقوقی ساخته شده است؛ پلتفرمی که وکیل‌یابی، مشاوره
-              آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی را در یک‌جا گرد می‌آورد.
+              {t("دادبان با هدف دموکراتیزه‌کردن دسترسی به خدمات حقوقی ساخته شده است؛ پلتفرمی که وکیل‌یابی، مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی را در یک‌جا گرد می‌آورد.")}
             </p>
           </div>
         </Container>
@@ -62,36 +73,35 @@ export default async function AboutPage() {
       <Container className="py-8">
         <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">مأموریت ما</h2>
+            <h2 className="text-2xl font-bold text-foreground">{t("مأموریت ما")}</h2>
             <p className="mt-3 text-sm leading-8 text-muted">
-              معتقدیم دسترسی به مشاوره حقوقی نباید پیچیده، گران یا کند باشد. دادبان با ترکیب تخصص وکلای دادگستری و
-              فناوری روز، تجربه‌ای ساده، شفاف و قابل اعتماد برای حل مسائل حقوقی شما فراهم می‌کند.
+              {t("معتقدیم دسترسی به مشاوره حقوقی نباید پیچیده، گران یا کند باشد. دادبان با ترکیب تخصص وکلای دادگستری و فناوری روز، تجربه‌ای ساده، شفاف و قابل اعتماد برای حل مسائل حقوقی شما فراهم می‌کند.")}
             </p>
             <ul className="mt-5 space-y-2.5">
-              {["احراز هویت و راستی‌آزمایی همه وکلا", "مشاوره متنی، صوتی و تصویری آنلاین", "مدیریت یکپارچه پرونده و اسناد", "دستیار هوش مصنوعی حقوقی ۲۴ ساعته"].map((t) => (
-                <li key={t} className="flex items-center gap-2 text-sm text-foreground-soft"><Icon name="check" className="h-4 w-4 text-success" /> {t}</li>
+              {["احراز هویت و راستی‌آزمایی همه وکلا", "مشاوره متنی، صوتی و تصویری آنلاین", "مدیریت یکپارچه پرونده و اسناد", "دستیار هوش مصنوعی حقوقی ۲۴ ساعته"].map((item) => (
+                <li key={item} className="flex items-center gap-2 text-sm text-foreground-soft"><Icon name="check" className="h-4 w-4 text-success" /> {t(item)}</li>
               ))}
             </ul>
           </div>
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary-hover p-8 text-primary-foreground">
             <Icon name="balance" className="absolute -bottom-6 -left-6 h-48 w-48 opacity-10" />
-            <p className="relative text-lg font-bold leading-8">«هدف ما این است که هر ایرانی، فارغ از شهر و توان مالی، به مشاوره حقوقی باکیفیت دسترسی داشته باشد.»</p>
-            <p className="relative mt-4 text-sm text-white/80">— تیم بنیان‌گذار دادبان</p>
+            <p className="relative text-lg font-bold leading-8">{t("«هدف ما این است که هر ایرانی، فارغ از شهر و توان مالی، به مشاوره حقوقی باکیفیت دسترسی داشته باشد.»")}</p>
+            <p className="relative mt-4 text-sm text-white/80">{t("— تیم بنیان‌گذار دادبان")}</p>
           </div>
         </div>
       </Container>
 
       {/* Layers */}
       <Container className="py-12">
-        <h2 className="text-center text-2xl font-bold text-foreground">معماری پنج‌لایه دادبان</h2>
-        <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted">از جذب کاربر تا اکوسیستم کامل حقوقی، یک سفر یکپارچه.</p>
+        <h2 className="text-center text-2xl font-bold text-foreground">{t("معماری پنج‌لایه دادبان")}</h2>
+        <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted">{t("از جذب کاربر تا اکوسیستم کامل حقوقی، یک سفر یکپارچه.")}</p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {LAYERS.map((l, i) => (
             <Card key={l.title} className="text-center">
               <span className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent-text"><Icon name={l.icon} className="h-5 w-5" /></span>
-              <p className="mt-3 text-xs font-bold text-accent-text">لایه {i + 1}</p>
-              <h3 className="mt-1 text-sm font-bold text-foreground">{l.title}</h3>
-              <p className="mt-1 text-xs leading-5 text-muted">{l.desc}</p>
+              <p className="mt-3 text-xs font-bold text-accent-text">{tt("لایه {n}", { n: String(i + 1) })}</p>
+              <h3 className="mt-1 text-sm font-bold text-foreground">{t(l.title)}</h3>
+              <p className="mt-1 text-xs leading-5 text-muted">{t(l.desc)}</p>
             </Card>
           ))}
         </div>
@@ -99,13 +109,13 @@ export default async function AboutPage() {
 
       {/* Values */}
       <Container className="py-12">
-        <h2 className="text-center text-2xl font-bold text-foreground">ارزش‌های ما</h2>
+        <h2 className="text-center text-2xl font-bold text-foreground">{t("ارزش‌های ما")}</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {VALUES.map((v) => (
             <Card key={v.title}>
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary"><Icon name={v.icon} className="h-5 w-5" /></span>
-              <h3 className="mt-3 text-sm font-bold text-foreground">{v.title}</h3>
-              <p className="mt-1 text-xs leading-6 text-muted">{v.desc}</p>
+              <h3 className="mt-3 text-sm font-bold text-foreground">{t(v.title)}</h3>
+              <p className="mt-1 text-xs leading-6 text-muted">{t(v.desc)}</p>
             </Card>
           ))}
         </div>
@@ -113,11 +123,11 @@ export default async function AboutPage() {
 
       <Container className="py-12">
         <div className="rounded-3xl border border-border bg-surface p-8 text-center card-shadow">
-          <h2 className="text-xl font-bold text-foreground">آماده‌اید به ما بپیوندید؟</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">چه به دنبال وکیل باشید چه عضو تیم وکلای دادبان، خوشحال می‌شویم همراهتان باشیم.</p>
+          <h2 className="text-xl font-bold text-foreground">{t("آماده‌اید به ما بپیوندید؟")}</h2>
+          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">{t("چه به دنبال وکیل باشید چه عضو تیم وکلای دادبان، خوشحال می‌شویم همراهتان باشیم.")}</p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <Link href="/lawyers" className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover"><Icon name="search" className="h-4 w-4" /> پیدا کردن وکیل</Link>
-            <Link href="/contact" className="inline-flex h-11 items-center gap-2 rounded-xl border border-border-strong bg-surface px-5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-2"><Icon name="mail" className="h-4 w-4" /> تماس با ما</Link>
+            <Link href="/lawyers" className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover"><Icon name="search" className="h-4 w-4" /> {t("پیدا کردن وکیل")}</Link>
+            <Link href="/contact" className="inline-flex h-11 items-center gap-2 rounded-xl border border-border-strong bg-surface px-5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-2"><Icon name="mail" className="h-4 w-4" /> {t("تماس با ما")}</Link>
           </div>
         </div>
       </Container>

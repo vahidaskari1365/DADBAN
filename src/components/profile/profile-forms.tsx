@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { ALL_PROVINCES, LOCATIONS, faNum } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 type ProfileInput = {
   name: string;
@@ -22,6 +24,8 @@ const AVATAR_COLORS = ["#15365d", "#7c5cff", "#0e7c66", "#b45309", "#be123c", "#
 /** فرم اطلاعات شخصی موکل — PUT /api/profile */
 export function PersonalInfoForm({ initial }: { initial: ProfileInput }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [name, setName] = useState(initial.name);
   const [email, setEmail] = useState(initial.email);
   const [province, setProvince] = useState(initial.province);
@@ -34,7 +38,7 @@ export function PersonalInfoForm({ initial }: { initial: ProfileInput }) {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (name.trim().length < 3) {
-      toast.error("نام و نام خانوادگی را کامل وارد کنید.");
+      toast.error(t("نام و نام خانوادگی را کامل وارد کنید."));
       return;
     }
     setSaving(true);
@@ -46,13 +50,13 @@ export function PersonalInfoForm({ initial }: { initial: ProfileInput }) {
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
-        toast.success("اطلاعات شخصی ذخیره شد.");
+        toast.success(t("اطلاعات شخصی ذخیره شد."));
         router.refresh();
       } else {
-        toast.error(data.error ?? "ذخیره اطلاعات ناموفق بود.");
+        toast.error(data.error ?? t("ذخیره اطلاعات ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setSaving(false);
     }
@@ -65,11 +69,11 @@ export function PersonalInfoForm({ initial }: { initial: ProfileInput }) {
     <form onSubmit={save} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">نام و نام خانوادگی *</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("نام و نام خانوادگی *")}</span>
           <input value={name} onChange={(e) => setName(e.target.value)} required minLength={3} className={inputCls} />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">ایمیل (اختیاری)</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("ایمیل (اختیاری)")}</span>
           <input
             type="email"
             value={email}
@@ -83,7 +87,7 @@ export function PersonalInfoForm({ initial }: { initial: ProfileInput }) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">استان</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("استان")}</span>
           <select
             value={province}
             onChange={(e) => {
@@ -92,26 +96,26 @@ export function PersonalInfoForm({ initial }: { initial: ProfileInput }) {
             }}
             className={`${inputCls} cursor-pointer appearance-none`}
           >
-            <option value="">انتخاب استان…</option>
+            <option value="">{t("انتخاب استان…")}</option>
             {ALL_PROVINCES.map((p) => (
               <option key={p} value={p}>
-                استان {p}
+                {tf("استان {p}", { p })}
               </option>
             ))}
           </select>
           <span className="mt-1 block text-[11px] text-muted">
-            استان شما برای پیشنهاد وکیلِ همان استان و شخصی‌سازی دستیار هوشمند استفاده می‌شود.
+            {t("استان شما برای پیشنهاد وکیلِ همان استان و شخصی‌سازی دستیار هوشمند استفاده می‌شود.")}
           </span>
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">شهر</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("شهر")}</span>
           <select
             value={city}
             onChange={(e) => setCity(e.target.value)}
             disabled={!province}
             className={`${inputCls} cursor-pointer appearance-none disabled:opacity-50`}
           >
-            <option value="">{province ? "انتخاب شهر…" : "ابتدا استان را انتخاب کنید"}</option>
+            <option value="">{province ? t("انتخاب شهر…") : t("ابتدا استان را انتخاب کنید")}</option>
             {cities.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -122,14 +126,14 @@ export function PersonalInfoForm({ initial }: { initial: ProfileInput }) {
       </div>
 
       <fieldset>
-        <legend className="mb-2 block text-xs font-medium text-muted">رنگ آواتار</legend>
+        <legend className="mb-2 block text-xs font-medium text-muted">{t("رنگ آواتار")}</legend>
         <div className="flex flex-wrap gap-2">
           {AVATAR_COLORS.map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => setAvatarColor(c)}
-              aria-label={`انتخاب رنگ ${c}`}
+              aria-label={tf("انتخاب رنگ {c}", { c })}
               aria-pressed={avatarColor === c}
               className={`h-9 w-9 rounded-xl border-2 transition-transform hover:scale-110 ${
                 avatarColor === c ? "border-foreground" : "border-transparent"
@@ -142,10 +146,10 @@ export function PersonalInfoForm({ initial }: { initial: ProfileInput }) {
 
       <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
         <Button type="submit" disabled={saving} icon="check">
-          {saving ? "در حال ذخیره…" : "ذخیره تغییرات"}
+          {saving ? t("در حال ذخیره…") : t("ذخیره تغییرات")}
         </Button>
         <p className="text-xs text-muted">
-          شماره موبایل <span dir="ltr">{faNum(initial.phone)}</span> شناسه ورود شماست و قابل تغییر نیست.
+          {tf("شماره موبایل {phone} شناسه ورود شماست و قابل تغییر نیست.", { phone: faNum(initial.phone) })}
         </p>
       </div>
     </form>
@@ -154,6 +158,7 @@ export function PersonalInfoForm({ initial }: { initial: ProfileInput }) {
 
 /** فرم تغییر رمز عبور — PUT /api/profile/password */
 export function PasswordForm() {
+  const t = useT();
   const [currentPassword, setCurrent] = useState("");
   const [newPassword, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -162,11 +167,11 @@ export function PasswordForm() {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (newPassword.length < 8) {
-      toast.error("رمز جدید باید حداقل ۸ نویسه باشد.");
+      toast.error(t("رمز جدید باید حداقل ۸ نویسه باشد."));
       return;
     }
     if (newPassword !== confirm) {
-      toast.error("تکرار رمز جدید مطابقت ندارد.");
+      toast.error(t("تکرار رمز جدید مطابقت ندارد."));
       return;
     }
     setSaving(true);
@@ -178,15 +183,15 @@ export function PasswordForm() {
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
-        toast.success("رمز عبور با موفقیت تغییر کرد.");
+        toast.success(t("رمز عبور با موفقیت تغییر کرد."));
         setCurrent("");
         setNext("");
         setConfirm("");
       } else {
-        toast.error(data.error ?? "تغییر رمز ناموفق بود.");
+        toast.error(data.error ?? t("تغییر رمز ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setSaving(false);
     }
@@ -199,7 +204,7 @@ export function PasswordForm() {
     <form onSubmit={save} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-3">
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">رمز فعلی *</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("رمز فعلی *")}</span>
           <input
             type="password"
             value={currentPassword}
@@ -210,7 +215,7 @@ export function PasswordForm() {
           />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">رمز جدید (حداقل ۸ نویسه) *</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("رمز جدید (حداقل ۸ نویسه) *")}</span>
           <input
             type="password"
             value={newPassword}
@@ -222,7 +227,7 @@ export function PasswordForm() {
           />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">تکرار رمز جدید *</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("تکرار رمز جدید *")}</span>
           <input
             type="password"
             value={confirm}
@@ -235,7 +240,7 @@ export function PasswordForm() {
         </label>
       </div>
       <Button type="submit" variant="outline" disabled={saving} icon="lock">
-        {saving ? "در حال تغییر…" : "تغییر رمز عبور"}
+        {saving ? t("در حال تغییر…") : t("تغییر رمز عبور")}
       </Button>
     </form>
   );
@@ -243,10 +248,11 @@ export function PasswordForm() {
 
 /** نشان وضعیت اتصال حساب وکیل به پروفایل عمومی */
 export function LawyerLinkBadge({ linked, href }: { linked: boolean; href?: string }) {
+  const t = useT();
   if (!linked) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
-        <Icon name="alert" className="h-3.5 w-3.5" /> متصل نیست
+        <Icon name="alert" className="h-3.5 w-3.5" /> {t("متصل نیست")}
       </span>
     );
   }
@@ -257,7 +263,7 @@ export function LawyerLinkBadge({ linked, href }: { linked: boolean; href?: stri
       rel="noreferrer"
       className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-xs font-semibold text-success transition-colors hover:bg-success/25"
     >
-      <Icon name="check" className="h-3.5 w-3.5" /> مشاهده پروفایل عمومی
+      <Icon name="check" className="h-3.5 w-3.5" /> {t("مشاهده پروفایل عمومی")}
       <Icon name="arrow" className="h-3 w-3 rotate-180" />
     </a>
   );

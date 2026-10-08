@@ -5,6 +5,8 @@ import { webSearch, type WebSearchResult } from "@/lib/ai";
 import { rateLimit, readJson, text } from "@/lib/api-security";
 import { extractContractFile } from "@/lib/extract-text";
 import { detectSpecialtiesFromMessage, detectProvinceFromMessage, matchLawyers, TOPIC_SPECIALTIES, type MatchedLawyer } from "@/lib/lawyer-match";
+import { tdyn } from "@/lib/i18n/dynamic";
+import { detectQueryLang, LANG_NAME, type QueryLang } from "@/lib/i18n/lang-detect";
 import type { LlmMessage } from "@/lib/llm";
 
 export const runtime = "nodejs";
@@ -13,30 +15,7 @@ export const maxDuration = 60; // Vercel fluid — بودجه کافی برای 
 const withTimeout = <T,>(task: Promise<T>, ms: number) =>
   Promise.race<T>([task, new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))]);
 
-/* ─── چندزبانه: تشخیص زبان سؤال و دستور پاسخ همان زبان ─────────────────── */
-
-type QueryLang = "fa" | "ar" | "en" | "tr" | "zh";
-
-/** تشخیص زبان با هیوریستیک خط‌کشی (سریع و بدون درخواست اضافه) */
-function detectQueryLang(q: string): QueryLang {
-  if (/[\u4e00-\u9fff]/.test(q)) return "zh";
-  if (/[\u0600-\u06FF]/.test(q)) {
-    // حروف مخصوص فارسی (پ چ ژ گ ی ک) در عربی وجود ندارند
-    return /[\u067E\u0686\u0698\u06AF\u06CC\u06A9]/.test(q) ? "fa" : "ar";
-  }
-  if (/[A-Za-z]/.test(q)) {
-    return /[ğışçöüİĞŞÇÖÜ]/.test(q) ? "tr" : "en";
-  }
-  return "fa";
-}
-
-const LANG_NAME: Record<QueryLang, string> = {
-  fa: "فارسی",
-  ar: "العربية (عربی فصیح)",
-  en: "English",
-  tr: "Türkçe (ترکی استانبولی)",
-  zh: "简体中文 (چینی ساده‌شده)",
-};
+/* ─── چندزبانه: تشخیص زبان سؤال و دستور پاسخ همان زبان — helper مشترک lang-detect ─── */
 
 /** دستور ساختار پاسخ کامل‌تر و چندزبانه — روی هستهٔ پرامپت سوار می‌شود */
 function languageDirective(lang: QueryLang): string {
@@ -98,6 +77,27 @@ const CONTRACT_PROMPT = `قرارداد زیر را تحلیل کن و نقاط 
 در تحلیل خود به مواد قانونی مرتبط هم استناد کن (مانند مواد ۱۰، ۲۱۹ و ۲۳۰ قانون مدنی) و شماره ماده و تبصره را ذکر کن:
 
 `;
+
+/** بومی‌سازی فیلدهای نمایشی وکلا در پاسخ AI (اسم/عنوان/شهر) برای زبان‌های غیر فارسی — با کش */
+async function localizeMatch(
+  m: { topic: string | null; specialties: string[]; province: string | null; lawyers: MatchedLawyer[] } | undefined,
+  lang: QueryLang,
+) {
+  if (!m || lang === "fa") return m;
+  try {
+    const lawyers = await Promise.all(
+      m.lawyers.map(async (l) => ({
+        ...l,
+        name: await tdyn(lang, l.name, 300),
+        title: await tdyn(lang, l.title, 300),
+        city: await tdyn(lang, l.city, 200),
+      })),
+    );
+    return { ...m, lawyers };
+  } catch {
+    return m;
+  }
+}
 
 export async function POST(req: Request) {
   const limited = rateLimit(req, "ai", 20, 60 * 60_000);
@@ -187,7 +187,7 @@ export async function POST(req: Request) {
       /* non-fatal */
     }
 
-    if (llm) return NextResponse.json({ ok: true, mode: "guide", source: "llm", answer: llm, sources, lawyerMatch, lang });
+    if (llm) return NextResponse.json({ ok: true, mode: "guide", source: "llm", answer: llm, sources, lawyerMatch: await localizeMatch(lawyerMatch, lang), lang });
     const guidance = analyzeLegalQuery(query);
     if (!lawyerMatch && guidance.matched && TOPIC_SPECIALTIES[guidance.topic]) {
       try {
@@ -198,7 +198,7 @@ export async function POST(req: Request) {
         /* non-fatal */
       }
     }
-    return NextResponse.json({ ok: true, mode: "guide", source: "local", guidance, sources: [], lawyerMatch });
+    return NextResponse.json({ ok: true, mode: "guide", source: "local", guidance, sources: [], lawyerMatch: await localizeMatch(lawyerMatch, lang) });
   } catch {
     return NextResponse.json({ ok: false, error: "پاسخ‌گویی در حال حاضر ممکن نیست." }, { status: 503 });
   }

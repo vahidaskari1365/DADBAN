@@ -13,14 +13,21 @@ import { ensureProfileSchema } from "@/lib/auto-seed";
 import { PersonalInfoForm, PasswordForm } from "@/components/profile/profile-forms";
 import { FavoritesPanel } from "@/components/profile/favorites-panel";
 import { formatJalaliLong as faDate } from "@/lib/jalali";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 
-export const metadata: Metadata = {
-  title: "پروفایل من — پنل موکل",
-  description: "مشخصات حساب، استان و شهر، رمز عبور و وکلای نشان‌شده شما در دادبان.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("پروفایل من — پنل موکل"),
+    description: t("مشخصات حساب، استان و شهر، رمز عبور و وکلای نشان‌شده شما در دادبان."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 export default async function ClientProfilePage() {
+  const t = await getT();
+  const tf = templateT(t);
   await ensureProfileSchema();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -54,24 +61,24 @@ export default async function ClientProfilePage() {
   }
 
   const stats = [
-    { label: "پرونده ثبت‌شده", value: faNum(casesCount), icon: "folder" as const },
-    { label: "مشاوره رزروشده", value: faNum(consultsCount), icon: "calendar" as const },
-    { label: "سند بارگذاری‌شده", value: faNum(docsCount), icon: "document" as const },
-    { label: "وکلای نشان‌شده", value: faNum(favoritesCount), icon: "star" as const },
+    { label: t("پرونده ثبت‌شده"), value: faNum(casesCount), icon: "folder" as const },
+    { label: t("مشاوره رزروشده"), value: faNum(consultsCount), icon: "calendar" as const },
+    { label: t("سند بارگذاری‌شده"), value: faNum(docsCount), icon: "document" as const },
+    { label: t("وکلای نشان‌شده"), value: faNum(favoritesCount), icon: "star" as const },
   ];
 
   return (
     <DashboardShell
       role="موکل"
-      title="پروفایل من"
+      title={t("پروفایل من")}
       name={user.name}
-      back={{ fallback: "/dashboard/client", label: "بازگشت به داشبورد" }}
+      back={{ fallback: "/dashboard/client", label: t("بازگشت به داشبورد") }}
       nav={[
-        { label: "نمای کلی", icon: "home", href: "/dashboard/client" },
-        { label: "پرونده‌های من", icon: "folder", href: "/dashboard/cases" },
-        { label: "رزرو مشاوره", icon: "calendar", href: "/consultation" },
-        { label: "پیگیری پرونده", icon: "search", href: "/track-case" },
-        { label: "پروفایل من", icon: "user", active: true, href: "/dashboard/client/profile" },
+        { label: t("نمای کلی"), icon: "home", href: "/dashboard/client" },
+        { label: t("پرونده‌های من"), icon: "folder", href: "/dashboard/cases" },
+        { label: t("رزرو مشاوره"), icon: "calendar", href: "/consultation" },
+        { label: t("پیگیری پرونده"), icon: "search", href: "/track-case" },
+        { label: t("پروفایل من"), icon: "user", active: true, href: "/dashboard/client/profile" },
         // توجه: لینک خروج در nav نباید باشد — next/link آن را prefetch می‌کند و
         // GET /api/auth/logout کوکی سشن را پاک می‌کرد (باگ «لاگ‌اوت ناگهانی»).
         // دکمهٔ خروج (plain <a> بدون prefetch) در هدر DashboardShell هست.
@@ -83,17 +90,17 @@ export default async function ClientProfilePage() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-extrabold text-foreground">{user.name}</h2>
-            <Badge tone="primary">{user.role === "lawyer" ? "وکیل" : "موکل"}</Badge>
-            {user.province && <Badge tone="neutral" icon="location">استان {user.province}</Badge>}
+            <Badge tone="primary">{user.role === "lawyer" ? t("وکیل") : t("موکل")}</Badge>
+            {user.province && <Badge tone="neutral" icon="location">{tf("استان {p}", { p: user.province })}</Badge>}
           </div>
           <p className="mt-1.5 text-xs text-muted">
             <span dir="ltr">{faNum(user.phone)}</span>
             {user.email ? ` • ${user.email}` : ""}
-            {` • عضو از ${faDate(user.createdAt)}`}
+            {` • ${tf("عضو از {d}", { d: faDate(user.createdAt) })}`}
           </p>
         </div>
         <div className="text-left">
-          <p className="text-xs text-muted">مجموع پرداخت‌های تأییدشده</p>
+          <p className="text-xs text-muted">{t("مجموع پرداخت‌های تأییدشده")}</p>
           <p className="text-xl font-extrabold text-foreground">{faPrice(paidTotal)}</p>
         </div>
       </Card>
@@ -116,10 +123,10 @@ export default async function ClientProfilePage() {
       {/* اطلاعات شخصی */}
       <Card hover={false}>
         <h2 className="flex items-center gap-2 font-bold text-foreground">
-          <Icon name="user" className="h-5 w-5 text-primary" /> اطلاعات شخصی
+          <Icon name="user" className="h-5 w-5 text-primary" /> {t("اطلاعات شخصی")}
         </h2>
         <p className="mb-4 mt-1 text-xs text-muted">
-          استان و شهر شما مستقیماً در پیشنهاد وکلای هم‌استان و شخصی‌سازی دستیار حقوقی هوشمند استفاده می‌شود.
+          {t("استان و شهر شما مستقیماً در پیشنهاد وکلای هم‌استان و شخصی‌سازی دستیار حقوقی هوشمند استفاده می‌شود.")}
         </p>
         <PersonalInfoForm
           initial={{
@@ -137,9 +144,9 @@ export default async function ClientProfilePage() {
       {/* امنیت */}
       <Card hover={false}>
         <h2 className="flex items-center gap-2 font-bold text-foreground">
-          <Icon name="lock" className="h-5 w-5 text-success" /> امنیت حساب
+          <Icon name="lock" className="h-5 w-5 text-success" /> {t("امنیت حساب")}
         </h2>
-        <p className="mb-4 mt-1 text-xs text-muted">برای تغییر رمز، رمز فعلی را تأیید کنید.</p>
+        <p className="mb-4 mt-1 text-xs text-muted">{t("برای تغییر رمز، رمز فعلی را تأیید کنید.")}</p>
         <PasswordForm />
       </Card>
 
@@ -147,14 +154,14 @@ export default async function ClientProfilePage() {
       <Card hover={false}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 font-bold text-foreground">
-            <Icon name="star" className="h-5 w-5 text-accent-text" /> وکلای نشان‌شده من
+            <Icon name="star" className="h-5 w-5 text-accent-text" /> {t("وکلای نشان‌شده من")}
           </h2>
           <Button href="/lawyers" variant="ghost" size="sm" icon="plus">
-            افزودن از دایرکتوری
+            {t("افزودن از دایرکتوری")}
           </Button>
         </div>
         <p className="mb-4 mt-1 text-xs text-muted">
-          وکلایی که در پروفایل‌شان نشان کرده‌اید، برای رزرو سریع مشاوره اینجا جمع شده‌اند.
+          {t("وکلایی که در پروفایل‌شان نشان کرده‌اید، برای رزرو سریع مشاوره اینجا جمع شده‌اند.")}
         </p>
         <FavoritesPanel />
       </Card>

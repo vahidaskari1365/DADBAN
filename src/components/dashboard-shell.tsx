@@ -5,13 +5,16 @@ import { Icon } from "./icons";
 import { BackButton } from "./back-button";
 import { TodayChip } from "./today-chip";
 import type { IconKey } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * پوستهٔ گرافیکی پنل‌ها (وکیل / موکل):
  *  - بنر گرادیانی با آواتار، تاریخ شمسی امروز، دکمهٔ بازگشت و خروج
  *  - منوی کناری گرافیکی با آیتم فعال گرادیانی و چیپ آیکونی
+ *  - چندزبانه: تیتر/سلام/خروج با t() ترجمه می‌شوند (کلید = رشتهٔ فارسی منبع)
  */
-export function DashboardShell({
+export async function DashboardShell({
   role,
   title,
   nav,
@@ -29,6 +32,8 @@ export function DashboardShell({
   /** دکمهٔ بازگشت — برای زیرصفحه‌ها (fallback مقصدی که اگر تاریخچه نبود می‌رود) */
   back?: { fallback?: string; label?: string };
 }) {
+  const t = await getT();
+  const tf = templateT(t);
   const isLawyer = role === "وکیل";
 
   return (
@@ -54,10 +59,10 @@ export function DashboardShell({
         <div className="relative">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              {back && <BackButton fallback={back.fallback} label={back.label ?? "بازگشت"} />}
+              {back && <BackButton fallback={back.fallback} label={back.label ?? t("بازگشت")} />}
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold">
                 <Icon name={isLawyer ? "badge" : "user"} className="h-3.5 w-3.5" aria-hidden />
-                پنل {role}
+                {isLawyer ? t("پنل وکیل") : t("پنل موکل")}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -70,7 +75,7 @@ export function DashboardShell({
                 className="!text-white/90 hover:!bg-white/15 hover:!text-white"
                 data-testid="logout-button"
               >
-                خروج
+                {t("خروج")}
               </Button>
             </div>
           </div>
@@ -82,7 +87,7 @@ export function DashboardShell({
               </span>
             )}
             <div className="min-w-0">
-              <p className="text-sm text-white/80">{name ? `سلام، ${name}` : "خوش آمدید"}</p>
+              <p className="text-sm text-white/80">{name ? tf("سلام، {name}", { name }) : t("خوش آمدید")}</p>
               <h1 className="mt-0.5 truncate text-xl font-extrabold sm:text-2xl">{title}</h1>
             </div>
           </div>
@@ -93,7 +98,7 @@ export function DashboardShell({
       <div className="grid gap-6 lg:grid-cols-[250px_1fr]">
         <aside className="min-w-0 lg:sticky lg:top-20 lg:self-start">
           <nav
-            aria-label={`منوی پنل ${role}`}
+            aria-label={isLawyer ? t("منوی پنل وکیل") : t("منوی پنل موکل")}
             className="flex gap-2 overflow-x-auto rounded-2xl border border-border bg-surface p-2 card-shadow lg:flex-col"
           >
             {nav.map((n) => {

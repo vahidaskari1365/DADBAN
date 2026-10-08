@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { ALL_PROVINCES, LOCATIONS, LEGAL_TOPICS, faPrice } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 type LawyerProfileInput = {
   name: string;
@@ -27,6 +29,8 @@ const RESPONSE_TIMES = ["کمتر از ۱۵ دقیقه", "کمتر از یک س�
 /** فرم پروفایل حرفه‌ای وکیل — PUT /api/lawyer/profile (فیلدهای عمومی پروفایل را تغذیه می‌کند) */
 export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInput; slug: string }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [name, setName] = useState(initial.name);
   const [title, setTitle] = useState(initial.title);
   const [bio, setBio] = useState(initial.bio);
@@ -60,11 +64,11 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (name.trim().length < 3) {
-      toast.error("نام را کامل وارد کنید.");
+      toast.error(t("نام را کامل وارد کنید."));
       return;
     }
     if (specialties.length === 0) {
-      toast.error("حداقل یک حوزه تخصص لازم است.");
+      toast.error(t("حداقل یک حوزه تخصص لازم است."));
       return;
     }
     setSaving(true);
@@ -89,13 +93,13 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
-        toast.success("پروفایل حرفه‌ای ذخیره شد و بلافاصله در صفحه عمومی اعمال می‌شود.");
+        toast.success(t("پروفایل حرفه‌ای ذخیره شد و بلافاصله در صفحه عمومی اعمال می‌شود."));
         router.refresh();
       } else {
-        toast.error(data.error ?? "ذخیره پروفایل ناموفق بود.");
+        toast.error(data.error ?? t("ذخیره پروفایل ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setSaving(false);
     }
@@ -111,17 +115,17 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
       {/* هویت */}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">نام و نام خانوادگی *</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("نام و نام خانوادگی *")}</span>
           <input value={name} onChange={(e) => setName(e.target.value)} required minLength={3} className={inputCls} />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">عنوان حرفه‌ای</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("عنوان حرفه‌ای")}</span>
           <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
         </label>
       </div>
 
       <label className="block">
-        <span className="mb-1.5 block text-xs font-medium text-muted">معرفی کوتاه (حداکثر ۳۰۰ نویسه — نمایش در کارت وکیل)</span>
+        <span className="mb-1.5 block text-xs font-medium text-muted">{t("معرفی کوتاه (حداکثر ۳۰۰ نویسه — نمایش در کارت وکیل)")}</span>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value.slice(0, 300))}
@@ -133,7 +137,7 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
       </label>
 
       <label className="block">
-        <span className="mb-1.5 block text-xs font-medium text-muted">درباره وکیل (معرفی کامل)</span>
+        <span className="mb-1.5 block text-xs font-medium text-muted">{t("درباره وکیل (معرفی کامل)")}</span>
         <textarea
           value={about}
           onChange={(e) => setAbout(e.target.value.slice(0, 4000))}
@@ -144,7 +148,7 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
 
       {/* تخصص‌ها */}
       <fieldset>
-        <legend className="mb-2 block text-xs font-medium text-muted">حوزه‌های تخصص * (حداکثر ۱۲ مورد)</legend>
+        <legend className="mb-2 block text-xs font-medium text-muted">{t("حوزه‌های تخصص * (حداکثر ۱۲ مورد)")}</legend>
         <div className="flex flex-wrap gap-2">
           {specialties.map((s) => (
             <span key={s} className={chipCls}>
@@ -152,20 +156,20 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
               <button
                 type="button"
                 onClick={() => removeFromList(specialties, setSpecialties, s)}
-                aria-label={`حذف ${s}`}
+                aria-label={tf("حذف {s}", { s })}
                 className="rounded-full p-0.5 hover:bg-primary/15"
               >
                 <Icon name="x" className="h-3 w-3" />
               </button>
             </span>
           ))}
-          {specialties.length === 0 && <span className="text-xs text-muted">هنوز تخصصی ثبت نشده است.</span>}
+          {specialties.length === 0 && <span className="text-xs text-muted">{t("هنوز تخصصی ثبت نشده است.")}</span>}
         </div>
         <div className="mt-2.5 flex gap-2">
           <input
             value={newSpecialty}
             onChange={(e) => setNewSpecialty(e.target.value)}
-            placeholder="تخصص جدید…"
+            placeholder={t("تخصص جدید…")}
             list="legal-topics"
             className={inputCls}
           />
@@ -188,7 +192,7 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
 
       {/* خدمات */}
       <fieldset>
-        <legend className="mb-2 block text-xs font-medium text-muted">خدمات (حداکثر ۱۶ مورد)</legend>
+        <legend className="mb-2 block text-xs font-medium text-muted">{t("خدمات (حداکثر ۱۶ مورد)")}</legend>
         <div className="flex flex-wrap gap-2">
           {services.map((s) => (
             <span key={s} className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1.5 text-xs font-semibold text-success">
@@ -196,20 +200,20 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
               <button
                 type="button"
                 onClick={() => removeFromList(services, setServices, s)}
-                aria-label={`حذف ${s}`}
+                aria-label={tf("حذف {s}", { s })}
                 className="rounded-full p-0.5 hover:bg-success/20"
               >
                 <Icon name="x" className="h-3 w-3" />
               </button>
             </span>
           ))}
-          {services.length === 0 && <span className="text-xs text-muted">هنوز خدمتی ثبت نشده است.</span>}
+          {services.length === 0 && <span className="text-xs text-muted">{t("هنوز خدمتی ثبت نشده است.")}</span>}
         </div>
         <div className="mt-2.5 flex gap-2">
           <input
             value={newService}
             onChange={(e) => setNewService(e.target.value)}
-            placeholder="مثلاً: تنظیم دادخواست مطالبه مهریه"
+            placeholder={t("مثلاً: تنظیم دادخواست مطالبه مهریه")}
             className={inputCls}
           />
           <Button
@@ -227,7 +231,7 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
       {/* موقعیت */}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">استان</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("استان")}</span>
           <select
             value={province}
             onChange={(e) => {
@@ -238,22 +242,22 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
           >
             {ALL_PROVINCES.map((p) => (
               <option key={p} value={p}>
-                استان {p}
+                {tf("استان {p}", { p })}
               </option>
             ))}
           </select>
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">شهر</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("شهر")}</span>
           <select value={city} onChange={(e) => setCity(e.target.value)} className={`${inputCls} cursor-pointer appearance-none`}>
             {cities.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {t(c)}
               </option>
             ))}
           </select>
           <span className="mt-1 block text-[11px] text-muted">
-            موکلانِ همین استان در پیشنهادها و فیلتر استان، شما را می‌بینند.
+            {t("موکلانِ همین استان در پیشنهادها و فیلتر استان، شما را می‌بینند.")}
           </span>
         </label>
       </div>
@@ -261,11 +265,11 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
       {/* پاسخ‌گویی و تعرفه */}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">زمان پاسخ‌گویی معمول</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">{t("زمان پاسخ‌گویی معمول")}</span>
           <select value={responseTime} onChange={(e) => setResponseTime(e.target.value)} className={`${inputCls} cursor-pointer appearance-none`}>
-            {RESPONSE_TIMES.map((t) => (
-              <option key={t} value={t}>
-                {t}
+            {RESPONSE_TIMES.map((rt) => (
+              <option key={rt} value={rt}>
+                {t(rt)}
               </option>
             ))}
           </select>
@@ -280,7 +284,7 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
           ).map(([label, value, setter, icon]) => (
             <label key={label} className="block">
               <span className="mb-1.5 flex items-center gap-1 text-xs font-medium text-muted">
-                <Icon name={icon} className="h-3.5 w-3.5" /> تعرفه {label}
+                <Icon name={icon} className="h-3.5 w-3.5" /> {tf("تعرفه {label}", { label })}
               </span>
               <input
                 type="number"
@@ -296,15 +300,15 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
         </div>
       </div>
       <p className="text-xs text-muted">
-        تعرفه‌ها به تومان است — نمونه فعلی: {faPrice(Number(priceChat || 0))} برای مشاوره متنی. مبلغ پیش از پرداخت به موکل شفاف نمایش داده می‌شود.
+        {tf("تعرفه‌ها به تومان است — نمونه فعلی: {n} برای مشاوره متنی. مبلغ پیش از پرداخت به موکل شفاف نمایش داده می‌شود.", { n: faPrice(Number(priceChat || 0)) })}
       </p>
 
       <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
         <Button type="submit" disabled={saving} icon="check">
-          {saving ? "در حال ذخیره…" : "ذخیره پروفایل حرفه‌ای"}
+          {saving ? t("در حال ذخیره…") : t("ذخیره پروفایل حرفه‌ای")}
         </Button>
         <Button href={`/lawyers/${slug}`} variant="ghost" icon="arrow">
-          مشاهده پروفایل عمومی
+          {t("مشاهده پروفایل عمومی")}
         </Button>
       </div>
     </form>

@@ -21,8 +21,18 @@ import { ReferralPanel } from "@/components/lawyer/referral-panel";
 import { TeamPanel } from "@/components/lawyer/team-panel";
 import { RemindersPanel } from "@/components/lawyer/reminders-panel";
 import { FeeCard } from "@/components/fee/fee-card";
-import { getT } from "@/lib/i18n/server";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { tdyn } from "@/lib/i18n/dynamic";
+import { templateT } from "@/lib/i18n/core";
 import Link from "next/link";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("پنل وکیل — داشبورد مدیریت"),
+    description: t("درخواست‌های موکلان، پرونده‌ها، نوبت‌های مشاوره، تیم و یادآورها برای وکلای دادبان."),
+  };
+}
 
 /** کاشی کلیک‌پذیر — کل کاشی به مقصد تیترش می‌رود (درخواست مالک: هر کارت باید لینک باشد) */
 function StatTile({ s }: { s: { label: string; value: string; icon: IconKey; tone: Tone; href: string } }) {
@@ -43,10 +53,6 @@ function StatTile({ s }: { s: { label: string; value: string; icon: IconKey; ton
   );
 }
 
-export const metadata: Metadata = {
-  title: "پنل وکیل — داشبورد مدیریت",
-  description: "درخواست‌های موکلان، پرونده‌ها، نوبت‌های مشاوره، تیم و یادآورها برای وکلای دادبان.",
-};
 export const dynamic = "force-dynamic";
 
 type NavItem = { label: string; icon: "home" | "badge" | "briefcase" | "user" | "chat" | "shield" | "mail" | "clock" | "folder" | "link"; active?: boolean; badge?: string; href?: string };
@@ -70,6 +76,8 @@ function IconChip({ icon, tone, size = "md" }: { icon: IconKey; tone: Tone; size
 
 export default async function LawyerDashboard() {
   const t = await getT();
+  const tf = templateT(t);
+  const locale = await getServerLocale();
   await ensureProfileSchema();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -214,6 +222,27 @@ export default async function LawyerDashboard() {
   const showConsultCards = can("consultations");
   const showCasesCard = can("cases");
 
+  // ترجمهٔ محتوای DB (موضوع/شهر پرونده، عنوان خدمت، نام موکل) برای زبان‌های غیرفارسی
+  const casesView = await Promise.all(
+    allCases.map(async (c) => ({
+      ...c,
+      subjectT: await tdyn(locale, c.subject, 300),
+      cityT: await tdyn(locale, c.city, 120),
+    })),
+  );
+  const scheduledView = await Promise.all(
+    scheduled.map(async (c) => ({ ...c, subjectT: await tdyn(locale, c.subject, 250) })),
+  );
+  const serviceReqsView = await Promise.all(
+    serviceReqs.map(async ({ req, serviceTitle, clientName }) => ({
+      req,
+      clientName,
+      serviceTitleT: serviceTitle ? await tdyn(locale, serviceTitle, 250) : serviceTitle,
+      reqTitleT: req.title ? await tdyn(locale, req.title, 300) : req.title,
+      cityT: req.city ? await tdyn(locale, req.city, 120) : req.city,
+    })),
+  );
+
   return (
     <DashboardShell
       role="وکیل"
@@ -325,16 +354,16 @@ export default async function LawyerDashboard() {
             {serviceReqs.length > 0 && <Badge tone="primary">{faNum(serviceReqs.length)} {t("مورد اخیر")}</Badge>}
           </div>
           <div className="mt-4 space-y-3">
-            {serviceReqs.length > 0 ? serviceReqs.map(({ req, serviceTitle, clientName }) => (
+            {serviceReqsView.length > 0 ? serviceReqsView.map(({ req, serviceTitleT, reqTitleT, clientName, cityT }) => (
               <a key={req.id} href="/manage" className="block rounded-xl border border-border p-3 transition-colors hover:border-primary/30 hover:bg-surface-2/60">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-foreground">{req.title}</p>
+                    <p className="text-sm font-bold text-foreground">{reqTitleT}</p>
                     <p className="mt-0.5 text-xs text-muted">
-                      {serviceTitle ?? t("خدمت")} • {t("موکل:")} {clientName ?? "—"} • <span className="font-mono" dir="ltr">{req.requestNumber}</span>
+                      {serviceTitleT ?? t("خدمت")} • {t("موکل:")} {clientName ?? "—"} • <span className="font-mono" dir="ltr">{req.requestNumber}</span>
                     </p>
                     <p className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted">
-                      {req.city && <span className="inline-flex items-center gap-1"><Icon name="location" className="h-3 w-3" />{req.city}</span>}
+                      {cityT && <span className="inline-flex items-center gap-1"><Icon name="location" className="h-3 w-3" />{cityT}</span>}
                       {req.caseNumber && <span dir="ltr" className="font-mono">{req.caseNumber}</span>}
                       <span>{faDate(req.createdAt)}</span>
                       {req.price ? <span>{faPrice(req.price)}</span> : null}
@@ -372,15 +401,15 @@ export default async function LawyerDashboard() {
               <Icon name="calendar" className="h-5 w-5 text-primary" /> {t("نوبت‌های آینده")}
             </h2>
             <div className="mt-4 space-y-2">
-              {scheduled.length > 0 ? scheduled.slice(0, 5).map((c) => (
+              {scheduledView.length > 0 ? scheduledView.slice(0, 5).map((c) => (
                 <div
                   key={c.id}
-                  aria-label={`نوبت ${c.subject}`}
+                  aria-label={tf("نوبت {s}", { s: c.subjectT })}
                   className="flex items-center gap-3 rounded-xl border border-border p-3"
                 >
                   <IconChip icon={c.type === "video" ? "video" : c.type === "chat" ? "chat" : "phone"} tone="primary" size="sm" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">{c.subject}</p>
+                    <p className="truncate text-sm font-medium text-foreground">{c.subjectT}</p>
                     <p className="text-xs text-muted">
                       {c.startsAt ? faDate(c.startsAt) : t("زمان در حال هماهنگی")} • {c.clientName}
                     </p>
@@ -406,17 +435,17 @@ export default async function LawyerDashboard() {
             {allCases.length > 0 && <Badge tone="primary">{faNum(allCases.length)} {t("مورد اخیر")}</Badge>}
           </div>
           <div className="mt-4 space-y-3">
-            {allCases.length > 0 ? allCases.map((c) => (
+            {casesView.length > 0 ? casesView.map((c) => (
               <Link
                 key={c.id}
                 href={`/track-case?code=${encodeURIComponent(c.trackingToken)}`}
-                aria-label={`پیگیری پرونده ${c.subject} با کد رهگیری محرمانه`}
+                aria-label={tf("پیگیری پرونده {s} با کد رهگیری محرمانه", { s: c.subjectT })}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border p-3 transition-all hover:border-primary/40 hover:bg-surface-2/60"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-foreground">{c.subject}</p>
+                  <p className="text-sm font-bold text-foreground">{c.subjectT}</p>
                   <p className="mt-0.5 text-xs text-muted">
-                    <span className="font-mono" dir="ltr">{c.caseNumber}</span> • {c.city} • {faDate(c.createdAt)}
+                    <span className="font-mono" dir="ltr">{c.caseNumber}</span> • {c.cityT} • {faDate(c.createdAt)}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">

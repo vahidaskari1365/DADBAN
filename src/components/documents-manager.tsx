@@ -1,14 +1,16 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
 
 type Doc = { id: number; name: string; type: string; size: number };
 
 export default function DocumentsManager() {
+  const t = useT();
   const [docs, setDocs] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
-  const [type, setType] = useState("مدرک");
+  const [type, setType] = useState("مدرک"); // مقدار ذخیره‌شده — نمایش با t() ترجمه می‌شود
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -24,7 +26,7 @@ export default function DocumentsManager() {
   useEffect(() => { queueMicrotask(() => void load()); }, [load]);
 
   const add = async () => {
-    if (!name.trim()) { setMsg("نام سند را وارد کنید."); return; }
+    if (!name.trim()) { setMsg(t("نام سند را وارد کنید.")); return; }
     setBusy(true);
     setMsg("");
     try {
@@ -38,16 +40,16 @@ export default function DocumentsManager() {
         setDocs((d) => [{ ...data.document, size: 0 }, ...d]);
         setName("");
       } else {
-        setMsg(data.error ?? "خطا در ثبت سند");
+        setMsg(data.error ?? t("خطا در ثبت سند"));
       }
     } catch {
-      setMsg("خطا در ارتباط با سرور");
+      setMsg(t("خطا در ارتباط با سرور"));
     } finally {
       setBusy(false);
     }
   };
   const remove = async (id: number) => {
-    if (!confirm("حذف این سند؟")) return;
+    if (!confirm(t("حذف این سند؟"))) return;
     await fetch(`/api/documents?id=${id}`, { method: "DELETE" });
     setDocs((d) => d.filter((x) => x.id !== id));
   };
@@ -58,31 +60,31 @@ export default function DocumentsManager() {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="نام سند (مثلاً کارت ملی)"
+          placeholder={t("نام سند (مثلاً کارت ملی)")}
           className="h-10 flex-1 rounded-xl border border-border-strong bg-background px-3 text-sm outline-none focus:border-primary"
         />
         <select value={type} onChange={(e) => setType(e.target.value)} className="h-10 rounded-xl border border-border-strong bg-background px-2 text-sm outline-none">
-          {["مدرک", "قرارداد", "سند", "دادخواست", "هویتی"].map((t) => <option key={t}>{t}</option>)}
+          {["مدرک", "قرارداد", "سند", "دادخواست", "هویتی"].map((dType) => <option key={dType} value={dType}>{t(dType)}</option>)}
         </select>
         <button onClick={add} disabled={busy} className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground disabled:opacity-50">
-          <Icon name="plus" className="h-3.5 w-3.5" /> {busy ? "در حال ثبت…" : "افزودن سند"}
+          <Icon name="plus" className="h-3.5 w-3.5" /> {busy ? t("در حال ثبت…") : t("افزودن سند")}
         </button>
       </div>
       {msg && <p className="mt-2 text-xs font-semibold text-danger">{msg}</p>}
       <div className="mt-4 space-y-2">
-        {loading && <p className="text-xs text-muted">در حال بارگذاری…</p>}
+        {loading && <p className="text-xs text-muted">{t("در حال بارگذاری…")}</p>}
         {!loading && docs.length === 0 && (
-          <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">هنوز سندی ثبت نکرده‌اید. نام و نوع سند را وارد و اضافه کنید.</p>
+          <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">{t("هنوز سندی ثبت نکرده‌اید. نام و نوع سند را وارد و اضافه کنید.")}</p>
         )}
         {docs.map((d) => (
           <div key={d.id} className="flex items-center gap-3 rounded-xl border border-border p-3">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2 text-foreground-soft"><Icon name="file" className="h-4 w-4" /></span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-foreground">{d.name}</p>
-              <p className="text-xs text-muted">{d.type}</p>
+              <p className="text-xs text-muted">{t(d.type)}</p>
             </div>
             <Icon name="lock" className="h-4 w-4 text-success" />
-            <button onClick={() => remove(d.id)} className="rounded-lg bg-danger/10 px-2 py-1 text-xs font-semibold text-danger hover:bg-danger/20">حذف</button>
+            <button onClick={() => remove(d.id)} className="rounded-lg bg-danger/10 px-2 py-1 text-xs font-semibold text-danger hover:bg-danger/20">{t("حذف")}</button>
           </div>
         ))}
       </div>

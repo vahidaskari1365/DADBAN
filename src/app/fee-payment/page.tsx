@@ -15,30 +15,34 @@ import { getT } from "@/lib/i18n/server";
  * شرط‌های مالی همیشه «بسته به توافق با وکیل» و «ثبت‌شده در قرارداد» بیان می‌شود.
  */
 
-export const metadata: Metadata = {
-  title: "حق‌الوکاله و پرداخت قسطی",
-  description:
-    "اگر پرداخت حق‌الوکاله برایتان دشوار است، دیگر نگران نباشید؛ در دادبان با توافق وکیل می‌توانید حق‌الوکاله را یکجا، قسطی (۲ تا ۴ قسط) یا مرحله‌ای بپردازید — با شرایط شفاف، ثبت در قرارداد و پیگیری آنلاین.",
-  keywords: [
-    "حق الوکاله",
-    "پرداخت قسطی حق الوکاله",
-    "قسطی کردن هزینه وکیل",
-    "هزینه وکیل قسطی",
-    "پرداخت مرحله‌ای حق‌الوکاله",
-    "تعرفه وکالت",
-    "دادبان",
-  ],
-  alternates: {
-    canonical: "/fee-payment",
-    languages: {
-      "fa-IR": "/fee-payment",
-      "x-default": "/fee-payment",
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("حق‌الوکاله و پرداخت قسطی"),
+    description: t(
+      "اگر پرداخت حق‌الوکاله برایتان دشوار است، دیگر نگران نباشید؛ در دادبان با توافق وکیل می‌توانید حق‌الوکاله را یکجا، قسطی (۲ تا ۴ قسط) یا مرحله‌ای بپردازید — با شرایط شفاف، ثبت در قرارداد و پیگیری آنلاین.",
+    ),
+    keywords: [
+      "حق الوکاله",
+      "پرداخت قسطی حق الوکاله",
+      "قسطی کردن هزینه وکیل",
+      "هزینه وکیل قسطی",
+      "پرداخت مرحله‌ای حق‌الوکاله",
+      "تعرفه وکالت",
+      "دادبان",
+    ],
+    alternates: {
+      canonical: "/fee-payment",
+      languages: {
+        "fa-IR": "/fee-payment",
+        "x-default": "/fee-payment",
+      },
     },
-  },
-  openGraph: {
-    title: "حق‌الوکاله، بدون دغدغهٔ پرداخت",
-    description:
-      "پرداخت یکجا، قسطی یا مرحله‌ای حق‌الوکاله — با توافق وکیل، ثبت در قرارداد و پیگیری شفاف در پنل موکل و وکیل.",
+    openGraph: {
+      title: t("حق‌الوکاله، بدون دغدغهٔ پرداخت"),
+      description: t(
+        "پرداخت یکجا، قسطی یا مرحله‌ای حق‌الوکاله — با توافق وکیل، ثبت در قرارداد و پیگیری شفاف در پنل موکل و وکیل.",
+      ),
     url: "/fee-payment",
     siteName: SITE_NAME,
     locale: "fa_IR",
@@ -52,14 +56,16 @@ export const metadata: Metadata = {
       },
     ],
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "حق‌الوکاله، بدون دغدغهٔ پرداخت | دادبان",
-    description:
-      "با توافق وکیل، حق‌الوکاله را یکجا، قسطی یا مرحله‌ای بپردازید — شفاف و قابل رهگیری.",
-    images: ["/images/fee-installment.png"],
-  },
-};
+      twitter: {
+        card: "summary_large_image",
+        title: t("حق‌الوکاله، بدون دغدغهٔ پرداخت | دادبان"),
+        description: t(
+          "با توافق وکیل، حق‌الوکاله را یکجا، قسطی یا مرحله‌ای بپردازید — شفاف و قابل رهگیری.",
+        ),
+        images: ["/images/fee-installment.png"],
+      },
+    };
+}
 
 /* ---------------- محتوای صفحه ---------------- */
 
@@ -282,7 +288,7 @@ export default async function FeePaymentPage() {
               <Reveal key={o.title} delay={i * 70}>
                 <div
                   className={`relative flex h-full flex-col rounded-2xl border bg-surface p-6 card-shadow ${
-                    o.highlight ? "border-accent/50 ring-1 ring-accent/25" : "border-border"
+                    o.highlight ? "fee-option-glow border-accent/50 ring-1 ring-accent/25" : "border-border"
                   }`}
                 >
                   {o.highlight && (

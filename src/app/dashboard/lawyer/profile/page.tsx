@@ -11,14 +11,21 @@ import { faNum, faPrice } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 import { LawyerProfileForm } from "@/components/profile/lawyer-profile-form";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { tdyn } from "@/lib/i18n/dynamic";
 
-export const metadata: Metadata = {
-  title: "پروفایل حرفه‌ای من — پنل وکیل",
-  description: "ویرایش اطلاعات حرفه‌ای که مستقیماً در پروفایل عمومی و جستجوی وکلا نمایش داده می‌شود.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("پروفایل حرفه‌ای من — پنل وکیل"),
+    description: t("ویرایش اطلاعات حرفه‌ای که مستقیماً در پروفایل عمومی و جستجوی وکلا نمایش داده می‌شود."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 export default async function LawyerProfileEditorPage() {
+  const t = await getT();
+  const locale = await getServerLocale();
   await ensureProfileSchema();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -35,18 +42,28 @@ export default async function LawyerProfileEditorPage() {
     }
   }
 
+  // ترجمهٔ نمایشی فیلدهای پروفایل برای زبان‌های غیرفارسی
+  const [nameT, titleT, cityT, provinceT] = l
+    ? await Promise.all([
+        tdyn(locale, l.name, 300),
+        tdyn(locale, l.title, 300),
+        tdyn(locale, l.city, 120),
+        tdyn(locale, l.province, 120),
+      ])
+    : ["", "", "", ""];
+
   return (
     <DashboardShell
       role="وکیل"
-      title="پروفایل حرفه‌ای من"
+      title={t("پروفایل حرفه‌ای من")}
       name={user.name}
-      back={{ fallback: "/dashboard/lawyer", label: "بازگشت به داشبورد" }}
+      back={{ fallback: "/dashboard/lawyer", label: t("بازگشت به داشبورد") }}
       nav={[
-        { label: "نمای کلی", icon: "home", href: "/dashboard/lawyer" },
-        { label: "پروفایل حرفه‌ای من", icon: "badge", active: true, href: "/dashboard/lawyer/profile" },
-        { label: "دایرکتوری وکلا", icon: "user", href: "/lawyers" },
-        { label: "پرسش‌های نیازمند پاسخ", icon: "chat", href: "/qa" },
-        { label: "پشتیبانی", icon: "shield", href: "/support" },
+        { label: t("نمای کلی"), icon: "home", href: "/dashboard/lawyer" },
+        { label: t("پروفایل حرفه‌ای من"), icon: "badge", active: true, href: "/dashboard/lawyer/profile" },
+        { label: t("دایرکتوری وکلا"), icon: "user", href: "/lawyers" },
+        { label: t("پرسش‌های نیازمند پاسخ"), icon: "chat", href: "/qa" },
+        { label: t("پشتیبانی"), icon: "shield", href: "/support" },
       ]}
     >
       {!linked || !l ? (
@@ -54,29 +71,29 @@ export default async function LawyerProfileEditorPage() {
         <>
           <EmptyState
             icon="id"
-            title="این حساب به پروفایل وکیلی متصل نیست"
-            desc="برای ویرایش پروفایل حرفه‌ای، حساب شما باید به یک پروفایل تأییدشده در دایرکتوری وکلا متصل شود. اتصال پس از راستی‌آزمایی شماره پروانه توسط کارشناسان دادبان انجام می‌شود."
+            title={t("این حساب به پروفایل وکیلی متصل نیست")}
+            desc={t("برای ویرایش پروفایل حرفه‌ای، حساب شما باید به یک پروفایل تأییدشده در دایرکتوری وکلا متصل شود. اتصال پس از راستی‌آزمایی شماره پروانه توسط کارشناسان دادبان انجام می‌شود.")}
           />
           <Card hover={false}>
             <h2 className="flex items-center gap-2 font-bold text-foreground">
-              <Icon name="document" className="h-5 w-5 text-primary" /> پروفایل حرفه‌ای چه چیزی به شما می‌دهد؟
+              <Icon name="document" className="h-5 w-5 text-primary" /> {t("پروفایل حرفه‌ای چه چیزی به شما می‌دهد؟")}
             </h2>
             <ul className="mt-3 space-y-2.5 text-sm leading-7 text-foreground-soft">
               {[
-                "ویرایش نام، عنوان، معرفی کوتاه و متن کامل «درباره وکیل»",
-                "تعیین حوزه‌های تخصص و خدمات — همان چیزی که در فیلتر تخصص صفحه وکلا جستجو می‌شود",
-                "انتخاب استان و شهر — نمایش در پیشنهادهای هم‌استان موکلان",
-                "تعیین تعرفه مشاوره متنی، صوتی و تصویری که پیش از پرداخت به موکل نشان داده می‌شود",
-                "زمان پاسخ‌گویی معمول که در پروفایل عمومی نمایش داده می‌شود",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2">
-                  <Icon name="check" className="mt-1.5 h-4 w-4 shrink-0 text-success" /> {t}
+                t("ویرایش نام، عنوان، معرفی کوتاه و متن کامل «درباره وکیل»"),
+                t("تعیین حوزه‌های تخصص و خدمات — همان چیزی که در فیلتر تخصص صفحه وکلا جستجو می‌شود"),
+                t("انتخاب استان و شهر — نمایش در پیشنهادهای هم‌استان موکلان"),
+                t("تعیین تعرفه مشاوره متنی، صوتی و تصویری که پیش از پرداخت به موکل نشان داده می‌شود"),
+                t("زمان پاسخ‌گویی معمول که در پروفایل عمومی نمایش داده می‌شود"),
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2">
+                  <Icon name="check" className="mt-1.5 h-4 w-4 shrink-0 text-success" /> {item}
                 </li>
               ))}
             </ul>
             <div className="mt-5 flex flex-wrap gap-2">
-              <Button href="/support" icon="mail">درخواست اتصال حساب به پروفایل</Button>
-              <Button href="/lawyers" variant="ghost" icon="arrow">مشاهده دایرکتوری وکلا</Button>
+              <Button href="/support" icon="mail">{t("درخواست اتصال حساب به پروفایل")}</Button>
+              <Button href="/lawyers" variant="ghost" icon="arrow">{t("مشاهده دایرکتوری وکلا")}</Button>
             </div>
           </Card>
         </>
@@ -87,11 +104,11 @@ export default async function LawyerProfileEditorPage() {
             <LawyerPhoto name={l.name} color={l.avatarColor} photoUrl={l.photoUrl} size="lg" />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-extrabold text-foreground">{l.name}</h2>
-                {l.verified && <Badge tone="primary" icon="badge">تأییدشده</Badge>}
-                {l.topRated && <Badge tone="accent" icon="star">وکیل برتر</Badge>}
+                <h2 className="text-lg font-extrabold text-foreground">{nameT}</h2>
+                {l.verified && <Badge tone="primary" icon="badge">{t("تأییدشده")}</Badge>}
+                {l.topRated && <Badge tone="accent" icon="star">{t("وکیل برتر")}</Badge>}
               </div>
-              <p className="mt-1 text-sm text-foreground-soft">{l.title} • {l.city} — {l.province}</p>
+              <p className="mt-1 text-sm text-foreground-soft">{titleT} • {cityT} — {provinceT}</p>
               <div className="mt-2">
                 <StarRating rating={l.rating} count={l.reviewCount} size="md" />
               </div>
@@ -99,21 +116,22 @@ export default async function LawyerProfileEditorPage() {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-xl font-extrabold text-foreground">{faNum(l.caseCount)}</p>
-                <p className="text-[11px] text-muted">پرونده</p>
+                <p className="text-[11px] text-muted">{t("پرونده")}</p>
               </div>
               <div>
                 <p className="text-xl font-extrabold text-foreground">{faNum(l.views.toLocaleString("en-US"))}</p>
-                <p className="text-[11px] text-muted">بازدید پروفایل</p>
+                <p className="text-[11px] text-muted">{t("بازدید پروفایل")}</p>
               </div>
               <div>
                 <p className="text-xl font-extrabold text-foreground">{faNum(l.rating.toFixed(1))}</p>
-                <p className="text-[11px] text-muted">امتیاز</p>
+                <p className="text-[11px] text-muted">{t("امتیاز")}</p>
               </div>
             </div>
           </Card>
 
           {/* Completeness — صادقانه، از روی فیلدهای واقعی */}
           <CompletenessCard
+            t={t}
             fields={{
               bio: l.bio,
               about: l.about,
@@ -129,9 +147,9 @@ export default async function LawyerProfileEditorPage() {
           <Card hover={false}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <h2 className="flex items-center gap-2 font-bold text-foreground">
-                <Icon name="badge" className="h-5 w-5 text-primary" /> ویرایش اطلاعات حرفه‌ای
+                <Icon name="badge" className="h-5 w-5 text-primary" /> {t("ویرایش اطلاعات حرفه‌ای")}
               </h2>
-              <span className="text-xs text-muted">تغییرات بلافاصله در پروفایل عمومی اعمال می‌شود.</span>
+              <span className="text-xs text-muted">{t("تغییرات بلافاصله در پروفایل عمومی اعمال می‌شود.")}</span>
             </div>
             <LawyerProfileForm
               slug={l.slug}
@@ -155,9 +173,7 @@ export default async function LawyerProfileEditorPage() {
           <Card hover={false} className="bg-primary-soft/40">
             <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft">
               <Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-              اطلاعات پروانه، امتیاز و تعداد پرونده توسط سیستم مدیریت می‌شود و از این فرم قابل تغییر نیست؛ این تضمین
-              اعتماد موکلان به پروفایل شماست. تعرفه‌ها پیش از پرداخت به موکل نمایش داده می‌شود و بازگشت وجه طبق سیاست
-              شفاف دادبان انجام می‌شود.
+              {t("اطلاعات پروانه، امتیاز و تعداد پرونده توسط سیستم مدیریت می‌شود و از این فرم قابل تغییر نیست؛ این تضمین اعتماد موکلان به پروفایل شماست. تعرفه‌ها پیش از پرداخت به موکل نمایش داده می‌شود و بازگشت وجه طبق سیاست شفاف دادبان انجام می‌شود.")}
             </p>
           </Card>
         </>
@@ -168,8 +184,10 @@ export default async function LawyerProfileEditorPage() {
 
 /** سنجش کامل بودن پروفایل — فقط از روی داده واقعی */
 function CompletenessCard({
+  t,
   fields,
 }: {
+  t: (fa: string) => string;
   fields: {
     bio: string;
     about: string;
@@ -181,12 +199,12 @@ function CompletenessCard({
   };
 }) {
   const items = [
-    { label: "معرفی کوتاه", done: fields.bio.trim().length >= 30, href: "#", icon: "user" as const },
-    { label: "متن کامل درباره وکیل", done: fields.about.trim().length >= 120, href: "#", icon: "document" as const },
-    { label: "حوزه‌های تخصص (حداقل ۲)", done: fields.specialties.length >= 2, href: "#", icon: "scale" as const },
-    { label: "فهرست خدمات", done: fields.services.length >= 3, href: "#", icon: "check" as const },
-    { label: "تعرفه هر سه نوع مشاوره", done: fields.prices.every((p) => p > 0), href: "#", icon: "money" as const },
-    { label: "عکس پروفایل", done: !!fields.photo, href: "/support", icon: "id" as const },
+    { label: t("معرفی کوتاه"), done: fields.bio.trim().length >= 30, href: "#", icon: "user" as const },
+    { label: t("متن کامل درباره وکیل"), done: fields.about.trim().length >= 120, href: "#", icon: "document" as const },
+    { label: t("حوزه‌های تخصص (حداقل ۲)"), done: fields.specialties.length >= 2, href: "#", icon: "scale" as const },
+    { label: t("فهرست خدمات"), done: fields.services.length >= 3, href: "#", icon: "check" as const },
+    { label: t("تعرفه هر سه نوع مشاوره"), done: fields.prices.every((p) => p > 0), href: "#", icon: "money" as const },
+    { label: t("عکس پروفایل"), done: !!fields.photo, href: "/support", icon: "id" as const },
   ];
   const done = items.filter((i) => i.done).length;
   const pct = Math.round((done / items.length) * 100);
@@ -195,7 +213,7 @@ function CompletenessCard({
     <Card hover={false}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 font-bold text-foreground">
-          <Icon name="check" className="h-5 w-5 text-success" /> کامل بودن پروفایل
+          <Icon name="check" className="h-5 w-5 text-success" /> {t("کامل بودن پروفایل")}
         </h2>
         <p className="text-sm font-extrabold text-foreground">{faNum(pct)}٪</p>
       </div>
@@ -207,7 +225,7 @@ function CompletenessCard({
           aria-valuenow={pct}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label="درصد کامل بودن پروفایل"
+          aria-label={t("درصد کامل بودن پروفایل")}
         />
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -225,8 +243,7 @@ function CompletenessCard({
       </div>
       {pct < 100 && (
         <p className="mt-3 text-xs leading-6 text-muted">
-          پروفایل کامل‌تر، شانس دیده‌شدن در پیشنهادها و جستجوی موکلان را بالا می‌برد — همان چیزی که الگوریتم
-          پیشنهاد دادبان به آن وزن می‌دهد.
+          {t("پروفایل کامل‌تر، شانس دیده‌شدن در پیشنهادها و جستجوی موکلان را بالا می‌برد — همان چیزی که الگوریتم پیشنهاد دادبان به آن وزن می‌دهد.")}
         </p>
       )}
     </Card>

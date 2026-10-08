@@ -9,12 +9,24 @@ import { Icon } from "@/components/icons";
 import { ArticleBody } from "@/components/article-body";
 import { ShareButtons } from "@/components/share-buttons";
 import { faNum } from "@/lib/data";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { makeT } from "@/lib/i18n/core";
+import { tdyn, tdynArticle } from "@/lib/i18n/dynamic";
 import Link from "next/link";
 import { SEO_BASE } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 interface FaqItem { q: string; a: string }
+
+/** برچسب زبان برای JSON-LD */
+const LANG_TAG: Record<string, string> = {
+  fa: "fa-IR",
+  en: "en",
+  ar: "ar",
+  tr: "tr",
+  zh: "zh",
+};
 
 async function getArticle(slug: string) {
   try {
@@ -33,19 +45,28 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const a = await getArticle(slug);
-  if (!a) return { title: "مقاله یافت نشد" };
+  if (!a) {
+    const st = makeT(await getServerLocale());
+    return { title: st("مقاله یافت نشد") };
+  }
+  // متادیتا با دادهٔ ترجمه‌شده (سرور) — در fa همان متن اصلی
+  const locale = await getServerLocale();
+  const [title, excerpt] = await Promise.all([
+    tdyn(locale, a.title, 400),
+    tdyn(locale, a.excerpt, 800),
+  ]);
   return {
-    title: a.title,
-    description: a.excerpt,
+    title,
+    description: excerpt,
     alternates: { canonical: `/knowledge/${slug}` },
     authors: [{ name: a.author }],
     keywords: [a.category, ...a.title.split(" ").filter((w) => w.length > 3)].slice(0, 8),
     openGraph: {
       type: "article",
-      title: a.title,
-      description: a.excerpt,
+      title,
+      description: excerpt,
       url: `/knowledge/${slug}`,
-      images: a.imageUrl ? [{ url: a.imageUrl, alt: a.imageAlt || a.title }] : undefined,
+      images: a.imageUrl ? [{ url: a.imageUrl, alt: a.imageAlt || title }] : undefined,
     },
   };
 }
@@ -56,30 +77,54 @@ export default async function ArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const a = await getArticle(slug);
-  if (!a) notFound();
+  const original = await getArticle(slug);
+  if (!original) notFound();
+
+  const t = await getT();
+  const locale = await getServerLocale();
 
   // مقالات مرتبط: ابتدا هم‌دسته، سپس تازه‌ترین مقالات دیگر (شبکه داخلی قوی‌تر)
-  let related: typeof articles.$inferSelect[] = [];
+  // — کوئری با دستهٔ اصلی انجام می‌شود؛ ترجمه فقط برای نمایش است
+  let relatedOriginal: typeof articles.$inferSelect[] = [];
   try {
-    related = await db
+    relatedOriginal = await db
       .select()
       .from(articles)
-      .where(eq(articles.category, a.category))
+      .where(eq(articles.category, original.category))
       .orderBy(desc(articles.publishedAt))
-      .then((r) => r.filter((x) => x.slug !== a.slug).slice(0, 3));
-    if (related.length < 3) {
+      .then((r) => r.filter((x) => x.slug !== original.slug).slice(0, 3));
+    if (relatedOriginal.length < 3) {
       const more = await db
         .select()
         .from(articles)
-        .where(ne(articles.slug, a.slug))
+        .where(ne(articles.slug, original.slug))
         .orderBy(desc(articles.views))
-        .then((r) => r.filter((x) => !related.some((y) => y.slug === x.slug)).slice(0, 3 - related.length));
-      related = [...related, ...more];
+        .then((r) => r.filter((x) => !relatedOriginal.some((y) => y.slug === x.slug)).slice(0, 3 - relatedOriginal.length));
+      relatedOriginal = [...relatedOriginal, ...more];
     }
   } catch (err) {
     console.error("[dadban] related articles query failed:", err);
   }
+
+  // کل مقاله (عنوان/دسته/چکیده/پاسخ سریع/محتوای کامل/faq/تصویر/نویسنده) یکجا ترجمه می‌شود
+  // — فیلدهای nullable با "" نرمال می‌شوند تا با امضای tdynArticle سازگار باشند
+  const a = await tdynArticle(locale, {
+    ...original,
+    quickAnswer: original.quickAnswer ?? "",
+    faq: original.faq ?? "",
+  });
+
+  // مقالات مرتبط — فقط فیلدهای نمایشی (title + category)
+  const related = await Promise.all(
+    relatedOriginal.map(async (r) => {
+      if (locale === "fa") return r;
+      const [title, category] = await Promise.all([
+        tdyn(locale, r.title, 400),
+        tdyn(locale, r.category, 200),
+      ]);
+      return { ...r, title, category };
+    }),
+  );
 
   let faq: FaqItem[] = [];
   try {
@@ -99,12 +144,12 @@ export default async function ArticlePage({
       headline: a.title,
       description: a.excerpt,
       articleSection: a.category,
-      inLanguage: "fa-IR",
+      inLanguage: LANG_TAG[locale] ?? "fa-IR",
       wordCount,
       author: { "@type": "Person", name: a.author, jobTitle: a.authorRole },
       publisher: { "@type": "Organization", name: "دادبان", url: SEO_BASE },
-      datePublished: a.publishedAt,
-      dateModified: a.publishedAt,
+      datePublished: original.publishedAt,
+      dateModified: original.publishedAt,
       mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
       image: a.imageUrl ? `${SEO_BASE}${a.imageUrl}` : undefined,
     },
@@ -112,8 +157,8 @@ export default async function ArticlePage({
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "خانه", item: SEO_BASE },
-        { "@type": "ListItem", position: 2, name: "بانک دانش حقوقی", item: `${SEO_BASE}/knowledge` },
+        { "@type": "ListItem", position: 1, name: t("خانه"), item: SEO_BASE },
+        { "@type": "ListItem", position: 2, name: t("بانک دانش حقوقی"), item: `${SEO_BASE}/knowledge` },
         { "@type": "ListItem", position: 3, name: a.title, item: articleUrl },
       ],
     },
@@ -135,10 +180,10 @@ export default async function ArticlePage({
       <article>
         <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
           <Container>
-            <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted" aria-label="مسیر صفحه">
-              <Link href="/" className="hover:text-primary">خانه</Link>
+            <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted" aria-label={t("مسیر صفحه")}>
+              <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
               <Icon name="chevron" className="h-3 w-3 rotate-180" />
-              <Link href="/knowledge" className="hover:text-primary">دانش حقوقی</Link>
+              <Link href="/knowledge" className="hover:text-primary">{t("دانش حقوقی")}</Link>
               <Icon name="chevron" className="h-3 w-3 rotate-180" />
               <span className="text-foreground-soft">{a.category}</span>
             </nav>
@@ -146,9 +191,9 @@ export default async function ArticlePage({
             <h1 className="mt-3 max-w-3xl text-2xl font-extrabold leading-9 text-foreground sm:text-3xl">{a.title}</h1>
             <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted">
               <span className="inline-flex items-center gap-1.5"><Icon name="user" className="h-4 w-4" /> {a.author} — {a.authorRole}</span>
-              <span className="inline-flex items-center gap-1.5"><Icon name="clock" className="h-4 w-4" /> {faNum(a.readTime)} دقیقه مطالعه</span>
-              <span className="inline-flex items-center gap-1.5"><Icon name="star" className="h-4 w-4" /> {faNum(a.views.toLocaleString("en-US"))} بازدید</span>
-              <span className="inline-flex items-center gap-1.5"><Icon name="document" className="h-4 w-4" /> {faNum(wordCount.toLocaleString("en-US"))} واژه</span>
+              <span className="inline-flex items-center gap-1.5"><Icon name="clock" className="h-4 w-4" /> {faNum(a.readTime)} {t("دقیقه مطالعه")}</span>
+              <span className="inline-flex items-center gap-1.5"><Icon name="star" className="h-4 w-4" /> {faNum(a.views.toLocaleString("en-US"))} {t("بازدید")}</span>
+              <span className="inline-flex items-center gap-1.5"><Icon name="document" className="h-4 w-4" /> {faNum(wordCount.toLocaleString("en-US"))} {t("واژه")}</span>
             </div>
           </Container>
         </section>
@@ -176,7 +221,7 @@ export default async function ArticlePage({
             {a.quickAnswer && (
               <div className="mb-7 rounded-2xl border border-accent/30 bg-accent-soft/40 p-5">
                 <p className="flex items-center gap-2 text-sm font-black text-foreground">
-                  <Icon name="quote" className="h-4 w-4 text-accent-text" /> پاسخ کوتاه
+                  <Icon name="quote" className="h-4 w-4 text-accent-text" /> {t("پاسخ کوتاه")}
                 </p>
                 <p className="mt-2 text-[15px] leading-8 text-foreground-soft">{a.quickAnswer}</p>
               </div>
@@ -188,8 +233,8 @@ export default async function ArticlePage({
 
             {/* پرسش‌های متداول (AEO/GEO) */}
             {faq.length > 0 && (
-              <section aria-label="پرسش‌های متداول" className="mt-10">
-                <h2 className="border-r-4 border-accent pr-3 text-lg font-black text-foreground sm:text-xl">پرسش‌های متداول</h2>
+              <section aria-label={t("پرسش‌های متداول")} className="mt-10">
+                <h2 className="border-r-4 border-accent pr-3 text-lg font-black text-foreground sm:text-xl">{t("پرسش‌های متداول")}</h2>
                 <div className="mt-4 space-y-3">
                   {faq.map((f, i) => (
                     <details key={i} className="group rounded-2xl border border-border bg-surface p-4 open:border-primary/30">
@@ -213,28 +258,28 @@ export default async function ArticlePage({
 
             <Card hover={false} className="mt-8 bg-primary-soft/50">
               <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <Icon name="sparkles" className="h-4 w-4 text-accent-text" /> سؤال حقوقی دارید؟
+                <Icon name="sparkles" className="h-4 w-4 text-accent-text" /> {t("سؤال حقوقی دارید؟")}
               </h2>
               <p className="mt-1.5 text-sm leading-6 text-muted">
-                برای مشاوره تخصصی درباره این موضوع با وکیل متخصص صحبت کنید یا از دستیار هوش مصنوعی کمک بگیرید.
+                {t("برای مشاوره تخصصی درباره این موضوع با وکیل متخصص صحبت کنید یا از دستیار هوش مصنوعی کمک بگیرید.")}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button href="/consultation" icon="chat" size="sm">رزرو مشاوره</Button>
-                <Button href="/ai-assistant" variant="outline" icon="sparkles" size="sm">پرسیدن از دستیار</Button>
+                <Button href="/consultation" icon="chat" size="sm">{t("رزرو مشاوره")}</Button>
+                <Button href="/ai-assistant" variant="outline" icon="sparkles" size="sm">{t("پرسیدن از دستیار")}</Button>
               </div>
             </Card>
 
             <p className="mt-6 text-center text-xs leading-5 text-muted">
               <Icon name="alert" className="ml-1 inline h-3.5 w-3.5 text-warning" />
-              این محتوا صرفاً جنبه آموزشی دارد و جایگزین مشاوره تخصصی وکیل نیست.
+              {t("این محتوا صرفاً جنبه آموزشی دارد و جایگزین مشاوره تخصصی وکیل نیست.")}
             </p>
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
             <Card hover={false}>
-              <h2 className="font-bold text-foreground">مقالات مرتبط</h2>
+              <h2 className="font-bold text-foreground">{t("مقالات مرتبط")}</h2>
               {related.length === 0 ? (
-                <p className="mt-2 text-sm text-muted">مقاله مرتبط یافت نشد.</p>
+                <p className="mt-2 text-sm text-muted">{t("مقاله مرتبط یافت نشد.")}</p>
               ) : (
                 <div className="mt-3 space-y-2">
                   {related.map((r) => (
@@ -247,13 +292,13 @@ export default async function ArticlePage({
               )}
             </Card>
             <Card hover={false} className="bg-primary-soft/40">
-              <h2 className="text-sm font-bold text-foreground">لینک‌های مفید</h2>
+              <h2 className="text-sm font-bold text-foreground">{t("لینک‌های مفید")}</h2>
               <div className="mt-3 flex flex-col gap-1.5 text-sm">
-                <Link href="/lawyers" className="text-foreground-soft transition-colors hover:text-primary">یافتن وکیل متخصص</Link>
-                <Link href="/contracts/builder" className="text-foreground-soft transition-colors hover:text-primary">قراردادساز دادبان</Link>
-                <Link href="/legal-forms" className="text-foreground-soft transition-colors hover:text-primary">فرم‌های حقوقی</Link>
-                <Link href="/qa" className="text-foreground-soft transition-colors hover:text-primary">پرسش و پاسخ حقوقی</Link>
-                <Link href="/laws" className="text-foreground-soft transition-colors hover:text-primary">مرکز قوانین</Link>
+                <Link href="/lawyers" className="text-foreground-soft transition-colors hover:text-primary">{t("یافتن وکیل متخصص")}</Link>
+                <Link href="/contracts/builder" className="text-foreground-soft transition-colors hover:text-primary">{t("قراردادساز دادبان")}</Link>
+                <Link href="/legal-forms" className="text-foreground-soft transition-colors hover:text-primary">{t("فرم‌های حقوقی")}</Link>
+                <Link href="/qa" className="text-foreground-soft transition-colors hover:text-primary">{t("پرسش و پاسخ حقوقی")}</Link>
+                <Link href="/laws" className="text-foreground-soft transition-colors hover:text-primary">{t("مرکز قوانین")}</Link>
               </div>
             </Card>
           </aside>

@@ -7,6 +7,8 @@ import { Container, Card, Badge, Button, StarRating } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
 import { formatJalaliDateTime, relativeTimeJalali } from "@/lib/jalali";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * «پیشنهاد وکلای استان شما» — موکل با شمارهٔ پرونده + کد پیگیری محرمانه وارد می‌شود:
@@ -49,6 +51,8 @@ function OffersContent() {
   const search = useSearchParams();
   const cn = search.get("cn") ?? "";
   const token = search.get("t") ?? "";
+  const t = useT();
+  const tf = templateT(t);
 
   const [data, setData] = useState<Payload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -66,13 +70,13 @@ function OffersContent() {
       .then((r) => r.json())
       .then((d: Payload) => {
         if (!d.ok) {
-          setError(d.error ?? "دریافت پیشنهادها ناموفق بود.");
+          setError(d.error ?? t("دریافت پیشنهادها ناموفق بود."));
           return;
         }
         setError(null);
         setData(d);
       })
-      .catch(() => setError("ارتباط برقرار نشد؛ اتصال اینترنت را بررسی کنید."));
+      .catch(() => setError(t("ارتباط برقرار نشد؛ اتصال اینترنت را بررسی کنید.")));
   }, [cn, token]);
 
   useEffect(() => {
@@ -95,7 +99,7 @@ function OffersContent() {
       setAccepted(true);
       load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "انتخاب انجام نشد.");
+      setError(e instanceof Error ? e.message : t("انتخاب انجام نشد."));
     } finally {
       setAccepting(null);
     }
@@ -115,7 +119,7 @@ function OffersContent() {
       setReplyDraft("");
       load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "ارسال پاسخ انجام نشد.");
+      setError(e instanceof Error ? e.message : t("ارسال پاسخ انجام نشد."));
     } finally {
       setSending(false);
     }
@@ -128,12 +132,13 @@ function OffersContent() {
           <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent-text">
             <Icon name="lock" className="h-7 w-7" />
           </span>
-          <h1 className="mt-4 text-xl font-extrabold text-foreground">کد پیگیری لازم است</h1>
+          <h1 className="mt-4 text-xl font-extrabold text-foreground">{t("کد پیگیری لازم است")}</h1>
           <p className="mt-2 text-sm leading-7 text-muted">
-            برای دیدن پیشنهاد وکلا، شمارهٔ پرونده و کد پیگیری محرمانه‌ای که هنگام ثبت پرونده گرفته‌اید لازم است.
-            لینک کامل را از صفحهٔ پرداخت یا پیگیری پرونده باز کنید.
+            {t("برای دیدن پیشنهاد وکلا، شمارهٔ پرونده و کد پیگیری محرمانه‌ای که هنگام ثبت پرونده گرفته‌اید لازم است.")}
+            {" "}
+            {t("لینک کامل را از صفحهٔ پرداخت یا پیگیری پرونده باز کنید.")}
           </p>
-          <Button href="/track-case" variant="outline" className="mt-5">پیگیری پرونده</Button>
+          <Button href="/track-case" variant="outline" className="mt-5">{t("پیگیری پرونده")}</Button>
         </div>
       </Container>
     );
@@ -147,14 +152,14 @@ function OffersContent() {
   return (
     <Container className="py-10">
       <div className="mx-auto max-w-3xl">
-        <nav className="flex items-center gap-1.5 text-xs text-muted" aria-label="مسیر صفحه">
-          <Link href="/" className="hover:text-primary">خانه</Link>
+        <nav className="flex items-center gap-1.5 text-xs text-muted" aria-label={t("مسیر صفحه")}>
+          <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
           <Icon name="chevron" className="h-3 w-3 rotate-180" />
-          <Link href="/track-case" className="hover:text-primary">پیگیری پرونده</Link>
+          <Link href="/track-case" className="hover:text-primary">{t("پیگیری پرونده")}</Link>
           <Icon name="chevron" className="h-3 w-3 rotate-180" />
-          <span className="text-foreground-soft">پیشنهاد وکلا</span>
+          <span className="text-foreground-soft">{t("پیشنهاد وکلا")}</span>
         </nav>
-        <h1 className="mt-3 text-2xl font-extrabold text-foreground">پیشنهاد وکلای استان شما</h1>
+        <h1 className="mt-3 text-2xl font-extrabold text-foreground">{t("پیشنهاد وکلای استان شما")}</h1>
         {data?.case && (
           <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
             <span className="font-bold text-foreground">{data.case.subject}</span>
@@ -165,7 +170,7 @@ function OffersContent() {
 
         {accepted && (
           <p className="mt-4 flex items-center gap-2 rounded-xl border border-success/30 bg-success/5 px-3 py-2.5 text-xs font-bold text-success" role="status">
-            <Icon name="check" className="h-4 w-4" /> وکیل انتخاب شد — حالا می‌توانید پاسخ پیام او را رایگان بدهید.
+            <Icon name="check" className="h-4 w-4" /> {t("وکیل انتخاب شد — حالا می‌توانید پاسخ پیام او را رایگان بدهید.")}
           </p>
         )}
         {error && (
@@ -177,14 +182,14 @@ function OffersContent() {
           <Card hover={false} className="mt-6 border-success/40">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
-                <Icon name="chat" className="h-4 w-4 text-success" /> گفتگو با {chosen.lawyerName}
+                <Icon name="chat" className="h-4 w-4 text-success" /> {tf("گفتگو با {n}", { n: chosen.lawyerName })}
               </h2>
-              <Badge tone="success" icon="check">انتخاب شما</Badge>
+              <Badge tone="success" icon="check">{t("انتخاب شما")}</Badge>
             </div>
             <div className="mt-3 max-h-72 space-y-2 overflow-y-auto">
               {chosen.replies.length === 0 && (
                 <p className="rounded-xl bg-surface-2/60 px-3 py-2.5 text-xs leading-6 text-muted">
-                  پیام وکیل در کارت زیر است؛ پاسخ شما همان‌جا ثبت می‌شود و وکیل متوجه می‌شود.
+                  {t("پیام وکیل در کارت زیر است؛ پاسخ شما همان‌جا ثبت می‌شود و وکیل متوجه می‌شود.")}
                 </p>
               )}
               {chosen.replies.map((r) => (
@@ -196,7 +201,7 @@ function OffersContent() {
                       : "bg-surface-2 text-foreground"
                   }`}
                 >
-                  <span className="block font-bold">{r.sender === "client" ? "شما" : chosen.lawyerName}</span>
+                  <span className="block font-bold">{r.sender === "client" ? t("شما") : chosen.lawyerName}</span>
                   {r.body}
                   <span className={`mt-1 block text-[10px] ${r.sender === "client" ? "text-primary-foreground/70" : "text-muted"}`}>
                     {formatJalaliDateTime(r.createdAt)}
@@ -209,12 +214,12 @@ function OffersContent() {
                 value={replyDraft}
                 onChange={(e) => setReplyDraft(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendReply(chosen.id); } }}
-                placeholder="پاسخ شما به وکیل — رایگان…"
+                placeholder={t("پاسخ شما به وکیل — رایگان…")}
                 className={fieldCls}
-                aria-label="پاسخ شما به وکیل"
+                aria-label={t("پاسخ شما به وکیل")}
               />
               <Button onClick={() => sendReply(chosen.id)} disabled={sending || !replyDraft.trim()} icon="chat" className="shrink-0">
-                {sending ? "…" : "ارسال"}
+                {sending ? "…" : t("ارسال")}
               </Button>
             </div>
           </Card>
@@ -222,13 +227,13 @@ function OffersContent() {
 
         {/* همهٔ پیشنهادها */}
         <h2 className="mt-8 text-sm font-bold text-foreground">
-          نظر و قیمت وکلا {offers.length > 0 && <span className="text-muted">({faNum(offers.length)} پیشنهاد)</span>}
+          {t("نظر و قیمت وکلا")} {offers.length > 0 && <span className="text-muted">({tf("{n} پیشنهاد", { n: faNum(offers.length) })})</span>}
         </h2>
         <div className="mt-3 space-y-3" data-testid="offers-list">
-          {!data && !error && <p className="rounded-xl border border-border bg-surface-2/40 px-4 py-6 text-center text-xs text-muted">در حال دریافت پیشنهادها…</p>}
+          {!data && !error && <p className="rounded-xl border border-border bg-surface-2/40 px-4 py-6 text-center text-xs text-muted">{t("در حال دریافت پیشنهادها…")}</p>}
           {data && offers.length === 0 && (
             <p className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-xs leading-6 text-muted">
-              هنوز وکیلی برای این پرونده پیشنهاد ثبت نکرده است. وکلای «{data.case?.city}» به‌محض بررسی پرونده، نظر و قیمت خود را همین‌جا ثبت می‌کنند — این صفحه را بعداً دوباره باز کنید.
+              {tf("هنوز وکیلی برای این پرونده پیشنهاد ثبت نکرده است. وکلای «{city}» به‌محض بررسی پرونده، نظر و قیمت خود را همین‌جا ثبت می‌کنند — این صفحه را بعداً دوباره باز کنید.", { city: data.case?.city ?? "" })}
             </p>
           )}
           {offers.filter((o) => o.status !== "accepted").map((o) => {
@@ -247,14 +252,14 @@ function OffersContent() {
                     <div className="min-w-0">
                       <p className="flex items-center gap-1.5 text-sm font-bold text-foreground">
                         {o.lawyerName}
-                        {o.lawyerVerified && <Icon name="badge" className="h-3.5 w-3.5 text-primary" aria-label="احراز هویت‌شده" />}
-                        {isDeclined && <Badge tone="neutral">ردشده</Badge>}
+                        {o.lawyerVerified && <Icon name="badge" className="h-3.5 w-3.5 text-primary" aria-label={t("احراز هویت‌شده")} />}
+                        {isDeclined && <Badge tone="neutral">{t("ردشده")}</Badge>}
                       </p>
                       <p className="text-[11px] text-muted">{o.lawyerCity}</p>
                     </div>
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-extrabold text-primary tnum">{o.price > 0 ? faPrice(o.price) : "توافقی"}</p>
+                    <p className="text-sm font-extrabold text-primary tnum">{o.price > 0 ? faPrice(o.price) : t("توافقی")}</p>
                     <p className="text-[10px] text-muted">{relativeTimeJalali(o.createdAt)}</p>
                   </div>
                 </div>
@@ -269,7 +274,7 @@ function OffersContent() {
                     className="mt-3"
                     data-testid={`accept-${o.id}`}
                   >
-                    {accepting === o.id ? "در حال انتخاب…" : "انتخاب این وکیل"}
+                    {accepting === o.id ? t("در حال انتخاب…") : t("انتخاب این وکیل")}
                   </Button>
                 )}
               </Card>
@@ -278,7 +283,7 @@ function OffersContent() {
         </div>
 
         <p className="mt-6 text-center text-[11px] leading-5 text-muted">
-          انتخاب وکیل هیچ هزینه‌ای ندارد و پاسخ دادن به پیام وکیلِ انتخابی هم رایگان است؛ پرداخت فقط طبق توافق با همان وکیل انجام می‌شود.
+          {t("انتخاب وکیل هیچ هزینه‌ای ندارد و پاسخ دادن به پیام وکیلِ انتخابی هم رایگان است؛ پرداخت فقط طبق توافق با همان وکیل انجام می‌شود.")}
         </p>
       </div>
     </Container>
@@ -286,10 +291,11 @@ function OffersContent() {
 }
 
 export default function CaseOffersPage() {
+  const t = useT();
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted">در حال بارگذاری…</div>
+        <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted">{t("در حال بارگذاری…")}</div>
       }
     >
       <OffersContent />

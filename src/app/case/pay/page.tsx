@@ -12,6 +12,7 @@ import { Container, Button, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
+import { useT } from "@/lib/i18n/provider";
 import Link from "next/link";
 
 const STAGES = [
@@ -42,6 +43,7 @@ interface PayCtx {
 function PayContent() {
   const search = useSearchParams();
   const router = useRouter();
+  const t = useT();
   const [ctx, setCtx] = useState<PayCtx | null>(null);
   const [gateway, setGateway] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -98,7 +100,7 @@ function PayContent() {
       setDone({ gateway, message: data.message });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "ثبت درگاه پرداخت انجام نشد.");
+      setError(e instanceof Error ? e.message : t("ثبت درگاه پرداخت انجام نشد."));
     } finally {
       setLoading(false);
     }
@@ -114,12 +116,12 @@ function PayContent() {
             <span className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-success/15 text-success">
               <Icon name="check" className="h-8 w-8" />
             </span>
-            <h1 className="mt-5 text-2xl font-extrabold text-foreground">پرونده شما ثبت شد</h1>
+            <h1 className="mt-5 text-2xl font-extrabold text-foreground">{t("پرونده شما ثبت شد")}</h1>
             <p className="mt-2 text-sm leading-7 text-muted">
-              شماره پرونده: <span className="font-bold text-primary" dir="ltr">{ctx?.caseNumber ?? "—"}</span>
+              {t("شماره پرونده:")} <span className="font-bold text-primary" dir="ltr">{ctx?.caseNumber ?? "—"}</span>
               {ctx?.trackingToken && (
                 <>
-                  <br />کد پیگیری محرمانه: <span className="font-mono font-bold text-primary" dir="ltr">{ctx.trackingToken}</span>
+                  <br />{t("کد پیگیری محرمانه:")} <span className="font-mono font-bold text-primary" dir="ltr">{ctx.trackingToken}</span>
                 </>
               )}
             </p>
@@ -130,7 +132,7 @@ function PayContent() {
 
           <Card hover={false} className="mt-8">
             <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
-              <Icon name="folder" className="h-4 w-4 text-primary" /> مراحل پرونده
+              <Icon name="folder" className="h-4 w-4 text-primary" /> {t("مراحل پرونده")}
             </h2>
             <ol className="mt-4 space-y-0">
               {STAGES.map((s, i) => {
@@ -145,7 +147,7 @@ function PayContent() {
                     </div>
                     <div className="pb-4">
                       <p className={`text-sm font-semibold ${current ? "text-primary" : "text-muted"}`}>
-                        {s} {current && "• مرحله فعلی"}
+                        {t(s)} {current && t("• مرحله فعلی")}
                       </p>
                     </div>
                   </li>
@@ -159,9 +161,9 @@ function PayContent() {
             <Card hover={false} className="mt-6 border-success/30 bg-success/5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-foreground">نظر و قیمت وکلای استان شما</p>
+                  <p className="text-sm font-bold text-foreground">{t("نظر و قیمت وکلای استان شما")}</p>
                   <p className="mt-1 text-xs leading-6 text-muted">
-                    وکلای همان استان پروندهٔ شما را می‌بینند و نظر و قیمت خود را ثبت می‌کنند؛ هر وقت خواستید یکی را انتخاب کنید — انتخاب و پاسخ به پیام وکیل رایگان است.
+                    {t("وکلای همان استان پروندهٔ شما را می‌بینند و نظر و قیمت خود را ثبت می‌کنند؛ هر وقت خواستید یکی را انتخاب کنید — انتخاب و پاسخ به پیام وکیل رایگان است.")}
                   </p>
                 </div>
                 <Button
@@ -170,7 +172,7 @@ function PayContent() {
                   className="shrink-0"
                   data-testid="offers-cta"
                 >
-                  دیدن پیشنهاد وکلا
+                  {t("دیدن پیشنهاد وکلا")}
                 </Button>
               </div>
             </Card>
@@ -184,26 +186,26 @@ function PayContent() {
                   <Icon name="user" className="h-4 w-4" />
                 </span>
                 <div>
-                  <p className="text-sm font-bold text-foreground">برای پیگیری آنلاین پرونده، ثبت‌نام کنید</p>
+                  <p className="text-sm font-bold text-foreground">{t("برای پیگیری آنلاین پرونده، ثبت‌نام کنید")}</p>
                   <p className="mt-1 text-xs leading-6 text-muted">
-                    با همان شماره موبایلی که پرونده با آن ثبت شده است ثبت‌نام کنید تا پرونده و روند آن در پنل موکل شما نمایش داده شود.
+                    {t("با همان شماره موبایلی که پرونده با آن ثبت شده است ثبت‌نام کنید تا پرونده و روند آن در پنل موکل شما نمایش داده شود.")}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Button href="/register" icon="user">ثبت‌نام رایگان</Button>
-                    <Button href="/track-case" variant="outline" icon="document">پیگیری با کد</Button>
+                    <Button href="/register" icon="user">{t("ثبت‌نام رایگان")}</Button>
+                    <Button href="/track-case" variant="outline" icon="document">{t("پیگیری با کد")}</Button>
                   </div>
                 </div>
               </div>
             </Card>
           ) : (
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Button href="/dashboard/client" icon="folder">مشاهده پرونده در پنل موکل</Button>
-              <Button href="/track-case" variant="outline">پیگیری درخواست‌ها</Button>
+              <Button href="/dashboard/client" icon="folder">{t("مشاهده پرونده در پنل موکل")}</Button>
+              <Button href="/track-case" variant="outline">{t("پیگیری درخواست‌ها")}</Button>
             </div>
           )}
 
           <p className="mt-6 text-center text-xs text-muted">
-            سوالی دارید؟ <Link href="/contact" className="font-medium text-primary hover:underline">با پشتیبانی دادبان</Link> در تماس باشید.
+            {t("سوالی دارید؟")} <Link href="/contact" className="font-medium text-primary hover:underline">{t("با پشتیبانی دادبان")}</Link> {t("در تماس باشید.")}
           </p>
         </div>
       </Container>
@@ -215,14 +217,15 @@ function PayContent() {
       <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
         <Container>
           <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">خانه</Link>
+            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
             <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">پرداخت پرونده</span>
+            <span className="text-foreground-soft">{t("پرداخت پرونده")}</span>
           </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">انتخاب درگاه پرداخت</h1>
+          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("انتخاب درگاه پرداخت")}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            پرونده شما با شماره <span className="font-bold text-primary" dir="ltr">{ctx?.caseNumber ?? "…"}</span> ثبت شد.
-            حالا مشخص کنید پرداخت را از کدام درگاه انجام می‌دهید.
+            {t("پرونده شما با شماره")} <span className="font-bold text-primary" dir="ltr">{ctx?.caseNumber ?? "…"}</span> {t("ثبت شد.")}
+            {" "}
+            {t("حالا مشخص کنید پرداخت را از کدام درگاه انجام می‌دهید.")}
           </p>
         </Container>
       </section>
@@ -232,11 +235,11 @@ function PayContent() {
           {ctx && (
             <Card hover={false} className="text-sm">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-                <span className="text-muted">موضوع پرونده</span>
+                <span className="text-muted">{t("موضوع پرونده")}</span>
                 <span className="font-bold text-foreground">{ctx.subject ?? "—"}</span>
               </div>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <span className="text-muted">استان / شهر</span>
+                <span className="text-muted">{t("استان / شهر")}</span>
                 <span className="font-bold text-foreground">{ctx.city ?? "—"}</span>
               </div>
             </Card>
@@ -261,12 +264,12 @@ function PayContent() {
                     </span>
                     <div>
                       <p className="flex items-center gap-2 text-sm font-bold text-foreground">
-                        {g.title}
+                        {t(g.title)}
                         {g.badge && (
-                          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold text-accent-text">{g.badge}</span>
+                          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold text-accent-text">{t(g.badge)}</span>
                         )}
                       </p>
-                      <p className="mt-0.5 text-xs text-muted">{g.desc}</p>
+                      <p className="mt-0.5 text-xs text-muted">{t(g.desc)}</p>
                     </div>
                   </div>
                   <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${gateway === g.key ? "border-primary bg-primary text-primary-foreground" : "border-border-strong"}`}>
@@ -278,7 +281,7 @@ function PayContent() {
           </div>
 
           <p className="rounded-xl border border-border bg-surface-2/60 px-4 py-3 text-[11px] leading-6 text-muted">
-            هزینه نهایی پرونده پس از بررسی کارشناسان و بر اساس تعرفه مصوب اعلام می‌شود؛ پیش از آن هیچ مبلغی از شما کسر نخواهد شد.
+            {t("هزینه نهایی پرونده پس از بررسی کارشناسان و بر اساس تعرفه مصوب اعلام می‌شود؛ پیش از آن هیچ مبلغی از شما کسر نخواهد شد.")}
           </p>
 
           {error && <div className="rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">{error}</div>}
@@ -289,10 +292,10 @@ function PayContent() {
               onClick={() => router.push("/case/new")}
               className="text-sm font-medium text-muted transition-colors hover:text-foreground"
             >
-              → بازگشت به فرم پرونده
+              {t("→ بازگشت به فرم پرونده")}
             </button>
             <Button onClick={confirm} disabled={!gateway || loading} icon="money" className="min-w-44">
-              {loading ? "در حال ثبت…" : "تأیید و ادامه"}
+              {loading ? t("در حال ثبت…") : t("تأیید و ادامه")}
             </Button>
           </div>
         </div>
@@ -302,11 +305,12 @@ function PayContent() {
 }
 
 export default function CasePayPage() {
+  const t = useT();
   return (
     <Suspense
       fallback={
         <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted">
-          در حال بارگذاری…
+          {t("در حال بارگذاری…")}
         </div>
       }
     >

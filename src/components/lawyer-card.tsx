@@ -114,7 +114,7 @@ export function LawyerCard({
 
         <div className="hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted sm:flex">
           <span className="inline-flex items-center gap-1">
-            <Icon name="location" className="h-3.5 w-3.5" /> {lawyer.city}
+            <Icon name="location" className="h-3.5 w-3.5" /> {t(lawyer.city)}
           </span>
           <span className="inline-flex items-center gap-1">
             <Icon name="briefcase" className="h-3.5 w-3.5" /> {faNum(lawyer.experienceYears)} {t("سال سابقه")}
@@ -127,7 +127,7 @@ export function LawyerCard({
         <div className="flex flex-wrap gap-1 sm:gap-1.5">
           {lawyer.specialties.slice(0, 2).map((s) => (
             <Badge key={s} tone="primary">
-              {s}
+              {t(s)}
             </Badge>
           ))}
           {lawyer.specialties.length > 2 && (

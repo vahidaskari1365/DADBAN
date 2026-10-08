@@ -762,7 +762,7 @@ export const tr: Record<string, string> = {
   "نوع عضویت وکیل": "Avukat üyelik türü",
   "نوع:": "Tür:",
   "نگارش اظهارنامه": "İhtarname yazımı",
-  "نگران هزینهٔ حق‌الوکاله نیستید؟": "Vekalet ücreti konusunda endişelenmiyor musunuz?",
+  "نگران هزینهٔ حق‌الوکاله نباشید": "Vekalet ücreti konusunda endişelenmeyin",
   "هر بخش سایت، یک‌جا در دسترس": "Sitenin her bölümü tek yerden erişilebilir",
   "هر قسط از پنل موکل پرداخت می‌شود و یادآور خودکار، پیش از موعد به شما اطلاع می‌دهد تا چیزی از قلم نیفتد.": "Her taksit müvekkil panelinden ödenir; otomatik hatırlatıcı vadesinden önce sizi uyarır, hiçbir şey atlanmaz.",
   "هزینهٔ وکیل نباید مانع شروع پرونده‌تان باشد. در دادبان، بسته به توافق با وکیل، حق‌الوکاله را می‌توانید یکجا، قسطی یا مرحله‌ای بپردازید — همه‌چیز شفاف و در قرارداد ثبت می‌شود.": "Avukat ücreti, dosyanızın başlamasına engel olmamalı. Dadban'da, avukatla anlaşmanıza bağlı olarak vekalet ücretini tek seferde, taksitle veya aşamalı ödeyebilirsiniz — her şey şeffaftır ve sözleşmeye kaydedilir.",

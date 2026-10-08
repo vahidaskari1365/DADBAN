@@ -5,6 +5,8 @@ import { Button, Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
 import { URGENCY_LABELS, PRICE_TYPE_LABELS, faNumSafe, STATUS_LABELS } from "@/lib/managed-labels";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 type Field = {
   name: string;
@@ -37,6 +39,8 @@ export default function RequestForm({
   };
 }) {
   const router = useRouter();
+  const t = useT();
+  const tt = templateT(t);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [urgency, setUrgency] = useState("NORMAL");
   const [extra, setExtra] = useState({ city: "", organization: "", referenceNumber: "", caseNumber: "", requestedDeadline: "" });
@@ -49,17 +53,17 @@ export default function RequestForm({
   }
 
   function previewPrice(): string {
-    if (service.priceType === "FIXED") return `${faNumSafe(service.basePrice)} تومان`;
+    if (service.priceType === "FIXED") return tt("{price} تومان", { price: faNumSafe(service.basePrice) });
     if (service.priceType === "FROM") {
       const p = Math.round(service.basePrice * (URGENCY_FACTOR[urgency] ?? 1));
-      return `از ${faNumSafe(Math.max(p, service.basePrice))} تومان`;
+      return tt("از {price} تومان", { price: faNumSafe(Math.max(p, service.basePrice)) });
     }
-    return "پس از بررسی اعلام می‌شود";
+    return t("پس از بررسی اعلام می‌شود");
   }
 
   function validate(): string | null {
     for (const f of service.formFields) {
-      if (f.required && !(answers[f.name] ?? "").trim()) return `فیلد «${f.label}» الزامی است`;
+      if (f.required && !(answers[f.name] ?? "").trim()) return tt("فیلد «{label}» الزامی است", { label: f.label });
     }
     return null;
   }
@@ -84,12 +88,12 @@ export default function RequestForm({
           router.push(`/login?redirect=/services/${service.slug}`);
           return;
         }
-        setError(data.error || "خطا در ثبت درخواست");
+        setError(data.error || t("خطا در ثبت درخواست"));
         return;
       }
       setResult({ requestNumber: data.requestNumber, status: data.status, price: data.price, id: data.requestId });
     } catch {
-      setError("خطای شبکه؛ دوباره تلاش کنید.");
+      setError(t("خطای شبکه؛ دوباره تلاش کنید."));
     } finally {
       setSubmitting(false);
     }
@@ -103,20 +107,20 @@ export default function RequestForm({
             <Icon name="check" className="h-6 w-6" />
           </span>
           <div>
-            <h3 className="text-lg font-bold text-foreground">درخواست ثبت شد</h3>
-            <p className="text-sm text-muted">شماره پیگیری: {result.requestNumber}</p>
+            <h3 className="text-lg font-bold text-foreground">{t("درخواست ثبت شد")}</h3>
+            <p className="text-sm text-muted">{tt("شماره پیگیری: {number}", { number: result.requestNumber })}</p>
           </div>
         </div>
         <p className="mt-4 text-sm text-muted">
-          وضعیت فعلی: {STATUS_LABELS[result.status] ?? result.status}
-          {result.price ? ` • هزینه تخمینی: ${faNumSafe(result.price)} تومان` : ""}
+          {tt("وضعیت فعلی: {status}", { status: STATUS_LABELS[result.status] ?? result.status })}
+          {result.price ? tt(" • هزینه تخمینی: {price} تومان", { price: faNumSafe(result.price) }) : ""}
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Button href={`/dashboard/services/${result.id}`} icon="arrow">
-            مشاهده و پیگیری درخواست
+            {t("مشاهده و پیگیری درخواست")}
           </Button>
           <Button href="/dashboard/services" variant="outline" icon="folder">
-            خدمات من
+            {t("خدمات من")}
           </Button>
         </div>
       </Card>
@@ -125,10 +129,10 @@ export default function RequestForm({
 
   return (
     <Card>
-      <h2 className="text-lg font-bold text-foreground">فرم درخواست — {service.title}</h2>
+      <h2 className="text-lg font-bold text-foreground">{tt("فرم درخواست — {title}", { title: service.title })}</h2>
       {service.requiresLawyer && (
         <div className="mt-3 rounded-xl border border-accent/30 bg-accent-soft p-3 text-sm text-foreground-soft">
-          <Icon name="scale" className="inline h-4 w-4 text-accent-text" /> این خدمت پس از بررسی به وکیل واجد صلاحیت یا مجموعه حقوقی ارجاع می‌شود و با نظارت حرفه‌ای انجام می‌گیرد. دادبان خود را جایگزین وکیل شما معرفی نمی‌کند.
+          <Icon name="scale" className="inline h-4 w-4 text-accent-text" /> {t("این خدمت پس از بررسی به وکیل واجد صلاحیت یا مجموعه حقوقی ارجاع می‌شود و با نظارت حرفه‌ای انجام می‌گیرد. دادبان خود را جایگزین وکیل شما معرفی نمی‌کند.")}
         </div>
       )}
 
@@ -152,7 +156,7 @@ export default function RequestForm({
                 value={answers[f.name] ?? ""}
                 onChange={(e) => setField(f.name, e.target.value)}
               >
-                <option value="">انتخاب کنید…</option>
+                <option value="">{t("انتخاب کنید…")}</option>
                 {(f.options ?? []).map((o) => (
                   <option key={o} value={o}>{o}</option>
                 ))}
@@ -163,9 +167,9 @@ export default function RequestForm({
                 value={answers[f.name] ?? ""}
                 onChange={(e) => setField(f.name, e.target.value)}
               >
-                <option value="">انتخاب کنید…</option>
-                <option value="بله">بله</option>
-                <option value="خیر">خیر</option>
+                <option value="">{t("انتخاب کنید…")}</option>
+                <option value="بله">{t("بله")}</option>
+                <option value="خیر">{t("خیر")}</option>
               </select>
             ) : (
               <input
@@ -182,25 +186,25 @@ export default function RequestForm({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">شهر</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">{t("شهر")}</label>
             <input className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" value={extra.city} onChange={(e) => setExtra({ ...extra, city: e.target.value })} />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">سازمان / مرجع (در صورت وجود)</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">{t("سازمان / مرجع (در صورت وجود)")}</label>
             <input className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" value={extra.organization} onChange={(e) => setExtra({ ...extra, organization: e.target.value })} />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">شماره پیگیری / ثبت (در صورت وجود)</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">{t("شماره پیگیری / ثبت (در صورت وجود)")}</label>
             <input className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" value={extra.referenceNumber} onChange={(e) => setExtra({ ...extra, referenceNumber: e.target.value })} />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">مهلت موردنظر</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">{t("مهلت موردنظر")}</label>
             <input className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary" value={extra.requestedDeadline} onChange={(e) => setExtra({ ...extra, requestedDeadline: e.target.value })} />
           </div>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">فوریت</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">{t("فوریت")}</label>
           <div className="flex flex-wrap gap-2">
             {Object.entries(URGENCY_LABELS).map(([k, v]) => (
               <button
@@ -209,7 +213,7 @@ export default function RequestForm({
                 onClick={() => setUrgency(k)}
                 className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${urgency === k ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface text-foreground-soft"}`}
               >
-                {v}
+                {t(v)}
               </button>
             ))}
           </div>
@@ -218,10 +222,10 @@ export default function RequestForm({
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface-2 p-4">
         <div className="text-sm text-muted">
-          برآورد هزینه: <span className="font-semibold text-foreground">{previewPrice()}</span>
+          {tt("برآورد هزینه: {price}", { price: previewPrice() })}
         </div>
         <Button onClick={submit} disabled={submitting} icon="send" size="lg">
-          {submitting ? "در حال ثبت…" : "ثبت درخواست"}
+          {submitting ? t("در حال ثبت…") : t("ثبت درخواست")}
         </Button>
       </div>
       {error && <p className="mt-3 text-sm text-danger">{error}</p>}

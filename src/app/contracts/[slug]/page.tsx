@@ -6,6 +6,9 @@ import { eq } from "drizzle-orm";
 import { Container, Button, Badge, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { tdyn } from "@/lib/i18n/dynamic";
+import { templateT } from "@/lib/i18n/core";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +19,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const t = await getT();
+  const locale = await getServerLocale();
   let c: typeof contracts.$inferSelect | undefined;
   try {
     const rows = await db.select().from(contracts).where(eq(contracts.slug, slug)).limit(1);
@@ -23,10 +28,11 @@ export async function generateMetadata({
   } catch (err) {
     console.error("[dadban] contract metadata query failed:", err);
   }
-  if (!c) return { title: "قرارداد یافت نشد" };
+  if (!c) return { title: t("قرارداد یافت نشد") };
+  const [cTitle, cDescription] = await Promise.all([tdyn(locale, c.title, 300), tdyn(locale, c.description, 600)]);
   return {
-    title: `تنظیم ${c.title}`,
-    description: `${c.description} کاربرد، بندهای مهم، ریسک‌ها و قیمت تنظیم. سفارش تنظیم اختصاصی توسط وکیل.`,
+    title: templateT(t)("تنظیم {name}", { name: cTitle }),
+    description: `${cDescription} ${t("کاربرد، بندهای مهم، ریسک‌ها و قیمت تنظیم. سفارش تنظیم اختصاصی توسط وکیل.")}`,
     alternates: { canonical: `/contracts/${slug}` },
   };
 }
@@ -37,6 +43,8 @@ export default async function ContractDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const t = await getT();
+  const locale = await getServerLocale();
   const rows = await db.select().from(contracts).where(eq(contracts.slug, slug)).limit(1);
   const c = rows[0];
   if (!c) notFound();
@@ -45,15 +53,27 @@ export default async function ContractDetail({
     r.filter((x) => x.slug !== c.slug).slice(0, 3),
   );
 
+  // ترجمهٔ محتوای داینامیک قرارداد (عنوان/توضیح/کاربرد/بندها/ریسک‌ها/مراحل)
+  const [cTitle, cDescription, cUseCase, cCategory] = await Promise.all([
+    tdyn(locale, c.title, 300),
+    tdyn(locale, c.description, 600),
+    tdyn(locale, c.useCase, 700),
+    tdyn(locale, c.category, 100),
+  ]);
+  const keyClausesT = await Promise.all(c.keyClauses.map((k) => tdyn(locale, k, 250)));
+  const risksT = await Promise.all(c.risks.map((r) => tdyn(locale, r, 350)));
+  const stepsT = await Promise.all(c.steps.map((s) => tdyn(locale, s, 250)));
+  const relatedT = await Promise.all(related.map(async (r) => ({ ...r, title: await tdyn(locale, r.title, 300) })));
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: c.title,
-    serviceType: "تنظیم قرارداد حقوقی",
-    description: c.description,
+    name: cTitle,
+    serviceType: t("تنظیم قرارداد حقوقی"),
+    description: cDescription,
     offers: [
-      { "@type": "Offer", name: "نمونه آماده", price: c.samplePrice, priceCurrency: "IRR" },
-      { "@type": "Offer", name: "تنظیم اختصاصی", price: c.customPrice, priceCurrency: "IRR" },
+      { "@type": "Offer", name: t("نمونه آماده"), price: c.samplePrice, priceCurrency: "IRR" },
+      { "@type": "Offer", name: t("تنظیم اختصاصی"), price: c.customPrice, priceCurrency: "IRR" },
     ],
   };
 
@@ -62,11 +82,11 @@ export default async function ContractDetail({
       <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
         <Container>
           <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">خانه</Link>
+            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
             <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <Link href="/contracts" className="hover:text-primary">قراردادها</Link>
+            <Link href="/contracts" className="hover:text-primary">{t("قراردادها")}</Link>
             <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{c.category}</span>
+            <span className="text-foreground-soft">{cCategory}</span>
           </nav>
           <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
             <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
@@ -74,11 +94,11 @@ export default async function ContractDetail({
             </span>
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="primary">{c.category}</Badge>
-                {c.popular && <Badge tone="accent" icon="star">پرطرفدار</Badge>}
+                <Badge tone="primary">{cCategory}</Badge>
+                {c.popular && <Badge tone="accent" icon="star">{t("پرطرفدار")}</Badge>}
               </div>
-              <h1 className="mt-2 text-2xl font-extrabold text-foreground sm:text-3xl">{c.title}</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">{c.description}</p>
+              <h1 className="mt-2 text-2xl font-extrabold text-foreground sm:text-3xl">{cTitle}</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">{cDescription}</p>
             </div>
           </div>
         </Container>
@@ -88,17 +108,17 @@ export default async function ContractDetail({
         <div className="space-y-8">
           <section>
             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-              <Icon name="check" className="h-5 w-5 text-success" /> کاربرد
+              <Icon name="check" className="h-5 w-5 text-success" /> {t("کاربرد")}
             </h2>
-            <p className="mt-3 text-sm leading-8 text-foreground-soft">{c.useCase}</p>
+            <p className="mt-3 text-sm leading-8 text-foreground-soft">{cUseCase}</p>
           </section>
 
           <section>
             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-              <Icon name="document" className="h-5 w-5 text-primary" /> بندهای مهم
+              <Icon name="document" className="h-5 w-5 text-primary" /> {t("بندهای مهم")}
             </h2>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {c.keyClauses.map((k) => (
+              {keyClausesT.map((k) => (
                 <div key={k} className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground-soft">
                   <Icon name="file" className="h-4 w-4 shrink-0 text-primary" /> {k}
                 </div>
@@ -108,10 +128,10 @@ export default async function ContractDetail({
 
           <section>
             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-              <Icon name="alert" className="h-5 w-5 text-warning" /> ریسک‌ها
+              <Icon name="alert" className="h-5 w-5 text-warning" /> {t("ریسک‌ها")}
             </h2>
             <div className="mt-3 space-y-2">
-              {c.risks.map((r) => (
+              {risksT.map((r) => (
                 <div key={r} className="flex items-start gap-2 rounded-xl border border-[color-mix(in_oklab,var(--warning)_30%,transparent)] bg-[color-mix(in_oklab,var(--warning)_6%,transparent)] px-4 py-3 text-sm text-foreground-soft">
                   <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0 text-warning" /> {r}
                 </div>
@@ -121,10 +141,10 @@ export default async function ContractDetail({
 
           <section>
             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
-              <Icon name="bolt" className="h-5 w-5 text-accent-text" /> مراحل تنظیم
+              <Icon name="bolt" className="h-5 w-5 text-accent-text" /> {t("مراحل تنظیم")}
             </h2>
             <ol className="mt-4 grid gap-3 sm:grid-cols-2">
-              {c.steps.map((s, i) => (
+              {stepsT.map((s, i) => (
                 <li key={i} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">{faNum(i + 1)}</span>
                   <span className="text-sm font-medium text-foreground">{s}</span>
@@ -132,7 +152,7 @@ export default async function ContractDetail({
               ))}
               <li className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-accent/40 bg-accent-soft/40 p-4">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground"><Icon name="check" className="h-4 w-4" /></span>
-                <span className="text-sm font-bold text-foreground">دریافت نسخه نهایی</span>
+                <span className="text-sm font-bold text-foreground">{t("دریافت نسخه نهایی")}</span>
               </li>
             </ol>
           </section>
@@ -141,30 +161,30 @@ export default async function ContractDetail({
         {/* Sidebar pricing */}
         <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <Card hover={false}>
-            <h3 className="font-bold text-foreground">تعرفه تنظیم</h3>
+            <h3 className="font-bold text-foreground">{t("تعرفه تنظیم")}</h3>
             <div className="mt-3 space-y-2">
               <div className="flex items-center justify-between rounded-xl border border-border bg-surface-2 p-3">
                 <div>
-                  <p className="text-sm font-semibold text-foreground">نمونه آماده</p>
-                  <p className="text-xs text-muted">قالب استاندارد قابل ویرایش</p>
+                  <p className="text-sm font-semibold text-foreground">{t("نمونه آماده")}</p>
+                  <p className="text-xs text-muted">{t("قالب استاندارد قابل ویرایش")}</p>
                 </div>
                 <p className="text-sm font-bold text-foreground">{faPrice(c.samplePrice)}</p>
               </div>
               <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary-soft/50 p-3">
                 <div>
-                  <p className="text-sm font-semibold text-foreground">تنظیم اختصاصی</p>
-                  <p className="text-xs text-muted">توسط وکیل متخصص + بازبینی</p>
+                  <p className="text-sm font-semibold text-foreground">{t("تنظیم اختصاصی")}</p>
+                  <p className="text-xs text-muted">{t("توسط وکیل متخصص + بازبینی")}</p>
                 </div>
                 <p className="text-sm font-bold text-primary">{faPrice(c.customPrice)}</p>
               </div>
             </div>
-            <Button href="/consultation/book?subject=" icon="document" className="mt-4 w-full">سفارش تنظیم قرارداد</Button>
-            <Button href="/ai-assistant?tab=contract" variant="outline" icon="file" className="mt-2 w-full">تحلیل هوشمند این قرارداد</Button>
+            <Button href="/consultation/book?subject=" icon="document" className="mt-4 w-full">{t("سفارش تنظیم قرارداد")}</Button>
+            <Button href="/ai-assistant?tab=contract" variant="outline" icon="file" className="mt-2 w-full">{t("تحلیل هوشمند این قرارداد")}</Button>
           </Card>
           <Card hover={false} className="bg-primary-soft/50">
             <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft">
               <Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-              همه قراردادهای دادبان توسط وکلای عضو کانون تنظیم و بازبینی می‌شوند و مطابق قوانین روز هستند.
+              {t("همه قراردادهای دادبان توسط وکلای عضو کانون تنظیم و بازبینی می‌شوند و مطابق قوانین روز هستند.")}
             </p>
           </Card>
         </aside>
@@ -172,9 +192,9 @@ export default async function ContractDetail({
 
       {related.length > 0 && (
         <Container className="pb-12">
-          <h2 className="text-xl font-bold text-foreground">قراردادهای مرتبط</h2>
+          <h2 className="text-xl font-bold text-foreground">{t("قراردادهای مرتبط")}</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            {related.map((r) => (
+            {relatedT.map((r) => (
               <a key={r.slug} href={`/contracts/${r.slug}`} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
                   <Icon name={r.icon as never} className="h-5 w-5" />

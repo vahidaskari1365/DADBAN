@@ -15,7 +15,9 @@ import { TrustLine } from "@/components/amazon/trust-line";
 import { FavoriteButton } from "@/components/profile/favorites-panel";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
-import { getT } from "@/lib/i18n/server";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { makeT, templateT } from "@/lib/i18n/core";
+import { tdyn, tdynLong } from "@/lib/i18n/dynamic";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -33,10 +35,24 @@ export async function generateMetadata({
   } catch (err) {
     console.error("[dadban] lawyer metadata query failed:", err);
   }
-  if (!l) return { title: "وکیل یافت نشد" };
+  const locale = await getServerLocale();
+  const st = makeT(locale);
+  if (!l) return { title: st("وکیل یافت نشد") };
+  const tf = templateT(st);
+  const [dName, dTitle] = await Promise.all([tdyn(locale, l.name, 300), tdyn(locale, l.title, 300)]);
+  const dCity = st(l.city);
+  const dSpecialties = l.specialties.map((s) => st(s));
+  const sep = locale === "fa" || locale === "ar" ? "، " : ", ";
   return {
-    title: `${l.name} — ${l.title} در ${l.city}`,
-    description: `${l.name}، ${l.title} متخصص ${l.specialties.join("، ")} در ${l.city} با ${l.experienceYears} سال سابقه و امتیاز ${l.rating}. رزرو مشاوره آنلاین.`,
+    title: tf("{name} — {title} در {city}", { name: dName, title: dTitle, city: dCity }),
+    description: tf("{name}، {title} متخصص {sp} در {city} با {years} سال سابقه و امتیاز {rating}. رزرو مشاوره آنلاین.", {
+      name: dName,
+      title: dTitle,
+      sp: dSpecialties.join(sep),
+      city: dCity,
+      years: String(l.experienceYears),
+      rating: String(l.rating),
+    }),
     alternates: { canonical: `/lawyers/${slug}` },
   };
 }
@@ -75,6 +91,25 @@ export default async function LawyerProfile({
   // Increment views (non-blocking)
   db.update(lawyers).set({ views: sql`${lawyers.views} + 1` }).where(eq(lawyers.id, l.id)).then().catch(() => {});
 
+  // ترجمهٔ فیلدهای وکیل برای نمایش — name/title/bio/about با tdyn (کش سه‌لایه)،
+  // city/province/specialties/services با واژه‌نامهٔ ایستا؛ نظرات کاربران ترجمه نمی‌شوند
+  const locale = await getServerLocale();
+  const st = makeT(locale);
+  const tf = templateT(t);
+  const [dName, dTitle, dBio, dAbout] = await Promise.all([
+    tdyn(locale, l.name, 300),
+    tdyn(locale, l.title, 300),
+    l.bio ? tdyn(locale, l.bio, 900) : Promise.resolve(""),
+    tdynLong(locale, l.about ?? ""),
+  ]);
+  const dCity = st(l.city);
+  const dProvince = st(l.province);
+  const dSpecialties = l.specialties.map((s) => st(s));
+  const dServices = l.services.map((s) => st(s));
+  const dRelated = await Promise.all(
+    related.map(async (r) => ({ ...r, name: await tdyn(locale, r.name, 300), city: st(r.city) })),
+  );
+
   // نقش بیننده: مالک پروفایل؟ وکیل‌سمت (جریان همکاری)؟ موکل (جریان رزرو)؟
   let me: Awaited<ReturnType<typeof getCurrentUser>> = null;
   try {
@@ -105,26 +140,32 @@ export default async function LawyerProfile({
     "@context": "https://schema.org",
     "@type": "Attorney",
     "@id": `/lawyers/${l.slug}#lawyer`,
-    name: l.name,
-    jobTitle: l.title,
-    description: l.bio || `${l.name}، ${l.title} متخصص ${l.specialties.join("، ")} در ${l.city} با ${l.experienceYears} سال سابقه.`,
+    name: dName,
+    jobTitle: dTitle,
+    description: dBio || tf("{name}، {title} متخصص {sp} در {city} با {years} سال سابقه.", {
+      name: dName,
+      title: dTitle,
+      sp: dSpecialties.join(locale === "fa" || locale === "ar" ? "، " : ", "),
+      city: dCity,
+      years: String(l.experienceYears),
+    }),
     url: `/lawyers/${l.slug}`,
     telephone: "+98-21-66921500",
     address: {
       "@type": "PostalAddress",
-      addressLocality: l.city,
-      addressRegion: l.province,
+      addressLocality: dCity,
+      addressRegion: dProvince,
       addressCountry: "IR",
     },
-    knowsAbout: l.specialties,
+    knowsAbout: dSpecialties,
     /* کارآموز وکالت پروانهٔ رسمی ندارد — hasCredential فقط برای وکیل رسمی صادر می‌شود */
     ...(isKaramooz
       ? {}
       : {
           hasCredential: {
             "@type": "EducationalOccupationalCredential" as const,
-            name: `پروانه وکالت شماره ${l.licenseNo}`,
-            recognizedBy: "کانون وکلای دادگستری",
+            name: tf("پروانه وکالت شماره {no}", { no: l.licenseNo }),
+            recognizedBy: st("کانون وکلای دادگستری"),
           },
         }),
     aggregateRating: l.reviewCount > 0 ? {
@@ -135,16 +176,16 @@ export default async function LawyerProfile({
       worstRating: 1,
     } : undefined,
     worksFor: { "@id": "/#organization" },
-    areaServed: { "@type": "Country", name: "ایران" },
+    areaServed: { "@type": "Country", name: st("ایران") },
   };
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "خانه", item: "/" },
-      { "@type": "ListItem", position: 2, name: "وکلا", item: "/lawyers" },
-      { "@type": "ListItem", position: 3, name: l.name, item: `/lawyers/${l.slug}` },
+      { "@type": "ListItem", position: 1, name: st("خانه"), item: "/" },
+      { "@type": "ListItem", position: 2, name: st("وکلا"), item: "/lawyers" },
+      { "@type": "ListItem", position: 3, name: dName, item: `/lawyers/${l.slug}` },
     ],
   };
 
@@ -155,16 +196,16 @@ export default async function LawyerProfile({
         lawyer={{
           id: l.id,
           slug: l.slug,
-          name: l.name,
-          title: l.title,
-          city: l.city,
+          name: dName,
+          title: dTitle,
+          city: dCity,
           rating: l.rating,
           reviewCount: l.reviewCount,
           caseCount: l.caseCount,
           priceChat: l.priceChat,
           experienceYears: l.experienceYears,
           verified: l.verified,
-          specialties: l.specialties,
+          specialties: dSpecialties,
           avatarColor: l.avatarColor,
           photoUrl: l.photoUrl,
         }}
@@ -181,7 +222,7 @@ export default async function LawyerProfile({
               <Icon name="chevron" className="h-3 w-3 rotate-180" />
               <Link href="/lawyers" className="hover:text-primary">{t("وکلا")}</Link>
               <Icon name="chevron" className="h-3 w-3 rotate-180" />
-              <span className="text-foreground-soft">{l.name}</span>
+              <span className="text-foreground-soft">{dName}</span>
             </nav>
             <BackButton variant="bar" label={t("بازگشت به فهرست وکلا")} fallback="/lawyers" />
           </div>
@@ -189,11 +230,11 @@ export default async function LawyerProfile({
           <div className="relative mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
               <span className="rounded-3xl ring-4 ring-background shadow-[var(--shadow-lift)]">
-                <LawyerPhoto name={l.name} color={l.avatarColor} photoUrl={l.photoUrl} size="xl" />
+                <LawyerPhoto name={dName} color={l.avatarColor} photoUrl={l.photoUrl} size="xl" />
               </span>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">{l.name}</h1>
+                  <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">{dName}</h1>
                   {l.verified && <Icon name="badge" className="h-6 w-6 text-primary" />}
                   {isKaramooz && (
                     <span
@@ -205,10 +246,10 @@ export default async function LawyerProfile({
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-sm text-foreground-soft">{l.title}</p>
+                <p className="mt-1 text-sm text-foreground-soft">{dTitle}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {[
-                    { icon: "location" as const, text: `${l.city} — ${l.province}` },
+                    { icon: "location" as const, text: `${dCity} — ${dProvince}` },
                     { icon: "briefcase" as const, text: `${faNum(l.experienceYears)} ${t("سال سابقه")}` },
                     { icon: "folder" as const, text: `${faNum(l.caseCount)} ${t("پرونده")}` },
                   ].map((c) => (
@@ -239,9 +280,9 @@ export default async function LawyerProfile({
               <Icon name="scale" className="h-5 w-5 text-accent-text" /> {t("حوزه‌های تخصص")}
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
-              {l.specialties.map((s) => (
+              {l.specialties.map((s, i) => (
                 <a key={s} href={`/lawyers?sp=${encodeURIComponent(s)}`}>
-                  <Badge tone="primary">{s}</Badge>
+                  <Badge tone="primary">{dSpecialties[i]}</Badge>
                 </a>
               ))}
             </div>
@@ -252,7 +293,7 @@ export default async function LawyerProfile({
             <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
               <Icon name="user" className="h-5 w-5 text-primary" /> {t("درباره وکیل")}
             </h2>
-            <p className="mt-3 text-sm leading-8 text-foreground-soft">{l.about}</p>
+            <p className="mt-3 text-sm leading-8 text-foreground-soft">{dAbout}</p>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 isKaramooz
@@ -277,9 +318,9 @@ export default async function LawyerProfile({
               <Icon name="check" className="h-5 w-5 text-success" /> {t("خدمات")}
             </h2>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {l.services.map((s) => (
+              {l.services.map((s, i) => (
                 <div key={s} className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground-soft">
-                  <Icon name="check" className="h-4 w-4 text-success" /> {s}
+                  <Icon name="check" className="h-4 w-4 text-success" /> {dServices[i]}
                 </div>
               ))}
             </div>
@@ -368,7 +409,7 @@ export default async function LawyerProfile({
                 </div>
               ))}
             </div>
-            <FavoriteButton lawyerId={l.id} lawyerName={l.name} />
+            <FavoriteButton lawyerId={l.id} lawyerName={dName} />
             {isOwner ? (
               <Button href="/dashboard/lawyer/profile" icon="badge" className="w-full">
                 {t("ویرایش پروفایل من")}
@@ -429,8 +470,7 @@ export default async function LawyerProfile({
         <Container className="pb-12">
           <h2 className="text-xl font-bold text-foreground">{t("وکلای مرتبط")}</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((r) => {
-              const relatedLawyer = r;
+            {dRelated.map((relatedLawyer) => {
               return (
                 <a key={relatedLawyer.id} href={`/lawyers/${relatedLawyer.slug}`} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">
                   <LawyerPhoto name={relatedLawyer.name} color={relatedLawyer.avatarColor} photoUrl={relatedLawyer.photoUrl} size="md" />
@@ -455,11 +495,11 @@ export default async function LawyerProfile({
       {!isOwner && (
         <StickyCta
           href={isLawyerViewer ? `/lawyers/${l.slug}/refer` : `/consultation/book?lawyer=${l.slug}`}
-          label={isLawyerViewer ? `درخواست همکاری با ${l.name}` : `رزرو مشاوره با ${l.name}`}
+          label={isLawyerViewer ? tf("درخواست همکاری با {name}", { name: dName }) : tf("رزرو مشاوره با {name}", { name: dName })}
           sub={
             isLawyerViewer
-              ? "ارجاع کامل پرونده، مشورت تخصصی یا همکاری مشترک"
-              : `از ${faPrice(l.priceChat)} • پرداخت امن • ضمانت بازگشت وجه`
+              ? t("ارجاع کامل پرونده، مشورت تخصصی یا همکاری مشترک")
+              : tf("از {price} • پرداخت امن • ضمانت بازگشت وجه", { price: faPrice(l.priceChat) })
           }
         />
       )}

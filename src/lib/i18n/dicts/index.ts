@@ -3,16 +3,23 @@ import { en } from "./en";
 import { ar } from "./ar";
 import { tr } from "./tr";
 import { zh } from "./zh";
+import { GEO } from "./geo";
+import { EXT_B1 } from "./ext-b1";
+import { EXT_B2 } from "./ext-b2";
+import { EXT_B3 } from "./ext-b3";
+import { EXT_B3B } from "./ext-b3b";
+import { EXT_B4 } from "./ext-b4";
 
 /**
  * واژه‌نامه‌های دادبان — کلیدها = رشته‌های فارسی منبع (عیناً با نیم‌فاصله).
  * زبان fa نیازی به جدول ندارد (t همان رشتهٔ منبع را برمی‌گرداند).
- * افزودن پوشش جدید: فقط رشتهٔ فارسی را در هر ۴ فایل اضافه کنید.
+ * لایه‌ها: دیکشنری اصلی + GEO (استان/شهر/تخصص) + پوشش‌های حوزه‌ای ext-b1..b4
+ * که در جریان «بومی‌سازی کامل همه‌چیز» اضافه شدند (کلید تکراری → آخرین لایه می‌برد).
  */
 export const DICTS: Record<Locale, Record<string, string>> = {
   fa: {},
-  en,
-  ar,
-  tr,
-  zh,
+  en: { ...en, ...GEO.en, ...EXT_B1.en, ...EXT_B2.en, ...EXT_B3.en, ...EXT_B3B.en, ...EXT_B4.en },
+  ar: { ...ar, ...GEO.ar, ...EXT_B1.ar, ...EXT_B2.ar, ...EXT_B3.ar, ...EXT_B3B.ar, ...EXT_B4.ar },
+  tr: { ...tr, ...GEO.tr, ...EXT_B1.tr, ...EXT_B2.tr, ...EXT_B3.tr, ...EXT_B3B.tr, ...EXT_B4.tr },
+  zh: { ...zh, ...GEO.zh, ...EXT_B1.zh, ...EXT_B2.zh, ...EXT_B3.zh, ...EXT_B3B.zh, ...EXT_B4.zh },
 };

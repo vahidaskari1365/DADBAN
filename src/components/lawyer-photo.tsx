@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * عکس پروفایل وکیل — اگر عکس موجود باشد نمایش داده می‌شود،
@@ -21,6 +22,7 @@ export function LawyerPhoto({
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const t = useT();
   const showPhoto = !!photoUrl && !failed;
 
   const sizes: Record<string, string> = {
@@ -51,7 +53,7 @@ export function LawyerPhoto({
     >
       <Image
         src={photoUrl as string}
-        alt={`عکس ${name}`}
+        alt={`${t("عکس")} ${name}`}
         width={px[size]}
         height={px[size]}
         sizes="(min-width: 640px) 96px, 56px"

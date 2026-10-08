@@ -7,14 +7,21 @@ import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
 import { ServiceCard } from "@/components/managed";
 import { CATALOG_CATEGORIES, CATALOG_SERVICES } from "@/lib/managed-catalog";
+import { getT, getServerLocale } from "@/lib/i18n/server";
+import { tdyn } from "@/lib/i18n/dynamic";
 
-export const metadata: Metadata = {
-  title: "خدمات پیگیری و انجام امور — دادبان",
-  description: "پیگیری پرونده‌ها، امور اداری، ثبتی، مالیاتی و اجرای احکام را به کارشناسان دادبان بسپارید.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("خدمات پیگیری و انجام امور — دادبان"),
+    description: t("پیگیری پرونده‌ها، امور اداری، ثبتی، مالیاتی و اجرای احکام را به کارشناسان دادبان بسپارید."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 export default async function ServicesCatalog() {
+  const t = await getT();
+  const locale = await getServerLocale();
   let categories: { slug: string; name: string; description: string; icon: string }[] = [];
   let services: any[] = [];
   try {
@@ -41,6 +48,24 @@ export default async function ServicesCatalog() {
     services = CATALOG_SERVICES.filter((s) => s.active);
   }
 
+  // ترجمهٔ محتوای داینامیک (DB یا فال‌بک کاتالوگ) — عنوان/توضیح هر گروه و خدمت
+  [categories, services] = await Promise.all([
+    Promise.all(
+      categories.map(async (c) => ({
+        ...c,
+        name: await tdyn(locale, c.name, 200),
+        description: await tdyn(locale, c.description, 500),
+      })),
+    ),
+    Promise.all(
+      (services as any[]).map(async (s) => ({
+        ...s,
+        title: await tdyn(locale, s.title, 300),
+        shortDescription: await tdyn(locale, s.shortDescription, 400),
+      })),
+    ),
+  ]);
+
   const grouped = categories.map((c) => ({
     ...c,
     items: (services as any[]).filter((s) => s.category === c.slug),
@@ -51,20 +76,20 @@ export default async function ServicesCatalog() {
       <section className="border-b border-border bg-gradient-to-b from-primary-soft/60 to-background">
         <Container className="py-12 sm:py-16">
           <span className="inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
-            خدمات پیگیری و انجام امور
+            {t("خدمات پیگیری و انجام امور")}
           </span>
           <h1 className="mt-4 max-w-3xl text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-            کارهای زمان‌بر حقوقی و اداری را به ما بسپارید
+            {t("کارهای زمان‌بر حقوقی و اداری را به ما بسپارید")}
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-8 text-muted">
-            کارهایی که باید حضوری در اجرای احکام، اداره ثبت، دارایی، شهرداری و تأمین اجتماعی انجام شود — با یک وکالت‌نامه رسمی، نماینده دادبان به‌جای شما صف می‌ایستد و پیش می‌برد.
+            {t("کارهایی که باید حضوری در اجرای احکام، اداره ثبت، دارایی، شهرداری و تأمین اجتماعی انجام شود — با یک وکالت‌نامه رسمی، نماینده دادبان به‌جای شما صف می‌ایستد و پیش می‌برد.")}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button href="/services#catalog" size="lg" icon="briefcase">
-              مشاهده خدمات
+              {t("مشاهده خدمات")}
             </Button>
             <Button href="/ai-assistant" variant="outline" size="lg" icon="sparkles">
-              مشاوره با هوش مصنوعی
+              {t("مشاوره با هوش مصنوعی")}
             </Button>
           </div>
         </Container>
@@ -72,7 +97,7 @@ export default async function ServicesCatalog() {
 
       <div id="catalog" className="mt-12">
         <Container>
-        <SectionHeading eyebrow="فهرست خدمات" title="خدمات عملیاتی دادبان" desc="هر خدمت توسط کارشناس عملیات انجام می‌شود و در صورت نیاز با نظارت وکیل همراه است." />
+        <SectionHeading eyebrow={t("فهرست خدمات")} title={t("خدمات عملیاتی دادبان")} desc={t("هر خدمت توسط کارشناس عملیات انجام می‌شود و در صورت نیاز با نظارت وکیل همراه است.")} />
         <div className="mt-10 space-y-12">
           {grouped.map((g) => (
             <div key={g.slug}>
@@ -92,13 +117,13 @@ export default async function ServicesCatalog() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted">در حال حاضر خدمتی در این گروه منتشر نشده است.</p>
+                <p className="text-sm text-muted">{t("در حال حاضر خدمتی در این گروه منتشر نشده است.")}</p>
               )}
             </div>
           ))}
           {(services as any[]).filter((s) => !categories.some((c) => c.slug === s.category)).length > 0 && (
             <div>
-              <h2 className="mb-5 text-xl font-bold text-foreground">سایر خدمات</h2>
+              <h2 className="mb-5 text-xl font-bold text-foreground">{t("سایر خدمات")}</h2>
               <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
                 {(services as any[]).filter((s) => !categories.some((c) => c.slug === s.category)).map((s: any) => (
                   <ServiceCard key={s.slug ?? s.id} service={s} />
@@ -113,13 +138,13 @@ export default async function ServicesCatalog() {
         <Card className="bg-primary text-primary-foreground">
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-lg font-bold">نمی‌دانید کدام خدمت مناسب شماست؟</h3>
+              <h3 className="text-lg font-bold">{t("نمی‌دانید کدام خدمت مناسب شماست؟")}</h3>
               <p className="mt-1 text-sm text-primary-foreground/80">
-                از دستیار هوشمند دادبان بپرسید؛ بهترین مسیر و اقدام بعدی را به شما نشان می‌دهد.
+                {t("از دستیار هوشمند دادبان بپرسید؛ بهترین مسیر و اقدام بعدی را به شما نشان می‌دهد.")}
               </p>
             </div>
             <Button href="/ai-assistant" variant="accent" icon="sparkles">
-              پرسش از دستیار
+              {t("پرسش از دستیار")}
             </Button>
           </div>
         </Card>

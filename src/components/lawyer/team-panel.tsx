@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * ساخت تیم وکیل — وکیل برای همکارانش یوزر/پسورد می‌سازد و تعیین می‌کند
@@ -17,7 +19,7 @@ const PERM_LABELS: Record<string, string> = {
   reminders: "یادآورها",
   services: "درخواست‌های خدمات",
   cases: "پرونده‌ها",
-};
+}; // برچسب‌ها با t() ترجمه می‌شوند
 
 interface Member {
   id: number;
@@ -37,6 +39,8 @@ interface RecentCase {
 }
 
 export function TeamPanel() {
+  const t = useT();
+  const tf = templateT(t);
   const [members, setMembers] = useState<Member[]>([]);
   const [recentCases, setRecentCases] = useState<RecentCase[]>([]);
   const [allPerms, setAllPerms] = useState<string[]>([]);
@@ -85,7 +89,7 @@ export function TeamPanel() {
       setPassword("");
       load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "ساخت عضو انجام نشد.");
+      setError(e instanceof Error ? e.message : t("ساخت عضو انجام نشد."));
     } finally {
       setBusy(false);
     }
@@ -102,11 +106,11 @@ export function TeamPanel() {
       });
       const d = await res.json();
       if (!d.ok) throw new Error(d.error);
-      setFlash(`دسترسی‌های ${m.name} به‌روزرسانی شد.`);
+      setFlash(tf("دسترسی‌های {n} به‌روزرسانی شد.", { n: m.name }));
       setEditId(null);
       load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "به‌روزرسانی انجام نشد.");
+      setError(e instanceof Error ? e.message : t("به‌روزرسانی انجام نشد."));
     }
   };
 
@@ -120,7 +124,7 @@ export function TeamPanel() {
       setFlash(d.message);
       load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "حذف انجام نشد.");
+      setError(e instanceof Error ? e.message : t("حذف انجام نشد."));
     }
   };
 
@@ -131,12 +135,12 @@ export function TeamPanel() {
     <Card hover={false} id="team" className="scroll-mt-20">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 font-bold text-foreground">
-          <Icon name="user" className="h-5 w-5 text-primary" /> تیم من
+          <Icon name="user" className="h-5 w-5 text-primary" /> {t("تیم من")}
         </h2>
-        {members.length > 0 && <Badge tone="primary">{faNum(members.length)} عضو</Badge>}
+        {members.length > 0 && <Badge tone="primary">{tf("{n} عضو", { n: faNum(members.length) })}</Badge>}
       </div>
       <p className="mt-1 text-xs leading-6 text-muted">
-        برای همکاران دفترتان یوزر و پسورد بسازید و تعیین کنید هر عضو به کدام بخش‌ها و کدام پرونده‌ها دسترسی داشته باشد.
+        {t("برای همکاران دفترتان یوزر و پسورد بسازید و تعیین کنید هر عضو به کدام بخش‌ها و کدام پرونده‌ها دسترسی داشته باشد.")}
       </p>
 
       {flash && <p className="mt-3 rounded-xl border border-success/30 bg-success/5 px-3 py-2 text-xs font-bold text-success" role="status">{flash}</p>}
@@ -144,38 +148,38 @@ export function TeamPanel() {
 
       {/* فرم عضو جدید */}
       <div className="mt-3 rounded-xl border border-border bg-surface-2/40 p-3">
-        <p className="mb-2 text-xs font-bold text-foreground">ساخت عضو جدید</p>
+        <p className="mb-2 text-xs font-bold text-foreground">{t("ساخت عضو جدید")}</p>
         <div className="grid gap-2 sm:grid-cols-3">
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="نام همکار" className={fieldCls} aria-label="نام همکار" />
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("نام همکار")} className={fieldCls} aria-label={t("نام همکار")} />
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="نام کاربری (انگلیسی) — مثلا reza.office"
+            placeholder={t("نام کاربری (انگلیسی) — مثلا reza.office")}
             dir="ltr"
             className={fieldCls + " text-right"}
-            aria-label="نام کاربری"
+            aria-label={t("نام کاربری")}
           />
           <input
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
-            placeholder="رمز عبور (حداقل ۸ کاراکتر)"
+            placeholder={t("رمز عبور (حداقل ۸ کاراکتر)")}
             dir="ltr"
             className={fieldCls + " text-right"}
-            aria-label="رمز عبور"
+            aria-label={t("رمز عبور")}
           />
         </div>
         <Button onClick={create} disabled={busy || !name || !username || password.length < 8} icon="check" className="mt-2 w-full sm:w-auto">
-          {busy ? "در حال ساخت…" : "ساخت عضو تیم"}
+          {busy ? t("در حال ساخت…") : t("ساخت عضو تیم")}
         </Button>
       </div>
 
       {/* اعضا */}
       {!loaded ? (
-        <p className="mt-4 text-center text-sm text-muted">در حال دریافت…</p>
+        <p className="mt-4 text-center text-sm text-muted">{t("در حال دریافت…")}</p>
       ) : members.length === 0 ? (
         <p className="mt-4 rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
-          هنوز عضوی نساخته‌اید؛ با ساخت تیم، همکاران شما با یوزر و پسورد خود وارد پنل می‌شوند و فقط بخش‌های تعیین‌شده را می‌بینند.
+          {t("هنوز عضوی نساخته‌اید؛ با ساخت تیم، همکاران شما با یوزر و پسورد خود وارد پنل می‌شوند و فقط بخش‌های تعیین‌شده را می‌بینند.")}
         </p>
       ) : (
         <ul className="mt-4 space-y-3" data-testid="team-list">
@@ -191,21 +195,21 @@ export function TeamPanel() {
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <Button size="sm" variant="outline" onClick={() => setEditId(editing ? null : m.id)}>
-                      {editing ? "بستن" : "دسترسی‌ها"}
+                      {editing ? t("بستن") : t("دسترسی‌ها")}
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => remove(m)} className="text-danger">
-                      حذف
+                      {t("حذف")}
                     </Button>
                   </div>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {perms.length === 0 ? (
-                    <Badge tone="danger">بدون دسترسی</Badge>
+                    <Badge tone="danger">{t("بدون دسترسی")}</Badge>
                   ) : (
-                    perms.map((p) => <Badge key={p} tone="primary">{PERM_LABELS[p] ?? p}</Badge>)
+                    perms.map((p) => <Badge key={p} tone="primary">{t(PERM_LABELS[p] ?? p)}</Badge>)
                   )}
                   {perms.includes("cases") && (
-                    <Badge tone="neutral">{m.caseIds.length ? `${faNum(m.caseIds.length)} پروندهٔ مشخص` : "همه پرونده‌ها"}</Badge>
+                    <Badge tone="neutral">{m.caseIds.length ? tf("{n} پروندهٔ مشخص", { n: faNum(m.caseIds.length) }) : t("همه پرونده‌ها")}</Badge>
                   )}
                 </div>
 
@@ -237,6 +241,8 @@ function PermEditor({
   recentCases: RecentCase[];
   onSave: (m: Member, perms: string[], caseIds: number[]) => void;
 }) {
+  const t = useT();
+  const tf = templateT(t);
   const [perms, setPerms] = useState<string[]>(member.permissions.split(",").map((s) => s.trim()).filter(Boolean));
   const [caseIds, setCaseIds] = useState<number[]>(member.caseIds);
 
@@ -247,7 +253,7 @@ function PermEditor({
 
   return (
     <div className="mt-3 rounded-xl border border-border bg-surface p-3">
-      <p className="text-xs font-bold text-foreground">دسترسی به بخش‌ها</p>
+      <p className="text-xs font-bold text-foreground">{t("دسترسی به بخش‌ها")}</p>
       <div className="mt-2 flex flex-wrap gap-2">
         {allPerms.map((p) => (
           <label
@@ -258,7 +264,7 @@ function PermEditor({
           >
             <input type="checkbox" checked={perms.includes(p)} onChange={() => togglePerm(p)} className="sr-only" />
             {perms.includes(p) && <Icon name="check" className="h-3 w-3" />}
-            {PERM_LABELS[p] ?? p}
+            {PERM_LABELS[p] ? t(PERM_LABELS[p]) : p}
           </label>
         ))}
       </div>
@@ -266,7 +272,7 @@ function PermEditor({
       {perms.includes("cases") && (
         <>
           <p className="mt-3 text-xs font-bold text-foreground">
-            پرونده‌های سپرده‌شده به این عضو <span className="font-normal text-muted">— اگر هیچی انتخاب نشود، همهٔ پرونده‌ها را می‌بیند</span>
+            {t("پرونده‌های سپرده‌شده به این عضو")} <span className="font-normal text-muted">{t("— اگر هیچی انتخاب نشود، همهٔ پرونده‌ها را می‌بیند")}</span>
           </p>
           <div className="mt-2 max-h-40 space-y-1.5 overflow-y-auto pl-1">
             {recentCases.map((c) => (
@@ -285,7 +291,7 @@ function PermEditor({
       )}
 
       <Button size="sm" onClick={() => onSave(member, perms, caseIds)} icon="check" className="mt-3">
-        ذخیره دسترسی‌ها
+        {t("ذخیره دسترسی‌ها")}
       </Button>
     </div>
   );

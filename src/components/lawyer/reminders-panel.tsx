@@ -6,6 +6,8 @@ import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { formatJalaliDateTime } from "@/lib/jalali";
 import { JalaliDatePicker } from "@/components/jalali-date-picker";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * یادآورهای پنل وکیل — عنوان + توضیح + تاریخ (تقویم جلالی) و ساعت.
@@ -29,6 +31,8 @@ function faHour(h: string): string {
 }
 
 export function RemindersPanel() {
+  const t = useT();
+  const tf = templateT(t);
   const [items, setItems] = useState<Reminder[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [unauthed, setUnauthed] = useState(false);
@@ -68,7 +72,7 @@ export function RemindersPanel() {
     setError(null);
     setFlash(null);
     if (!title.trim() || !date) {
-      setError("عنوان و تاریخ یادآور را کامل کنید.");
+      setError(t("عنوان و تاریخ یادآور را کامل کنید."));
       return;
     }
     setBusy(true);
@@ -83,10 +87,10 @@ export function RemindersPanel() {
       setTitle("");
       setNote("");
       setDate("");
-      setFlash("یادآور ثبت شد.");
+      setFlash(t("یادآور ثبت شد."));
       load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "ثبت یادآور انجام نشد.");
+      setError(e instanceof Error ? e.message : t("ثبت یادآور انجام نشد."));
     } finally {
       setBusy(false);
     }
@@ -115,9 +119,9 @@ export function RemindersPanel() {
     <Card hover={false} id="reminders" className="scroll-mt-20">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 font-bold text-foreground">
-          <Icon name="clock" className="h-5 w-5 text-primary" /> یادآورها
+          <Icon name="clock" className="h-5 w-5 text-primary" /> {t("یادآورها")}
         </h2>
-        {items.length > 0 && <Badge tone="neutral">{faNum(items.filter((x) => !x.done).length)} باز</Badge>}
+        {items.length > 0 && <Badge tone="neutral">{tf("{n} باز", { n: faNum(items.filter((x) => !x.done).length) })}</Badge>}
       </div>
 
       {flash && <p className="mt-3 rounded-xl border border-success/30 bg-success/5 px-3 py-2 text-xs font-bold text-success" role="status">{flash}</p>}
@@ -129,12 +133,12 @@ export function RemindersPanel() {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="عنوان یادآور — مثلاً جلسه دادرسی پرونده شف-…"
+            placeholder={t("عنوان یادآور — مثلاً جلسه دادرسی پرونده شف-…")}
             className={fieldCls}
-            aria-label="عنوان یادآور"
+            aria-label={t("عنوان یادآور")}
           />
           <div className="flex gap-2">
-            <select value={hour} onChange={(e) => setHour(e.target.value)} className={fieldCls} aria-label="ساعت یادآور">
+            <select value={hour} onChange={(e) => setHour(e.target.value)} className={fieldCls} aria-label={t("ساعت یادآور")}>
               {HOURS.map((h) => (
                 <option key={h} value={h}>{faHour(h)}</option>
               ))}
@@ -143,31 +147,31 @@ export function RemindersPanel() {
         </div>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold text-muted">تاریخ (شمسی)</span>
+            <span className="text-[11px] font-semibold text-muted">{t("تاریخ (شمسی)")}</span>
             <JalaliDatePicker value={date} onChange={setDate} />
           </div>
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold text-muted">توضیح (اختیاری)</span>
+            <span className="text-[11px] font-semibold text-muted">{t("توضیح (اختیاری)")}</span>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={2}
-              placeholder="جزئیات یادآور…"
+              placeholder={t("جزئیات یادآور…")}
               className="w-full resize-y rounded-xl border border-border-strong bg-background px-3 py-2 text-sm outline-none focus:border-primary"
             />
           </label>
         </div>
         <Button onClick={add} disabled={busy} icon="check" className="mt-2 w-full sm:w-auto">
-          {busy ? "در حال ثبت…" : "ثبت یادآور"}
+          {busy ? t("در حال ثبت…") : t("ثبت یادآور")}
         </Button>
       </div>
 
       {/* فهرست یادآورها */}
       {!loaded ? (
-        <p className="mt-4 text-center text-sm text-muted">در حال دریافت…</p>
+        <p className="mt-4 text-center text-sm text-muted">{t("در حال دریافت…")}</p>
       ) : items.length === 0 ? (
         <p className="mt-4 rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
-          یادآوری ثبت نشده است؛ جلسات، موعدهای پرونده و کارهای عقب‌افتاده را همین‌جا ثبت کنید.
+          {t("یادآوری ثبت نشده است؛ جلسات، موعدهای پرونده و کارهای عقب‌افتاده را همین‌جا ثبت کنید.")}
         </p>
       ) : (
         <ul className="mt-4 max-h-80 space-y-2 overflow-y-auto pl-1" data-testid="reminders-list">
@@ -177,7 +181,7 @@ export function RemindersPanel() {
               <li key={r.id} className={`rounded-xl border p-3 ${overdue ? "border-danger/40 bg-danger/5" : "border-border bg-surface-2/40"}`}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className={`flex min-w-0 items-center gap-2 text-sm font-bold ${r.done ? "text-muted line-through" : "text-foreground"}`}>
-                    {overdue && <Badge tone="danger">گذشته</Badge>}
+                    {overdue && <Badge tone="danger">{t("گذشته")}</Badge>}
                     {r.title}
                   </p>
                   <span className="shrink-0 text-[11px] text-muted">{formatJalaliDateTime(r.dueAt)}</span>
@@ -185,10 +189,10 @@ export function RemindersPanel() {
                 {r.note && <p className="mt-1 text-xs leading-6 text-foreground-soft">{r.note}</p>}
                 <div className="mt-2 flex gap-2">
                   <Button size="sm" variant="outline" onClick={() => toggle(r.id, !r.done)}>
-                    {r.done ? "بازگرداندن" : "انجام شد"}
+                    {r.done ? t("بازگرداندن") : t("انجام شد")}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => remove(r.id)} className="text-danger">
-                    حذف
+                    {t("حذف")}
                   </Button>
                 </div>
               </li>

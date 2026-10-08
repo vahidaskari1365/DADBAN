@@ -4,14 +4,20 @@ import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { FAQ_ITEMS } from "@/lib/content";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = {
-  title: "پشتیبانی و مرکز راهنما",
-  description: "مرکز راهنما، سؤالات متداول و ثبت تیکت پشتیبانی دادبان.",
-  alternates: { canonical: "/support" },
-};
+/** چندزبانه: تیتر/توضیح با generateMetadata و getT به زبان انتخابی کاربر می‌رود */
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("پشتیبانی و مرکز راهنما"),
+    description: t("مرکز راهنما، سؤالات متداول و ثبت تیکت پشتیبانی دادبان."),
+    alternates: { canonical: "/support" },
+  };
+}
 
-export default function SupportPage() {
+export default async function SupportPage() {
+  const t = await getT();
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -25,28 +31,28 @@ export default function SupportPage() {
   return (
     <>
       <PageHero
-        badge="پشتیبانی"
-        title="چگونه می‌توانیم کمکتان کنیم؟"
-        desc="مرکز راهنما، سؤالات متداول و ثبت تیکت؛ تیم پشتیبانی دادبان ۲۴ ساعته در خدمت شماست."
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "پشتیبانی" }]}
+        badge={t("پشتیبانی")}
+        title={t("چگونه می‌توانیم کمکتان کنیم؟")}
+        desc={t("مرکز راهنما، سؤالات متداول و ثبت تیکت؛ تیم پشتیبانی دادبان ۲۴ ساعته در خدمت شماست.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پشتیبانی") }]}
       >
         <div className="flex flex-wrap gap-2">
-          <Button href="/contact" icon="mail">ثبت تیکت</Button>
-          <Button href="/consultation" variant="outline" icon="chat">گفتگوی آنلاین</Button>
+          <Button href="/contact" icon="mail">{t("ثبت تیکت")}</Button>
+          <Button href="/consultation" variant="outline" icon="chat">{t("گفتگوی آنلاین")}</Button>
         </div>
       </PageHero>
 
       <Container className="py-12">
-        <h2 className="text-xl font-bold text-foreground">سؤالات متداول</h2>
+        <h2 className="text-xl font-bold text-foreground">{t("سؤالات متداول")}</h2>
         <div className="mt-5 space-y-3">
           {FAQ_ITEMS.map((f, i) => (
             <Reveal key={f.q} delay={i * 30}>
               <details className="group rounded-2xl border border-border bg-surface p-4 [&_summary]:cursor-pointer">
                 <summary className="flex items-center justify-between gap-3 text-sm font-bold text-foreground marker:content-['']">
-                  <span className="flex items-center gap-2"><Icon name="chat" className="h-4 w-4 text-primary" /> {f.q}</span>
+                  <span className="flex items-center gap-2"><Icon name="chat" className="h-4 w-4 text-primary" /> {t(f.q)}</span>
                   <Icon name="chevron" className="h-4 w-4 rotate-180 text-muted transition-transform group-open:rotate-0" />
                 </summary>
-                <p className="mt-3 border-t border-border pt-3 text-sm leading-7 text-muted">{f.a}</p>
+                <p className="mt-3 border-t border-border pt-3 text-sm leading-7 text-muted">{t(f.a)}</p>
               </details>
             </Reveal>
           ))}
@@ -63,7 +69,7 @@ export default function SupportPage() {
             <a key={c.title} href={c.href}>
               <Card className="flex items-center gap-3">
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent-text"><Icon name={c.icon} className="h-5 w-5" /></span>
-                <div><p className="text-sm font-bold text-foreground">{c.title}</p><p className="text-xs text-muted">{c.desc}</p></div>
+                <div><p className="text-sm font-bold text-foreground">{t(c.title)}</p><p className="text-xs text-muted">{t(c.desc)}</p></div>
               </Card>
             </a>
           ))}
