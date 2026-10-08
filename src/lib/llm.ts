@@ -17,7 +17,7 @@
 // هرگز کلید واقعی در کد ذخیره نمی‌شود؛ همه از Environment Variable می‌آید.
 // ============================================================
 
-const SYSTEM_LEGAL = `تو دستیار حقوقی دادبان هستی — دستیار هوشمند حقوقی فارسی‌زبان (نه وکیل رسمی).
+const SYSTEM_LEGAL_CORE = `تو دستیار حقوقی دادبان هستی — دستیار هوشمند حقوقی (نه وکیل رسمی).
 پاسخ‌ها کوتاه، هدفمند و کاربردی باشد (حداکثر ۸-۱۰ خط) و دقیقاً این ساختار را داشته باشد:
 ۱) پاسخ مستقیم به پرسش در یک تا دو جمله.
 ۲) «مستند قانونی»: استناد به ماده/تبصره مرتبط با قالب «ماده X قانون Y» یا «تبصره X ماده Y».
@@ -45,12 +45,14 @@ const SYSTEM_LEGAL = `تو دستیار حقوقی دادبان هستی — د�
 - تسهیلات ازدواج و فرزندآوری: قانون حمایت خانواده و جوانی جمعیت ۱۴۰۰ (مواد ۱۶ و ۱۷).
 - دعاوی و ثبت شکایت: ابلاغ الکترونیک با «ثنا» و ثبت دادخواست در سامانه «عدل ایران» — این‌ها را به‌عنوان راه عملی پیشنهاد بده.
 
-اگر پاسخ دقیق نیاز به مطالعه اسناد/قوانین دارد، بگو برای نظر قطعی با وکیل مشورت کند.
+اگر پاسخ دقیق نیاز به مطالعه اسناد/قوانین دارد، بگو برای نظر قطعی با وکیل مشورت کند.`;
+
+const SYSTEM_LEGAL = `${SYSTEM_LEGAL_CORE}
 پاسخ را حتماً فقط با الفبای فارسی بنویس و از هر کاراکتر یا کلمه‌ی غیرفارسی (لاتین، چینی، کره‌ای،
 ژاپنی، روسی و غیره) داخل جمله‌ها جداً خودداری کن.
 هیچ‌وقت خودت را وکیل رسمی معرفی نکن و در پایان در یک جمله یادآوری کن: "این پاسخ جنبه اطلاع‌رسانی دارد و جایگزین مشاوره حقوقی رسمی نیست."`;
 
-export { SYSTEM_LEGAL };
+export { SYSTEM_LEGAL, SYSTEM_LEGAL_CORE };
 
 function sanitizePersian(text: string): string {
   return text
@@ -288,7 +290,7 @@ interface ZaiClient {
   chat: { completions: { create: (opts: unknown) => Promise<{ choices?: { message?: { content?: string } }[] }> } };
 }
 
-async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: number): Promise<string> {
+async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: number, sanitize = true): Promise<string> {
   if (p.group === "sdk") return (await viaSdk(messages)) ?? "";
   if (p.id === "pollinations-get") return (await pollinationsGet(messages)) ?? "";
   const bodyObj: Record<string, unknown> =
@@ -304,7 +306,7 @@ async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: numbe
     extra["X-Title"] = "DADBAN";
   }
   const text = await postOpenAiCompatible(p.base, body, p.key, p.timeoutMs, extra);
-  return sanitizePersian(text);
+  return sanitize ? sanitizePersian(text) : text.trim();
 }
 
 /* ─── فیوز خرابی (circuit breaker) ─────────────────────────────────────── */
@@ -330,7 +332,13 @@ function markOk(id: string): void {
 
 /* ─── API عمومی ────────────────────────────────────────────────────────── */
 
-export async function askLLM(messages: LlmMessage[], maxTokens = 400, systemPrompt = SYSTEM_LEGAL): Promise<string | null> {
+export async function askLLM(
+  messages: LlmMessage[],
+  maxTokens = 400,
+  systemPrompt = SYSTEM_LEGAL,
+  opts?: { sanitize?: boolean },
+): Promise<string | null> {
+  const sanitize = opts?.sanitize !== false;
   const all = normalizeMessages([{ role: "system", content: systemPrompt }, ...messages]);
   const chain = buildChain();
   const ordered = [
@@ -341,7 +349,7 @@ export async function askLLM(messages: LlmMessage[], maxTokens = 400, systemProm
   for (const p of ordered) {
     if (p.group === "keyless" && ++keylessTried > 3) break; // بودجه زمانی درخواست
     try {
-      const text = await runProvider(p, all, p.maxTokens ?? maxTokens);
+      const text = await runProvider(p, all, p.maxTokens ?? maxTokens, sanitize);
       if (text && text.trim().length > 1) {
         markOk(p.id);
         return text;

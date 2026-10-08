@@ -5,16 +5,33 @@ import { useSearchParams } from "next/navigation";
 import { Container, Button, Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LawyerPicksFlow } from "@/components/ai/lawyer-picks";
+import { useT } from "@/lib/i18n/provider";
 import type { LegalGuidance } from "@/lib/legal-engine";
 import type { MatchedLawyer } from "@/lib/lawyer-match";
 import type { IconKey } from "@/lib/data";
 import { ocrImageFileClient } from "@/lib/ocr-client";
+import { faNum } from "@/lib/data";
 
 interface ClauseFinding {
   type: "risk" | "info";
   label: string;
   detail: string;
 }
+
+type SourceHit = { title: string; url: string; host: string; snippet: string };
+
+/** یک پیام در نخ گفتگو با دستیار — حداکثر ۳ دور پرسش‌وپاسخ */
+type ChatMsg = {
+  id: number;
+  role: "user" | "assistant";
+  text?: string;
+  kind?: "llm" | "local";
+  guidance?: LegalGuidance;
+  sources?: SourceHit[];
+  lawyerMatch?: { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[]; province?: string | null };
+};
+
+const MAX_ROUNDS = 3;
 
 const EXAMPLES = [
   "مستأجر من سه ماه اجاره نداده، چه کنم؟",
@@ -26,12 +43,14 @@ const EXAMPLES = [
 function GuidanceView({ g, echo }: { g: LegalGuidance; echo: string }) {
   return (
     <div className="space-y-5 animate-fade-up">
-      <div className="rounded-2xl bg-surface-2 p-4">
-        <div className="flex items-start gap-2 text-xs text-muted">
-          <Icon name="chat" className="mt-0.5 h-4 w-4 shrink-0" />
-          <p>{echo}</p>
+      {echo && (
+        <div className="rounded-2xl bg-surface-2 p-4">
+          <div className="flex items-start gap-2 text-xs text-muted">
+            <Icon name="chat" className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>{echo}</p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         {g.matched ? (
@@ -230,16 +249,15 @@ const CONTRACT_ACCEPT = ".txt,.md,.csv,.docx,.pdf,.png,.jpg,.jpeg,.webp,image/*"
 
 function AIAssistantContent() {
   const search = useSearchParams();
+  const t = useT();
   const [tab, setTab] = useState<"guide" | "contract">(search.get("tab") === "contract" ? "contract" : "guide");
   const [input, setInput] = useState(search.get("q") ?? "");
   /** استان کاربر — از ویزارد «شروع مسیر من»، پارامتر لینک، یا استان ثبت‌شده در پروفایل موکل */
   const [province, setProvince] = useState<string | null>(search.get("province"));
   const [loading, setLoading] = useState(false);
-  const [guidance, setGuidance] = useState<{ g: LegalGuidance; echo: string } | null>(null);
-  const [llmAnswer, setLlmAnswer] = useState<string | null>(null);
-  const [lawyerMatch, setLawyerMatch] = useState<
-    { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[]; province?: string | null } | null
-  >(null);
+  /** نخ گفتگو با دستیار — حداکثر MAX_ROUNDS دور */
+  const [msgs, setMsgs] = useState<ChatMsg[]>([]);
+  const msgIdRef = useRef(1);
   const [error, setError] = useState<string | null>(null);
 
   const [contractText, setContractText] = useState("");
@@ -275,6 +293,23 @@ function AIAssistantContent() {
     };
   }, [search]);
 
+  const roundsUsed = msgs.filter((m) => m.role === "user").length;
+  const roundsFull = roundsUsed >= MAX_ROUNDS;
+
+  /** متن خلاصهٔ پیام دستیار برای تاریخچهٔ مدل */
+  const historyText = (m: ChatMsg): string => {
+    if (m.role === "user") return m.text ?? "";
+    if (m.kind === "llm") return m.text ?? "";
+    if (m.guidance) return m.guidance.summary;
+    return "";
+  };
+
+  const resetChat = () => {
+    setMsgs([]);
+    setError(null);
+    setInput("");
+  };
+
   const ask = async (q?: string) => {
     const query = (q ?? input).trim();
     /* skill-kit submit-button-state: اعتبارسنجی هنگام submit + پیام قابل‌فهم */
@@ -282,34 +317,50 @@ function AIAssistantContent() {
       setError("برای شروع گفتگو، لطفاً سؤال حقوقی خود را بنویسید.");
       return;
     }
-    setInput(query);
+    if (loading || roundsFull) return;
+    setInput("");
     setLoading(true);
     setError(null);
-    setGuidance(null);
-    setLlmAnswer(null);
-    setLawyerMatch(null);
+    const uid = msgIdRef.current++;
+    const aid = msgIdRef.current++;
+    // تاریخچه برای مدل: پیام‌های موفق تا الان (حداکثر ۶ پیام سمت سرور هم محدود می‌کند)
+    const history = msgs
+      .filter((m) => historyText(m).length > 0)
+      .map((m) => ({ role: m.role, content: historyText(m) }));
+    setMsgs((prev) => [...prev, { id: uid, role: "user", text: query }, { id: aid, role: "assistant" }]);
     try {
       const res = await fetch("/api/ai-assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, province: province ?? undefined }),
+        body: JSON.stringify({ query, province: province ?? undefined, history }),
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
-      if (data.answer) {
-        setLlmAnswer(data.answer);
-      } else {
-        setGuidance({ g: data.guidance, echo: data.echo });
-      }
-      if (data.lawyerMatch?.lawyers?.length) {
-        setLawyerMatch({
-          lawyers: data.lawyerMatch.lawyers,
-          topic: data.lawyerMatch.topic ?? null,
-          specialties: data.lawyerMatch.specialties ?? [],
-          province: data.lawyerMatch.province ?? province,
-        });
-      }
+      setMsgs((prev) =>
+        prev.map((m) =>
+          m.id === aid
+            ? {
+                ...m,
+                kind: data.answer ? ("llm" as const) : ("local" as const),
+                text: data.answer ?? undefined,
+                guidance: data.guidance ?? undefined,
+                sources: (data.sources ?? []) as SourceHit[],
+                lawyerMatch: data.lawyerMatch?.lawyers?.length
+                  ? {
+                      lawyers: data.lawyerMatch.lawyers,
+                      topic: data.lawyerMatch.topic ?? null,
+                      specialties: data.lawyerMatch.specialties ?? [],
+                      province: data.lawyerMatch.province ?? province,
+                    }
+                  : undefined,
+              }
+            : m,
+        ),
+      );
     } catch (e) {
+      // پیام ناموفق حذف می‌شود تا سقف دورها بی‌جهت مصرف نشود؛ خطا بالای فرم نشان داده می‌شود
+      setMsgs((prev) => prev.filter((m) => m.id !== uid && m.id !== aid));
+      setInput(query);
       setError(e instanceof Error ? e.message : "خطا در ارتباط با سرور");
     } finally {
       setLoading(false);
@@ -407,7 +458,7 @@ function AIAssistantContent() {
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [guidance, contractResult, lawyerMatch]);
+  }, [msgs, contractResult]);
 
   return (
     <>
@@ -453,9 +504,17 @@ function AIAssistantContent() {
           {tab === "guide" ? (
             <div className="space-y-6">
               <Card hover={false} className="space-y-3">
-                <label htmlFor="ai-input" className="text-sm font-bold text-foreground">
-                  مشکل حقوقی خود را شرح دهید
-                </label>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label htmlFor="ai-input" className="text-sm font-bold text-foreground">
+                    {msgs.length > 0 ? "ادامهٔ گفتگو با دستیار" : "مشکل حقوقی خود را شرح دهید"}
+                  </label>
+                  {msgs.length > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-bold text-muted">
+                      <Icon name="chat" className="h-3 w-3" />
+                      {faNum(roundsUsed)} از {faNum(MAX_ROUNDS)} پرسش
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-end gap-2">
                   <textarea
                     id="ai-input"
@@ -468,27 +527,40 @@ function AIAssistantContent() {
                       }
                     }}
                     rows={2}
+                    disabled={roundsFull}
                     placeholder="مثلاً: چک برگشتی دارم و نمی‌دانم چطور طلبم را بگیرم…"
-                    className="w-full resize-none rounded-xl border border-border-strong bg-background p-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
+                    className="w-full resize-none rounded-xl border border-border-strong bg-background p-3 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:opacity-60"
                   />
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {EXAMPLES.map((ex) => (
-                      <button
-                        key={ex}
-                        type="button"
-                        onClick={() => ask(ex)}
-                        className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-foreground-soft transition-colors hover:border-primary/40 hover:text-primary"
-                      >
-                        {ex}
-                      </button>
-                    ))}
+                {!roundsFull && (
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {EXAMPLES.map((ex) => (
+                        <button
+                          key={ex}
+                          type="button"
+                          onClick={() => ask(ex)}
+                          className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-foreground-soft transition-colors hover:border-primary/40 hover:text-primary"
+                        >
+                          {ex}
+                        </button>
+                      ))}
+                    </div>
+                    <Button onClick={() => ask()} disabled={loading} icon="send">
+                      {loading ? "در حال بررسی…" : "بپرس"}
+                    </Button>
                   </div>
-                  <Button onClick={() => ask()} disabled={loading} icon="send">
-                    {loading ? "در حال بررسی…" : "تحلیل کن"}
-                  </Button>
-                </div>
+                )}
+                {roundsFull && (
+                  <div className="rounded-2xl border border-accent/30 bg-accent-soft/40 p-4 text-center">
+                    <p className="text-sm font-bold text-accent-text">
+                      به سقف ۳ پرسش در این گفتگو رسیدید — برای ادامه، گفتگوی جدید شروع کنید.
+                    </p>
+                    <Button variant="soft" icon="sparkles" onClick={resetChat} className="mt-3">
+                      شروع گفتگوی جدید
+                    </Button>
+                  </div>
+                )}
               </Card>
 
               {error && (
@@ -497,54 +569,82 @@ function AIAssistantContent() {
                 </div>
               )}
 
-              {loading && !guidance && !llmAnswer && (
+              {/* نخ گفتگو با دستیار — سؤال کاربر حباب‌وار، پاسخ دستیار کارت کامل */}
+              {msgs.length > 0 && (
+                <div className="space-y-4" aria-live="polite" aria-label="گفتگو با دستیار هوشمند">
+                  {msgs.map((m) =>
+                    m.role === "user" ? (
+                      <div key={m.id} className="flex justify-start">
+                        <div className="max-w-[85%] rounded-2xl border border-primary/20 bg-primary-soft/50 px-4 py-3">
+                          <p className="whitespace-pre-line text-sm leading-6 text-foreground" dir="auto">
+                            {m.text}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div key={m.id}>
+                        {m.kind === "llm" ? (
+                          <Card hover={false} className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent-text">
+                                <Icon name="sparkles" className="h-4 w-4" />
+                              </span>
+                              <span className="text-sm font-bold text-foreground">پاسخ دستیار هوشمند</span>
+                            </div>
+                            <p className="whitespace-pre-line text-sm leading-7 text-foreground-soft" dir="auto">
+                              {m.text}
+                            </p>
+                            {m.sources && m.sources.length > 0 && (
+                              <div className="rounded-xl border border-border bg-surface-2 p-3">
+                                <p className="mb-1.5 text-xs font-bold text-muted">منابع وب:</p>
+                                <ul className="space-y-1">
+                                  {m.sources.slice(0, 6).map((s, i) => (
+                                    <li key={`${m.id}-src-${i}`}>
+                                      <a
+                                        href={s.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer nofollow"
+                                        className="line-clamp-1 text-xs text-primary hover:underline"
+                                        dir="ltr"
+                                      >
+                                        [{i + 1}] {s.title} — {s.host}
+                                      </a>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            <p className="border-t border-border pt-3 text-xs text-muted">
+                              این پاسخ توسط هوش مصنوعی تولید شده و جنبه اطلاع‌رسانی دارد؛ برای اقدام حقوقی با وکیل متخصص مشورت کنید.
+                            </p>
+                            {m.lawyerMatch && (
+                              <div className="border-t border-border pt-4">
+                                <LawyerPicksFlow
+                                  lawyers={m.lawyerMatch.lawyers}
+                                  topic={m.lawyerMatch.topic}
+                                  specialties={m.lawyerMatch.specialties}
+                                  province={m.lawyerMatch.province}
+                                />
+                              </div>
+                            )}
+                          </Card>
+                        ) : m.guidance ? (
+                          <GuidanceView g={m.guidance} echo="" />
+                        ) : null}
+                      </div>
+                    ),
+                  )}
+                  <div ref={scrollRef} />
+                </div>
+              )}
+
+              {loading && (
                 <Card hover={false} className="flex items-center gap-3">
                   <span className="h-3 w-3 animate-pulse-dot rounded-full bg-primary" />
                   <span className="h-3 w-3 animate-pulse-dot rounded-full bg-primary" style={{ animationDelay: "0.2s" }} />
                   <span className="h-3 w-3 animate-pulse-dot rounded-full bg-primary" style={{ animationDelay: "0.4s" }} />
                   <span className="text-sm text-muted">دستیار در حال تحلیل موضوع شماست…</span>
                 </Card>
-              )}
-
-              {llmAnswer && (
-                <Card hover={false} className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent-text">
-                      <Icon name="sparkles" className="h-4 w-4" />
-                    </span>
-                    <span className="text-sm font-bold text-foreground">پاسخ دستیار هوشمند</span>
-                  </div>
-                  <p className="whitespace-pre-line text-sm leading-7 text-foreground-soft">{llmAnswer}</p>
-                  <p className="border-t border-border pt-3 text-xs text-muted">
-                    این پاسخ توسط هوش مصنوعی تولید شده و جنبه اطلاع‌رسانی دارد؛ برای اقدام حقوقی با وکیل متخصص مشورت کنید.
-                  </p>
-                  {lawyerMatch && (
-                    <div className="border-t border-border pt-4">
-                      <LawyerPicksFlow
-                        lawyers={lawyerMatch.lawyers}
-                        topic={lawyerMatch.topic}
-                        specialties={lawyerMatch.specialties}
-                        province={lawyerMatch.province}
-                      />
-                    </div>
-                  )}
-                </Card>
-              )}
-
-              {guidance && (
-                <div ref={scrollRef} className="space-y-6">
-                  <GuidanceView g={guidance.g} echo={guidance.echo} />
-                  {lawyerMatch && (
-                    <Card hover={false} className="p-4">
-                      <LawyerPicksFlow
-                        lawyers={lawyerMatch.lawyers}
-                        topic={lawyerMatch.topic}
-                        specialties={lawyerMatch.specialties}
-                        province={lawyerMatch.province}
-                      />
-                    </Card>
-                  )}
-                </div>
               )}
             </div>
           ) : (
