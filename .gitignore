@@ -42,3 +42,4 @@ dev.log
 server.log
 eng.traineddata
 *.traineddata
+warmlogs/
