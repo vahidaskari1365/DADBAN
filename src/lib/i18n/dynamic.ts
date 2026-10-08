@@ -40,6 +40,7 @@ const TRANSLATOR_SYSTEM = (locale: Exclude<Locale, "fa">): string =>
     `5) Persian person names: transliterate phonetically (${locale === "ar" ? "render in Arabic script" : "Latin/CJK script"}), never translate their meaning.`,
     `6) Keep digits: convert Persian digits (۰-۹) to ${locale === "ar" ? "Arabic-Indic digits" : "Western digits (0-9)"}.`,
     `7) Never output any Persian/Arabic script unless the target language itself uses it.`,
+    `8) If the source text is a short title or heading WITHOUT markdown markers, do NOT add any markdown markers (no leading #, no **). Output plain text titles.`,
   ].join("\n");
 
 /* ── کش حافظه + dedup ──────────────────────────────────────────────────── */
@@ -79,11 +80,23 @@ async function sha1(text: string): Promise<string> {
 
 /* ── ترجمه با LLM ──────────────────────────────────────────────────────── */
 
+/**
+ * پاک‌ساز خروجی مترجم — حذف علائم Markdown که مدل گاهی به متن‌های کوتاه
+ * (عنوان‌ها) اضافه می‌کند؛ اگر متن اصلی خودش # نداشت، خروجی هم نباید داشته باشد.
+ */
+function cleanTranslation(source: string, translated: string): string {
+  let out = translated.trim();
+  if (!/^[ \t]*#{1,6}[ \t]/m.test(source)) {
+    out = out.replace(/^[ \t]*#{1,6}[ \t]+/, "").replace(/\\n[ \t]*#{1,6}[ \t]+/g, "\\n");
+  }
+  return out.trim();
+}
+
 async function translateViaLLM(locale: Exclude<Locale, "fa">, faText: string, maxTokens: number): Promise<string | null> {
   const messages: LlmMessage[] = [{ role: "user", content: faText }];
   const out = await askLLM(messages, maxTokens, TRANSLATOR_SYSTEM(locale), { sanitize: false });
   if (!out) return null;
-  const trimmed = out.trim();
+  const trimmed = cleanTranslation(faText, out);
   if (!trimmed) return null;
   // گارد سلامت: خروجی تقریباً خالی یا فقط علائم → ناموفق
   if (trimmed.replace(/[\s#*>\-\d\p{P}]/gu, "").length < Math.min(8, faText.length / 4)) return null;
@@ -105,12 +118,13 @@ export async function tdyn(locale: Locale, faText: string, maxTokens = 1400): Pr
   if (running) return running;
 
   const job = (async (): Promise<string> => {
-    // ۱) کش DB
+    // ۱) کش DB — با پاک‌ساز محافظتی هنگام خواندن (مقادیر قدیمیِ آلوده به ## هم تمیز می‌شوند)
     try {
       const rows = await db.select().from(contentTranslations).where(eq(contentTranslations.key, key)).limit(1);
       if (rows[0]?.value) {
-        memSet(key, rows[0].value);
-        return rows[0].value;
+        const cleaned = cleanTranslation(text, rows[0].value);
+        memSet(key, cleaned);
+        return cleaned;
       }
     } catch {
       /* DB در دسترس نیست (مثلاً noop محلی) → مستقیم LLM */
