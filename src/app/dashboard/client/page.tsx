@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { cases, consultations, tickets, userNotifications } from "@/db/schema";
+import { caseOffers, cases, consultations, lawyers, tickets, userNotifications } from "@/db/schema";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { faNum, CONSULT_STATUS_FA, CONSULT_TYPE_FA } from "@/lib/data";
+import { faNum, faPrice, CONSULT_STATUS_FA, CONSULT_TYPE_FA } from "@/lib/data";
+import { relativeTimeJalali } from "@/lib/jalali";
 import type { IconKey } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
@@ -76,6 +77,47 @@ export default async function ClientDashboard() {
       .from(userNotifications)
       .where(and(eq(userNotifications.userId, user.id), eq(userNotifications.read, false)));
     unreadNotifs = Number(agg?.n ?? 0);
+  } catch {
+    /* degraded mode */
+  }
+
+  // پیام‌های پروژه‌ها — آخرین پیشنهادهای وکلا روی پرونده‌های همین موکل (صندوق پیام)
+  let projectMessages: {
+    offerId: number;
+    caseSubject: string;
+    caseNumber: string;
+    trackingToken: string;
+    lawyerName: string;
+    lawyerAvatar: string;
+    lawyerVerified: boolean;
+    lawyerCity: string;
+    price: number;
+    message: string;
+    offerStatus: string;
+    createdAt: Date;
+  }[] = [];
+  try {
+    projectMessages = await db
+      .select({
+        offerId: caseOffers.id,
+        caseSubject: cases.subject,
+        caseNumber: cases.caseNumber,
+        trackingToken: cases.trackingToken,
+        lawyerName: lawyers.name,
+        lawyerAvatar: lawyers.avatarColor,
+        lawyerVerified: lawyers.verified,
+        lawyerCity: lawyers.city,
+        price: caseOffers.price,
+        message: caseOffers.message,
+        offerStatus: caseOffers.status,
+        createdAt: caseOffers.createdAt,
+      })
+      .from(caseOffers)
+      .innerJoin(cases, eq(caseOffers.caseId, cases.id))
+      .innerJoin(lawyers, eq(caseOffers.lawyerId, lawyers.id))
+      .where(eq(cases.contactPhone, phone))
+      .orderBy(desc(caseOffers.createdAt))
+      .limit(8);
   } catch {
     /* degraded mode */
   }
@@ -150,6 +192,7 @@ export default async function ClientDashboard() {
         { label: t("ثبت پرونده جدید"), icon: "folder", href: "/case/new" },
         { label: t("پیگیری با کد رهگیری"), icon: "location", href: "/track-case" },
         { label: t("اعلان‌ها"), icon: "mail", badge: unreadNotifs ? faNum(unreadNotifs) : undefined, href: "/dashboard/client#notifications" },
+        { label: t("پیام‌های پروژه‌ها"), icon: "chat", badge: projectMessages.length ? faNum(projectMessages.length) : undefined, href: "/dashboard/client#project-messages" },
         { label: t("پیام‌ها و پشتیبانی"), icon: "mail", badge: faNum(myTickets.length), href: "/support" },
         { label: t("پروفایل من"), icon: "user", href: "/dashboard/client/profile" },
       ]}
@@ -225,6 +268,69 @@ export default async function ClientDashboard() {
       {/* اعلان‌ها — پیشنهادهای جدید وکلا روی پرونده‌های شما */}
       <div id="notifications">
         <NotificationsPanel />
+      </div>
+
+      {/* پیام‌های پروژه‌ها — پیشنهادهای وکلای مختلف روی پرونده‌های شما، مثل صندوق پیام */}
+      <div id="project-messages">
+        <Card hover={false}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 font-bold text-foreground">
+              <Icon name="chat" className="h-5 w-5 text-accent-text" /> {t("پیام‌های پروژه‌ها")}
+            </h2>
+            {projectMessages.length > 0 && <Badge tone="accent">{faNum(projectMessages.length)} {t("پیام")}</Badge>}
+          </div>
+          <p className="mt-1 text-xs leading-6 text-muted">{t("پیشنهادهای وکلای مختلف روی پرونده‌های شما — همه را یک‌جا مثل پیام ببینید.")}</p>
+          <div className="nice-scroll mt-4 max-h-96 space-y-3 overflow-y-auto">
+            {projectMessages.length > 0 ? (
+              projectMessages.map((m) => (
+                <div key={m.offerId} className="rounded-xl border border-border p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
+                        style={{ background: m.lawyerAvatar }}
+                        aria-hidden
+                      >
+                        {m.lawyerName.trim().split(" ").slice(-1)[0]?.[0] ?? "؟"}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+                          <span className="truncate">{m.lawyerName}</span>
+                          {m.lawyerVerified && <Icon name="badge" className="h-3.5 w-3.5 shrink-0 text-primary" aria-label={t("احراز هویت‌شده")} />}
+                        </p>
+                        <p className="truncate text-[11px] text-muted">{tf("برای پروندهٔ «{subject}» پیشنهاد داد", { subject: m.caseSubject })}</p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-left">
+                      <p className="tnum text-sm font-extrabold text-primary">{m.price > 0 ? faPrice(m.price) : t("توافقی")}</p>
+                      <p className="text-[10px] text-muted">{relativeTimeJalali(m.createdAt)}</p>
+                    </div>
+                  </div>
+                  <p className="mt-2 line-clamp-2 rounded-lg bg-surface-2/60 px-3 py-2 text-xs leading-6 text-foreground-soft">{m.message}</p>
+                  <div className="mt-2.5 flex items-center justify-between gap-2">
+                    {m.offerStatus === "accepted" ? (
+                      <Badge tone="success" icon="check">{t("پیشنهاد پذیرفته‌شده")}</Badge>
+                    ) : (
+                      <span className="truncate font-mono text-[10px] text-muted" dir="ltr">{m.caseNumber}</span>
+                    )}
+                    <Link
+                      href={`/case/offers?cn=${encodeURIComponent(m.caseNumber)}&t=${encodeURIComponent(m.trackingToken)}`}
+                      className="shrink-0 text-xs font-bold text-primary transition-colors hover:text-primary-hover"
+                    >
+                      {t("مشاهده و مقایسه پیشنهادها")} ←
+                    </Link>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center">
+                <p className="text-sm font-bold text-foreground">{t("هنوز پیامی برای پروژه‌های شما نیست")}</p>
+                <p className="mt-1 text-xs leading-6 text-muted">{t("پروژه‌تان را ثبت کنید تا پیشنهاد وکلا به‌صورت پیام همین‌جا برسد.")}</p>
+                <Button href="/case/new" size="sm" icon="plus" className="mt-3">{t("ثبت پروندهٔ جدید")}</Button>
+              </div>
+            )}
+          </div>
+        </Card>
       </div>
 
       {/* پرداخت قسطی حق‌الوکاله — اطلاع‌رسانی به موکل */}

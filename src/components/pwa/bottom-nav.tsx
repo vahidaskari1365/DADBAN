@@ -33,7 +33,7 @@ const TABS: Tab[] = [
   { label: "خانه", href: "/", icon: "home", match: ["/"] },
   { label: "وکلا", href: "/lawyers", icon: "search", match: ["/lawyers", "/lawyers/"] },
   { label: "مشاوره", href: "/consultation", icon: "calendar", center: true, match: ["/consultation", "/booking"] },
-  { label: "پرونده", href: "/case/new", icon: "folder", match: ["/case/new", "/case/", "/track-case", "/dashboard/cases"] },
+  { label: "پروژه‌ها", href: "/case-board", icon: "folder", match: ["/case-board", "/case/", "/track-case", "/dashboard/cases"] },
   { label: "پنل", href: "/dashboard/client", icon: "user", match: ["/dashboard"] },
 ];
 

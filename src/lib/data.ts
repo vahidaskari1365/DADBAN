@@ -187,6 +187,7 @@ export const NAV: {
     ],
   },
   { label: "مشاوره", href: "/consultation" },
+  { label: "پروژه‌ها", href: "/case-board" },
   {
     label: "خدمات حقوقی",
     href: "/services",
