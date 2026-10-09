@@ -23,9 +23,9 @@ import { getT } from "@/lib/i18n/server";
 
 /**
  * Homepage دادبان — Conversion-focused و خلوت.
- * IA: HERO ← TRUST STRIP ← 3 MAIN PATHS ← SITUATION ROUTER ← LAWYER DISCOVERY ←
- *     LEGAL SERVICES ← AI SPOTLIGHT ← COMMON LEGAL PROBLEMS ← HOW IT WORKS ←
- *     LEGAL KNOWLEDGE ← REAL SOCIAL PROOF ← FINAL CTA
+ * IA: HERO ← TRUST STRIP ← 3 MAIN PATHS (+بازار پرونده‌ها زیر کارت‌های شروع) ←
+ *     SITUATION ROUTER ← LAWYER DISCOVERY ← LEGAL SERVICES ← AI SPOTLIGHT ←
+ *     COMMON LEGAL PROBLEMS ← HOW IT WORKS ← LEGAL KNOWLEDGE ← SOCIAL PROOF ← CTA
  * زیرساخت SEO/AEO/GEO (متادیتا، JSON-LD، sitemap، robots، llms.txt) دست‌نخورده است.
  * فقط ادعاهای قابل اثبات؛ داده وکیل/مقاله/نظر همگی واقعی از دیتابیس.
  */
@@ -76,6 +76,11 @@ export default async function HomePage() {
           </Reveal>
           <div className="mt-10">
             <MainPaths />
+          </div>
+
+          {/* CASE MARKETPLACE — زیر کارت‌های شروع: پرونده را به رقابت بگذارید */}
+          <div className="mt-16">
+            <CaseMarketplace />
           </div>
         </Container>
       </section>
@@ -137,13 +142,6 @@ export default async function HomePage() {
           <div className="mt-10">
             <LegalServices />
           </div>
-        </Container>
-      </section>
-
-      {/* CASE MARKETPLACE — پرونده را به رقابت بگذارید؛ وکلا قیمت بدهند */}
-      <section className="mt-24" aria-label="بازار پرونده‌ها">
-        <Container>
-          <CaseMarketplace />
         </Container>
       </section>
 

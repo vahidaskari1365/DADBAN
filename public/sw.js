@@ -8,9 +8,9 @@
    - تصاویر: stale-while-revalidate
    ========================================================================== */
 
-// v1.4.0 — چیدمان جدید صفحه مشاوره + پس‌زمینه سراسری هیرو + موشن‌های سینمایی؛
+// v1.4.31 — صفحهٔ اول: بخش «بازار پرونده‌ها» به زیر کارت‌های «می‌خواهید از کجا شروع کنید؟» منتقل شد؛
 // کش‌های نسخه قبل در activate حذف می‌شوند تا هیچ گوشی‌ای نسخه قدیمی را نبیند.
-const VERSION = "sharifmand-v1.4.30";
+const VERSION = "sharifmand-v1.4.31";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;
