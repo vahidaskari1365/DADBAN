@@ -11,8 +11,10 @@ import { templateT } from "@/lib/i18n/core";
 
 /**
  * برد زندهٔ «بازار پرونده‌های دادبان» — سمت کلاینت:
- * آمار زندهٔ بازار، فیلتر و جستجو، کارت پرونده‌های باز و مودال جزئیات با
+ * آمار کلان، فیلتر و جستجو، کارت پرونده‌های باز و مودال جزئیات با
  * فرم ثبت/به‌روزرسانی پیشنهاد قیمت برای وکیلِ واردشده.
+ * حریم خصوصی: تعداد و محتوای پیشنهادهای هر پرونده فقط برای موکلِ صاحب پرونده
+ * دیده می‌شود — وکیل فقط پیشنهادِ خودش را می‌بیند.
  * روند کار و توضیح فرآیند (نسخهٔ SEO) در صفحهٔ سرور /case-board است.
  */
 
@@ -24,7 +26,6 @@ interface BoardCase {
   stage: string;
   budget: string | null;
   createdAt: string;
-  offersCount: number;
   inMyProvince: boolean | null;
 }
 
@@ -56,7 +57,6 @@ interface CaseDetail {
   budget: string | null;
   createdAt: string;
   closed: boolean;
-  offersCount: number;
 }
 
 const normalize = (s: string) => s.replace(/\s+/g, " ").trim().replace(/\u200c/g, " ");
@@ -68,7 +68,7 @@ export function CaseBoardClient() {
   const [failed, setFailed] = useState(false);
   const [q, setQ] = useState("");
   const [city, setCity] = useState("");
-  const [sort, setSort] = useState<"new" | "offers">("new");
+  const [sort, setSort] = useState<"new" | "old">("new");
 
   /* مودال جزئیات */
   const [openId, setOpenId] = useState<number | null>(null);
@@ -187,8 +187,8 @@ export function CaseBoardClient() {
     if (city) {
       list = list.filter((c) => normalize(c.city) === normalize(city));
     }
-    if (sort === "offers") {
-      list.sort((a, b) => b.offersCount - a.offersCount);
+    if (sort === "old") {
+      list.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     } else {
       list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
@@ -255,9 +255,9 @@ export function CaseBoardClient() {
           </label>
           <label className="sm:w-40">
             <span className="sr-only">{t("ترتیب نمایش")}</span>
-            <select value={sort} onChange={(e) => setSort(e.target.value as "new" | "offers")} className={fieldCls} data-testid="board-sort">
+            <select value={sort} onChange={(e) => setSort(e.target.value as "new" | "old")} className={fieldCls} data-testid="board-sort">
               <option value="new">{t("جدیدترین پرونده‌ها")}</option>
-              <option value="offers">{t("بیشترین پیشنهاد")}</option>
+              <option value="old">{t("قدیمی‌ترین پرونده‌ها")}</option>
             </select>
           </label>
         </div>
@@ -323,13 +323,9 @@ export function CaseBoardClient() {
                       <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2 py-1">
                         <Icon name="clock" className="h-3 w-3" />{relativeTimeJalali(c.createdAt)}
                       </span>
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 font-bold ${
-                          c.offersCount > 0 ? "bg-accent-soft text-accent-text" : "bg-surface-2/70 text-muted"
-                        }`}
-                      >
-                        <Icon name="mail" className="h-3 w-3" />
-                        {c.offersCount > 0 ? tf("{n} پیشنهاد قیمت", { n: faNum(c.offersCount) }) : t("بی‌پیشنهاد")}
+                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2 py-1 text-muted">
+                        <Icon name="lock" className="h-3 w-3" />
+                        {t("پیشنهادها فقط برای موکل")}
                       </span>
                     </div>
                     {c.budget && (
@@ -393,7 +389,7 @@ export function CaseBoardClient() {
                 <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px]">
                   <Badge tone="neutral" ><Icon name="location" className="h-3 w-3" />{detail.case.city}</Badge>
                   <Badge tone="neutral" >{detail.case.stage}</Badge>
-                  <Badge tone="accent" >{tf("{n} پیشنهاد قیمت", { n: faNum(detail.case.offersCount) })}</Badge>
+                  <Badge tone="neutral" ><Icon name="lock" className="h-3 w-3" />{t("پیشنهادها فقط برای موکل")}</Badge>
                   <span className="text-muted">{relativeTimeJalali(detail.case.createdAt)}</span>
                 </div>
 
@@ -413,7 +409,7 @@ export function CaseBoardClient() {
 
                 <p className="mt-3 flex items-start gap-2 rounded-xl border border-success/25 bg-success/5 px-3 py-2.5 text-[11px] leading-5 text-foreground-soft">
                   <Icon name="lock" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
-                  {t("نام، شمارهٔ تماس و کد پیگیری موکل محرمانه است؛ پس از انتخاب شما توسط موکل، گفتگوی رایگان همان‌جا آغاز می‌شود.")}
+                  {t("نام و شمارهٔ تماس موکل، و نیز پیشنهاد قیمت و گفتگوی همهٔ وکلا کاملاً محرمانه است و فقط موکلِ صاحب پرونده آن‌ها را می‌بیند — وکلا پیشنهادهای یکدیگر را نمی‌بینند.")}
                 </p>
 
                 {detail.case.closed ? (

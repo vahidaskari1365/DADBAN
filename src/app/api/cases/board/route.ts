@@ -14,10 +14,12 @@ export const dynamic = "force-dynamic";
  * موکل پرونده ثبت می‌کند ← پرونده (بدون اطلاعات تماس) در همین برد دیده می‌شود ←
  * وکلای متخصص نظر + پیشنهاد قیمت ثبت می‌کنند ← موکل بهترین را انتخاب می‌کند.
  *
- * GET            → همهٔ پرونده‌های باز (sanitize) + آمار زنده + هویت وکیلِ واردشده
+ * GET            → همهٔ پرونده‌های باز (sanitize) + آمار کلان + هویت وکیلِ واردشده
  * GET ?id=       → جزئیات کامل یک پروندهٔ باز (sanitize) + پیشنهاد خود وکیل
  *
- * حریم خصوصی: شمارهٔ پرونده، کد پیگیری، نام و موبایل موکل هرگز عمومی نمی‌شود؛
+ * حریم خصوصی (قانون سخت): پیشنهادهای قیمت و گفتگوهای هر پرونده فقط برای موکلِ صاحب
+ * پرونده قابل مشاهده است — وکلا نه متن/قیمت پیشنهادهای یکدیگر را می‌بینند و نه حتی
+ * تعدادشان. شمارهٔ پرونده، کد پیگیری، نام و موبایل موکل هم هرگز عمومی نمی‌شود؛
  * در متن توضیحات هم هر شمارهٔ تماس/ایمیل به‌صورت خودکار ماسک می‌شود.
  * ثبت پیشنهاد از POST /api/cases/offers (احراز هویت وکیل) انجام می‌شود.
  */
@@ -95,17 +97,7 @@ export async function GET(req: Request) {
     const open = rows.filter((r) => !r.acceptedAt);
     const ids = open.map((r) => r.id);
 
-    /* تعداد پیشنهاد هر پروندهٔ باز */
-    const counts = ids.length
-      ? await db
-          .select({ caseId: caseOffers.caseId, n: sql<number>`count(*)::int` })
-          .from(caseOffers)
-          .where(inArray(caseOffers.caseId, ids))
-          .groupBy(caseOffers.caseId)
-      : [];
-    const countByCase = new Map(counts.map((c) => [c.caseId, Number(c.n)]));
-
-    /* آمار زندهٔ بازار */
+    /* آمار کلانِ بازار (تجمیعی — هیچ اطلاعاتی دربارهٔ پروندهٔ مشخص لو نمی‌دهد) */
     const [offerAgg, lawyerAgg] = await Promise.all([
       ids.length
         ? db
@@ -134,6 +126,10 @@ export async function GET(req: Request) {
           budget: cases.budget,
           status: cases.status,
           createdAt: cases.createdAt,
+          acceptedAt: sql<string | null>`(
+            select min(co.created_at)::text from case_offers co
+            where co.case_id = cases.id and co.status = 'accepted'
+          )`,
         })
         .from(cases)
         .where(eq(cases.id, detailId))
@@ -141,11 +137,6 @@ export async function GET(req: Request) {
       if (!row || !["new", "reviewing"].includes(row.status)) {
         return NextResponse.json({ ok: false, error: "این پرونده در بازار باز نیست." }, { status: 404 });
       }
-      const caseOfferRows = await db
-        .select({ price: caseOffers.price, status: caseOffers.status })
-        .from(caseOffers)
-        .where(eq(caseOffers.caseId, row.id));
-      const accepted = caseOfferRows.some((o) => o.status === "accepted");
       let myOffer: { id: number; message: string; price: number; status: string; createdAt: Date } | null = null;
       if (actor) {
         const [mine] = await db
@@ -173,8 +164,7 @@ export async function GET(req: Request) {
           stage: row.stage,
           budget: row.budget,
           createdAt: row.createdAt,
-          closed: accepted,
-          offersCount: caseOfferRows.length,
+          closed: Boolean(row.acceptedAt),
         },
         myOffer,
         actor: actor ? { name: actorName, city: actorCity } : null,
@@ -199,7 +189,6 @@ export async function GET(req: Request) {
         stage: r.stage,
         budget: r.budget,
         createdAt: r.createdAt,
-        offersCount: countByCase.get(r.id) ?? 0,
         /** آیا این پرونده در استان وکیل واردشده است؟ */
         inMyProvince: actorCity ? normalizeCity(r.city) === normalizeCity(actorCity) : null,
       })),
