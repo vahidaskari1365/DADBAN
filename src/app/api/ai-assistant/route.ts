@@ -115,8 +115,13 @@ export async function POST(req: Request) {
     try {
       upload = await analyzeContractFile(file);
     } catch (e) {
+      const detail = (e as { detail?: string })?.detail;
       return NextResponse.json(
-        { ok: false, error: e instanceof Error ? e.message : "خواندن فایل ناموفق بود." },
+        {
+          ok: false,
+          error: e instanceof Error ? e.message : "خواندن فایل ناموفق بود.",
+          ...(detail ? { detail } : {}),
+        },
         { status: 400 },
       );
     }

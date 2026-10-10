@@ -87,7 +87,9 @@ ${CONTRACT_MARKER}
   if (!out) {
     // برای عیب‌یابی در لاگ Vercel — خطای هر ارائه‌دهندهٔ بینایی ثبت می‌شود
     console.error("[dadban] vision-contract failed:", r.errors.join(" | "));
-    throw new Error("خواندن متن از تصویر در حال حاضر ممکن نشد؛ لطفاً عکس واضح‌تری آپلود کنید یا متن قرارداد را در کادر بچسبانید.");
+    const err = new Error("خواندن متن از تصویر در حال حاضر ممکن نشد؛ لطفاً عکس واضح‌تری آپلود کنید یا متن قرارداد را در کادر بچسبانید.") as Error & { detail?: string };
+    err.detail = r.errors.join(" | ").slice(0, 400);
+    throw err;
   }
   const idx = out.indexOf(CONTRACT_MARKER);
   if (idx === -1) {
