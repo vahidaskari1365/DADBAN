@@ -243,6 +243,48 @@ h1, h2, h3, h4, h5, h6 {
   mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, #000 35%, transparent 100%);
 }
 
+/* ===== هیروی «بازار پروژه‌ها» (/case-board) — پنل سرمه‌ای تیره با هالهٔ طلایی =====
+   پنل در هر دو تم تیره است تا متن سفید روی آن همیشه کنتراست بالا داشته باشد */
+.hero-market {
+  background:
+    radial-gradient(56rem 26rem at 88% -20%, rgb(140 178 236 / 0.2), transparent 62%),
+    radial-gradient(34rem 22rem at 4% 120%, rgb(230 185 78 / 0.22), transparent 68%),
+    linear-gradient(140deg, #102a4a 0%, #15365d 52%, #1c4474 100%);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.07),
+    0 24px 60px -24px rgb(21 54 93 / 0.55);
+}
+.dark .hero-market {
+  background:
+    radial-gradient(56rem 26rem at 88% -20%, rgb(122 167 240 / 0.2), transparent 62%),
+    radial-gradient(34rem 22rem at 4% 120%, rgb(230 185 78 / 0.14), transparent 68%),
+    linear-gradient(140deg, #0e1520 0%, #121a29 52%, #16223a 100%);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.05),
+    0 24px 60px -24px rgb(0 0 0 / 0.6);
+}
+
+/* بافت نقطه‌ای محو روی پنل — عمق بدون حواس‌پرتی */
+.hero-market-dots {
+  background-image: radial-gradient(rgb(255 255 255 / 0.13) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(58% 85% at 74% 18%, #000 28%, transparent 100%);
+  -webkit-mask-image: radial-gradient(58% 85% at 74% 18%, #000 28%, transparent 100%);
+}
+
+/* چیپ‌های شناور نمونهٔ پیشنهاد — شناوری آرام؛ چرخش داخل keyframes با متغیر
+   تا مسیر حرکت همیشه عمودی بماند. (prefers-reduced-motion سراسری آن را می‌بندد) */
+@keyframes hero-chip-float {
+  0%, 100% { transform: translateY(0) rotate(var(--chip-rot, 0deg)); }
+  50% { transform: translateY(-10px) rotate(var(--chip-rot, 0deg)); }
+}
+.hero-chip {
+  animation: hero-chip-float 7s ease-in-out infinite;
+  box-shadow: 0 14px 34px -14px rgb(2 12 28 / 0.55);
+}
+.hero-chip-2 { animation-delay: 1.8s; animation-duration: 8s; }
+.hero-chip-3 { animation-delay: 3.4s; animation-duration: 9s; }
+
 /* ===== Keyframes / motion ===== */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(16px); }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Container, SectionHeading, Button, Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { PageHero } from "@/components/page-hero";
@@ -77,14 +78,26 @@ export default async function CaseBoardPage() {
   return (
     <div className="page-wash">
       <PageHero
+        variant="market"
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پروژه‌ها") }]}
         badge={t("بازار پروژه‌های حقوقی — موکل ثبت می‌کند، وکیل قیمت می‌دهد")}
         title={t("پروژه‌تان را ثبت کنید؛ وکلا قیمت بدهند، شما بهترین را انتخاب کنید")}
         desc={t("در بازار پرونده‌های دادبان، موکل پروندهٔ خود را ثبت می‌کند، وکلای متخصص همان استان نظر و پیشنهاد قیمت خود را اعلام می‌کنند و موکل آزادانه بهترین پیشنهاد را انتخاب می‌کند. رقابت شفاف بین وکلا یعنی قیمت واقعی برای شما.")}
+        chips={[
+          { icon: "money", label: t("پیشنهاد ۱۲٬۵۰۰٬۰۰۰ تومان") },
+          { icon: "badge", label: t("وکیل پایه‌یک دادگستری") },
+          { icon: "folder", label: t("پروندهٔ ملکی — تهران") },
+        ]}
       >
         <div className="flex flex-wrap gap-3">
-          <Button href="/case/new" icon="plus">{t("ثبت پروندهٔ جدید (رایگان)")}</Button>
-          <Button href="/lawyers" variant="outline" icon="search">{t("جستجوی مستقیم وکیل")}</Button>
+          <Button href="/case/new" variant="accent" icon="plus">{t("ثبت پروندهٔ جدید (رایگان)")}</Button>
+          <Link
+            href="/lawyers"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20"
+          >
+            <Icon name="search" className="h-[1.15em] w-[1.15em]" />
+            {t("جستجوی مستقیم وکیل")}
+          </Link>
         </div>
       </PageHero>
 
