@@ -32,14 +32,10 @@ export function PageHero({
       <section className="relative py-8 sm:py-10">
         <Container className="relative">
           <div className="hero-market relative overflow-hidden rounded-3xl px-5 py-10 sm:px-10 sm:py-14">
-            {/* بافت نقطه‌ای محو — فقط تزئینی */}
+            {/* بافت نقطه‌ای محو — فقط تزئینی (عکس پس‌زمینه: تالار مزایده با ترازو و چکش) */}
             <div aria-hidden className="hero-market-dots pointer-events-none absolute inset-0" />
-            {/* واترمارک چکش قضاوت — گوشهٔ پایین (سمت چپ در RTL) */}
-            <Icon
-              aria-hidden
-              name="gavel"
-              className="pointer-events-none absolute -bottom-10 -end-8 h-56 w-56 -scale-x-100 rotate-12 text-white/[0.05]"
-            />
+            {/* پردهٔ تکمیلی فقط موبایل — چون متن در عرض کم تقریباً کل پنل را می‌پوشاند */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-[rgb(13_34_62/0.38)] sm:bg-transparent" />
             {/* چیپ‌های شناور نمونهٔ پیشنهاد — فقط دسکتاپ، صرفاً تزئینی */}
             {chips?.map((c, i) => (
               <MarketChip key={i} icon={c.icon} label={c.label} index={i} />

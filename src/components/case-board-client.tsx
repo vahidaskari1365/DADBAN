@@ -270,13 +270,13 @@ export function CaseBoardClient() {
             </p>
           )}
           {!failed && !data && (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {[0, 1, 2].map((i) => (
-                <Card key={i} hover={false} className="animate-pulse space-y-3 p-5">
-                  <div className="h-4 w-2/3 rounded bg-surface-2" />
-                  <div className="h-3 w-full rounded bg-surface-2" />
-                  <div className="h-3 w-4/5 rounded bg-surface-2" />
-                  <div className="h-8 w-28 rounded-xl bg-surface-2" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[0, 1].map((i) => (
+                <Card key={i} hover={false} className="animate-pulse space-y-3 p-6">
+                  <div className="h-5 w-2/3 rounded bg-surface-2" />
+                  <div className="h-3.5 w-full rounded bg-surface-2" />
+                  <div className="h-3.5 w-4/5 rounded bg-surface-2" />
+                  <div className="h-9 w-32 rounded-xl bg-surface-2" />
                 </Card>
               ))}
             </div>
@@ -302,40 +302,40 @@ export function CaseBoardClient() {
             </div>
           )}
           {data && filtered.length > 0 && (
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid gap-4 sm:grid-cols-2">
               {filtered.map((c) => (
                 <li key={c.id}>
                   <button
                     type="button"
                     onClick={() => openDetail(c.id)}
-                    className="group flex h-full w-full flex-col rounded-2xl border border-border bg-surface p-4 text-start transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-lift)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                    className="group flex h-full w-full flex-col rounded-2xl border border-border bg-surface p-5 text-start transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-lift)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:p-6"
                     data-testid={`board-case-${c.id}`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-black leading-7 text-foreground transition-colors group-hover:text-primary">{c.subject}</h3>
+                      <h3 className="text-base font-black leading-8 text-foreground transition-colors group-hover:text-primary sm:text-lg">{c.subject}</h3>
                       {c.inMyProvince != null && c.inMyProvince && <Badge tone="primary" >{t("استان شما")}</Badge>}
                     </div>
-                    {c.description && <p className="mt-1.5 line-clamp-2 flex-1 text-xs leading-6 text-muted">{c.description}</p>}
-                    <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2 py-1">
-                        <Icon name="location" className="h-3 w-3" />{c.city}
+                    {c.description && <p className="mt-2 line-clamp-3 flex-1 text-xs leading-7 text-muted sm:text-sm">{c.description}</p>}
+                    <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2.5 py-1.5">
+                        <Icon name="location" className="h-3.5 w-3.5" />{c.city}
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2 py-1">
-                        <Icon name="clock" className="h-3 w-3" />{relativeTimeJalali(c.createdAt)}
+                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2.5 py-1.5">
+                        <Icon name="clock" className="h-3.5 w-3.5" />{relativeTimeJalali(c.createdAt)}
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2 py-1 text-muted">
-                        <Icon name="lock" className="h-3 w-3" />
+                      <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2.5 py-1.5 text-muted">
+                        <Icon name="lock" className="h-3.5 w-3.5" />
                         {t("پیشنهادها فقط برای موکل")}
                       </span>
                     </div>
                     {c.budget && (
-                      <p className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-foreground-soft">
-                        <Icon name="money" className="h-3.5 w-3.5 text-primary" /> {tf("بودجهٔ اعلامی موکل: {budget}", { budget: c.budget })}
+                      <p className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-foreground-soft">
+                        <Icon name="money" className="h-4 w-4 text-primary" /> {tf("بودجهٔ اعلامی موکل: {budget}", { budget: c.budget })}
                       </p>
                     )}
-                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary transition-all duration-300 group-hover:gap-2">
+                    <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary transition-all duration-300 group-hover:gap-2">
                       {t("مشاهده و ثبت پیشنهاد")}
-                      <Icon name="arrow" className="h-3.5 w-3.5" />
+                      <Icon name="arrow" className="h-4 w-4" />
                     </span>
                   </button>
                 </li>

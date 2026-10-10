@@ -243,12 +243,14 @@ h1, h2, h3, h4, h5, h6 {
   mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, #000 35%, transparent 100%);
 }
 
-/* ===== هیروی «بازار پروژه‌ها» (/case-board) — پنل سرمه‌ای تیره با هالهٔ طلایی =====
-   پنل در هر دو تم تیره است تا متن سفید روی آن همیشه کنتراست بالا داشته باشد */
+/* ===== هیروی «بازار پروژه‌ها» (/case-board) — پنل تیره با عکس تالار مزایده =====
+   لایه‌ها (بالا به پایین): دیمر گرادیانی قوی سمت راست (محل متن) → هالهٔ طلایی
+   → عکس (تالار با ترازو و چکش، کمان ایرانی) → گرادیان پایه به‌عنوان fallback */
 .hero-market {
   background:
-    radial-gradient(56rem 26rem at 88% -20%, rgb(140 178 236 / 0.2), transparent 62%),
-    radial-gradient(34rem 22rem at 4% 120%, rgb(230 185 78 / 0.22), transparent 68%),
+    linear-gradient(to left, rgb(13 34 62 / 0.9) 0%, rgb(13 34 62 / 0.62) 52%, rgb(13 34 62 / 0.45) 100%),
+    radial-gradient(34rem 22rem at 4% 118%, rgb(230 185 78 / 0.16), transparent 68%),
+    url("/images/hero-market-bg.png") center / cover no-repeat,
     linear-gradient(140deg, #102a4a 0%, #15365d 52%, #1c4474 100%);
   box-shadow:
     inset 0 1px 0 0 rgb(255 255 255 / 0.07),
@@ -256,8 +258,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 .dark .hero-market {
   background:
-    radial-gradient(56rem 26rem at 88% -20%, rgb(122 167 240 / 0.2), transparent 62%),
-    radial-gradient(34rem 22rem at 4% 120%, rgb(230 185 78 / 0.14), transparent 68%),
+    linear-gradient(to left, rgb(10 18 32 / 0.92) 0%, rgb(10 18 32 / 0.72) 52%, rgb(10 18 32 / 0.52) 100%),
+    radial-gradient(34rem 22rem at 4% 118%, rgb(230 185 78 / 0.12), transparent 68%),
+    url("/images/hero-market-bg.png") center / cover no-repeat,
     linear-gradient(140deg, #0e1520 0%, #121a29 52%, #16223a 100%);
   box-shadow:
     inset 0 1px 0 0 rgb(255 255 255 / 0.05),
