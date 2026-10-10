@@ -9,6 +9,9 @@ import type { IconKey } from "@/lib/data";
  * variant «market»: پنل سرمه‌ای تیره با بافت نقطه‌ای، هالهٔ طلایی و چیپ‌های
  * شناور پیشنهاد — مخصوص «بازار پروژه‌ها» (/case-board). در هر دو تم تیره است
  * تا متن سفید همیشه کنتراست بالا داشته باشد.
+ * prop اختیاری «image»: عکس پس‌زمینهٔ اختصاصی همان صفحه (مثلاً /consultation)؛
+ * عکس + دیمر + هاله به‌صورت لایه‌های فرزند روی گرادیان پایه می‌نشیند تا عکس
+ * پیش‌فرض بازار پروژه‌ها دست‌نخورده بماند.
  */
 export function PageHero({
   title,
@@ -18,6 +21,7 @@ export function PageHero({
   badge,
   variant = "default",
   chips,
+  image,
 }: {
   title: string;
   desc?: string;
@@ -26,12 +30,27 @@ export function PageHero({
   badge?: string;
   variant?: "default" | "market";
   chips?: { icon: IconKey; label: string }[];
+  image?: string;
 }) {
   if (variant === "market") {
     return (
       <section className="relative py-8 sm:py-10">
         <Container className="relative">
-          <div className="hero-market relative overflow-hidden rounded-3xl px-5 py-10 sm:px-10 sm:py-14">
+          <div
+            className={`hero-market relative overflow-hidden rounded-3xl px-5 py-10 sm:px-10 sm:py-14${image ? " hero-market--custom" : ""}`}
+          >
+            {/* عکس اختصاصی صفحه (اگر داده شود) + دیمر و هالهٔ همسان پنل پایه */}
+            {image && (
+              <>
+                <div
+                  aria-hidden
+                  className="hero-market-photo pointer-events-none absolute inset-0"
+                  style={{ backgroundImage: `url("${image}")` }}
+                />
+                <div aria-hidden className="hero-market-dim pointer-events-none absolute inset-0" />
+                <div aria-hidden className="hero-market-glow pointer-events-none absolute inset-0" />
+              </>
+            )}
             {/* بافت نقطه‌ای محو — فقط تزئینی (عکس پس‌زمینه: تالار مزایده با ترازو و چکش) */}
             <div aria-hidden className="hero-market-dots pointer-events-none absolute inset-0" />
             {/* پردهٔ تکمیلی فقط موبایل — چون متن در عرض کم تقریباً کل پنل را می‌پوشاند */}

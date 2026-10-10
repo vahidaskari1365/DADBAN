@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Container } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { PageHero } from "@/components/page-hero";
 import { trackEvent } from "@/lib/analytics";
 import { useT } from "@/lib/i18n/provider";
 import { ConsultLawyerDirectory } from "@/components/consultation/consult-lawyer-directory";
@@ -23,6 +23,7 @@ interface DirectoryLawyer {
  * صفحهٔ مشاوره — فقط فهرست وکلا:
  *  انتخاب وکیل + وضعیت واقعی آنلاین/آفلاین + فیلتر نوع کار + گفتگوی متنی.
  *  فرم تکمیل رزرو به صفحهٔ اختصاصی /consultation/book منتقل شد.
+ *  هیرو: همان کادر پنل «بازار پروژه‌ها» با عکس اختصاصی مشاورهٔ آنلاین.
  */
 export default function ConsultationPage() {
   const router = useRouter();
@@ -37,22 +38,36 @@ export default function ConsultationPage() {
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted" aria-label={t("مسیر صفحه")}>
-            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{t("مشاوره حقوقی")}</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("رزرو مشاوره حقوقی آنلاین")}</h1>
-          <p className="mt-2 text-sm leading-7 text-muted">
-            {t("وکیل متخصص خود را انتخاب کنید؛ وضعیت آنلاین بودن وکلا واقعی است — همین‌جا گفتگو کنید یا نوبت مشاوره بگیرید.")}
-          </p>
-        </Container>
-      </section>
+      {/* هیرو — کادر هم‌اندازهٔ صفحهٔ پروژه‌ها، با عکس متناسب با مشاورهٔ آنلاین */}
+      <PageHero
+        variant="market"
+        image="/images/hero-consult-bg.png"
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("مشاوره حقوقی") }]}
+        badge={t("گفتگوی آنلاین با وکلای پایه‌یک دادگستری")}
+        title={t("رزرو مشاوره حقوقی آنلاین")}
+        desc={t("وکیل متخصص خود را انتخاب کنید؛ وضعیت آنلاین بودن وکلا واقعی است — همین‌جا گفتگو کنید یا نوبت مشاوره بگیرید.")}
+        chips={[
+          { icon: "chat", label: t("وکیل آنلاین — آمادهٔ گفتگو") },
+          { icon: "video", label: t("مشاورهٔ متنی، صوتی و تصویری") },
+          { icon: "clock", label: t("نوبت‌دهی بر اساس برنامهٔ وکیل") },
+        ]}
+      >
+        <div className="flex flex-wrap gap-3">
+          <Button href="/consultation/book" variant="accent" icon="calendar">
+            {t("رزرو نوبت مشاوره")}
+          </Button>
+          <a
+            href="#lawyer-directory"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20"
+          >
+            <Icon name="chat" className="h-[1.15em] w-[1.15em]" />
+            {t("گفتگو با وکلای آنلاین")}
+          </a>
+        </div>
+      </PageHero>
 
       {/* فهرست وکلا — انتخاب وکیل، وضعیت آنلاین/آفلاین، فیلتر نوع کار و شروع گفتگو */}
-      <div className="border-b border-border bg-surface-2/30 py-10">
+      <div id="lawyer-directory" className="scroll-mt-20 border-b border-border bg-surface-2/30 py-10">
         <ConsultLawyerDirectory onChat={(lw) => setChatLawyer(lw)} onBook={bookWithLawyer} />
       </div>
 
