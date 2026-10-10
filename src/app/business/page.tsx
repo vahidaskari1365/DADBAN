@@ -4,6 +4,7 @@ import { Container, Card, Button, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { getT } from "@/lib/i18n/server";
+import Link from "next/link";
 import { templateT } from "@/lib/i18n/core";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -37,14 +38,16 @@ export default async function BusinessPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-business.png"
         badge={t("برای کسب‌وکارها")}
         title={t("واحد حقوقی کسب‌وکارتان را دیجیتال کنید")}
         desc={t("از قرارداد و پرونده تا اسناد و مشاوره؛ دادبان زیرساخت حقوقی آماده‌ی کسب‌وکار شما را فراهم می‌کند.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("برای کسب‌وکارها") }]}
       >
         <div className="flex flex-wrap gap-2">
-          <Button href="/contact" icon="phone">{t("تماس با فروش")}</Button>
-          <Button href="/pricing" variant="outline" icon="money">{t("مشاهده تعرفه")}</Button>
+          <Button href="/contact" variant="accent" icon="phone">{t("تماس با فروش")}</Button>
+          <Link href="/pricing" className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-sm font-bold text-white transition-colors hover:bg-white/20"><Icon name="money" className="h-4 w-4" />{t("مشاهده تعرفه")}</Link>
         </div>
       </PageHero>
 

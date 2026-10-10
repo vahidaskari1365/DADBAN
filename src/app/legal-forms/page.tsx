@@ -28,6 +28,8 @@ export default async function LegalFormsPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-forms.png"
         badge={t("فرم‌های حقوقی")}
         title={t("فرم‌های حقوقی آماده، گام‌به‌گام")}
         desc={t("از دادخواست و شکواییه تا اظهارنامه و لایحه؛ فرم را مرحله‌به‌مرحله پر کنید و سند نهایی را دریافت نمایید.")}

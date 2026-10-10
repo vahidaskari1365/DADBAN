@@ -150,6 +150,8 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-dash-cases.png"
         title={tf("پرونده: {s}", { s: subjectT })}
         desc={tf("شماره {cn} • {city} • ثبت‌شده در {date}", { cn: row.caseNumber, city: cityT, date: faDate(row.createdAt) })}
         breadcrumb={[
@@ -162,9 +164,9 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
       >
         <div className="flex flex-wrap items-center gap-2">
           {next.href && (
-            <Button href={next.href} icon="arrow" size="sm">{t("اقدام بعدی")}</Button>
+            <Button href={next.href} variant="accent" icon="arrow" size="sm">{t("اقدام بعدی")}</Button>
           )}
-          {row.budget && <Badge tone="neutral" icon="money">{tf("بودجه: {b}", { b: row.budget })}</Badge>}
+          {row.budget && <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90"><Icon name="money" className="h-3.5 w-3.5 text-[#eec97b]" />{tf("بودجه: {b}", { b: row.budget })}</span>}
         </div>
       </PageHero>
 

@@ -43,7 +43,7 @@ export default async function LawPage({ params }: { params: Promise<{ slug: stri
 
   return (
     <>
-      <PageHero title={l.name} desc={l.summary} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قوانین"), href: "/laws" }, { label: l.name }]} />
+      <PageHero variant="market" image="/images/hero-laws.png" title={l.name} desc={l.summary} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قوانین"), href: "/laws" }, { label: l.name }]} />
       <Container className="grid gap-8 py-12 lg:grid-cols-[1fr_300px]">
         <div className="space-y-4">
           <Card hover={false}>

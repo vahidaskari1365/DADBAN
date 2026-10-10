@@ -9,6 +9,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Container, Button, Card } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
@@ -214,21 +215,13 @@ function PayContent() {
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{t("پرداخت پرونده")}</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("انتخاب درگاه پرداخت")}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            {t("پرونده شما با شماره")} <span className="font-bold text-primary" dir="ltr">{ctx?.caseNumber ?? "…"}</span> {t("ثبت شد.")}
-            {" "}
-            {t("حالا مشخص کنید پرداخت را از کدام درگاه انجام می‌دهید.")}
-          </p>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-payment.png"
+        title={t("انتخاب درگاه پرداخت")}
+        desc={t("پرونده شما با شماره") + " " + (ctx?.caseNumber ?? "…") + " " + t("ثبت شد.") + " " + t("حالا مشخص کنید پرداخت را از کدام درگاه انجام می‌دهید.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پرداخت پرونده") }]}
+      />
 
       <Container className="py-10">
         <div className="mx-auto max-w-2xl space-y-4">

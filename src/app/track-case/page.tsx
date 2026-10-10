@@ -48,7 +48,7 @@ export default function TrackCasePage() {
 
   return (
     <>
-      <PageHero badge={t("پیگیری پرونده")} title={t("پیگیری وضعیت پرونده")} desc={t("با وارد کردن کد پیگیری، وضعیت آخرین اقدامات پرونده خود را مشاهده کنید.")} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پیگیری پرونده") }]} />
+      <PageHero variant="market" image="/images/hero-track.png" badge={t("پیگیری پرونده")} title={t("پیگیری وضعیت پرونده")} desc={t("با وارد کردن کد پیگیری، وضعیت آخرین اقدامات پرونده خود را مشاهده کنید.")} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پیگیری پرونده") }]} />
       <Container className="py-12">
         <div className="mx-auto max-w-lg">
           <Card hover={false}>

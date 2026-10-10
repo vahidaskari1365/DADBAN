@@ -38,6 +38,8 @@ export default async function JudgmentsPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-judgments.png"
         badge={t("آرای قضایی")}
         title={t("رویه قضایی و آرای قابل انتشار")}
         desc={t("آرای دیوان عالی کشور و سایر مراجع در موضوعات مختلف، برای آشنایی با رویه‌ی قضایی.")}

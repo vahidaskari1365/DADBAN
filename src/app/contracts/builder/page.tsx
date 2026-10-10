@@ -48,7 +48,7 @@ export default function ContractBuilderPage() {
 
   return (
     <>
-      <PageHero badge={t("قراردادساز")} title={t("قرارداد خود را گام‌به‌گام بسازید")} desc={t("نوع قرارداد را انتخاب کنید، اطلاعات را وارد نمایید و پیش‌نمایش را دریافت کنید؛ سپس وکیل آن را بازبینی می‌کند.")} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قراردادها"), href: "/contracts" }, { label: t("قراردادساز") }]} />
+      <PageHero variant="market" image="/images/hero-contract-builder.png" badge={t("قراردادساز")} title={t("قرارداد خود را گام‌به‌گام بسازید")} desc={t("نوع قرارداد را انتخاب کنید، اطلاعات را وارد نمایید و پیش‌نمایش را دریافت کنید؛ سپس وکیل آن را بازبینی می‌کند.")} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قراردادها"), href: "/contracts" }, { label: t("قراردادساز") }]} />
 
       <Container className="py-12">
         <div className="mx-auto max-w-3xl">

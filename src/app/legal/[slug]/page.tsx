@@ -53,7 +53,7 @@ export default async function LegalPage({ params }: { params: Promise<{ slug: st
 
   return (
     <>
-      <PageHero title={p.title} desc={p.desc} breadcrumb={[{ label: "خانه", href: "/" }, { label: p.title }]} />
+      <PageHero variant="market" image="/images/hero-legal.png" title={p.title} desc={p.desc} breadcrumb={[{ label: "خانه", href: "/" }, { label: p.title }]} />
       <Container className="py-12">
         <div className="mx-auto max-w-3xl space-y-4">
           {blocks.map((b) => (

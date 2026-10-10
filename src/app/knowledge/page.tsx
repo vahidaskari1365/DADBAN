@@ -3,13 +3,13 @@ import { db } from "@/db";
 import { articles } from "@/db/schema";
 import { desc } from "drizzle-orm";
 import { Container, Badge, EmptyState } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { KnowledgeSearch, type KnowledgeItem } from "@/components/knowledge-search";
 import { faNum } from "@/lib/data";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { makeT } from "@/lib/i18n/core";
 import { tdyn } from "@/lib/i18n/dynamic";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600; // ISR — هر ساعت آپدیت می‌شه
@@ -63,19 +63,13 @@ export default async function KnowledgePage() {
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{t("بانک دانش حقوقی")}</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("بانک دانش و آموزش حقوقی")}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            {t("مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادبان.")}
-          </p>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-knowledge.png"
+        title={t("بانک دانش و آموزش حقوقی")}
+        desc={t("مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادبان.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("بانک دانش حقوقی") }]}
+      />
 
       <Container className="py-8">
         {/* جستجوی موضوعی + فیلتر دسته‌بندی */}

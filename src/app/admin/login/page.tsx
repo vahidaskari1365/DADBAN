@@ -41,6 +41,8 @@ export default function AdminLoginPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-admin.png"
         badge="Admin"
         title="ورود مدیر"
         desc="برای مدیریت سایت و محتوا وارد شوید."

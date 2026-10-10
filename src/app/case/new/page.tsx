@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Container, Button, Card } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { LEGAL_TOPICS, ALL_CITIES, faNum } from "@/lib/data";
 import { useT } from "@/lib/i18n/provider";
@@ -142,21 +143,13 @@ function NewCaseContent() {
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{t("ثبت پرونده")}</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("پرونده خود را ثبت کنید")}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            {t("انتخاب‌های قبلی شما از مسیر سریع، خودکار در این فرم قرار گرفته است.")}
-            {" "}
-            {t("اگر موردی را می‌خواهید تغییر دهید، همین‌جا امکانش هست — فقط توضیحات تکمیلی و راه تماس با شما باقی مانده است.")}
-          </p>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-casenew.png"
+        title={t("پرونده خود را ثبت کنید")}
+        desc={t("انتخاب‌های قبلی شما از مسیر سریع، خودکار در این فرم قرار گرفته است.") + " " + t("اگر موردی را می‌خواهید تغییر دهید، همین‌جا امکانش هست — فقط توضیحات تکمیلی و راه تماس با شما باقی مانده است.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("ثبت پرونده") }]}
+      />
 
       <Container className="grid gap-8 py-10 lg:grid-cols-[1fr_300px]">
         <div className="space-y-4">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Container, Card, Badge, Stat } from "@/components/ui";
+import { Container, Card, Stat } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { getPlatformStats } from "@/lib/stats";
 import { faNum } from "@/lib/data";
@@ -51,17 +52,13 @@ export default async function AboutPage() {
   ];
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-primary-soft/40 to-background py-12">
-        <Container>
-          <div className="mx-auto max-w-2xl text-center">
-            <Badge tone="primary" icon="balance">{t("درباره ما")}</Badge>
-            <h1 className="mt-3 text-3xl font-extrabold text-foreground sm:text-4xl">{t("عدالت، در دسترس همه")}</h1>
-            <p className="mt-4 text-base leading-8 text-muted">
-              {t("دادبان با هدف دموکراتیزه‌کردن دسترسی به خدمات حقوقی ساخته شده است؛ پلتفرمی که وکیل‌یابی، مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی را در یک‌جا گرد می‌آورد.")}
-            </p>
-          </div>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-about.png"
+        badge={t("درباره ما")}
+        title={t("عدالت، در دسترس همه")}
+        desc={t("دادبان با هدف دموکراتیزه‌کردن دسترسی به خدمات حقوقی ساخته شده است؛ پلتفرمی که وکیل‌یابی، مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی را در یک‌جا گرد می‌آورد.")}
+      />
 
       <Container className="py-12">
         <div className="grid grid-cols-2 gap-6 rounded-3xl border border-border bg-surface p-8 card-shadow sm:grid-cols-4">

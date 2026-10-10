@@ -25,6 +25,8 @@ export default async function NotificationsPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-notifications.png"
         title={t("مرکز اعلان‌ها")}
         desc={t("جدیدترین اعلان‌های پرونده، مشاوره، پیام‌ها و مهلت‌های شما.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("اعلان‌ها") }]}

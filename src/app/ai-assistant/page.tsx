@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Container, Button, Card, Badge } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { LawyerPicksFlow } from "@/components/ai/lawyer-picks";
 import { useT } from "@/lib/i18n/provider";
@@ -466,21 +467,13 @@ function AIAssistantContent() {
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-10">
-        <Container>
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
-              <Icon name="sparkles" className="h-4 w-4" /> {t("دستیار هوش مصنوعی حقوقی دادبان")}
-            </span>
-            <h1 className="mt-4 text-2xl font-extrabold text-foreground sm:text-3xl">
-              {t("سؤال حقوقی‌تان را بپرسید یا قراردادتان را تحلیل کنید")}
-            </h1>
-            <p className="mt-3 text-sm leading-7 text-muted">
-              {t("دستیار دادبان موضوع را تشخیص می‌دهد، مراحل و مدارک را توضیح می‌دهد و با استناد به مواد و تبصره‌های قانونی مرتبط، شما را به وکیل متخصص وصل می‌کند. هوشمند، سریع و محرمانه.")}
-            </p>
-          </div>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-ai.png"
+        badge={t("دستیار هوش مصنوعی حقوقی دادبان")}
+        title={t("سؤال حقوقی‌تان را بپرسید یا قراردادتان را تحلیل کنید")}
+        desc={t("دستیار دادبان موضوع را تشخیص می‌دهد، مراحل و مدارک را توضیح می‌دهد و با استناد به مواد و تبصره‌های قانونی مرتبط، شما را به وکیل متخصص وصل می‌کند. هوشمند، سریع و محرمانه.")}
+      />
 
       <Container className="py-10">
         <div className="mx-auto max-w-3xl">

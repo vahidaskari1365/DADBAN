@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Container, Button, Card } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
 
@@ -43,14 +44,13 @@ export default function ContactPage() {
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">{t("تماس و پشتیبانی")}</h1>
-          <p className="mt-2 max-w-xl text-sm leading-7 text-muted">
-            {t("سؤال یا مشکلی دارید؟ تیکت ثبت کنید یا از راه‌های ارتباطی ما استفاده نمایید. تیم پشتیبانی ۲۴ ساعته در خدمت شماست.")}
-          </p>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-contact.png"
+        title={t("تماس و پشتیبانی")}
+        desc={t("سؤال یا مشکلی دارید؟ تیکت ثبت کنید یا از راه‌های ارتباطی ما استفاده نمایید. تیم پشتیبانی ۲۴ ساعته در خدمت شماست.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("تماس و پشتیبانی") }]}
+      />
 
       <Container className="grid gap-8 py-10 lg:grid-cols-[1fr_320px]">
         <Card hover={false}>

@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { qaQuestions } from "@/db/schema";
 import { desc } from "drizzle-orm";
 import { Container, Badge } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { AskForm } from "@/components/ask-form";
 import { faNum } from "@/lib/data";
@@ -64,19 +65,13 @@ export default async function QaPage() {
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{t("پرسش و پاسخ")}</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("پرسش و پاسخ حقوقی")}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            {t("پاسخ وکلای متخصص دادبان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.")}
-          </p>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-qa.png"
+        title={t("پرسش و پاسخ حقوقی")}
+        desc={t("پاسخ وکلای متخصص دادبان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پرسش و پاسخ") }]}
+      />
 
       <Container className="grid gap-8 py-10 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">

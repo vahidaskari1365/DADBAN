@@ -67,15 +67,17 @@ export default async function AdminPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-admin.png"
         badge="Admin · پنل مدیریت"
         title="داشبورد مدیریت دادبان"
         desc="مدیریت محتوا، داده‌های سایت و آمار بازدید — با ورود امن مدیر."
         breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت" }]}
       >
         <div className="flex flex-wrap gap-2">
-          <Button href="/admin/articles/new" variant="primary" icon="plus" size="sm">مقاله جدید</Button>
-          <Button href="/admin/articles" variant="outline" icon="book" size="sm">مدیریت مقالات</Button>
-          <Button href="/api/admin/logout" variant="ghost" icon="x" size="sm">خروج</Button>
+          <Button href="/admin/articles/new" variant="accent" icon="plus" size="sm">مقاله جدید</Button>
+          <Link href="/admin/articles" className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-bold text-white transition-colors hover:bg-white/20"><Icon name="book" className="h-3.5 w-3.5" />مدیریت مقالات</Link>
+          <Link href="/api/admin/logout" className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-bold text-white transition-colors hover:bg-white/20"><Icon name="x" className="h-3.5 w-3.5" />خروج</Link>
         </div>
       </PageHero>
       <Container className="py-12">

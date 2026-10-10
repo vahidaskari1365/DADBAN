@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -41,10 +42,10 @@ export default async function LegalFormPage({ params }: { params: Promise<{ slug
 
   return (
     <>
-      <PageHero title={tt("تنظیم {name}", { name: fName })} desc={fDesc} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("فرم‌های حقوقی"), href: "/legal-forms" }, { label: fName }]}>
+      <PageHero variant="market" image="/images/hero-forms.png" title={tt("تنظیم {name}", { name: fName })} desc={fDesc} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("فرم‌های حقوقی"), href: "/legal-forms" }, { label: fName }]}>
         <div className="flex flex-wrap gap-2">
-          <Button href="/consultation" icon="document">{t("ساخت فرم با وکیل")}</Button>
-          <Button href="/contracts/builder" variant="outline" icon="sparkles">{t("قراردادساز")}</Button>
+          <Button href="/consultation" variant="accent" icon="document">{t("ساخت فرم با وکیل")}</Button>
+          <Link href="/contracts/builder" className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-sm font-bold text-white transition-colors hover:bg-white/20"><Icon name="sparkles" className="h-4 w-4" />{t("قراردادساز")}</Link>
         </div>
       </PageHero>
       <Container className="grid gap-8 py-12 lg:grid-cols-[1fr_320px]">

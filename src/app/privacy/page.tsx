@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { Container } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { getT } from "@/lib/i18n/server";
 
 /** چندزبانه: تیتر/توضیح با generateMetadata و getT به زبان انتخابی کاربر می‌رود */
@@ -23,19 +25,26 @@ const SECTIONS = [
 export default async function PrivacyPage() {
   const t = await getT();
   return (
-    <Container className="py-12">
-      <div className="mx-auto max-w-3xl">
-        <h1 className="text-2xl font-extrabold text-foreground">{t("حریم خصوصی")}</h1>
-        <p className="mt-2 text-sm text-muted">{t("حفظ حریم خصوصی شما برای ما اولویت است. آخرین به‌روزرسانی: بهار ۱۴۰۴")}</p>
-        <div className="mt-6 space-y-5">
+    <>
+      <PageHero
+        variant="market"
+        image="/images/hero-privacy.png"
+        title={t("حریم خصوصی")}
+        desc={t("حفظ حریم خصوصی شما برای ما اولویت است. آخرین به‌روزرسانی: بهار ۱۴۰۴")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("حریم خصوصی") }]}
+      />
+      <Container className="py-12">
+        <div className="mx-auto max-w-3xl space-y-5">
           {SECTIONS.map(([heading, body]) => (
-            <div key={heading} className="rounded-2xl border border-border bg-surface p-5">
-              <h2 className="text-base font-bold text-foreground">{t(heading)}</h2>
-              <p className="mt-2 text-sm leading-7 text-muted">{t(body)}</p>
-            </div>
+            <Fragment key={heading}>
+              <div className="rounded-2xl border border-border bg-surface p-5">
+                <h2 className="text-base font-bold text-foreground">{t(heading)}</h2>
+                <p className="mt-2 text-sm leading-7 text-muted">{t(body)}</p>
+              </div>
+            </Fragment>
           ))}
         </div>
-      </div>
-    </Container>
+      </Container>
+    </>
   );
 }

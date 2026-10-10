@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { contracts } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { Container, Button, Badge, Card } from "@/components/ui";
+import { Container, Button, Card } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
 import { getT, getServerLocale } from "@/lib/i18n/server";
@@ -79,30 +80,18 @@ export default async function ContractDetail({
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <Link href="/contracts" className="hover:text-primary">{t("قراردادها")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{cCategory}</span>
-          </nav>
-          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
-            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-              <Icon name={c.icon as never} className="h-7 w-7" />
-            </span>
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="primary">{cCategory}</Badge>
-                {c.popular && <Badge tone="accent" icon="star">{t("پرطرفدار")}</Badge>}
-              </div>
-              <h1 className="mt-2 text-2xl font-extrabold text-foreground sm:text-3xl">{cTitle}</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">{cDescription}</p>
-            </div>
-          </div>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-contracts.png"
+        badge={cCategory}
+        title={cTitle}
+        desc={cDescription}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قراردادها"), href: "/contracts" }, { label: cCategory }]}
+      >
+        {c.popular && (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgb(230_185_78/0.35)] bg-[rgb(230_185_78/0.14)] px-3 py-1 text-xs font-semibold text-[#eec97b]"><Icon name="star" className="h-3.5 w-3.5" />{t("پرطرفدار")}</span>
+        )}
+      </PageHero>
 
       <Container className="grid gap-8 py-10 lg:grid-cols-[1fr_340px]">
         <div className="space-y-8">

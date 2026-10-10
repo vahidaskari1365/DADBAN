@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Container, Card, Badge, Button, StarRating } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
 import { formatJalaliDateTime, relativeTimeJalali } from "@/lib/jalali";
@@ -128,20 +129,24 @@ function OffersContent() {
 
   if (!hasParams) {
     return (
-      <Container className="py-16">
-        <div className="mx-auto max-w-md text-center">
-          <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent-text">
-            <Icon name="lock" className="h-7 w-7" />
-          </span>
-          <h1 className="mt-4 text-xl font-extrabold text-foreground">{t("کد پیگیری لازم است")}</h1>
-          <p className="mt-2 text-sm leading-7 text-muted">
-            {t("برای دیدن پیشنهاد وکلا، شمارهٔ پرونده و کد پیگیری محرمانه‌ای که هنگام ثبت پرونده گرفته‌اید لازم است.")}
-            {" "}
-            {t("لینک کامل را از صفحهٔ پرداخت یا پیگیری پرونده باز کنید.")}
-          </p>
-          <Button href="/track-case" variant="outline" className="mt-5">{t("پیگیری پرونده")}</Button>
-        </div>
-      </Container>
+      <>
+        <PageHero
+          variant="market"
+          image="/images/hero-offers.png"
+          title={t("پیشنهاد وکلای استان شما")}
+          desc={t("برای دیدن پیشنهاد وکلا، شمارهٔ پرونده و کد پیگیری محرمانه‌ای که هنگام ثبت پرونده گرفته‌اید لازم است.") + " " + t("لینک کامل را از صفحهٔ پرداخت یا پیگیری پرونده باز کنید.")}
+          breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پیگیری پرونده"), href: "/track-case" }, { label: t("پیشنهاد وکلا") }]}
+        />
+        <Container className="py-10">
+          <div className="mx-auto max-w-md text-center">
+            <span className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent-text">
+              <Icon name="lock" className="h-7 w-7" />
+            </span>
+            <h2 className="mt-4 text-xl font-extrabold text-foreground">{t("کد پیگیری لازم است")}</h2>
+            <Button href="/track-case" variant="outline" className="mt-5">{t("پیگیری پرونده")}</Button>
+          </div>
+        </Container>
+      </>
     );
   }
 
@@ -151,23 +156,24 @@ function OffersContent() {
     "w-full rounded-xl border border-border-strong bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary";
 
   return (
-    <Container className="py-10">
-      <div className="mx-auto max-w-3xl">
-        <nav className="flex items-center gap-1.5 text-xs text-muted" aria-label={t("مسیر صفحه")}>
-          <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-          <Icon name="chevron" className="h-3 w-3 rotate-180" />
-          <Link href="/track-case" className="hover:text-primary">{t("پیگیری پرونده")}</Link>
-          <Icon name="chevron" className="h-3 w-3 rotate-180" />
-          <span className="text-foreground-soft">{t("پیشنهاد وکلا")}</span>
-        </nav>
-        <h1 className="mt-3 text-2xl font-extrabold text-foreground">{t("پیشنهاد وکلای استان شما")}</h1>
+    <>
+      <PageHero
+        variant="market"
+        image="/images/hero-offers.png"
+        title={t("پیشنهاد وکلای استان شما")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پیگیری پرونده"), href: "/track-case" }, { label: t("پیشنهاد وکلا") }]}
+      >
         {data?.case && (
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-            <span className="font-bold text-foreground">{data.case.subject}</span>
-            <span className="inline-flex items-center gap-1"><Icon name="location" className="h-3.5 w-3.5" />{data.case.city}</span>
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/75">
+            <span className="font-bold text-white">{data.case.subject}</span>
+            <span className="inline-flex items-center gap-1"><Icon name="location" className="h-3.5 w-3.5 text-[#eec97b]" />{data.case.city}</span>
             <span dir="ltr" className="font-mono text-xs">{data.case.caseNumber}</span>
           </p>
         )}
+      </PageHero>
+
+      <Container className="py-10">
+        <div className="mx-auto max-w-3xl">
 
         {accepted && (
           <p className="mt-4 flex items-center gap-2 rounded-xl border border-success/30 bg-success/5 px-3 py-2.5 text-xs font-bold text-success" role="status">
@@ -287,7 +293,8 @@ function OffersContent() {
           {t("انتخاب وکیل هیچ هزینه‌ای ندارد و پاسخ دادن به پیام وکیلِ انتخابی هم رایگان است؛ پرداخت فقط طبق توافق با همان وکیل انجام می‌شود.")}
         </p>
       </div>
-    </Container>
+      </Container>
+    </>
   );
 }
 

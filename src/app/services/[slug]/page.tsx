@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { managedServices } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Container, Card, Badge, Button } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
 import { getServiceBySlug, deriveIntakeFields } from "@/lib/managed-services";
@@ -84,33 +85,29 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
 
   return (
     <div className="min-h-screen bg-background pb-16">
+      <PageHero
+        variant="market"
+        image="/images/hero-services.png"
+        badge={t("خدمات پیگیری و انجام امور")}
+        title={svcTitle}
+        desc={svcDescription}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("خدمات"), href: "/services" }, { label: t(CATEGORY_LABELS[svc.category] ?? svc.category) }]}
+      >
+        <div className="flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgb(230_185_78/0.35)] bg-[rgb(230_185_78/0.14)] px-3 py-1 text-xs font-semibold text-[#eec97b]">{t(CLASSIFICATION_LABELS[svc.classification] ?? svc.classification)}</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">{t(PRICE_TYPE_LABELS[svc.priceType] ?? svc.priceType)}</span>
+          {svc.estimatedTime && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90"><Icon name="clock" className="h-3.5 w-3.5 text-[#eec97b]" />{svcEstimatedTime}</span>
+          )}
+          {svc.requiresLawyer && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgb(230_185_78/0.35)] bg-[rgb(230_185_78/0.14)] px-3 py-1 text-xs font-semibold text-[#eec97b]"><Icon name="scale" className="h-3.5 w-3.5" />{t("با نظارت وکیل")}</span>
+          )}
+        </div>
+      </PageHero>
+
       <Container className="py-10">
         <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
           <div>
-            <div className="flex items-center gap-2 text-sm text-muted">
-              <Icon name="briefcase" className="h-4 w-4" />
-              <span>{t("خدمات پیگیری و انجام امور")}</span>
-              <span>•</span>
-              <span>{t(CATEGORY_LABELS[svc.category] ?? svc.category)}</span>
-            </div>
-            <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-foreground">{svcTitle}</h1>
-            <p className="mt-4 text-lg leading-8 text-muted">{svcDescription}</p>
-
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Badge tone="primary">{t(CLASSIFICATION_LABELS[svc.classification] ?? svc.classification)}</Badge>
-              <Badge tone="neutral">{t(PRICE_TYPE_LABELS[svc.priceType] ?? svc.priceType)}</Badge>
-              {svc.estimatedTime && (
-                <Badge tone="neutral" icon="clock">
-                  {svcEstimatedTime}
-                </Badge>
-              )}
-              {svc.requiresLawyer && (
-                <Badge tone="accent" icon="scale">
-                  {t("با نظارت وکیل")}
-                </Badge>
-              )}
-            </div>
-
             {guide ? (
               <>
                 <Card className="mt-6">

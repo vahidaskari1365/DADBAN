@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Container } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isOperative } from "@/lib/managed-services";
 import ManagedOperations from "@/components/managed-ops";
@@ -27,18 +28,17 @@ export default async function ManagePage() {
 
   return (
     <div className="min-h-screen bg-background pb-16">
-      <div className="border-b border-border bg-gradient-to-b from-primary-soft/50 to-background">
-        <Container className="py-8">
-          <span className="inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
-            {t("خدمات و پیگیری‌ها")}
-          </span>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-foreground">{t("پنل عملیات دادبان")}</h1>
-          <p className="mt-2 text-sm text-muted">
-            {t("مدیریت درخواست‌های خدمات پیگیری و انجام امور — واگذاری، پیش‌فاکتور، پرداخت و تحویل نتیجه.")}
-          </p>
-          <p className="mt-2 text-xs text-muted">{t("شما با نقش:")} {t(ROLE_LABEL[user.role] ?? user.role)}</p>
-        </Container>
-      </div>
+      <PageHero
+        variant="market"
+        image="/images/hero-manage.png"
+        badge={t("خدمات و پیگیری‌ها")}
+        title={t("پنل عملیات دادبان")}
+        desc={t("مدیریت درخواست‌های خدمات پیگیری و انجام امور — واگذاری، پیش‌فاکتور، پرداخت و تحویل نتیجه.")}
+      >
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90">
+          {t("شما با نقش:")} {t(ROLE_LABEL[user.role] ?? user.role)}
+        </span>
+      </PageHero>
       <Container className="mt-8">
         <ManagedOperations currentRole={user.role} />
       </Container>

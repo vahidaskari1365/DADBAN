@@ -56,7 +56,7 @@ export default async function JudgmentPage({ params }: { params: Promise<{ slug:
 
   return (
     <>
-      <PageHero title={j.title} desc={j.summary} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("آرای قضایی"), href: "/judgments" }, { label: j.subject }]} />
+      <PageHero variant="market" image="/images/hero-judgments.png" title={j.title} desc={j.summary} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("آرای قضایی"), href: "/judgments" }, { label: j.subject }]} />
       <Container className="grid gap-8 py-12 lg:grid-cols-[1fr_300px]">
         <div className="space-y-4">
           <Card hover={false}>

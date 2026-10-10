@@ -38,6 +38,8 @@ export default async function LawsPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-laws.png"
         badge={t("مرکز قوانین")}
         title={t("قوانین و مقررات، در دسترس شما")}
         desc={t("مهم‌ترین قوانین کشور را جستجو و مطالعه کنید؛ همراه با موضوعات مرتبط و خلاصه‌ی کاربردی.")}

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Container, Button, Badge, Card } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { faPrice, faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
 import { templateT } from "@/lib/i18n/core";
-import Link from "next/link";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -60,19 +60,13 @@ export default async function PricingPage() {
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{t("تعرفه خدمات")}</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("فروشگاه و تعرفه خدمات حقوقی")}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            {t("خدمات حقوقی را به‌صورت شفاف و با قیمت مشخص سفارش دهید؛ یا برای کسب‌وکار خود اشتراک حقوقی بگیرید.")}
-          </p>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-pricing.png"
+        title={t("فروشگاه و تعرفه خدمات حقوقی")}
+        desc={t("خدمات حقوقی را به‌صورت شفاف و با قیمت مشخص سفارش دهید؛ یا برای کسب‌وکار خود اشتراک حقوقی بگیرید.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("تعرفه خدمات") }]}
+      />
 
       {/* Services marketplace */}
       <Container className="py-10">

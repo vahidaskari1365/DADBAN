@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { qaQuestions } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
-import { Container, Badge } from "@/components/ui";
+import { Container } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { getT, getServerLocale } from "@/lib/i18n/server";
@@ -95,26 +96,21 @@ export default async function QaDetailPage({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted" aria-label={t("مسیر")}>
-            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <Link href="/qa" className="hover:text-primary">{t("پرسش و پاسخ")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{t("پرسش حقوقی")}</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold leading-9 text-foreground sm:text-3xl">{q.question}</h1>
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted">
-            <Badge>{q.category}</Badge>
-            <span>{t("پاسخ از: {name} — {title}").replace("{name}", q.lawyerName).replace("{title}", q.lawyerTitle)}</span>
-            <span aria-hidden>·</span>
-            <span>{faNum(String(q.views))} {t("بازدید")}</span>
-            <span aria-hidden>·</span>
-            <span>{t("{n} نفر مفید بود").replace("{n}", faNum(String(q.helpful)))}</span>
-          </div>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-qa.png"
+        title={q.question}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پرسش و پاسخ"), href: "/qa" }, { label: t("پرسش حقوقی") }]}
+      >
+        <div className="flex flex-wrap items-center gap-2 text-xs text-white/70">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgb(230_185_78/0.35)] bg-[rgb(230_185_78/0.14)] px-3 py-1 font-semibold text-[#eec97b]">{q.category}</span>
+          <span>{t("پاسخ از: {name} — {title}").replace("{name}", q.lawyerName).replace("{title}", q.lawyerTitle)}</span>
+          <span aria-hidden>·</span>
+          <span>{faNum(String(q.views))} {t("بازدید")}</span>
+          <span aria-hidden>·</span>
+          <span>{t("{n} نفر مفید بود").replace("{n}", faNum(String(q.helpful)))}</span>
+        </div>
+      </PageHero>
 
       <Container className="py-8">
         <div className="mx-auto max-w-3xl space-y-6">

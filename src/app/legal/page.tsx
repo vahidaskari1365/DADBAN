@@ -16,6 +16,8 @@ export default function LegalIndexPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-legal.png"
         badge="قوانین"
         title="قوانین، حریم خصوصی و شفافیت"
         desc="همه‌ی قوانین و سیاست‌های دادبان در یک نگاه — شفاف، خوانا و قابل استناد."

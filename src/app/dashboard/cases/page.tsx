@@ -58,11 +58,13 @@ export default async function MyCasesPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-dash-cases.png"
         title={t("پرونده‌های من")}
         desc={t("همه پرونده‌هایی که با این شماره موبایل ثبت کرده‌اید؛ وضعیت هر یک واقعی و به‌روز است.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل موکل"), href: "/dashboard/client" }, { label: t("پرونده‌ها") }]}
       >
-        <Button href="/case/new" icon="plus" size="sm">{t("ثبت پرونده جدید")}</Button>
+        <Button href="/case/new" variant="accent" icon="plus" size="sm">{t("ثبت پرونده جدید")}</Button>
       </PageHero>
 
       <Container className="py-10">

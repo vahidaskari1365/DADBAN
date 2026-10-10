@@ -39,8 +39,8 @@ export default async function DocumentsPage() {
   if (isLawyerSideRole(user.role)) redirect("/dashboard/lawyer");
   return (
     <>
-      <PageHero badge={t("پنل موکل")} title={t("مدیریت اسناد و مدارک")} desc={t("آپلود، دسته‌بندی، مشاهده و اشتراک امن اسناد حقوقی شما — با رمزنگاری و تاریخچه‌ی نسخه‌ها.")} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("اسناد و مدارک") }]}>
-        <Button icon="plus">{t("آپلود سند جدید")}</Button>
+      <PageHero variant="market" image="/images/hero-dash-docs.png" badge={t("پنل موکل")} title={t("مدیریت اسناد و مدارک")} desc={t("آپلود، دسته‌بندی، مشاهده و اشتراک امن اسناد حقوقی شما — با رمزنگاری و تاریخچه‌ی نسخه‌ها.")} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("اسناد و مدارک") }]}>
+        <Button variant="accent" icon="plus">{t("آپلود سند جدید")}</Button>
       </PageHero>
 
       <Container className="py-10">

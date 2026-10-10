@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -31,14 +32,16 @@ export default async function SupportPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-support.png"
         badge={t("پشتیبانی")}
         title={t("چگونه می‌توانیم کمکتان کنیم؟")}
         desc={t("مرکز راهنما، سؤالات متداول و ثبت تیکت؛ تیم پشتیبانی دادبان ۲۴ ساعته در خدمت شماست.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پشتیبانی") }]}
       >
         <div className="flex flex-wrap gap-2">
-          <Button href="/contact" icon="mail">{t("ثبت تیکت")}</Button>
-          <Button href="/consultation" variant="outline" icon="chat">{t("گفتگوی آنلاین")}</Button>
+          <Button href="/contact" variant="accent" icon="mail">{t("ثبت تیکت")}</Button>
+          <Link href="/consultation" className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-sm font-bold text-white transition-colors hover:bg-white/20"><Icon name="chat" className="h-4 w-4" />{t("گفتگوی آنلاین")}</Link>
         </div>
       </PageHero>
 

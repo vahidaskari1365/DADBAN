@@ -163,14 +163,16 @@ export default async function ServiceCategoryPage({
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-services.png"
         badge={tt("خدمات {name}", { name: catName })}
         title={tt("وکیل و مشاوره تخصصی {name}", { name: catName })}
         desc={catDesc}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("خدمات"), href: "/services" }, { label: catName }]}
       >
         <div className="flex flex-wrap gap-2">
-          <Button href="/consultation" icon="chat">{t("درخواست مشاوره")}</Button>
-          <Button href="/case/new" variant="outline" icon="folder">{t("ثبت پرونده")}</Button>
+          <Button href="/consultation" variant="accent" icon="chat">{t("درخواست مشاوره")}</Button>
+          <Link href="/case/new" className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-sm font-bold text-white transition-colors hover:bg-white/20"><Icon name="folder" className="h-4 w-4" />{t("ثبت پرونده")}</Link>
         </div>
       </PageHero>
 

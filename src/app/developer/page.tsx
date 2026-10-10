@@ -16,16 +16,18 @@ export default function DeveloperPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-developer.png"
         badge="Developer · Data Model"
         title="نقشه‌ی دیتابیس (ERD)"
         desc="معماری ماژولار دیتابیس دادبان در ۱۳ دامنه‌ی مستقل — طرح‌نامه‌ی واقعی PostgreSQL با کلیدها، ایندکس‌ها و روابط. مبنای توسعه‌ی NestJS + Prisma/Drizzle."
         breadcrumb={[{ label: "خانه", href: "/" }, { label: "نقشه‌ی دیتابیس" }]}
       >
         <div className="flex flex-wrap gap-2">
-          <Badge tone="primary">{faNum(ERD_STATS.tables)} جدول</Badge>
-          <Badge tone="accent">{faNum(ERD_STATS.domains)} دامنه</Badge>
-          <Badge tone="success">{faNum(ERD_STATS.enums)} Enum</Badge>
-          <Badge tone="neutral">schema: core</Badge>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgb(230_185_78/0.35)] bg-[rgb(230_185_78/0.14)] px-3 py-1 text-xs font-semibold text-[#eec97b]">{faNum(ERD_STATS.tables)} جدول</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">{faNum(ERD_STATS.domains)} دامنه</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">{faNum(ERD_STATS.enums)} Enum</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">schema: core</span>
         </div>
       </PageHero>
 

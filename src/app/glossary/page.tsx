@@ -37,6 +37,8 @@ export default async function GlossaryPage() {
   return (
     <>
       <PageHero
+        variant="market"
+        image="/images/hero-glossary.png"
         badge={t("واژه‌نامه حقوقی")}
         title={t("اصطلاحات حقوقی، به زبان ساده")}
         desc={t("تعریف ساده و تخصصی اصطلاحات حقوقی همراه با مثال و قوانین مرتبط؛ مرجعی برای دانش حقوقی شما.")}

@@ -107,7 +107,7 @@ export default function ContractReviewPage() {
 
   return (
     <>
-      <PageHero badge={t("بررسی قرارداد")} title={t("قرارداد خود را هوشمندانه تحلیل کنید")} desc={t("فایل یا عکس قرارداد را آپلود کنید یا متن آن را درج کنید تا بندهای پرریسک، جریمه‌ها، تعهدات و ابهامات شناسایی شوند — حتی عکس قرارداد؛ متنش با هوش مصنوعی خوانده می‌شود. برای دقت نهایی، وکیل آن را بررسی می‌کند.")} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قراردادها"), href: "/contracts" }, { label: t("بررسی قرارداد") }]} />
+      <PageHero variant="market" image="/images/hero-contract-review.png" badge={t("بررسی قرارداد")} title={t("قرارداد خود را هوشمندانه تحلیل کنید")} desc={t("فایل یا عکس قرارداد را آپلود کنید یا متن آن را درج کنید تا بندهای پرریسک، جریمه‌ها، تعهدات و ابهامات شناسایی شوند — حتی عکس قرارداد؛ متنش با هوش مصنوعی خوانده می‌شود. برای دقت نهایی، وکیل آن را بررسی می‌کند.")} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قراردادها"), href: "/contracts" }, { label: t("بررسی قرارداد") }]} />
 
       <Container className="py-12">
         <div className="mx-auto max-w-3xl space-y-6">

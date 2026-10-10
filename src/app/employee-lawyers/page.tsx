@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Container } from "@/components/ui";
-import { Icon } from "@/components/icons";
+import { PageHero } from "@/components/page-hero";
 import { EmployeeLawyerFinder } from "@/components/employee-lawyer-finder";
 import { getT } from "@/lib/i18n/server";
 
@@ -18,24 +17,14 @@ export default async function EmployeeLawyersPage() {
   const t = await getT();
   return (
     <>
-      {/* بدون پس‌زمینه مات — بک‌گراند سراسری سایت دیده می‌شود */}
-      <section className="border-b border-border bg-surface-2/40 py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">
-              {t("خانه")}
-            </Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{t("وکیل کارمندان")}</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">
-            {t("وکیل کارمندان")}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            {t("وکلای متخصص حقوق کار و تأمین اجتماعی؛ فقط وکلایی که حوزه «وکیل کارمندان» را در ثبت‌نام انتخاب کرده‌اند. مشکل خود را بنویسید، بهترین گزینه پیشنهاد می‌شود و با انتخاب وکیل، مستقیم به رزرو وقت مشاوره می‌روید.")}
-          </p>
-        </Container>
-      </section>
+      {/* باکس هیروی همسان سایت (پنل سرمه‌ای با عکس موضوعی) */}
+      <PageHero
+        variant="market"
+        image="/images/hero-employee.png"
+        title={t("وکیل کارمندان")}
+        desc={t("وکلای متخصص حقوق کار و تأمین اجتماعی؛ فقط وکلایی که حوزه «وکیل کارمندان» را در ثبت‌نام انتخاب کرده‌اند. مشکل خود را بنویسید، بهترین گزینه پیشنهاد می‌شود و با انتخاب وکیل، مستقیم به رزرو وقت مشاوره می‌روید.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("وکیل کارمندان") }]}
+      />
 
       <Container className="py-8">
         <EmployeeLawyerFinder />

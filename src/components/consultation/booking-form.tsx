@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Container, Button, Card, Badge } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { CONSULTATION_TYPES, faNum, faPrice } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
@@ -612,21 +613,13 @@ function BookingFormContent() {
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted" aria-label="مسیر صفحه">
-            <Link href="/" className="hover:text-primary">خانه</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <Link href="/consultation" className="hover:text-primary">مشاوره</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">رزرو مشاوره</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">تکمیل رزرو مشاوره</h1>
-          <p className="mt-2 text-sm leading-7 text-muted">
-            نوع مشاوره و زمان را انتخاب کنید؛ در کمتر از ۲ دقیقه ثبت می‌شود.
-          </p>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-booking.png"
+        title="تکمیل رزرو مشاوره"
+        desc="نوع مشاوره و زمان را انتخاب کنید؛ در کمتر از ۲ دقیقه ثبت می‌شود."
+        breadcrumb={[{ label: "خانه", href: "/" }, { label: "مشاوره", href: "/consultation" }, { label: "رزرو مشاوره" }]}
+      />
 
       <div id="booking-form" className="mx-auto w-full max-w-7xl scroll-mt-20 px-4 py-10 sm:px-6 lg:scroll-mt-22 lg:px-8">
         {selectedLawyerBar}

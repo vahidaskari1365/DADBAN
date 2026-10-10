@@ -3,7 +3,9 @@ import { db } from "@/db";
 import { managedServices, serviceCategories } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { Container, SectionHeading, Card, Button } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
+import Link from "next/link";
 import type { IconKey } from "@/lib/data";
 import { ServiceCard } from "@/components/managed";
 import { CATALOG_CATEGORIES, CATALOG_SERVICES } from "@/lib/managed-catalog";
@@ -73,27 +75,23 @@ export default async function ServicesCatalog() {
 
   return (
     <div className="min-h-screen pb-16">
-      <section className="border-b border-border bg-gradient-to-b from-primary-soft/60 to-background">
-        <Container className="py-12 sm:py-16">
-          <span className="inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
-            {t("خدمات پیگیری و انجام امور")}
-          </span>
-          <h1 className="mt-4 max-w-3xl text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-            {t("کارهای زمان‌بر حقوقی و اداری را به ما بسپارید")}
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-muted">
-            {t("کارهایی که باید حضوری در اجرای احکام، اداره ثبت، دارایی، شهرداری و تأمین اجتماعی انجام شود — با یک وکالت‌نامه رسمی، نماینده دادبان به‌جای شما صف می‌ایستد و پیش می‌برد.")}
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button href="/services#catalog" size="lg" icon="briefcase">
-              {t("مشاهده خدمات")}
-            </Button>
-            <Button href="/ai-assistant" variant="outline" size="lg" icon="sparkles">
-              {t("مشاوره با هوش مصنوعی")}
-            </Button>
-          </div>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-services.png"
+        badge={t("خدمات پیگیری و انجام امور")}
+        title={t("کارهای زمان‌بر حقوقی و اداری را به ما بسپارید")}
+        desc={t("کارهایی که باید حضوری در اجرای احکام، اداره ثبت، دارایی، شهرداری و تأمین اجتماعی انجام شود — با یک وکالت‌نامه رسمی، نماینده دادبان به‌جای شما صف می‌ایستد و پیش می‌برد.")}
+      >
+        <div className="flex flex-wrap gap-3">
+          <Button href="/services#catalog" variant="accent" size="lg" icon="briefcase">
+            {t("مشاهده خدمات")}
+          </Button>
+          <Link href="/ai-assistant" className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 text-base font-bold text-white transition-colors hover:bg-white/20">
+            <Icon name="sparkles" className="h-5 w-5" />
+            {t("مشاوره با هوش مصنوعی")}
+          </Link>
+        </div>
+      </PageHero>
 
       <div id="catalog" className="mt-12">
         <Container>

@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { lawyers } from "@/db/schema";
 import { and, desc, asc, eq, inArray, sql, count } from "drizzle-orm";
 import { Container, Button, EmptyState, Badge } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
 import { PinMasonry } from "@/components/pin-masonry";
@@ -176,29 +177,22 @@ export default async function LawyersPage({
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{t("وکیل‌یابی")}</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">
-            {lawyerSide ? (sp || city ? heading : t("دایرکتوری وکلا — جستجوی همکاران")) : heading}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            {lawyerSide
-              ? t("فهرست وکلای احراز هویت‌شدهٔ دادبان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز.")
-              : t("از میان وکلای پایه یک دادگستری، تأییدشده و متخصص انتخاب کنید؛ با فیلتر تخصص، شهر، سابقه و امتیاز.")}
+      <PageHero
+        variant="market"
+        image="/images/hero-lawyers.png"
+        title={lawyerSide ? (sp || city ? heading : t("دایرکتوری وکلا — جستجوی همکاران")) : heading}
+        desc={lawyerSide
+          ? t("فهرست وکلای احراز هویت‌شدهٔ دادبان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز.")
+          : t("از میان وکلای پایه یک دادگستری، تأییدشده و متخصص انتخاب کنید؛ با فیلتر تخصص، شهر، سابقه و امتیاز.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("وکیل‌یابی") }]}
+      >
+        {lawyerSide && (
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white/90">
+            <Icon name="shield" className="h-3.5 w-3.5 text-[#eec97b]" />
+            {t("نمای همکاران — روی کارت هر وکیل کلیک کنید و از پروفایل او «درخواست همکاری / ارجاع پرونده» را ثبت کنید")}
           </p>
-          {lawyerSide && (
-            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-3 py-1.5 text-[11px] font-bold text-primary">
-              <Icon name="shield" className="h-3.5 w-3.5" />
-              {t("نمای همکاران — روی کارت هر وکیل کلیک کنید و از پروفایل او «درخواست همکاری / ارجاع پرونده» را ثبت کنید")}
-            </p>
-          )}
-        </Container>
-      </section>
+        )}
+      </PageHero>
 
       <Container className="py-8">
         <div className="sticky top-16 z-30 mb-6">

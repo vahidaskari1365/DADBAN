@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { articles } from "@/db/schema";
 import { desc, eq, ne } from "drizzle-orm";
-import { Container, Button, Badge, Card } from "@/components/ui";
+import { Container, Button, Card } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { ArticleBody } from "@/components/article-body";
 import { ShareButtons } from "@/components/share-buttons";
@@ -178,25 +179,20 @@ export default async function ArticlePage({
   return (
     <>
       <article>
-        <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-          <Container>
-            <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted" aria-label={t("مسیر صفحه")}>
-              <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-              <Icon name="chevron" className="h-3 w-3 rotate-180" />
-              <Link href="/knowledge" className="hover:text-primary">{t("دانش حقوقی")}</Link>
-              <Icon name="chevron" className="h-3 w-3 rotate-180" />
-              <span className="text-foreground-soft">{a.category}</span>
-            </nav>
-            <Badge tone="accent">{a.category}</Badge>
-            <h1 className="mt-3 max-w-3xl text-2xl font-extrabold leading-9 text-foreground sm:text-3xl">{a.title}</h1>
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted">
-              <span className="inline-flex items-center gap-1.5"><Icon name="user" className="h-4 w-4" /> {a.author} — {a.authorRole}</span>
-              <span className="inline-flex items-center gap-1.5"><Icon name="clock" className="h-4 w-4" /> {faNum(a.readTime)} {t("دقیقه مطالعه")}</span>
-              <span className="inline-flex items-center gap-1.5"><Icon name="star" className="h-4 w-4" /> {faNum(a.views.toLocaleString("en-US"))} {t("بازدید")}</span>
-              <span className="inline-flex items-center gap-1.5"><Icon name="document" className="h-4 w-4" /> {faNum(wordCount.toLocaleString("en-US"))} {t("واژه")}</span>
-            </div>
-          </Container>
-        </section>
+        <PageHero
+          variant="market"
+          image="/images/hero-knowledge.png"
+          badge={a.category}
+          title={a.title}
+          breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("دانش حقوقی"), href: "/knowledge" }, { label: a.category }]}
+        >
+          <div className="flex flex-wrap items-center gap-4 text-xs text-white/70">
+            <span className="inline-flex items-center gap-1.5"><Icon name="user" className="h-4 w-4 text-[#eec97b]" /> {a.author} — {a.authorRole}</span>
+            <span className="inline-flex items-center gap-1.5"><Icon name="clock" className="h-4 w-4 text-[#eec97b]" /> {faNum(a.readTime)} {t("دقیقه مطالعه")}</span>
+            <span className="inline-flex items-center gap-1.5"><Icon name="star" className="h-4 w-4 text-[#eec97b]" /> {faNum(a.views.toLocaleString("en-US"))} {t("بازدید")}</span>
+            <span className="inline-flex items-center gap-1.5"><Icon name="document" className="h-4 w-4 text-[#eec97b]" /> {faNum(wordCount.toLocaleString("en-US"))} {t("واژه")}</span>
+          </div>
+        </PageHero>
 
         <Container className="grid gap-8 py-10 lg:grid-cols-[1fr_300px]">
           <div className="max-w-2xl">

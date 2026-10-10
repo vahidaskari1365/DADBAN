@@ -72,7 +72,7 @@ export default async function GlossaryTermPage({
 
   return (
     <>
-      <PageHero title={t("واژه: {term}").replace("{term}", g.term)} desc={g.simple} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("واژه‌نامه"), href: "/glossary" }, { label: g.term }]} />
+      <PageHero variant="market" image="/images/hero-glossary.png" title={t("واژه: {term}").replace("{term}", g.term)} desc={g.simple} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("واژه‌نامه"), href: "/glossary" }, { label: g.term }]} />
       <Container className="grid gap-8 py-12 lg:grid-cols-[1fr_300px]">
         <div className="space-y-6">
           <Card hover={false}>

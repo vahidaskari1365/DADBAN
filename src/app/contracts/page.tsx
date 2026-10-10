@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { db } from "@/db";
 import { contracts } from "@/db/schema";
 import { Container, Badge, EmptyState } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { CONTRACT_CATEGORIES, faPrice } from "@/lib/data";
 import { getT, getServerLocale } from "@/lib/i18n/server";
@@ -58,19 +59,13 @@ export default async function ContractsPage({
 
   return (
     <>
-      <section className="border-b border-border bg-gradient-to-b from-surface-2/60 to-background py-8">
-        <Container>
-          <nav className="flex items-center gap-1.5 text-xs text-muted">
-            <Link href="/" className="hover:text-primary">{t("خانه")}</Link>
-            <Icon name="chevron" className="h-3 w-3 rotate-180" />
-            <span className="text-foreground-soft">{t("کتابخانه قراردادها")}</span>
-          </nav>
-          <h1 className="mt-3 text-2xl font-extrabold text-foreground sm:text-3xl">{t("کتابخانه قراردادها و سندهای حقوقی")}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
-            {t("قراردادهای آماده و قابل تنظیم را انتخاب کنید؛ فرم را پر کنید، سیستم سند را تولید می‌کند و در صورت نیاز وکیل آن را بازبینی می‌کند.")}
-          </p>
-        </Container>
-      </section>
+      <PageHero
+        variant="market"
+        image="/images/hero-contracts.png"
+        title={t("کتابخانه قراردادها و سندهای حقوقی")}
+        desc={t("قراردادهای آماده و قابل تنظیم را انتخاب کنید؛ فرم را پر کنید، سیستم سند را تولید می‌کند و در صورت نیاز وکیل آن را بازبینی می‌کند.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("کتابخانه قراردادها") }]}
+      />
 
       <Container className="py-8">
         {/* Category filter */}
