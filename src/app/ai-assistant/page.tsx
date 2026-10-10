@@ -12,6 +12,7 @@ import type { LegalGuidance } from "@/lib/legal-engine";
 import type { MatchedLawyer } from "@/lib/lawyer-match";
 import type { IconKey } from "@/lib/data";
 import { shrinkImageFile } from "@/lib/image-file";
+import { ocrImageFileClient } from "@/lib/ocr-client";
 import { faNum } from "@/lib/data";
 
 interface ClauseFinding {
@@ -441,6 +442,8 @@ function AIAssistantContent() {
   const [contractFile, setContractFile] = useState<File | null>(null);
   const [contractDrag, setContractDrag] = useState(false);
   const contractInputRef = useRef<HTMLInputElement>(null);
+  /** پیشرفت OCR پشتیبان مرورگری (فقط وقتی مدل بینایی سرور در دسترس نیست) */
+  const [contractOcr, setContractOcr] = useState<number | null>(null);
 
   // اسکرول هوشمند چت — مثل چت‌بات‌های واقعی:
   // تا وقتی کاربر پایین صفحه است، استریم پاسخ خودکار دنبال می‌شود؛
@@ -692,7 +695,8 @@ function AIAssistantContent() {
     }
   };
 
-  const runContractRequest = async (url: string, init: RequestInit) => {
+  /** نتیجه را برمی‌گرداند تا مسیر فراخوان بتواند روی خطای خاص (مثل نبود مدل بینایی) فالبک بگذارد */
+  const runContractRequest = async (url: string, init: RequestInit): Promise<{ ok: boolean; error?: string }> => {
     setContractLoading(true);
     setContractError(null);
     setContractResult(null);
@@ -704,8 +708,11 @@ function AIAssistantContent() {
       // آمار/ریسک محلی همیشه هست؛ متن تحلیل هوش مصنوعی در صورت موفقیت اضافه می‌شود
       setContractResult({ findings: data.findings ?? [], riskScore: data.riskScore ?? 0 });
       if (data.analysis) setContractAnalysis(data.analysis);
+      return { ok: true };
     } catch (e) {
-      setContractError(e instanceof Error ? e.message : t("خطا در تحلیل"));
+      const msg = e instanceof Error ? e.message : t("خطا در تحلیل");
+      setContractError(msg);
+      return { ok: false, error: msg };
     } finally {
       setContractLoading(false);
     }
@@ -739,7 +746,28 @@ function AIAssistantContent() {
       const fd = new FormData();
       fd.append("file", contractFile);
       fd.append("mode", "contract");
-      await runContractRequest("/api/ai-assistant", { method: "POST", body: fd });
+      const r = await runContractRequest("/api/ai-assistant", { method: "POST", body: fd });
+      // پشتیبان: اگر مدل بینایی سرور در دسترس نبود (موجودی/سرویس)، OCR مرورگری متن را می‌خواند
+      if (!r.ok && contractFile.type.startsWith("image/") && r.error?.startsWith("خواندن متن از تصویر")) {
+        setContractOcr(0);
+        try {
+          const txt = await ocrImageFileClient(contractFile, (pct) => setContractOcr(pct));
+          setContractOcr(null);
+          if (txt.length < 30) {
+            throw new Error(t("متنی از این عکس خوانده نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر بچسبانید."));
+          }
+          const clipped = txt.slice(0, 6000);
+          setContractText(clipped);
+          await runContractRequest("/api/ai-assistant", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "contract", contract: clipped }),
+          });
+        } catch (e2) {
+          setContractOcr(null);
+          setContractError(e2 instanceof Error ? e2.message : t("خواندن متن از عکس ممکن نشد."));
+        }
+      }
     } else {
       await runContractRequest("/api/ai-assistant", {
         method: "POST",
@@ -1089,6 +1117,15 @@ function AIAssistantContent() {
                   />
                 </div>
 
+
+                {contractOcr !== null && (
+                  <div className="rounded-xl border border-accent/30 bg-accent-soft/30 px-4 py-3 text-center">
+                    <p className="text-sm font-bold text-accent-text">{tt("خواندن متن عکس در مرورگر… {pct}٪", { pct: String(contractOcr) })}</p>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
+                      <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(5, contractOcr)}%` }} />
+                    </div>
+                  </div>
+                )}
 
                 {contractFile && (
                   <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary-soft/30 px-4 py-3">

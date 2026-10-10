@@ -5,6 +5,7 @@ import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { shrinkImageFile } from "@/lib/image-file";
+import { ocrImageFileClient } from "@/lib/ocr-client";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 
@@ -26,8 +27,11 @@ export default function ContractReviewPage() {
   const [sourceName, setSourceName] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isImg = !!file && file.type.startsWith("image/");
+  /** پیشرفت OCR پشتیبان مرورگری (فقط وقتی مدل بینایی سرور در دسترس نیست) */
+  const [ocrPct, setOcrPct] = useState<number | null>(null);
 
-  const runRequest = async (init: RequestInit) => {
+  /** نتیجه را برمی‌گرداند تا مسیر فراخوان بتواند فالبک OCR بگذارد */
+  const runRequest = async (init: RequestInit): Promise<{ ok: boolean; error?: string }> => {
     setLoading(true);
     setError(null);
     setResult(null);
@@ -39,8 +43,11 @@ export default function ContractReviewPage() {
       // پاسخ همیشه شامل findings/riskScore است؛ در حالت هوش مصنوعی متن تحلیل با استناد قانونی هم می‌آید
       setResult({ analysis: data.analysis ?? null, findings: data.findings ?? [], riskScore: data.riskScore ?? 0 });
       setSourceName(typeof data.fileName === "string" ? data.fileName : null);
+      return { ok: true };
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("خطا در تحلیل"));
+      const msg = e instanceof Error ? e.message : t("خطا در تحلیل");
+      setError(msg);
+      return { ok: false, error: msg };
     } finally {
       setLoading(false);
     }
@@ -70,7 +77,27 @@ export default function ContractReviewPage() {
       const fd = new FormData();
       fd.append("file", file);
       fd.append("mode", "contract");
-      await runRequest({ method: "POST", body: fd });
+      const r = await runRequest({ method: "POST", body: fd });
+      // پشتیبان: اگر مدل بینایی سرور در دسترس نبود، OCR مرورگری متن را می‌خواند
+      if (!r.ok && isImg && r.error?.startsWith("خواندن متن از تصویر")) {
+        setOcrPct(0);
+        try {
+          const txt = await ocrImageFileClient(file, (pct) => setOcrPct(pct));
+          setOcrPct(null);
+          if (txt.length < 30) {
+            throw new Error(t("متنی از این عکس خوانده نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر بچسبانید."));
+          }
+          setText(txt.slice(0, 6000));
+          await runRequest({
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "contract", contract: txt.slice(0, 6000) }),
+          });
+        } catch (e2) {
+          setOcrPct(null);
+          setError(e2 instanceof Error ? e2.message : t("خواندن متن از عکس ممکن نشد."));
+        }
+      }
     } else {
       await runRequest({
         method: "POST",
@@ -129,6 +156,15 @@ export default function ContractReviewPage() {
                 }}
               />
             </div>
+
+            {ocrPct !== null && (
+              <div className="rounded-xl border border-accent/30 bg-accent-soft/30 px-4 py-3 text-center">
+                <p className="text-sm font-bold text-accent-text">{tt("خواندن متن عکس در مرورگر… {pct}٪", { pct: String(ocrPct) })}</p>
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
+                  <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(5, ocrPct)}%` }} />
+                </div>
+              </div>
+            )}
 
             {file && (
               <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary-soft/30 px-4 py-3">
