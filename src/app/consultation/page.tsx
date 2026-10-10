@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { Icon } from "@/components/icons";
 import { PageHero } from "@/components/page-hero";
 import { trackEvent } from "@/lib/analytics";
@@ -53,9 +53,18 @@ export default function ConsultationPage() {
         ]}
       >
         <div className="flex flex-wrap gap-3">
-          <Button href="/consultation/book" variant="accent" icon="calendar">
+          {/* Magic UI — دکمهٔ درخشان طلایی روی پنل سرمه‌ای */}
+          <ShimmerButton
+            href="/consultation/book"
+            background="#15365d"
+            shimmerColor="#e6b94e"
+            borderRadius="12px"
+            shimmerDuration="3.4s"
+            className="min-h-11 gap-2 px-6 text-sm font-black shadow-[var(--shadow-lift)]"
+          >
+            <Icon name="calendar" className="h-[1.15em] w-[1.15em]" />
             {t("رزرو نوبت مشاوره")}
-          </Button>
+          </ShimmerButton>
           <a
             href="#lawyer-directory"
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20"

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
+import { BorderBeam } from "@/components/magicui/border-beam";
 
 /**
  * اسپات‌لایت سینمایی «دستیار هوش مصنوعی حقوقی»:
@@ -89,6 +90,25 @@ export function AISpotlight() {
       <span className="pointer-events-none absolute right-[28%] top-[62%] h-2 w-2 rounded-full bg-accent/50 blur-[1px] home-float-slow" aria-hidden />
       <span className="pointer-events-none absolute left-[16%] top-[30%] h-3 w-3 rounded-full bg-accent/40 blur-[2px] home-float-slow" aria-hidden />
       <span className="pointer-events-none absolute left-[36%] bottom-[16%] h-1.5 w-1.5 rounded-full bg-accent/60 blur-[1px] home-float" aria-hidden />
+
+      {/* Magic UI — دو پرتو نوری طلایی روی قاب کارت (خلاف جهت هم، CSS خالص) */}
+      <BorderBeam
+        size={110}
+        duration={10}
+        delay={0}
+        colorFrom="var(--accent)"
+        colorTo="color-mix(in oklab, var(--accent) 30%, transparent)"
+        borderWidth={1.5}
+      />
+      <BorderBeam
+        size={70}
+        duration={10}
+        delay={5}
+        reverse
+        colorFrom="#ffffff"
+        colorTo="color-mix(in oklab, var(--accent) 45%, transparent)"
+        borderWidth={1}
+      />
 
       <div className="relative grid gap-8 p-7 sm:p-10 lg:grid-cols-[1.15fr_1fr] lg:p-12">
         {/* متن اصلی */}

@@ -7,6 +7,7 @@ import { MotionProvider } from "@/components/motion-config";
 import { noFlashScript } from "@/components/no-flash";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { ScrollProgress } from "@/components/magicui/scroll-progress";
 import { Tracker } from "@/components/tracker";
 import { BottomNav } from "@/components/pwa/bottom-nav";
 import { ConsultCompanion } from "@/components/consult-companion";
@@ -238,6 +239,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           >
             {t("پرش به محتوای اصلی")}
           </a>
+          {/* Magic UI — نوار پیشرفت اسکرول (در RTL از راست پر می‌شود) */}
+          <ScrollProgress />
           <div className="flex min-h-screen flex-col">
             <Header />
             <main id="main" className="page-wash flex-1">

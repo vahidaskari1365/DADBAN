@@ -3,13 +3,16 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "./icons";
-import { Button } from "./ui";
 import { HeroScene } from "./hero-scene";
 import { LEGAL_TOPICS, ALL_PROVINCES, faNum } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
 import { buildFunnelOptions, saveFunnelSelections, type FunnelRecommendation } from "@/lib/recommendation";
 import { STAGES, ResultCard } from "./quick-start";
 import { useT } from "@/lib/i18n/provider";
+import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
+import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
+import { WordRotate } from "@/components/magicui/word-rotate";
 
 /* فانل درجایی هیرو — پس از انتخاب موضوع، مراحل بعدی همین‌جا ادامه می‌یابد (بدون پرش به پایین صفحه) */
 const FSTEP_TITLES = [
@@ -21,6 +24,9 @@ const FUNNEL_TOTAL = 2; // مرحله/استان — انتخاب موضوع گ�
 
 /* موضوعات محبوب هیرو — از داده واقعی سیستم (LEGAL_TOPICS) انتخاب شده‌اند */
 const HERO_TOPIC_LABELS = ["ملک و اجاره", "طلاق", "کیفری", "کار", "قرارداد", "ارث", "چک", "مهریه"];
+
+/* کلمات چرخان h1 (Magic UI — WordRotate): کلمهٔ اول برای SSR/SEO حفظ می‌شود */
+const HERO_ROTATING_WORDS = ["حقوقی", "ملکی", "چک برگشتی", "طلاق", "کیفری", "ارث", "قرارداد"];
 
 export function HomeHero() {
   const t = useT();
@@ -82,10 +88,28 @@ export function HomeHero() {
       <HeroScene />
 
       <div className="relative z-10 mx-auto w-full max-w-3xl px-4 text-center sm:px-6">
+        {/* Magic UI — بج گرادیان متحرک بالای تیتر */}
+        <div className="animate-fade-up group mb-5 flex justify-center" style={{ animationDelay: "0.05s" }}>
+          <span
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/80 px-4 py-1.5 shadow-sm backdrop-blur transition-colors duration-300 group-hover:bg-surface"
+          >
+            <Icon name="sparkles" className="h-3.5 w-3.5 text-accent-text" />
+            <AnimatedGradientText speed={1.2} colorFrom="var(--accent)" colorTo="var(--accent-text)" className="text-[13px] font-bold">
+              {t("بازار پرونده‌ها • مشاوره • وکیل متخصص")}
+            </AnimatedGradientText>
+          </span>
+        </div>
+
         <h1
           className="animate-fade-up text-balance text-4xl font-extrabold leading-[1.2] tracking-tight text-foreground sm:text-5xl md:text-6xl"
         >
-          {t("مشکل حقوقی دارید؟")}{" "}
+          {t("مشکل")}{" "}
+          <WordRotate
+            words={HERO_ROTATING_WORDS.map((w) => t(w))}
+            duration={2600}
+            className="text-primary"
+          />{" "}
+          {t("دارید؟")}{" "}
           <span className="relative inline-block">
             <span className="bg-gradient-to-l from-primary via-accent to-primary bg-clip-text text-transparent">
               {t("اول مسیر درست")}
@@ -133,13 +157,27 @@ export function HomeHero() {
                     className="h-11 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-soft"
                   />
                 </div>
-                <Button onClick={search} size="sm" icon="arrow" className="h-11 w-full justify-center sm:w-auto">
+                {/* Magic UI — دکمهٔ درخشان سرمه‌ای با جرقهٔ طلایی */}
+                <ShimmerButton
+                  onClick={search}
+                  background="#15365d"
+                  shimmerColor="#e6b94e"
+                  borderRadius="12px"
+                  shimmerDuration="3.4s"
+                  className="h-11 w-full gap-2 px-5 text-sm font-black shadow-[var(--shadow-lift)] sm:w-auto sm:px-6"
+                >
                   {t("بررسی مشکل من")}
-                </Button>
+                  <Icon name="arrow" className="h-4 w-4" />
+                </ShimmerButton>
               </div>
 
               <div className="mt-4">
-                <p className="mb-2 text-xs font-medium text-muted">{t("یا موضوع را انتخاب کنید — مسیر همین‌جا ادامه می‌یابد:")}</p>
+                <p className="mb-2 text-xs font-medium">
+                  {/* Magic UI — متن براق */}
+                  <AnimatedShinyText shimmerWidth={120} className="text-xs font-medium text-muted">
+                    {t("یا موضوع را انتخاب کنید — مسیر همین‌جا ادامه می‌یابد:")}
+                  </AnimatedShinyText>
+                </p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {heroTopics.map((top) => (
                     <button

@@ -6,6 +6,10 @@ import { Container, SectionHeading, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { HomeHero } from "@/components/home-hero";
+import { Marquee } from "@/components/magicui/marquee";
+import { ShineBorder } from "@/components/magicui/shine-border";
+import { AuroraText } from "@/components/magicui/aurora-text";
+import { LEGAL_TOPICS } from "@/lib/data";
 import { FeeBanner } from "@/components/fee/fee-banner";
 import { TrustStrip } from "@/components/home/action-hub";
 import { MainPaths } from "@/components/home/main-paths";
@@ -54,6 +58,30 @@ export default async function HomePage() {
       <section className="-mt-6" aria-label={t("تضمین‌های دادبان")}>
         <Container>
           <TrustStrip />
+        </Container>
+      </section>
+
+      {/* Magic UI — نوار بی‌نهایت موضوعات حقوقی (تزئینی؛ فهرست واقعی برای اسکرین‌ریدر) */}
+      <section className="mt-8" aria-label={t("موضوعات حقوقی پرجستجو")}>
+        <Container>
+          <p className="sr-only">
+            {t(LEGAL_TOPICS.map((tp) => tp.label).join("، "))}
+          </p>
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-surface/60 py-1.5 [mask-image:linear-gradient(to_left,transparent,black_10%,black_90%,transparent)]">
+            <div aria-hidden="true">
+              <Marquee pauseOnHover repeat={2} className="[--duration:36s]">
+                {LEGAL_TOPICS.map((tp) => (
+                  <span key={tp.label} className="inline-flex items-center">
+                    <span className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold text-foreground-soft transition-colors hover:text-primary">
+                      <Icon name={tp.icon} className="h-3.5 w-3.5 text-accent-text" />
+                      {t(tp.label)}
+                    </span>
+                    <span className="text-accent/50">✦</span>
+                  </span>
+                ))}
+              </Marquee>
+            </div>
+          </div>
         </Container>
       </section>
 
@@ -231,9 +259,17 @@ export default async function HomePage() {
         <Container>
           <Reveal variant="blur">
             <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-8 text-center card-shadow sm:p-12">
+              {/* Magic UI — قاب درخشان طلایی (فقط با حرکت مجاز) */}
+              <ShineBorder borderWidth={1.5} duration={12} shineColor={["var(--accent)", "color-mix(in oklab, var(--accent) 45%, transparent)"]} />
               <div className="pointer-events-none absolute inset-0 opacity-50" style={{ background: "linear-gradient(110deg, color-mix(in oklab, var(--primary) 12%, transparent), color-mix(in oklab, var(--accent) 10%, transparent), color-mix(in oklab, var(--primary) 12%, transparent))" }} />
               <div className="relative">
-                <h2 className="text-2xl font-black text-foreground sm:text-3xl">{t("نمی‌دانید از کجا شروع کنید؟")}</h2>
+                <h2 className="text-2xl font-black text-foreground sm:text-3xl">
+                  {t("نمی‌دانید از کجا ")}
+                  <AuroraText colors={["var(--accent)", "var(--accent-text)", "color-mix(in oklab, var(--accent) 55%, white)"]} speed={1.2}>
+                    {t("شروع")}
+                  </AuroraText>
+                  {t(" کنید؟")}
+                </h2>
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-8 text-muted sm:text-base">
                   {t("مسئله حقوقی‌تان را برای دادبان بنویسید تا مسیر مناسب را پیدا کنید.")}
                 </p>

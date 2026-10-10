@@ -2,6 +2,7 @@
 
 import { Icon } from "./icons";
 import { useT } from "@/lib/i18n/provider";
+import { Meteors } from "@/components/magicui/meteors";
 
 /**
  * Hero background for a legal platform.
@@ -53,6 +54,18 @@ export function HeroScene() {
 
       {/* Faint grid */}
       <div className="hero-grid absolute inset-0" />
+
+      {/* Magic UI — بارش شهاب‌های طلایی کم‌نور (سینمایی،hydration-safe) */}
+      <Meteors
+        number={10}
+        minDelay={0.8}
+        maxDelay={2.4}
+        minDuration={5}
+        maxDuration={9}
+        angle={215}
+        color="var(--accent)"
+        className="opacity-60"
+      />
 
       {/* Floating glass trust cards */}
       <FloatCard className="right-[5%] top-[20%] hidden lg:flex" icon="badge" title="وکیل تأییدشده" sub="احراز هویتشده" tone="primary" />
