@@ -85,6 +85,8 @@ ${CONTRACT_MARKER}
   const r = await askVisionLLM(prompt, dataUrl, 4000);
   const out = (r.text ?? "").trim();
   if (!out) {
+    // برای عیب‌یابی در لاگ Vercel — خطای هر ارائه‌دهندهٔ بینایی ثبت می‌شود
+    console.error("[dadban] vision-contract failed:", r.errors.join(" | "));
     throw new Error("خواندن متن از تصویر در حال حاضر ممکن نشد؛ لطفاً عکس واضح‌تری آپلود کنید یا متن قرارداد را در کادر بچسبانید.");
   }
   const idx = out.indexOf(CONTRACT_MARKER);

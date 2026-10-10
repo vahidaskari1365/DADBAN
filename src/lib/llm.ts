@@ -502,13 +502,13 @@ function visionProviders(): Provider[] {
     const canonical = "https://api.z.ai/api/paas/v4/chat/completions";
     const custom = (process.env.LLM_BASE_URL ?? "").replace(/\/$/, "");
     // ۱) پایه‌ی کنونیکال z.ai — مستقل از LLM_BASE_URL (اگر پایه‌ی سفارشی مدل vision نداشته باشد)
-    push("zai-vision", canonical, process.env.VISION_MODEL ?? "glm-4.5v", 16_000);
-    push("zai-vision", canonical, "glm-4.1v-thinking-flash", 16_000);
-    push("zai-vision", canonical, "glm-4v-flash", 16_000);
-    push("zai-vision", canonical, "glm-4v-plus-0111", 16_000);
+    push("zai-vision", canonical, process.env.VISION_MODEL ?? "glm-4.5v", 30_000);
+    push("zai-vision", canonical, "glm-4.1v-thinking-flash", 26_000);
+    push("zai-vision", canonical, "glm-4v-flash", 26_000);
+    push("zai-vision", canonical, "glm-4v-plus-0111", 26_000);
     // ۲) پایه‌ی سفارشی (در صورت متفاوت بودن)
     if (custom && `${custom}/chat/completions` !== canonical) {
-      push("zai-vision-custom", `${custom}/chat/completions`, process.env.VISION_MODEL ?? "glm-4.5v", 16_000);
+      push("zai-vision-custom", `${custom}/chat/completions`, process.env.VISION_MODEL ?? "glm-4.5v", 30_000);
     }
   }
   if (process.env.GEMINI_API_KEY) {
@@ -517,7 +517,7 @@ function visionProviders(): Provider[] {
       base: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
       key: process.env.GEMINI_API_KEY,
       model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash",
-      timeoutMs: 16_000,
+      timeoutMs: 30_000,
       group: "keyed",
     });
   }
@@ -527,7 +527,7 @@ function visionProviders(): Provider[] {
       base: "https://openrouter.ai/api/v1/chat/completions",
       key: process.env.OPENROUTER_API_KEY,
       model: process.env.OPENROUTER_VISION_MODEL ?? "google/gemini-2.0-flash-exp:free",
-      timeoutMs: 16_000,
+      timeoutMs: 30_000,
       group: "keyed",
     });
   }
@@ -545,7 +545,7 @@ export async function askVisionLLM(prompt: string, imageData: string, maxTokens 
   const errors: string[] = [];
   const t0 = Date.now();
   for (const p of visionProviders()) {
-    if (Date.now() - t0 > 42_000) { errors.push("deadline"); break; } // بودجه زمانی — مسیر maxDuration=60 امن بماند
+    if (Date.now() - t0 > 50_000) { errors.push("deadline"); break; } // بودجه زمانی — مسیر maxDuration=60 امن بماند
     const messages = [
       {
         role: "user",
@@ -556,7 +556,7 @@ export async function askVisionLLM(prompt: string, imageData: string, maxTokens 
       },
     ];
     const body: Record<string, unknown> = { model: p.model, messages, max_tokens: maxTokens, temperature: 0.1 };
-    if (p.model === "glm-4.5v" && p.base.includes("api.z.ai")) body.thinking = { type: "disabled" };
+    if (p.base.includes("api.z.ai") && (p.model.startsWith("glm-4.5v") || p.model.startsWith("glm-4.1v") || p.model.startsWith("glm-4v"))) body.thinking = { type: "disabled" };
     const extra: Record<string, string> = {};
     if (p.id === "openrouter-vision") {
       extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
