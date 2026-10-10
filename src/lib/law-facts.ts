@@ -15,7 +15,7 @@ import { db } from "@/db";
 import { lawFacts } from "@/db/schema";
 import { askLLM } from "@/lib/llm";
 import { webSearch } from "@/lib/ai";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 /**
  * ساخت ایمن و idempotent جدول law_facts — سندباکس توسعه به DB تولید دسترسی ندارد،
@@ -134,9 +134,9 @@ export function buildLawFactsPrompt(facts: LawFactRow[]): string {
 
 /* ─── همگام‌سازی روزانه ───────────────────────────────────────────────── */
 
-const FACT_EXTRACT_PROMPT = (topic: string) => `بر اساس نتایج جستجوی زیر، مقدار «${topic}» مطابق آخرین ابلاغ/مصوبهٔ سال جاری ایران را در حداکثر ۳۵۰ کاراکتر فارسی بنویس.
+const FACT_EXTRACT_PROMPT = (topic: string) => `بر اساس نتایج جستجوی زیر، مقدار «${topic}» مطابق آخرین ابلاغ/مصوبهٔ ایران را در حداکثر ۳۵۰ کاراکتر فارسی بنویس.
 فقط خودِ مقدار و یک جملهٔ توضیح کوتاه (مثلاً تفکیک ماه عادی/حرام یا سقف‌های پلکانی) — بدون مقدمه، بدون اشاره به «بر اساس نتایج جستجو» و بدون عبارت ابهام‌آمیز.
-اگر نتایج، عدد سال جاری را نداشتند، دقیق بنویس: «مقدار روز در دسترس نیست — به ابلاغیهٔ سال جاری مراجعه شود.»`;
+مهم: فقط مقداری را بگو که صراحتاً متعلق به سال ۱۴۰۴ است؛ اگر عدد موجود در نتایج متعلق به سال یا سال‌های قبل (۱۴۰۳ یا قدیمی‌تر) است، دقیقاً بنویس: «مقدار روز در دسترس نیست — به ابلاغیهٔ سال جاری مراجعه شود.»`;
 
 /** بودجهٔ زمانی هر موضوع تا کل sync زیر سقف serverless بماند */
 const TOPIC_WEB_MS = 7_000;
@@ -174,7 +174,18 @@ async function syncOneTopic(t: LawFactTopic): Promise<"ok" | "skip"> {
       TOPIC_LLM_MS,
     );
     if (!value || value.length < 8) return "skip";
-    if (value.includes("در دسترس نیست") && value.length < 90) return "skip"; // عدد واقعی پیدا نشد — دادهٔ قبلی بماند
+    if (value.includes("در دسترس نیست") && value.length < 90) {
+      // عدد سال جاری پیدا نشد — اگر دادهٔ قبلی مربوط به سال قبل بود حذفش کن تا به‌عنوان «روز» نمایش داده نشود
+      try {
+        const cur = (await db.select().from(lawFacts)) as unknown as Array<{ topic: string; value: string }>;
+        const old = cur.find((r) => r.topic === t.topic);
+        if (old && /۱۴۰[0-3]|۱۳۹\d/.test(old.value) && !old.value.includes("۱۴۰۴")) {
+          await db.delete(lawFacts).where(eq(lawFacts.topic, t.topic));
+        }
+      } catch { /* حذف اختیاری است */ }
+      return "skip"; // دادهٔ قبلی سالم بماند؛ عدد واقعی پیدا نشد
+    }
+    const yearMatch = value.match(/۱۴۰\d/);
     const top = results[0];
     await db
       .insert(lawFacts)
@@ -185,12 +196,12 @@ async function syncOneTopic(t: LawFactTopic): Promise<"ok" | "skip"> {
         value: value.slice(0, 700),
         sourceUrl: top.url ?? null,
         sourceName: top.host_name ?? null,
-        yearLabel: "۱۴۰۴",
+        yearLabel: yearMatch ? yearMatch[0] : null,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
         target: lawFacts.topic,
-        set: { value: value.slice(0, 700), sourceUrl: top.url ?? null, sourceName: top.host_name ?? null, updatedAt: new Date() },
+        set: { value: value.slice(0, 700), sourceUrl: top.url ?? null, sourceName: top.host_name ?? null, yearLabel: yearMatch ? yearMatch[0] : null, updatedAt: new Date() },
       });
     return "ok";
   } catch {
