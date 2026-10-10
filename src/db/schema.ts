@@ -795,3 +795,25 @@ export const contentTranslations = pgTable("content_translations", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 export type ContentTranslation = typeof contentTranslations.$inferSelect;
+
+/* ---------------- Law facts (داده‌های به‌روز قوانین ایران — به‌روزرسانی روزانه) ---------------- */
+// دستیار هوش مصنوعی باید با قانون‌های روز ایران پاسخ بدهد؛ مبالغ و نرخ‌های متغیر سالانه
+// (دیه، دستمزد، مالیات، وام، جریمه‌ها و…) هر شب با کرون از منابع وب گرفته و اینجا ذخیره
+// می‌شوند تا پاسخ‌های چت بدون انتظارِ جستجوی زنده، سریع و به‌روز باشد.
+export const lawFacts = pgTable("law_facts", {
+  id: serial("id").primaryKey(),
+  /** کلید موضوع لاتین — مثل "diya" یا "minimum-wage" (unique) */
+  topic: text("topic").notNull().unique(),
+  /** کلیدواژه‌های فارسی جدا با | برای تطبیق با سؤال کاربر */
+  keywords: text("keywords").notNull(),
+  /** عنوان نمایشی — مثل «دیه کامل ۱۴۰۴» */
+  title: text("title").notNull(),
+  /** مقدار به‌روز + توضیح کوتاه به فارسی */
+  value: text("value").notNull(),
+  sourceUrl: text("source_url"),
+  sourceName: text("source_name"),
+  /** برچسب سال — مثل «۱۴۰۴» */
+  yearLabel: text("year_label"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export type LawFact = typeof lawFacts.$inferSelect;

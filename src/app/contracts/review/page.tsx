@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { ocrImageFileClient } from "@/lib/ocr-client";
+import { shrinkImageFile } from "@/lib/image-file";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 
@@ -26,7 +26,6 @@ export default function ContractReviewPage() {
   const [sourceName, setSourceName] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isImg = !!file && file.type.startsWith("image/");
-  const [ocrPct, setOcrPct] = useState<number | null>(null);
 
   const runRequest = async (init: RequestInit) => {
     setLoading(true);
@@ -47,32 +46,9 @@ export default function ContractReviewPage() {
     }
   };
 
-  // عکس قرارداد → OCR در مرورگر (فارسی+انگلیسی) → متن در کادر → تحلیل خودکار
-  const ocrImageFile = async (f: File) => {
-    setFile(f);
-    setOcrPct(0);
-    try {
-      const txt = await ocrImageFileClient(f, (pct) => setOcrPct(pct));
-      setOcrPct(null);
-      setFile(null);
-      if (txt.length < 30) {
-        throw new Error(t("متنی از این عکس خوانده نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر بچسبانید."));
-      }
-      const clipped = txt.slice(0, 6000);
-      setText(clipped);
-      await runRequest({
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "contract", contract: clipped }),
-      });
-    } catch (e) {
-      setOcrPct(null);
-      setFile(null);
-      setError(e instanceof Error ? e.message : t("خواندن متن از عکس ممکن نشد."));
-    }
-  };
-
-  const pickFile = (f: File | undefined | null) => {
+  // عکس/PDF/Word قرارداد → آپلود به سرور — عکس‌ها با مدل بینایی خوانده و تحلیل می‌شوند
+  // (دقت مدل بینایی برای فارسی بسیار بالاتر از OCR مرورگری است)
+  const pickFile = async (f: File | undefined | null) => {
     if (!f) return;
     if (f.size > MAX_MB * 1024 * 1024) {
       setError(tt("حجم فایل باید کمتر از {mb} مگابایت باشد.", { mb: String(MAX_MB) }));
@@ -81,9 +57,8 @@ export default function ContractReviewPage() {
     setError(null);
     setResult(null);
     setSourceName(null);
-    // عکس → OCR در مرورگر؛ فایل سند (PDF/Word/متن) → آپلود به سرور
     if (f.type.startsWith("image/")) {
-      void ocrImageFile(f);
+      setFile(await shrinkImageFile(f));
       return;
     }
     setFile(f);
@@ -122,7 +97,7 @@ export default function ContractReviewPage() {
               onDrop={(e) => {
                 e.preventDefault();
                 setDragOver(false);
-                pickFile(e.dataTransfer.files?.[0]);
+                void pickFile(e.dataTransfer.files?.[0]);
               }}
               className={`rounded-2xl border-2 border-dashed p-5 text-center transition-colors ${dragOver ? "border-primary bg-primary-soft/40" : "border-border bg-surface-2/40"}`}
             >
@@ -133,7 +108,7 @@ export default function ContractReviewPage() {
               <p className="mt-1 text-xs text-muted">
                 {tt("فرمت‌های مجاز: PDF، Word (docx)، متن ساده یا عکس قرارداد — حداکثر {mb} مگابایت", { mb: String(MAX_MB) })}
               </p>
-              <p className="mt-1 text-xs font-medium text-primary">{t("عکس قرارداد هم قبول است — متن آن با هوش مصنوعی خوانده می‌شود.")}</p>
+              <p className="mt-1 text-xs font-medium text-primary">{t("عکس قرارداد هم قبول است — با هوش مصنوعی بینایی خوانده و تحلیل می‌شود.")}</p>
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
@@ -149,21 +124,11 @@ export default function ContractReviewPage() {
                 className="hidden"
                 aria-label={t("آپلود فایل قرارداد")}
                 onChange={(e) => {
-                  pickFile(e.target.files?.[0]);
+                  void pickFile(e.target.files?.[0]);
                   e.target.value = "";
                 }}
               />
             </div>
-
-            {ocrPct !== null && (
-              <div className="rounded-xl border border-accent/30 bg-accent-soft/30 px-4 py-3 text-center">
-                <p className="text-sm font-bold text-accent-text">{tt("در حال خواندن متن عکس با هوش مصنوعی… {pct}٪", { pct: String(ocrPct) })}</p>
-                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
-                  <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(5, ocrPct)}%` }} />
-                </div>
-              </div>
-            )}
-
 
             {file && (
               <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary-soft/30 px-4 py-3">
@@ -197,7 +162,7 @@ export default function ContractReviewPage() {
             <label htmlFor="cr" className="sr-only">{t("متن قرارداد")}</label>
             <textarea id="cr" value={text} onChange={(e) => setText(e.target.value)} rows={9} placeholder={t("متن قرارداد خود را اینجا قرار دهید…")} className="w-full resize-y rounded-xl border border-border-strong bg-background p-3 text-sm leading-7 text-foreground outline-none transition-colors focus:border-primary" />
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted">{file ? (isImg ? t("عکس انتخاب‌شده آماده تحلیل است") : t("فایل انتخاب‌شده آماده تحلیل است")) : tt("{count} کاراکتر", { count: String(text.length) })}</span>
+              <span className="text-xs text-muted">{file ? (isImg ? t("عکس آمادهٔ خواندن و تحلیل با هوش مصنوعی بینایی است") : t("فایل انتخاب‌شده آماده تحلیل است")) : tt("{count} کاراکتر", { count: String(text.length) })}</span>
               <Button onClick={analyze} disabled={loading || (!file && !text.trim())} icon="file">{loading ? (isImg ? t("در حال خواندن عکس و تحلیل…") : file ? t("در حال تحلیل فایل…") : t("در حال تحلیل…")) : isImg ? t("تحلیل عکس قرارداد") : file ? t("تحلیل فایل قرارداد") : t("تحلیل قرارداد")}</Button>
             </div>
           </Card>

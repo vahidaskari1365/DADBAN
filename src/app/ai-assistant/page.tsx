@@ -11,7 +11,7 @@ import { templateT } from "@/lib/i18n/core";
 import type { LegalGuidance } from "@/lib/legal-engine";
 import type { MatchedLawyer } from "@/lib/lawyer-match";
 import type { IconKey } from "@/lib/data";
-import { ocrImageFileClient } from "@/lib/ocr-client";
+import { shrinkImageFile } from "@/lib/image-file";
 import { faNum } from "@/lib/data";
 
 interface ClauseFinding {
@@ -441,9 +441,33 @@ function AIAssistantContent() {
   const [contractFile, setContractFile] = useState<File | null>(null);
   const [contractDrag, setContractDrag] = useState(false);
   const contractInputRef = useRef<HTMLInputElement>(null);
-  const [contractOcr, setContractOcr] = useState<number | null>(null);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  // اسکرول هوشمند چت — مثل چت‌بات‌های واقعی:
+  // تا وقتی کاربر پایین صفحه است، استریم پاسخ خودکار دنبال می‌شود؛
+  // اگر کاربر برای خواندن پیام‌های قبلی بالا برود، اسکرول خودکار متوقف می‌شود.
+  const endRef = useRef<HTMLDivElement>(null);
+  const pinnedRef = useRef(true);
+
+  useEffect(() => {
+    // لنگرِ «چسبیده‌بودن» پایانِ محتواست نه انتهای سند — فوتر بلند نباید دنبال‌کردن استریم را قطع کند
+    const onScroll = () => {
+      const el = endRef.current;
+      if (!el) {
+        pinnedRef.current = true;
+        return;
+      }
+      const rect = el.getBoundingClientRect();
+      pinnedRef.current = rect.bottom - window.innerHeight < 170;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
 
   // اگر پارامتر استان در لینک نبود، استان پروفایل موکل (پروفایل من) به‌عنوان پیش‌فرض استفاده می‌شود
   useEffect(() => {
@@ -499,6 +523,7 @@ function AIAssistantContent() {
     setInput("");
     setError(null);
     setDrawerOpen(false);
+    pinnedRef.current = true;
   };
 
   /** بازکردن یکی از گفتگوهای قبلی */
@@ -508,6 +533,7 @@ function AIAssistantContent() {
     setInput("");
     setError(null);
     setDrawerOpen(false);
+    pinnedRef.current = true; // مثل چت‌بات‌ها — آخرین پیام‌ها دیده شوند
   };
 
   /** حذف یک گفتگو از تاریخچه */
@@ -532,6 +558,7 @@ function AIAssistantContent() {
     setLoading(true);
     setPhase("answer");
     setError(null);
+    pinnedRef.current = true; // پرسش تازه → دنبال‌کردن استریم از پایین
 
     // تضمین وجود نشست — پرسش اول، گفتگوی تازه‌ای با عنوان همان پرسش می‌سازد
     let sid = activeId;
@@ -553,10 +580,10 @@ function AIAssistantContent() {
     const aid = newId();
     const userMsg: ChatMsg = { id: uid, role: "user", text: query };
     const aiMsg: ChatMsg = { id: aid, role: "assistant", streaming: true };
-    // تاریخچه برای مدل: ۱۰ پیام آخر (سمت سرور هم سانیتایز می‌شود)
+    // تاریخچه برای مدل: ۸ پیام آخر (سمت سرور هم سانیتایز می‌شود)
     const history = baseMsgs
       .filter((m) => historyText(m).length > 0)
-      .slice(-10)
+      .slice(-8)
       .map((m) => ({ role: m.role, content: historyText(m) }));
     patchSession(sid, (s) => ({ ...s, msgs: [...s.msgs, userMsg, aiMsg], updatedAt: Date.now() }), true);
 
@@ -685,32 +712,9 @@ function AIAssistantContent() {
     }
   };
 
-  // عکس قرارداد → OCR در مرورگر (tesseract.js فارسی+انگلیسی) → متن در کادر → تحلیل خودکار
-  const ocrImageFile = async (f: File) => {
-    setContractFile(f);
-    setContractOcr(0);
-    try {
-      const txt = await ocrImageFileClient(f, (pct) => setContractOcr(pct));
-      setContractOcr(null);
-      setContractFile(null);
-      if (txt.length < 30) {
-        throw new Error(t("متنی از این عکس خوانده نشد؛ لطفاً عکس واضح‌تر و نزدیک‌تری آپلود کنید یا متن را در کادر بچسبانید."));
-      }
-      const clipped = txt.slice(0, 6000);
-      setContractText(clipped);
-      await runContractRequest("/api/ai-assistant", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "contract", contract: clipped }),
-      });
-    } catch (e) {
-      setContractOcr(null);
-      setContractFile(null);
-      setContractError(e instanceof Error ? e.message : t("خواندن متن از عکس ممکن نشد."));
-    }
-  };
-
-  const pickContractFile = (f: File | undefined | null) => {
+  // عکس/PDF/Word قرارداد → آپلود به سرور — عکس‌ها با مدل بینایی (GLM-4.5V) خوانده و تحلیل می‌شوند
+  // (دقت مدل بینایی برای فارسی بسیار بالاتر از OCR مرورگری است و یک‌جا هم متن و هم تحلیل می‌دهد)
+  const pickContractFile = async (f: File | undefined | null) => {
     if (!f) return;
     if (f.size > CONTRACT_MAX_MB * 1024 * 1024) {
       setContractError(tt("حجم فایل باید کمتر از {mb} مگابایت باشد.", { mb: String(CONTRACT_MAX_MB) }));
@@ -719,9 +723,8 @@ function AIAssistantContent() {
     setContractError(null);
     setContractResult(null);
     setContractAnalysis(null);
-    // عکس → OCR در مرورگر؛ فایل سند (PDF/Word/متن) → آپلود به سرور
     if (f.type.startsWith("image/")) {
-      void ocrImageFile(f);
+      setContractFile(await shrinkImageFile(f));
       return;
     }
     setContractFile(f);
@@ -765,8 +768,12 @@ function AIAssistantContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // اسکرول خودکار به آخر پیام‌ها — فقط وقتی کاربر پایین است؛ در حین استریم بدون انیمیشن نرم تا دنبال‌کردن روان باشد
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (!pinnedRef.current) return;
+    if (msgs.length === 0 && !contractResult) return;
+    endRef.current?.scrollIntoView({ behavior: loading ? "auto" : "smooth", block: "end" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [msgs, contractResult]);
 
   return (
@@ -889,64 +896,6 @@ function AIAssistantContent() {
                 </div>
               )}
 
-              <Card hover={false} className="space-y-3">
-                <label htmlFor="ai-input" className="text-sm font-bold text-foreground">
-                  {msgs.length > 0 ? t("ادامهٔ گفتگو با دستیار — بدون محدودیت پرسش") : t("مشکل حقوقی خود را شرح دهید")}
-                </label>
-                <div className="flex items-end gap-2">
-                  <textarea
-                    id="ai-input"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        ask();
-                      }
-                    }}
-                    rows={2}
-                    disabled={loading}
-                    placeholder={t("مثلاً: چک برگشتی دارم و نمی‌دانم چطور طلبم را بگیرم…")}
-                    className="w-full resize-none rounded-xl border border-border-strong bg-background p-3 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:opacity-60"
-                  />
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  {msgs.length === 0 ? (
-                    <div className="flex flex-wrap gap-1.5">
-                      {EXAMPLES.map((ex) => (
-                        <button
-                          key={ex}
-                          type="button"
-                          onClick={() => ask(ex)}
-                          disabled={loading}
-                          className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-foreground-soft transition-colors hover:border-primary/40 hover:text-primary disabled:opacity-50"
-                        >
-                          {t(ex)}
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-xs text-muted">{t("گفتگو ادامه دارد — دستیار پاسخ‌های قبلی را به‌خاطر دارد.")}</span>
-                  )}
-                  <div className="flex items-center gap-2">
-                    {loading && (
-                      <Button variant="outline" onClick={() => abortRef.current?.abort()} icon="x">
-                        {t("توقف")}
-                      </Button>
-                    )}
-                    <Button onClick={() => ask()} disabled={loading} icon="send">
-                      {loading ? t("در حال پاسخ…") : t("بپرس")}
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-
-              {error && (
-                <div role="alert" className="rounded-2xl border border-danger/30 bg-danger/5 p-4 text-sm text-danger">
-                  {error}
-                </div>
-              )}
-
               {/* نخ گفتگو — سؤال کاربر حباب‌وار، پاسخ دستیار به‌صورت زنده تایپ می‌شود */}
               {msgs.length > 0 && (
                 <div className="space-y-4" aria-live="polite" aria-label={t("گفتگو با دستیار هوشمند")}>
@@ -1030,7 +979,6 @@ function AIAssistantContent() {
                       </div>
                     ),
                   )}
-                  <div ref={scrollRef} />
                 </div>
               )}
 
@@ -1042,6 +990,69 @@ function AIAssistantContent() {
                   <span className="text-sm text-muted">{t("در حال جستجوی وب برای اطلاعات به‌روز…")}</span>
                 </Card>
               )}
+
+              {error && (
+                <div role="alert" className="rounded-2xl border border-danger/30 bg-danger/5 p-4 text-sm text-danger">
+                  {error}
+                </div>
+              )}
+
+              {/* کادر نوشتن — مثل چت‌بات‌ها پایین صفحه می‌چسبد؛ پیام‌ها بالای آن می‌آیند */}
+              <div className="sticky bottom-3 z-30 pt-2">
+                <Card hover={false} className="space-y-3 shadow-lg shadow-black/[0.07] ring-1 ring-border">
+                  <label htmlFor="ai-input" className="text-sm font-bold text-foreground">
+                    {msgs.length > 0 ? t("ادامهٔ گفتگو با دستیار — بدون محدودیت پرسش") : t("مشکل حقوقی خود را شرح دهید")}
+                  </label>
+                  <div className="flex items-end gap-2">
+                    <textarea
+                      id="ai-input"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          ask();
+                        }
+                      }}
+                      rows={2}
+                      disabled={loading}
+                      placeholder={t("مثلاً: چک برگشتی دارم و نمی‌دانم چطور طلبم را بگیرم…")}
+                      className="w-full resize-none rounded-xl border border-border-strong bg-background p-3 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:opacity-60"
+                    />
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    {msgs.length === 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {EXAMPLES.map((ex) => (
+                          <button
+                            key={ex}
+                            type="button"
+                            onClick={() => ask(ex)}
+                            disabled={loading}
+                            className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-foreground-soft transition-colors hover:border-primary/40 hover:text-primary disabled:opacity-50"
+                          >
+                            {t(ex)}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted">{t("گفتگو ادامه دارد — دستیار پاسخ‌های قبلی را به‌خاطر دارد.")}</span>
+                    )}
+                    <div className="flex items-center gap-2">
+                      {loading && (
+                        <Button variant="outline" onClick={() => abortRef.current?.abort()} icon="x">
+                          {t("توقف")}
+                        </Button>
+                      )}
+                      <Button onClick={() => ask()} disabled={loading} icon="send">
+                        {loading ? t("در حال پاسخ…") : t("بپرس")}
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              <div ref={endRef} aria-hidden />
             </>
           ) : (
             <div className="space-y-6">
@@ -1050,14 +1061,14 @@ function AIAssistantContent() {
                 <div
                   onDragOver={(e) => { e.preventDefault(); setContractDrag(true); }}
                   onDragLeave={() => setContractDrag(false)}
-                  onDrop={(e) => { e.preventDefault(); setContractDrag(false); pickContractFile(e.dataTransfer.files?.[0]); }}
+                  onDrop={(e) => { e.preventDefault(); setContractDrag(false); void pickContractFile(e.dataTransfer.files?.[0]); }}
                   className={`rounded-2xl border-2 border-dashed p-4 text-center transition-colors ${contractDrag ? "border-primary bg-primary-soft/40" : "border-border bg-surface-2/40"}`}
                 >
                   <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
                     <Icon name="document" className="h-5 w-5" />
                   </span>
                   <p className="mt-2 text-sm font-bold text-foreground">{t("بارگذاری متن قرارداد")}</p>
-                  <p className="mt-1 text-xs text-muted">{tt("PDF، Word (docx)، متن ساده یا عکس قرارداد — حتی عکس؛ متن آن با هوش مصنوعی خوانده می‌شود (حداکثر {mb} مگابایت)", { mb: String(CONTRACT_MAX_MB) })}</p>
+                  <p className="mt-1 text-xs text-muted">{tt("عکس، PDF، Word (docx) یا متن قرارداد — عکس و سند با هوش مصنوعی بینایی خوانده و تحلیل می‌شود (حداکثر {mb} مگابایت)", { mb: String(CONTRACT_MAX_MB) })}</p>
                   <button
                     type="button"
                     onClick={() => contractInputRef.current?.click()}
@@ -1073,20 +1084,11 @@ function AIAssistantContent() {
                     className="hidden"
                     aria-label={t("آپلود فایل قرارداد")}
                     onChange={(e) => {
-                      pickContractFile(e.target.files?.[0]);
+                      void pickContractFile(e.target.files?.[0]);
                       e.target.value = "";
                     }}
                   />
                 </div>
-
-                {contractOcr !== null && (
-                  <div className="rounded-xl border border-accent/30 bg-accent-soft/30 px-4 py-3 text-center">
-                    <p className="text-sm font-bold text-accent-text">{tt("در حال خواندن متن عکس با هوش مصنوعی… {pct}٪", { pct: String(contractOcr) })}</p>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-border">
-                      <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(5, contractOcr)}%` }} />
-                    </div>
-                  </div>
-                )}
 
 
                 {contractFile && (
@@ -1124,7 +1126,7 @@ function AIAssistantContent() {
                   <p className="text-xs text-muted">
                     {contractFile
                       ? contractFile.type.startsWith("image/")
-                        ? t("عکس آماده خواندن و تحلیل است")
+                        ? t("عکس آمادهٔ خواندن و تحلیل با هوش مصنوعی بینایی است")
                         : t("فایل انتخاب‌شده آماده تحلیل است")
                       : tt("{n} کاراکتر", { n: String(contractText.length) })}
                   </p>
@@ -1149,9 +1151,7 @@ function AIAssistantContent() {
               )}
 
               {contractResult && (
-                <div ref={scrollRef}>
-                  <ContractView findings={contractResult.findings} riskScore={contractResult.riskScore} />
-                </div>
+                <ContractView findings={contractResult.findings} riskScore={contractResult.riskScore} />
               )}
 
               {contractAnalysis && (
@@ -1174,6 +1174,8 @@ function AIAssistantContent() {
                   {t("متن قرارداد را وارد کنید یا فایل/عکس قرارداد را بارگذاری کنید تا تحلیل هوشمند بندهای پرریسک، جریمه‌ها و ابهامات نمایش داده شود.")}
                 </div>
               )}
+
+              <div ref={endRef} aria-hidden />
             </div>
           )}
           </div>
