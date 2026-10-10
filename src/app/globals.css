@@ -317,6 +317,46 @@ h1, h2, h3, h4, h5, h6 {
 .hero-chip-2 { animation-delay: 1.8s; animation-duration: 8s; }
 .hero-chip-3 { animation-delay: 3.4s; animation-duration: 9s; }
 
+/* ===== موشن گرافی سینمایی بخش «بازار پرونده‌ها» در صفحهٔ اول =====
+   (prefers-reduced-motion سراسری همه را در حالت قاب اول می‌خواباند) */
+
+/* کن‌بیرنز آرام روی لایهٔ عکس — زوم بسیار کند با رانش افقی جزئی، حس سینمایی عمق */
+@keyframes hero-ken-burns {
+  0%   { transform: scale(1) translateX(0); }
+  100% { transform: scale(1.1) translateX(-2%); }
+}
+.hero-market-kenburns {
+  animation: hero-ken-burns 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* جاروی نور (sheen) — نوار مورب طلایی/سفید که هر ۹ ثانیه یک بار از روی پنل می‌گذرد؛
+   المان ~⅓ پنل و لنگر در سمت start (راست در RTL) است: از بیرونِ راست تا بیرونِ چپ —
+   دقیقاً در جهت خواندن فارسی، بدون pop-in (در ۱۲٪ هنوز بیرون لبه است) */
+@keyframes hero-sheen-sweep {
+  0%        { transform: translateX(140%) skewX(-14deg); opacity: 0; }
+  10%       { opacity: 0.55; }
+  45%       { opacity: 0.4; }
+  58%, 100% { transform: translateX(-340%) skewX(-14deg); opacity: 0; }
+}
+.hero-sheen {
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.14) 42%, rgb(238 201 123 / 0.2) 55%, transparent);
+  animation: hero-sheen-sweep 9s ease-in-out 2.5s infinite;
+}
+
+/* ذرات طلایی شناور — نقاط کوچک که آرام بالا می‌روند و محو می‌شوند؛
+   موقعیت/اندازه/سرعت هر ذره با متغیرهای --p-* در مارکاپ تنظیم می‌شود */
+@keyframes hero-particle-rise {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  12%  { opacity: var(--p-op, 0.5); }
+  85%  { opacity: calc(var(--p-op, 0.5) * 0.4); }
+  100% { transform: translateY(-150px) translateX(12px); opacity: 0; }
+}
+.hero-particle {
+  animation: hero-particle-rise var(--p-dur, 8s) ease-in-out var(--p-delay, 0s) infinite;
+  box-shadow: 0 0 8px 1px rgb(238 201 123 / 0.35);
+}
+
 /* ===== Keyframes / motion ===== */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(16px); }
