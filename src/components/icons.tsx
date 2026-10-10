@@ -67,6 +67,9 @@ const paths: Record<IconKey, (p: P) => ReactElement> = {
   fingerprint: (p) => (<svg {...base(p)}><path d="M4.5 16.5v-4.5a7.5 7.5 0 0 1 15 0v4.5" /><path d="M8 15v-3a4 4 0 0 1 8 0v6.5" /><path d="M12 12.5a1.9 1.9 0 0 1 1.9 1.9c0 2.4-.4 4.4-1.3 6.2" /></svg>),
   certificate: (p) => (<svg {...base(p)}><path d="M12.5 20.5H6.5a2 2 0 0 1-2-2V6.2a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2V10.5" /><circle cx="17" cy="16.5" r="3.2" /><path d="m15.6 19-1.2 2.5 2.6-1 2.6 1-1.2-2.5" /><path d="M7.5 8h9M7.5 11.5h5" /></svg>),
   coins: (p) => (<svg {...base(p)}><circle cx="9.5" cy="14" r="6" /><path d="M6.9 13a2.8 2.8 0 0 1 3.1-1.8" /><path d="M9.2 7.8A6.2 6.2 0 1 1 15.4 15.7" /></svg>),
+  /* آیکن‌های چت دستیار — تاریخچه گفتگو */
+  trash: (p) => (<svg {...base(p)}><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg>),
+  copy: (p) => (<svg {...base(p)}><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>),
 };
 
 export function Icon({ name, ...props }: { name: IconKey } & P) {

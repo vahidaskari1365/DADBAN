@@ -9,7 +9,9 @@ export type IconKey =
   | "money" | "alert" | "scale" | "briefcase" | "id" | "arrow" | "chevron" | "plus" | "filter" | "x" | "send" | "menu" | "location" | "share" | "quote" | "link"
   /* آیکن‌های حقوقی افزودهٔ تسک 2-c — امضا/توافق/احراز/پروانه/تعرفه */
   | "signature" | "handshake" | "fingerprint" | "certificate" | "coins"
-  | "globe";
+  | "globe"
+  /* آیکن‌های چت دستیار — تاریخچه گفتگو */
+  | "trash" | "copy";
 
 /* ---------------- Legal topics (hero selector) ---------------- */
 export const LEGAL_TOPICS: { label: string; icon: IconKey; hint: string }[] = [

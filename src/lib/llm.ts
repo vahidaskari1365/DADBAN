@@ -362,6 +362,129 @@ export async function askLLM(
   return null;
 }
 
+/* ─── استریم زنده (SSE) — پاسخ تدریجی برای چتِ سریع مثل چت‌بات‌ها ─────── */
+
+/** پاکسازی سبک هر تکهٔ استریم — بدون trim تا فاصلهٔ بین کلمات از بین نرود */
+function sanitizePersianChunk(text: string): string {
+  return text
+    .replace(
+      /[\u0400-\u04ff\u0500-\u052f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af\u0590-\u05ff\u0370-\u03ff\u00c0-\u024f\uff00-\uffef]/g,
+      "",
+    )
+    .replace(/(?<=[\u0600-\u06FF])[A-Za-z]+/g, "")
+    .replace(/[A-Za-z]+(?=[\u0600-\u06FF])/g, "");
+}
+
+/** خواندن استریم SSE سازگار با OpenAI (chat/completions با stream:true) */
+async function* streamOpenAiCompatible(
+  url: string,
+  body: unknown,
+  key: string | undefined,
+  timeoutMs = 30_000,
+  extraHeaders: Record<string, string> = {},
+): AsyncGenerator<string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json", ...extraHeaders };
+  if (key) headers.Authorization = `Bearer ${key}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+  if (!res.ok || !res.body) {
+    let hint = "";
+    try { hint = (await res.text()).slice(0, 120); } catch { /* بدون بدنه */ }
+    throw new Error(`llm http ${res.status}${hint ? ` :: ${hint}` : ""}`);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  outer: while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    let nl: number;
+    while ((nl = buffer.indexOf("\n\n")) !== -1) {
+      const event = buffer.slice(0, nl);
+      buffer = buffer.slice(nl + 2);
+      for (const line of event.split("\n")) {
+        if (!line.startsWith("data:")) continue;
+        const data = line.slice(5).trim();
+        if (!data || data === "[DONE]") { if (data === "[DONE]") break outer; continue; }
+        try {
+          const json = JSON.parse(data) as {
+            choices?: { delta?: { content?: string | null }; message?: { content?: string | null } }[];
+          };
+          const chunk = json?.choices?.[0]?.delta?.content ?? json?.choices?.[0]?.message?.content ?? "";
+          if (chunk) yield chunk;
+        } catch { /* تکهٔ ناقص — نادیده */ }
+      }
+    }
+  }
+}
+
+/** اجرای یک ارائه‌دهنده در حالت استریم؛ ارائه‌دهنده‌های غیراستریمی (SDK) یک‌باره تحویل می‌دهند */
+async function* runProviderStream(p: Provider, messages: LlmMessage[], maxTokens: number, sanitize: boolean): AsyncGenerator<string> {
+  if (p.group === "sdk" || p.id === "pollinations-get") {
+    const text = await runProvider(p, messages, maxTokens, false);
+    const out = sanitize ? sanitizePersian(text) : text.trim();
+    if (out) yield out;
+    return;
+  }
+  const bodyObj: Record<string, unknown> = {
+    model: p.model,
+    messages,
+    max_tokens: maxTokens,
+    temperature: 0.3,
+    stream: true,
+  };
+  if (p.base.includes("api.z.ai") || p.base.includes("bigmodel.cn") || p.base.includes("atria-asi.ai")) bodyObj.thinking = { type: "disabled" };
+  const extra: Record<string, string> = {};
+  if (p.id === "openrouter") {
+    extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
+    extra["X-Title"] = "DADBAN";
+  }
+  for await (const chunk of streamOpenAiCompatible(p.base, bodyObj, p.key, p.timeoutMs, extra)) {
+    yield sanitize ? sanitizePersianChunk(chunk) : chunk;
+  }
+}
+
+/**
+ * همان زنجیرهٔ askLLM ولی به‌صورت استریم: اولین ارائه‌دهنده‌ای که توکن بدهد برنده است
+ * و تکه‌های بعدی بدون وقفه ادامه می‌یابند. اگر وسط پاسخ خراب شود، همان پاسخِ نیمه‌کاره می‌ماند.
+ */
+export async function* askLLMStream(
+  messages: LlmMessage[],
+  maxTokens = 1200,
+  systemPrompt = SYSTEM_LEGAL,
+  opts?: { sanitize?: boolean },
+): AsyncGenerator<string> {
+  const sanitize = opts?.sanitize !== false;
+  const all = normalizeMessages([{ role: "system", content: systemPrompt }, ...messages]);
+  const chain = buildChain();
+  const ordered = [
+    ...chain.filter((p) => p.id === preferred),
+    ...chain.filter((p) => p.id !== preferred && !isDown(p.id)),
+  ];
+  let keylessTried = 0;
+  for (const p of ordered) {
+    if (p.group === "keyless" && ++keylessTried > 3) break;
+    let got = false;
+    try {
+      for await (const chunk of runProviderStream(p, all, p.maxTokens ?? maxTokens, sanitize)) {
+        if (!chunk) continue;
+        if (!got) { markOk(p.id); got = true; }
+        yield chunk;
+      }
+      if (got) return;
+      markFail(p.id); // پاسخ خالی — ارائه‌دهندهٔ بعدی
+    } catch {
+      if (got) return; // خرابی وسط استریم — نیمه‌کاره کافی است
+      markFail(p.id);
+    }
+  }
+}
+
 /* ─── بینایی ماشین (OCR تصویر قرارداد) ────────────────────────────────── */
 
 /** ارائه‌دهنده‌های دارای قابلیت بینایی (vision) برای خواندن متن از تصویر */

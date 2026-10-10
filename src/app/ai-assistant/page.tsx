@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Container, Button, Card, Badge } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
@@ -22,18 +22,81 @@ interface ClauseFinding {
 
 type SourceHit = { title: string; url: string; host: string; snippet: string };
 
-/** یک پیام در نخ گفتگو با دستیار — حداکثر ۳ دور پرسش‌وپاسخ */
+/** یک پیام در گفتگو با دستیار — بدون سقف دور؛ گفتگو ادامه‌دار مثل چت */
 type ChatMsg = {
-  id: number;
+  id: string;
   role: "user" | "assistant";
   text?: string;
   kind?: "llm" | "local";
   guidance?: LegalGuidance;
   sources?: SourceHit[];
   lawyerMatch?: { lawyers: MatchedLawyer[]; topic: string | null; specialties: string[]; province?: string | null };
+  streaming?: boolean;
 };
 
-const MAX_ROUNDS = 3;
+/** یک گفتگوی ذخیره‌شده — تاریخچهٔ پرسش‌وپاسخ‌ها روی همین دستگاه */
+type ChatSession = {
+  id: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+  msgs: ChatMsg[];
+};
+
+const CHATS_KEY = "dadban_ai_chats_v1";
+const MAX_SESSIONS = 20;
+
+const newId = (): string =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+function loadSessions(): ChatSession[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(CHATS_KEY);
+    if (!raw) return [];
+    const arr: unknown = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return (arr as ChatSession[])
+      .filter((s) => !!s && typeof s.id === "string" && Array.isArray(s.msgs))
+      .slice(0, MAX_SESSIONS)
+      .map((s) => ({
+        id: s.id,
+        title: typeof s.title === "string" && s.title ? s.title : "گفتگو",
+        createdAt: Number(s.createdAt) || Date.now(),
+        updatedAt: Number(s.updatedAt) || Date.now(),
+        msgs: (s.msgs as ChatMsg[])
+          .filter((m) => !!m && (m.role === "user" || m.role === "assistant"))
+          .slice(-200)
+          .map((m) => ({ ...m, streaming: false })),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function saveSessions(sessions: ChatSession[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    const slim = sessions.slice(0, MAX_SESSIONS).map((s) => ({
+      ...s,
+      msgs: s.msgs.slice(-200).map((m) => ({ ...m, streaming: false })),
+    }));
+    window.localStorage.setItem(CHATS_KEY, JSON.stringify(slim));
+  } catch {
+    /* سهمیهٔ مرورگر پر است — بی‌اهمیت */
+  }
+}
+
+/** تاریخ کوتاه شمسی برای فهرست گفتگوها */
+const faDate = (ts: number): string => {
+  try {
+    return new Intl.DateTimeFormat("fa-IR", { month: "short", day: "numeric" }).format(new Date(ts));
+  } catch {
+    return "";
+  }
+};
 
 const EXAMPLES = [
   "مستأجر من سه ماه اجاره نداده، چه کنم؟",
@@ -248,6 +311,105 @@ function ContractView({ findings, riskScore }: { findings: ClauseFinding[]; risk
   );
 }
 
+/** دکمهٔ کپی پاسخ دستیار */
+function CopyBtn({ text }: { text: string }) {
+  const t = useT();
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1600);
+        } catch {
+          /* دسترسی رد شد */
+        }
+      }}
+      className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
+      aria-label={t("کپی پاسخ")}
+    >
+      <Icon name={copied ? "check" : "copy"} className="h-3.5 w-3.5" />
+      {copied ? t("کپی شد") : t("کپی")}
+    </button>
+  );
+}
+
+/** فهرست گفتگوهای ذخیره‌شده — سایدبار دسکتاپ و کشوی موبایل */
+function HistoryPanel(props: {
+  sessions: ChatSession[];
+  activeId: string | null;
+  onSelect: (id: string) => void;
+  onNew: () => void;
+  onDelete: (id: string) => void;
+}) {
+  const t = useT();
+  const tt = templateT(t);
+  const sorted = [...props.sessions].sort((a, b) => b.updatedAt - a.updatedAt);
+  return (
+    <div className="flex h-full flex-col rounded-2xl border border-border bg-surface p-3">
+      <div className="flex items-center justify-between gap-2 px-1 pb-2">
+        <span className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+          <Icon name="chat" className="h-4 w-4 text-primary" />
+          {t("گفتگوهای من")}
+        </span>
+        <button
+          type="button"
+          onClick={props.onNew}
+          className="inline-flex cursor-pointer items-center gap-1 rounded-xl bg-primary px-2.5 py-1.5 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
+        >
+          <Icon name="plus" className="h-3.5 w-3.5" />
+          {t("گفتگوی جدید")}
+        </button>
+      </div>
+      {sorted.length === 0 ? (
+        <p className="px-2 py-8 text-center text-xs leading-6 text-muted">
+          {t("هنوز گفتگویی ندارید — اولین پرسش حقوقی‌تان را بپرسید تا اینجا ذخیره شود.")}
+        </p>
+      ) : (
+        <ul className="mt-1 max-h-[440px] space-y-1 overflow-y-auto pr-0.5" aria-label={t("تاریخچهٔ گفتگوها")}>
+          {sorted.map((s) => {
+            const qCount = s.msgs.filter((m) => m.role === "user").length;
+            return (
+              <li key={s.id} className="group relative">
+                <button
+                  type="button"
+                  onClick={() => props.onSelect(s.id)}
+                  aria-current={props.activeId === s.id ? "true" : undefined}
+                  className={`w-full cursor-pointer rounded-xl border px-3 py-2.5 text-right transition-colors ${
+                    props.activeId === s.id
+                      ? "border-primary/40 bg-primary-soft/60"
+                      : "border-transparent hover:border-border hover:bg-surface-2"
+                  }`}
+                >
+                  <span className="block truncate pl-6 text-xs font-bold text-foreground" dir="auto">
+                    {s.title}
+                  </span>
+                  <span className="mt-0.5 block text-[10px] text-muted">
+                    {faDate(s.updatedAt)} · {tt("{n} پرسش", { n: faNum(qCount) })}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  aria-label={t("حذف گفتگو")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    props.onDelete(s.id);
+                  }}
+                  className="absolute left-1.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-lg p-1.5 text-muted opacity-0 transition-all hover:bg-danger/10 hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
+                >
+                  <Icon name="trash" className="h-3.5 w-3.5" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 const CONTRACT_MAX_MB = 5;
 const CONTRACT_ACCEPT = ".txt,.md,.csv,.docx,.pdf,.png,.jpg,.jpeg,.webp,image/*";
 
@@ -260,10 +422,16 @@ function AIAssistantContent() {
   /** استان کاربر — از ویزارد «شروع مسیر من»، پارامتر لینک، یا استان ثبت‌شده در پروفایل موکل */
   const [province, setProvince] = useState<string | null>(search.get("province"));
   const [loading, setLoading] = useState(false);
-  /** نخ گفتگو با دستیار — حداکثر MAX_ROUNDS دور */
-  const [msgs, setMsgs] = useState<ChatMsg[]>([]);
-  const msgIdRef = useRef(1);
+  /** گفتگوهای ذخیره‌شدهٔ این دستگاه + گفتگوی فعال — مثل چت، تاریخچه دارد */
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  /** مرحلهٔ پاسخ‌دهی: web (جستجوی وب) یا answer (نوشتن پاسخ) */
+  const [phase, setPhase] = useState<"web" | "answer" | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const active = sessions.find((s) => s.id === activeId) ?? null;
+  const msgs = useMemo(() => active?.msgs ?? [], [active]);
 
   const [contractText, setContractText] = useState("");
   const [contractLoading, setContractLoading] = useState(false);
@@ -298,9 +466,6 @@ function AIAssistantContent() {
     };
   }, [search]);
 
-  const roundsUsed = msgs.filter((m) => m.role === "user").length;
-  const roundsFull = roundsUsed >= MAX_ROUNDS;
-
   /** متن خلاصهٔ پیام دستیار برای تاریخچهٔ مدل */
   const historyText = (m: ChatMsg): string => {
     if (m.role === "user") return m.text ?? "";
@@ -309,10 +474,50 @@ function AIAssistantContent() {
     return "";
   };
 
-  const resetChat = () => {
-    setMsgs([]);
-    setError(null);
+  /** به‌روزرسانی یک نشست + ذخیره در localStorage */
+  const patchSession = (sid: string, fn: (s: ChatSession) => ChatSession, persist = true) => {
+    setSessions((prev) => {
+      const next = prev.map((s) => (s.id === sid ? fn(s) : s));
+      if (persist) saveSessions(next);
+      return next;
+    });
+  };
+
+  /** ویرایش یک پیام داخل نشست (به‌صورت پیش‌فرض فقط در حافظه — ذخیره در پایان استریم) */
+  const patchMsg = (sid: string, mid: string, fn: (m: ChatMsg) => ChatMsg, persist = false) => {
+    patchSession(
+      sid,
+      (s) => ({ ...s, msgs: s.msgs.map((m) => (m.id === mid ? fn(m) : m)) }),
+      persist,
+    );
+  };
+
+  /** شروع گفتگوی تازه */
+  const newChat = () => {
+    abortRef.current?.abort();
+    setActiveId(null);
     setInput("");
+    setError(null);
+    setDrawerOpen(false);
+  };
+
+  /** بازکردن یکی از گفتگوهای قبلی */
+  const selectChat = (id: string) => {
+    abortRef.current?.abort();
+    setActiveId(id);
+    setInput("");
+    setError(null);
+    setDrawerOpen(false);
+  };
+
+  /** حذف یک گفتگو از تاریخچه */
+  const deleteChat = (id: string) => {
+    setSessions((prev) => {
+      const next = prev.filter((s) => s.id !== id);
+      saveSessions(next);
+      return next;
+    });
+    setActiveId((cur) => (cur === id ? null : cur));
   };
 
   const ask = async (q?: string) => {
@@ -322,53 +527,142 @@ function AIAssistantContent() {
       setError(t("برای شروع گفتگو، لطفاً سؤال حقوقی خود را بنویسید."));
       return;
     }
-    if (loading || roundsFull) return;
+    if (loading) return;
     setInput("");
     setLoading(true);
+    setPhase("answer");
     setError(null);
-    const uid = msgIdRef.current++;
-    const aid = msgIdRef.current++;
-    // تاریخچه برای مدل: پیام‌های موفق تا الان (حداکثر ۶ پیام سمت سرور هم محدود می‌کند)
-    const history = msgs
+
+    // تضمین وجود نشست — پرسش اول، گفتگوی تازه‌ای با عنوان همان پرسش می‌سازد
+    let sid = activeId;
+    let baseMsgs: ChatMsg[] = [];
+    if (!sid) {
+      sid = newId();
+      const fresh: ChatSession = { id: sid, title: query.slice(0, 60), createdAt: Date.now(), updatedAt: Date.now(), msgs: [] };
+      setSessions((prev) => {
+        const next = [fresh, ...prev].slice(0, MAX_SESSIONS);
+        saveSessions(next);
+        return next;
+      });
+      setActiveId(sid);
+    } else {
+      baseMsgs = sessions.find((s) => s.id === sid)?.msgs ?? [];
+    }
+
+    const uid = newId();
+    const aid = newId();
+    const userMsg: ChatMsg = { id: uid, role: "user", text: query };
+    const aiMsg: ChatMsg = { id: aid, role: "assistant", streaming: true };
+    // تاریخچه برای مدل: ۱۰ پیام آخر (سمت سرور هم سانیتایز می‌شود)
+    const history = baseMsgs
       .filter((m) => historyText(m).length > 0)
+      .slice(-10)
       .map((m) => ({ role: m.role, content: historyText(m) }));
-    setMsgs((prev) => [...prev, { id: uid, role: "user", text: query }, { id: aid, role: "assistant" }]);
+    patchSession(sid, (s) => ({ ...s, msgs: [...s.msgs, userMsg, aiMsg], updatedAt: Date.now() }), true);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    let acc = "";
     try {
       const res = await fetch("/api/ai-assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, province: province ?? undefined, history }),
+        body: JSON.stringify({ query, province: province ?? undefined, history, stream: true }),
+        signal: controller.signal,
       });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error);
-      setMsgs((prev) =>
-        prev.map((m) =>
-          m.id === aid
-            ? {
-                ...m,
-                kind: data.answer ? ("llm" as const) : ("local" as const),
-                text: data.answer ?? undefined,
-                guidance: data.guidance ?? undefined,
-                sources: (data.sources ?? []) as SourceHit[],
-                lawyerMatch: data.lawyerMatch?.lawyers?.length
-                  ? {
-                      lawyers: data.lawyerMatch.lawyers,
-                      topic: data.lawyerMatch.topic ?? null,
-                      specialties: data.lawyerMatch.specialties ?? [],
-                      province: data.lawyerMatch.province ?? province,
-                    }
-                  : undefined,
-              }
-            : m,
-        ),
-      );
+      if (!res.ok || !res.body) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(data?.error ?? t("خطا در ارتباط با سرور"));
+      }
+
+      // خواندن استریم NDJSON — هر خط یک رویداد (phase/delta/done/fallback/error)
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      type DoneMeta = { sources?: SourceHit[]; lawyerMatch?: NonNullable<ChatMsg["lawyerMatch"]> };
+      type FallbackMeta = { guidance?: LegalGuidance; lawyerMatch?: NonNullable<ChatMsg["lawyerMatch"]> };
+      let doneMeta: DoneMeta | null = null;
+      let fallback: FallbackMeta | null = null;
+      let streamErr: string | null = null;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let nl: number;
+        while ((nl = buf.indexOf("\n")) !== -1) {
+          const line = buf.slice(0, nl).trim();
+          buf = buf.slice(nl + 1);
+          if (!line) continue;
+          let evt: Record<string, unknown>;
+          try {
+            evt = JSON.parse(line) as Record<string, unknown>;
+          } catch {
+            continue;
+          }
+          if (evt.t === "phase") {
+            setPhase(evt.name === "web" ? "web" : "answer");
+          } else if (evt.t === "delta" && typeof evt.v === "string") {
+            acc += evt.v;
+            patchMsg(sid, aid, (m) => ({ ...m, text: acc }));
+          } else if (evt.t === "done") {
+            doneMeta = evt as unknown as DoneMeta;
+          } else if (evt.t === "fallback") {
+            fallback = evt as unknown as FallbackMeta;
+          } else if (evt.t === "error" && typeof evt.error === "string") {
+            streamErr = evt.error;
+          }
+        }
+      }
+
+      const fb = fallback;
+      const meta = doneMeta;
+      if (fb?.guidance) {
+        // زنجیرهٔ LLM در دسترس نبود → راهنمای محلی فوری
+        patchMsg(
+          sid,
+          aid,
+          (m) => ({
+            ...m,
+            streaming: false,
+            kind: "local",
+            guidance: fb.guidance,
+            lawyerMatch: fb.lawyerMatch?.lawyers?.length ? fb.lawyerMatch : undefined,
+          }),
+          true,
+        );
+      } else if (acc.trim()) {
+        patchMsg(
+          sid,
+          aid,
+          (m) => ({
+            ...m,
+            streaming: false,
+            kind: "llm",
+            text: acc,
+            sources: (meta?.sources ?? []) as SourceHit[],
+            lawyerMatch: meta?.lawyerMatch?.lawyers?.length ? meta.lawyerMatch : undefined,
+          }),
+          true,
+        );
+      } else {
+        setError(streamErr ?? t("پاسخی دریافت نشد — لطفاً دوباره تلاش کنید."));
+        patchSession(sid, (s) => ({ ...s, msgs: s.msgs.filter((m) => m.id !== aid) }), true);
+        setInput(query);
+      }
     } catch (e) {
-      // پیام ناموفق حذف می‌شود تا سقف دورها بی‌جهت مصرف نشود؛ خطا بالای فرم نشان داده می‌شود
-      setMsgs((prev) => prev.filter((m) => m.id !== uid && m.id !== aid));
-      setInput(query);
-      setError(e instanceof Error ? e.message : t("خطا در ارتباط با سرور"));
+      if (e instanceof DOMException && e.name === "AbortError") {
+        // توقف توسط کاربر — پاسخ نیمه‌کاره حفظ می‌شود
+        if (acc.trim()) patchMsg(sid, aid, (m) => ({ ...m, streaming: false }), true);
+        else patchSession(sid, (s) => ({ ...s, msgs: s.msgs.filter((m) => m.id !== aid) }), true);
+      } else {
+        setError(e instanceof Error ? e.message : t("خطا در ارتباط با سرور"));
+        patchSession(sid, (s) => ({ ...s, msgs: s.msgs.filter((m) => m.id !== aid) }), true);
+        setInput(query);
+      }
     } finally {
       setLoading(false);
+      setPhase(null);
+      abortRef.current = null;
     }
   };
 
@@ -453,6 +747,16 @@ function AIAssistantContent() {
     }
   };
 
+  // بازیابی تاریخچهٔ گفتگوها از همین دستگاه — قبل از effect پرسش خودکار اجرا می‌شود
+  useEffect(() => {
+    queueMicrotask(() => {
+      const loaded = loadSessions();
+      if (loaded.length === 0) return;
+      setSessions(loaded);
+      setActiveId([...loaded].sort((a, b) => b.updatedAt - a.updatedAt)[0].id);
+    });
+  }, []);
+
   useEffect(() => {
     const initial = input;
     if (!initial || tab !== "guide") return;
@@ -476,9 +780,30 @@ function AIAssistantContent() {
       />
 
       <Container className="py-10">
-        <div className="mx-auto max-w-3xl">
+        <div
+          className={
+            tab === "guide"
+              ? "mx-auto w-full max-w-6xl lg:grid lg:grid-cols-[290px_minmax(0,1fr)] lg:gap-6"
+              : "mx-auto max-w-3xl"
+          }
+        >
+          {/* سایدبار تاریخچهٔ گفتگوها (دسکتاپ) */}
+          {tab === "guide" && (
+            <aside className="hidden lg:block" aria-label={t("تاریخچهٔ گفتگوها")}>
+              <div className="sticky top-6">
+                <HistoryPanel
+                  sessions={sessions}
+                  activeId={activeId}
+                  onSelect={selectChat}
+                  onNew={newChat}
+                  onDelete={deleteChat}
+                />
+              </div>
+            </aside>
+          )}
+          <div className={tab === "guide" ? "min-w-0 space-y-6 lg:mx-auto lg:max-w-3xl" : "space-y-6"}>
           {/* Tabs */}
-          <div className="mb-6 inline-flex rounded-2xl border border-border bg-surface p-1">
+          <div className="inline-flex rounded-2xl border border-border bg-surface p-1">
             {([
               { key: "guide" as const, label: "راهنمای حقوقی", icon: "chat" as IconKey },
               { key: "contract" as const, label: "تحلیل قرارداد", icon: "file" as IconKey },
@@ -498,19 +823,76 @@ function AIAssistantContent() {
           </div>
 
           {tab === "guide" ? (
-            <div className="space-y-6">
-              <Card hover={false} className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label htmlFor="ai-input" className="text-sm font-bold text-foreground">
-                    {msgs.length > 0 ? t("ادامهٔ گفتگو با دستیار") : t("مشکل حقوقی خود را شرح دهید")}
-                  </label>
-                  {msgs.length > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-bold text-muted">
-                      <Icon name="chat" className="h-3 w-3" />
-                      {tt("{used} از {max} پرسش", { used: faNum(roundsUsed), max: faNum(MAX_ROUNDS) })}
-                    </span>
-                  )}
+            <>
+              {/* دسترسی به تاریخچه در موبایل */}
+              <div className="flex items-center justify-between gap-2 lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setDrawerOpen(true)}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-bold text-foreground-soft transition-colors hover:border-primary/40 hover:text-primary"
+                >
+                  <Icon name="chat" className="h-3.5 w-3.5" />
+                  {tt("تاریخچهٔ گفتگوها ({n})", { n: faNum(sessions.length) })}
+                </button>
+                <button
+                  type="button"
+                  onClick={newChat}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
+                >
+                  <Icon name="plus" className="h-3.5 w-3.5" />
+                  {t("گفتگوی جدید")}
+                </button>
+              </div>
+
+              {/* کشوی تاریخچهٔ گفتگوها (موبایل) */}
+              {drawerOpen && (
+                <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t("تاریخچهٔ گفتگوها")}>
+                  <button
+                    type="button"
+                    aria-label={t("بستن")}
+                    className="absolute inset-0 cursor-default bg-black/50"
+                    onClick={() => setDrawerOpen(false)}
+                  />
+                  <div className="absolute inset-y-0 right-0 w-[85%] max-w-xs overflow-y-auto bg-background p-4 shadow-2xl">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-sm font-bold text-foreground">{t("گفتگوهای من")}</span>
+                      <button
+                        type="button"
+                        aria-label={t("بستن")}
+                        onClick={() => setDrawerOpen(false)}
+                        className="cursor-pointer rounded-lg p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
+                      >
+                        <Icon name="x" className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <HistoryPanel
+                      sessions={sessions}
+                      activeId={activeId}
+                      onSelect={selectChat}
+                      onNew={newChat}
+                      onDelete={deleteChat}
+                    />
+                  </div>
                 </div>
+              )}
+
+              {/* خوش‌آمدگویی — حالت چت خالی */}
+              {msgs.length === 0 && !loading && (
+                <div className="rounded-2xl border border-dashed border-border bg-surface-2/40 p-8 text-center">
+                  <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-accent-text">
+                    <Icon name="sparkles" className="h-6 w-6" />
+                  </span>
+                  <p className="mt-3 text-sm font-bold text-foreground">{t("سلام! من دستیار حقوقی دادبان هستم")}</p>
+                  <p className="mx-auto mt-1.5 max-w-md text-xs leading-6 text-muted">
+                    {t("هر سؤال حقوقی دارید بپرسید — گفتگو ادامه دارد، دستیار پاسخ‌های قبلی را به‌خاطر می‌سپارد و تاریخچهٔ همهٔ گفتگوهایتان همین‌جا ذخیره می‌ماند.")}
+                  </p>
+                </div>
+              )}
+
+              <Card hover={false} className="space-y-3">
+                <label htmlFor="ai-input" className="text-sm font-bold text-foreground">
+                  {msgs.length > 0 ? t("ادامهٔ گفتگو با دستیار — بدون محدودیت پرسش") : t("مشکل حقوقی خود را شرح دهید")}
+                </label>
                 <div className="flex items-end gap-2">
                   <textarea
                     id="ai-input"
@@ -523,40 +905,40 @@ function AIAssistantContent() {
                       }
                     }}
                     rows={2}
-                    disabled={roundsFull}
+                    disabled={loading}
                     placeholder={t("مثلاً: چک برگشتی دارم و نمی‌دانم چطور طلبم را بگیرم…")}
                     className="w-full resize-none rounded-xl border border-border-strong bg-background p-3 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:opacity-60"
                   />
                 </div>
-                {!roundsFull && (
-                  <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  {msgs.length === 0 ? (
                     <div className="flex flex-wrap gap-1.5">
                       {EXAMPLES.map((ex) => (
                         <button
                           key={ex}
                           type="button"
                           onClick={() => ask(ex)}
-                          className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-foreground-soft transition-colors hover:border-primary/40 hover:text-primary"
+                          disabled={loading}
+                          className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-foreground-soft transition-colors hover:border-primary/40 hover:text-primary disabled:opacity-50"
                         >
                           {t(ex)}
                         </button>
                       ))}
                     </div>
+                  ) : (
+                    <span className="text-xs text-muted">{t("گفتگو ادامه دارد — دستیار پاسخ‌های قبلی را به‌خاطر دارد.")}</span>
+                  )}
+                  <div className="flex items-center gap-2">
+                    {loading && (
+                      <Button variant="outline" onClick={() => abortRef.current?.abort()} icon="x">
+                        {t("توقف")}
+                      </Button>
+                    )}
                     <Button onClick={() => ask()} disabled={loading} icon="send">
-                      {loading ? t("در حال بررسی…") : t("بپرس")}
+                      {loading ? t("در حال پاسخ…") : t("بپرس")}
                     </Button>
                   </div>
-                )}
-                {roundsFull && (
-                  <div className="rounded-2xl border border-accent/30 bg-accent-soft/40 p-4 text-center">
-                    <p className="text-sm font-bold text-accent-text">
-                      {t("به سقف ۳ پرسش در این گفتگو رسیدید — برای ادامه، گفتگوی جدید شروع کنید.")}
-                    </p>
-                    <Button variant="soft" icon="sparkles" onClick={resetChat} className="mt-3">
-                      {t("شروع گفتگوی جدید")}
-                    </Button>
-                  </div>
-                )}
+                </div>
               </Card>
 
               {error && (
@@ -565,7 +947,7 @@ function AIAssistantContent() {
                 </div>
               )}
 
-              {/* نخ گفتگو با دستیار — سؤال کاربر حباب‌وار، پاسخ دستیار کارت کامل */}
+              {/* نخ گفتگو — سؤال کاربر حباب‌وار، پاسخ دستیار به‌صورت زنده تایپ می‌شود */}
               {msgs.length > 0 && (
                 <div className="space-y-4" aria-live="polite" aria-label={t("گفتگو با دستیار هوشمند")}>
                   {msgs.map((m) =>
@@ -581,16 +963,32 @@ function AIAssistantContent() {
                       <div key={m.id}>
                         {m.kind === "llm" ? (
                           <Card hover={false} className="space-y-3">
-                            <div className="flex items-center gap-2">
-                              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent-text">
-                                <Icon name="sparkles" className="h-4 w-4" />
-                              </span>
-                              <span className="text-sm font-bold text-foreground">{t("پاسخ دستیار هوشمند")}</span>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent-text">
+                                  <Icon name="sparkles" className="h-4 w-4" />
+                                </span>
+                                <span className="text-sm font-bold text-foreground">{t("پاسخ دستیار هوشمند")}</span>
+                              </div>
+                              {m.text && !m.streaming && <CopyBtn text={m.text} />}
                             </div>
-                            <p className="whitespace-pre-line text-sm leading-7 text-foreground-soft" dir="auto">
-                              {m.text}
-                            </p>
-                            {m.sources && m.sources.length > 0 && (
+                            {m.text ? (
+                              <p className="whitespace-pre-line text-sm leading-7 text-foreground-soft" dir="auto">
+                                {m.text}
+                                {m.streaming && (
+                                  <span
+                                    aria-hidden
+                                    className="ms-1 inline-block h-4 w-[3px] translate-y-0.5 animate-pulse rounded-full bg-primary"
+                                  />
+                                )}
+                              </p>
+                            ) : (
+                              <p className="flex items-center gap-2 text-sm text-muted">
+                                <span className="h-2 w-2 animate-pulse-dot rounded-full bg-primary" />
+                                {t("دستیار در حال نوشتن پاسخ…")}
+                              </p>
+                            )}
+                            {!m.streaming && m.sources && m.sources.length > 0 && (
                               <div className="rounded-xl border border-border bg-surface-2 p-3">
                                 <p className="mb-1.5 text-xs font-bold text-muted">{t("منابع وب:")}</p>
                                 <ul className="space-y-1">
@@ -610,10 +1008,12 @@ function AIAssistantContent() {
                                 </ul>
                               </div>
                             )}
-                            <p className="border-t border-border pt-3 text-xs text-muted">
-                              {t("این پاسخ توسط هوش مصنوعی تولید شده و جنبه اطلاع‌رسانی دارد؛ برای اقدام حقوقی با وکیل متخصص مشورت کنید.")}
-                            </p>
-                            {m.lawyerMatch && (
+                            {!m.streaming && (
+                              <p className="border-t border-border pt-3 text-xs text-muted">
+                                {t("این پاسخ توسط هوش مصنوعی تولید شده و جنبه اطلاع‌رسانی دارد؛ برای اقدام حقوقی با وکیل متخصص مشورت کنید.")}
+                              </p>
+                            )}
+                            {!m.streaming && m.lawyerMatch && (
                               <div className="border-t border-border pt-4">
                                 <LawyerPicksFlow
                                   lawyers={m.lawyerMatch.lawyers}
@@ -634,15 +1034,15 @@ function AIAssistantContent() {
                 </div>
               )}
 
-              {loading && (
+              {loading && phase === "web" && (
                 <Card hover={false} className="flex items-center gap-3">
                   <span className="h-3 w-3 animate-pulse-dot rounded-full bg-primary" />
                   <span className="h-3 w-3 animate-pulse-dot rounded-full bg-primary" style={{ animationDelay: "0.2s" }} />
                   <span className="h-3 w-3 animate-pulse-dot rounded-full bg-primary" style={{ animationDelay: "0.4s" }} />
-                  <span className="text-sm text-muted">{t("دستیار در حال تحلیل موضوع شماست…")}</span>
+                  <span className="text-sm text-muted">{t("در حال جستجوی وب برای اطلاعات به‌روز…")}</span>
                 </Card>
               )}
-            </div>
+            </>
           ) : (
             <div className="space-y-6">
               <Card hover={false} className="space-y-3">
@@ -776,6 +1176,7 @@ function AIAssistantContent() {
               )}
             </div>
           )}
+          </div>
         </div>
       </Container>
     </>

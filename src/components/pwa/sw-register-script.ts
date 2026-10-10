@@ -1,8 +1,13 @@
 // اسکریپت ثبت Service Worker — به‌صورت inline در layout تزریق می‌شود.
 // این روش مطمئن‌تر از Client Component است چون مستقل از React hydration اجرا می‌شود.
 
-export const SW_REGISTER_SCRIPT = `
-(function() {
+// در dev ثبت نمی‌شود — SW با HMR و کشِ صفحه تداخل ایجاد می‌کند و HTML توسعه را
+// کهنه می‌کند (علت «به‌ظاهر کار نکردن» صفحه در محیط توسعه). PWA فقط production.
+const DEV_SKIP = process.env.NODE_ENV !== "production";
+
+export const SW_REGISTER_SCRIPT = DEV_SKIP
+  ? ""
+  : `(function() {
   if (typeof window === 'undefined') return;
   if (!('serviceWorker' in navigator)) return;
 
@@ -55,5 +60,4 @@ export const SW_REGISTER_SCRIPT = `
       });
     }
   });
-})();
-`;
+})();`;

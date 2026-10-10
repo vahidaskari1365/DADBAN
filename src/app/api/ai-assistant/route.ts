@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { analyzeLegalQuery, analyzeContract } from "@/lib/legal-engine";
-import { askLLM, SYSTEM_LEGAL_CORE } from "@/lib/llm";
+import { askLLM, askLLMStream, SYSTEM_LEGAL_CORE } from "@/lib/llm";
 import { webSearch, type WebSearchResult } from "@/lib/ai";
 import { rateLimit, readJson, text } from "@/lib/api-security";
 import { extractContractFile } from "@/lib/extract-text";
@@ -57,7 +57,7 @@ function buildSystemPrompt(lang: QueryLang, sources: WebSearchResult[]): string 
   return `${base}\n\nاگر نتایج جستجوی وب زیر به سؤال مرتبط است، از آن‌ها استفاده کن و در پایان پاسخ، منابع مرتبط را با شماره [۱] و [۲] ذکر کن. اگر نتیجه‌ای مرتبط نیست، نادیده‌اش بگیر:\n\n${context}`;
 }
 
-/** تاریخچهٔ گفتگو: پاکسازی و محدودسازی (حداکثر ۳ دور = ۶ پیام) */
+/** تاریخچهٔ گفتگو: پاکسازی و محدودسازی (حداکثر ۵ دور = ۱۰ پیام) */
 function sanitizeHistory(raw: unknown): LlmMessage[] {
   if (!Array.isArray(raw)) return [];
   return (raw as unknown[])
@@ -69,7 +69,7 @@ function sanitizeHistory(raw: unknown): LlmMessage[] {
         (m as { role: string; content: string }).content.trim().length > 0,
     )
     .filter((m) => m.role === "user" || m.role === "assistant")
-    .slice(-6)
+    .slice(-10)
     .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
 }
 
@@ -100,7 +100,7 @@ async function localizeMatch(
 }
 
 export async function POST(req: Request) {
-  const limited = rateLimit(req, "ai", 20, 60 * 60_000);
+  const limited = rateLimit(req, "ai", 60, 60 * 60_000);
   if (limited) return limited;
 
   // آپلود فایل قرارداد (multipart/form-data) یا بدنه JSON معمولی
@@ -154,6 +154,84 @@ export async function POST(req: Request) {
 
     if (!query) return NextResponse.json({ ok: false, error: "لطفاً سؤال خود را بنویسید." }, { status: 400 });
 
+    // متن تشخیص: سؤال فعلی + سؤال‌های قبلی گفتگو (تا موضوع در ادامهٔ چت هم گم نشود)
+    const detectText = [query, ...history.filter((h) => h.role === "user").map((h) => h.content)].join(" ");
+    type LawyerMatchInfo = { topic: string | null; specialties: string[]; province: string | null; lawyers: MatchedLawyer[] };
+    /** پیشنهاد وکیل — موازی با استریم اجرا می‌شود تا تأخیری به پاسخ اضافه نکند */
+    const lawyerMatchPromise: Promise<LawyerMatchInfo | undefined> = (async (): Promise<LawyerMatchInfo | undefined> => {
+      try {
+        const det = detectSpecialtiesFromMessage(detectText);
+        if (det.specialties.length > 0) {
+          const matched = await matchLawyers(det.specialties, 10, province);
+          if (matched.length) return { topic: det.topic, specialties: det.specialties, province, lawyers: matched };
+        }
+      } catch { /* non-fatal */ }
+      return undefined;
+    })();
+
+    /* ─── حالت استریم (چت زنده): NDJSON — phase/delta/done/fallback ─── */
+    if (body?.stream === true) {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream<Uint8Array>({
+        async start(controller) {
+          const send = (obj: unknown) => {
+            try { controller.enqueue(encoder.encode(`${JSON.stringify(obj)}\n`)); } catch { /* کلاینت قطع شده */ }
+          };
+          try {
+            // جستجوی وب با سقف کوتاه — اول شدنِ اولین توکن مهم‌ترین عامل سرعت است
+            let sources: { title: string; url: string; host: string; snippet: string }[] = [];
+            let systemPrompt = buildSystemPrompt(lang, []);
+            if (useWeb) {
+              send({ t: "phase", name: "web" });
+              try {
+                const results = await withTimeout(webSearch(query, 6), 9_000);
+                if (results.length) {
+                  sources = results.map((r) => ({ title: r.name, url: r.url, host: r.host_name, snippet: r.snippet }));
+                  systemPrompt = buildSystemPrompt(lang, results);
+                }
+              } catch { /* جستجو شکست خورد → پاسخ بدون وب */ }
+            }
+
+            send({ t: "phase", name: "answer" });
+            let acc = "";
+            for await (const chunk of askLLMStream([...history, { role: "user", content: query }], 1200, systemPrompt, { sanitize: lang === "fa" })) {
+              acc += chunk;
+              send({ t: "delta", v: chunk });
+            }
+
+            const lawyerMatch = await lawyerMatchPromise;
+            if (acc.trim()) {
+              send({ t: "done", source: "llm", sources, lawyerMatch: await localizeMatch(lawyerMatch, lang), lang });
+            } else {
+              // هیچ توکنی نرسید → راهنمای محلی فوری
+              const guidance = analyzeLegalQuery(query);
+              let fallbackMatch = lawyerMatch;
+              if (!fallbackMatch && guidance.matched && TOPIC_SPECIALTIES[guidance.topic]) {
+                try {
+                  const specs = TOPIC_SPECIALTIES[guidance.topic];
+                  const matched = await matchLawyers(specs, 10, province);
+                  if (matched.length) fallbackMatch = { topic: guidance.topic, specialties: specs, province, lawyers: matched };
+                } catch { /* non-fatal */ }
+              }
+              send({ t: "fallback", guidance, sources: [], lawyerMatch: await localizeMatch(fallbackMatch, lang) });
+            }
+          } catch {
+            send({ t: "error", error: "پاسخ‌گویی در حال حاضر ممکن نیست." });
+          } finally {
+            try { controller.close(); } catch { /* بسته شده */ }
+          }
+        },
+      });
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "application/x-ndjson; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          "X-Accel-Buffering": "no",
+        },
+      });
+    }
+
+    /* ─── حالت JSON کامل (سازگاری با نسخه‌های قبلی) ─── */
     // حالت جستجوی وب: ابتدا نتایج واقعی گرفته و به زمینه‌ی مدل تزریق می‌شود
     let sources: { title: string; url: string; host: string; snippet: string }[] = [];
     let systemPrompt = buildSystemPrompt(lang, []);
@@ -174,18 +252,7 @@ export async function POST(req: Request) {
     const llm = await withTimeout(askLLM(llmMessages, 1200, systemPrompt, { sanitize: lang === "fa" }), 27_000);
 
     // پیشنهاد وکیل بر اساس مشکل کاربر (۱۰ وکیل هم‌تخصص از دیتابیس واقعی)
-    // متن تشخیص: سؤال فعلی + سؤال‌های قبلی گفتگو (تا موضوع در ادامهٔ چت هم گم نشود)
-    const detectText = [query, ...history.filter((h) => h.role === "user").map((h) => h.content)].join(" ");
-    let lawyerMatch: { topic: string | null; specialties: string[]; province: string | null; lawyers: MatchedLawyer[] } | undefined;
-    try {
-      const det = detectSpecialtiesFromMessage(detectText);
-      if (det.specialties.length > 0) {
-        const matched = await matchLawyers(det.specialties, 10, province);
-        if (matched.length) lawyerMatch = { topic: det.topic, specialties: det.specialties, province, lawyers: matched };
-      }
-    } catch {
-      /* non-fatal */
-    }
+    const lawyerMatch = await lawyerMatchPromise;
 
     if (llm) return NextResponse.json({ ok: true, mode: "guide", source: "llm", answer: llm, sources, lawyerMatch: await localizeMatch(lawyerMatch, lang), lang });
     const guidance = analyzeLegalQuery(query);
@@ -193,7 +260,7 @@ export async function POST(req: Request) {
       try {
         const specs = TOPIC_SPECIALTIES[guidance.topic];
         const matched = await matchLawyers(specs, 10, province);
-        if (matched.length) lawyerMatch = { topic: guidance.topic, specialties: specs, province, lawyers: matched };
+        if (matched.length) return NextResponse.json({ ok: true, mode: "guide", source: "local", guidance, sources: [], lawyerMatch: await localizeMatch({ topic: guidance.topic, specialties: specs, province, lawyers: matched }, lang) });
       } catch {
         /* non-fatal */
       }
