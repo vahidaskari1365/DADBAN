@@ -137,9 +137,13 @@ const FACT_EXTRACT_PROMPT = (topic: string) => `بر اساس نتایج جست�
 اگر نتایج، عدد سال جاری را نداشتند، دقیق بنویس: «مقدار روز در دسترس نیست — به ابلاغیهٔ سال جاری مراجعه شود.»`;
 
 /** بودجهٔ زمانی هر موضوع تا کل sync زیر سقف serverless بماند */
-const TOPIC_WEB_MS = 6_000;
-const TOPIC_LLM_MS = 8_000;
+const TOPIC_WEB_MS = 7_000;
+const TOPIC_LLM_MS = 9_000;
 const CONCURRENCY = 4;
+/** حداکثر موضوع در هر اجرا — کهنه‌ترین‌ها اول؛ بقیه در اجرای بعدی (شب بعد) پوشش داده می‌شوند */
+const MAX_TOPICS_PER_RUN = 8;
+/** موضوع تازه‌تر از این عمر دوباره sync نمی‌شود (کافی است روزی یک‌بار) */
+const FRESH_MS = 20 * 60 * 60_000;
 
 async function withTimeout<T>(task: Promise<T>, ms: number): Promise<T | null> {
   return Promise.race([task, new Promise<null>((resolve) => setTimeout(() => resolve(null), ms))]);
@@ -182,8 +186,8 @@ async function syncOneTopic(t: LawFactTopic): Promise<"ok" | "skip"> {
   }
 }
 
-/** همگام‌سازی همهٔ موضوع‌ها — با همزمانی محدود تا زیر سقف زمانی serverless بماند */
-export async function syncLawFacts(): Promise<{ ok: number; skip: number; total: number }> {
+/** همگام‌سازی — کهنه‌ترین موضوع‌ها اول (حداکثر ۸ در هر اجرا) تا بودجهٔ زمانی حفظ شود و هر شب همه تا حد امکان تازه شوند */
+export async function syncLawFacts(): Promise<{ ok: number; skip: number; ran: number; total: number }> {
   let ok = 0;
   let skip = 0;
   try {
@@ -191,12 +195,25 @@ export async function syncLawFacts(): Promise<{ ok: number; skip: number; total:
   } catch {
     /* جدول از قبل هست یا موقتاً در دسترس نیست — ادامه بده */
   }
-  const topics = LAW_FACT_TOPICS;
-  for (let i = 0; i < topics.length; i += CONCURRENCY) {
-    const batch = topics.slice(i, i + CONCURRENCY);
+  // موجودی فعلی برای تشخیص کهنه‌ترین‌ها (خطا → همه کهنه فرض می‌شوند)
+  let existing: Record<string, number> = {};
+  try {
+    const rows = (await db.select({ topic: lawFacts.topic, updatedAt: lawFacts.updatedAt }).from(lawFacts)) as unknown as { topic: string; updatedAt: Date }[];
+    existing = Object.fromEntries(rows.map((r) => [r.topic, new Date(r.updatedAt).getTime()]));
+  } catch { /* بدون موجودی */ }
+  const now = Date.now();
+  const stale = LAW_FACT_TOPICS
+    .map((t) => ({ t, at: existing[t.topic] ?? 0 }))
+    .filter((x) => now - x.at > FRESH_MS)
+    .sort((a, b) => a.at - b.at)
+    .slice(0, MAX_TOPICS_PER_RUN)
+    .map((x) => x.t);
+  const ran = stale.length;
+  for (let i = 0; i < stale.length; i += CONCURRENCY) {
+    const batch = stale.slice(i, i + CONCURRENCY);
     const results = await Promise.all(batch.map(syncOneTopic));
     for (const r of results) r === "ok" ? ok++ : skip++;
   }
   invalidateFactsCache();
-  return { ok, skip, total: topics.length };
+  return { ok, skip, ran, total: LAW_FACT_TOPICS.length };
 }

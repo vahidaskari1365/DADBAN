@@ -466,7 +466,6 @@ function AIAssistantContent() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
   // اگر پارامتر استان در لینک نبود، استان پروفایل موکل (پروفایل من) به‌عنوان پیش‌فرض استفاده می‌شود
@@ -910,7 +909,7 @@ function AIAssistantContent() {
                       </div>
                     ) : (
                       <div key={m.id}>
-                        {m.kind === "llm" ? (
+                        {m.kind === "llm" || m.streaming ? (
                           <Card hover={false} className="space-y-3">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2">
