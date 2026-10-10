@@ -44,24 +44,26 @@ export interface LawFactTopic {
   title: string;
   /** کلیدواژه‌های فارسی برای تطبیق با سؤال کاربر */
   keywords: string[];
-  /** کوئری جستجوی وب */
+  /** کوئری جستجوی وب — تفصیلی */
   query: string;
+  /** کوئری دوم کوتاه‌تر — هر دو هم‌زمان جستجو می‌شوند تا پوشش نتایج دوبرابر شود */
+  query2: string;
   /** محدودیت تازگی نتایج (روز) */
   recencyDays: number;
 }
 
 /** موضوع‌های متغیر سالانهٔ حقوق ایران — گسترش این فهرست آزاد است */
 export const LAW_FACT_TOPICS: LawFactTopic[] = [
-  { topic: "diya", title: "مبلغ دیه", keywords: ["دیه", "دیات", "خسارت جانی", "ارش"], query: "مبلغ دیه کامل ۱۴۰۴ ماه عادی و ماه حرام ابلاغ رئیس قوه قضاییه", recencyDays: 400 },
-  { topic: "minimum-wage", title: "حداقل دستمزد کارگر", keywords: ["دستمزد", "حقوق کارگر", "مزد", "شورای عالی کار"], query: "حداقل دستمزد کارگر ۱۴۰۴ مصوب شورای عالی کار ابلاغ", recencyDays: 400 },
-  { topic: "worker-benefits", title: "بن کارگری و حق مسکن", keywords: ["بن کارگر", "حق مسکن کارگری", "خواربار", "بن خواربار"], query: "مبلغ بن کارگری حق مسکن و خواربار ۱۴۰۴", recencyDays: 400 },
-  { topic: "salary-tax", title: "معافیت مالیات حقوق", keywords: ["مالیات", "معافیت مالیاتی", "مالیات حقوق"], query: "سقف معافیت مالیات حقوق ۱۴۰۴ نرخ پلکانی ماده ۸۴", recencyDays: 400 },
-  { topic: "marriage-loan", title: "وام ازدواج و فرزندآوری", keywords: ["وام ازدواج", "وام فرزندآوری", "تسهیلات ازدواج"], query: "مبلغ وام ازدواج و وام فرزندآوری ۱۴۰۴", recencyDays: 400 },
-  { topic: "traffic-fine", title: "جریمه‌های رانندگی", keywords: ["جریمه", "رانندگی", "پلاک", "گواهینامه", "تخلف رانندگی"], query: "مبلغ جریمه تخلفات رانندگی ۱۴۰۴ جدول", recencyDays: 200 },
-  { topic: "check-interest", title: "خسارت تأخیر چک", keywords: ["بهره چک", "خسارت تأخیر", "چک برگشتی", "صدور چک"], query: "نرخ خسارت تأخیر تأدیه وجه چک ۱۴۰۴ نرخ بین بانکی", recencyDays: 400 },
-  { topic: "vat", title: "مالیات بر ارزش افزوده", keywords: ["ارزش افزوده"], query: "نرخ مالیات بر ارزش افزوده ۱۴۰۴", recencyDays: 400 },
-  { topic: "rent-index", title: "افزایش اجاره‌بها", keywords: ["اجاره", "موجر", "مستأجر", "افزایش اجاره", "اجاره‌بها"], query: "ضابطه افزایش اجاره‌بها ۱۴۰۴ مصوب کارگروه ملی", recencyDays: 200 },
-  { topic: "eid-bonus", title: "عیدی و سنوات کارگران", keywords: ["عیدی", "سنوات", "حق سنوات", "پایان کار"], query: "مبلغ عیدی و سنوات کارگران ۱۴۰۴", recencyDays: 400 },
+  { topic: "diya", title: "مبلغ دیه", keywords: ["دیه", "دیات", "خسارت جانی", "ارش"], query: "مبلغ دیه کامل ۱۴۰۴ ماه عادی و ماه حرام ابلاغ رئیس قوه قضاییه", query2: "قیمت دیه ۱۴۰۴ چقدر شد", recencyDays: 400 },
+  { topic: "minimum-wage", title: "حداقل دستمزد کارگر", keywords: ["دستمزد", "حقوق کارگر", "مزد", "شورای عالی کار"], query: "حداقل دستمزد کارگر ۱۴۰۴ مصوب شورای عالی کار ابلاغ", query2: "حداقل دستمزد ۱۴۰۴ چقدر شد", recencyDays: 400 },
+  { topic: "worker-benefits", title: "بن کارگری و حق مسکن", keywords: ["بن کارگر", "حق مسکن کارگری", "خواربار", "بن خواربار"], query: "مبلغ بن کارگری حق مسکن و خواربار ۱۴۰۴", query2: "بن کارگری ۱۴۰۴ چند تومان شد", recencyDays: 400 },
+  { topic: "salary-tax", title: "معافیت مالیات حقوق", keywords: ["مالیات", "معافیت مالیاتی", "مالیات حقوق"], query: "سقف معافیت مالیات حقوق ۱۴۰۴ نرخ پلکانی ماده ۸۴", query2: "معافیت مالیاتی حقوق ۱۴۰۴ چقدر است", recencyDays: 400 },
+  { topic: "marriage-loan", title: "وام ازدواج و فرزندآوری", keywords: ["وام ازدواج", "وام فرزندآوری", "تسهیلات ازدواج"], query: "مبلغ وام ازدواج و وام فرزندآوری ۱۴۰۴", query2: "وام ازدواج ۱۴۰۴ چند میلیارد تومان", recencyDays: 400 },
+  { topic: "traffic-fine", title: "جریمه‌های رانندگی", keywords: ["جریمه", "رانندگی", "پلاک", "گواهینامه", "تخلف رانندگی"], query: "مبلغ جریمه تخلفات رانندگی ۱۴۰۴ جدول", query2: "جریمه رانندگی ۱۴۰۴ چقدر شد", recencyDays: 200 },
+  { topic: "check-interest", title: "خسارت تأخیر چک", keywords: ["بهره چک", "خسارت تأخیر", "چک برگشتی", "صدور چک"], query: "نرخ خسارت تأخیر تأدیه وجه چک ۱۴۰۴ نرخ بین بانکی", query2: "خسارت تاخیر چک ۱۴۰۴ چند درصد", recencyDays: 400 },
+  { topic: "vat", title: "مالیات بر ارزش افزوده", keywords: ["ارزش افزوده"], query: "نرخ مالیات بر ارزش افزوده ۱۴۰۴", query2: "ارزش افزوده ۱۴۰۴ چند درصد شد", recencyDays: 400 },
+  { topic: "rent-index", title: "افزایش اجاره‌بها", keywords: ["اجاره", "موجر", "مستأجر", "افزایش اجاره", "اجاره‌بها"], query: "ضابطه افزایش اجاره‌بها ۱۴۰۴ مصوب کارگروه ملی", query2: "افزایش اجاره ۱۴۰۴ چند درصد", recencyDays: 200 },
+  { topic: "eid-bonus", title: "عیدی و سنوات کارگران", keywords: ["عیدی", "سنوات", "حق سنوات", "پایان کار"], query: "مبلغ عیدی و سنوات کارگران ۱۴۰۴", query2: "عیدی ۱۴۰۴ کارگران چقدر شد", recencyDays: 400 },
 ];
 
 /* ─── کش درون‌حافظهٔ ۳۰ دقیقه‌ای برای خواندن سریع در هر درخواست چت ─── */
@@ -151,7 +153,17 @@ async function withTimeout<T>(task: Promise<T>, ms: number): Promise<T | null> {
 
 async function syncOneTopic(t: LawFactTopic): Promise<"ok" | "skip"> {
   try {
-    const results = (await withTimeout(webSearch(t.query, 5, t.recencyDays), TOPIC_WEB_MS)) ?? [];
+    // دو کوئری هم‌زمان (تفصیلی + کوتاه) — پوشش دوبرابر با همان بودجهٔ زمانی
+    const [ra, rb] = await Promise.all([
+      withTimeout(webSearch(t.query, 5, t.recencyDays), TOPIC_WEB_MS),
+      withTimeout(webSearch(t.query2, 5, t.recencyDays), TOPIC_WEB_MS),
+    ]);
+    const seen = new Set<string>();
+    const results = [...(ra ?? []), ...(rb ?? [])].filter((r) => {
+      if (!r?.url || seen.has(r.url)) return false;
+      seen.add(r.url);
+      return true;
+    });
     if (!results.length) return "skip";
     const context = results
       .slice(0, 5)
