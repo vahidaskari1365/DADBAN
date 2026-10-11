@@ -109,6 +109,90 @@ export function CourtSimClient({
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
+  /* ---------- صدای قاضی (TTS) — با کش حافظه برای پخش مجدد بدون مصرف سهمیه ---------- */
+  const [ttsState, setTtsState] = useState<{ idx: number; status: "loading" | "playing" } | null>(null);
+  const [ttsError, setTtsError] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const ttsCacheRef = useRef<Map<string, string>>(new Map());
+
+  function stopTts() {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    setTtsState(null);
+  }
+
+  useEffect(() => {
+    return () => {
+      // خروج از صفحه — توقف صدا و آزادسازی حافظه
+      audioRef.current?.pause();
+      audioRef.current = null;
+      if (audioUrlRef.current) {
+        URL.revokeObjectURL(audioUrlRef.current);
+        audioUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  async function speakJudge(idx: number, text: string) {
+    // همان پیام در حال پخش — توقف
+    if (ttsState?.idx === idx) {
+      stopTts();
+      return;
+    }
+    stopTts();
+    setTtsError(null);
+    const cacheKey = text.slice(0, 200);
+    const cached = ttsCacheRef.current.get(cacheKey);
+    if (cached) {
+      playUrl(cached, idx);
+      return;
+    }
+    setTtsState({ idx, status: "loading" });
+    try {
+      const res = await fetch("/api/ai/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.slice(0, 1024) }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setTtsState(null);
+        setTtsError(data?.error ?? t("تولید صدا در حال حاضر ممکن نیست."));
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      ttsCacheRef.current.set(cacheKey, url);
+      audioUrlRef.current = url;
+      playUrl(url, idx);
+    } catch {
+      setTtsState(null);
+      setTtsError(t("خطا در تولید صدا. لطفاً دوباره تلاش کنید."));
+    }
+  }
+
+  function playUrl(url: string, idx: number) {
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.onended = () => {
+      setTtsState(null);
+    };
+    audio.onerror = () => {
+      setTtsState(null);
+      setTtsError(t("پخش صدا ناموفق بود."));
+    };
+    setTtsState({ idx, status: "playing" });
+    void audio.play().catch(() => {
+      setTtsState(null);
+      setTtsError(t("پخش صدا ناموفق بود."));
+    });
+  }
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, feedback]);
@@ -339,7 +423,27 @@ export function CourtSimClient({
                     <Icon name={meta.icon} className="h-4 w-4" />
                   </span>
                   <div className={`max-w-[85%] rounded-2xl border px-3.5 py-2.5 ${meta.bubble}`}>
-                    <div className={`mb-0.5 text-[11px] font-bold ${meta.cls}`}>{t(meta.label)}</div>
+                    <div className={`mb-0.5 flex items-center gap-1.5 text-[11px] font-bold ${meta.cls}`}>
+                      {t(meta.label)}
+                      {String(m.speaker) === "judge" && (
+                        <button
+                          type="button"
+                          onClick={() => void speakJudge(i, m.text)}
+                          className="inline-flex h-6 w-6 items-center justify-center rounded-full transition-colors hover:bg-primary/10"
+                          aria-label={ttsState?.idx === i ? t("توقف صدا") : t("پخش صدای قاضی")}
+                          title={t("صدای قاضی")}
+                          data-testid={`judge-tts-${i}`}
+                        >
+                          {ttsState?.idx === i && ttsState.status === "loading" ? (
+                            <Spinner className="h-3.5 w-3.5" />
+                          ) : ttsState?.idx === i && ttsState.status === "playing" ? (
+                            <Icon name="volume-off" className="h-3.5 w-3.5" />
+                          ) : (
+                            <Icon name="volume" className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      )}
+                    </div>
                     <p className="whitespace-pre-wrap text-[13px] leading-7 text-foreground">{m.text}</p>
                   </div>
                 </div>
@@ -379,6 +483,12 @@ export function CourtSimClient({
           {turns >= MAX_COURT_TURNS && active && (
             <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
               {t("سقف نوبت‌های این جلسه پر شد. با «پایان جلسه و بازخورد» جمع‌بندی کنید یا جلسهٔ تازه بسازید.")}
+            </p>
+          )}
+
+          {ttsError && (
+            <p role="status" className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+              {ttsError}
             </p>
           )}
         </Card>

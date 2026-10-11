@@ -11,7 +11,7 @@
 import "server-only";
 import { db } from "@/db";
 import { cases, caseDocuments, caseDocTexts, caseAnalyses } from "@/db/schema";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { extractContractFile } from "@/lib/extract-text";
 
 /* ── سقف‌های بودجهٔ توکن: تعداد سند × کاراکتر سند ── */
@@ -216,6 +216,78 @@ export function buildAnalysisSystemPrompt(): string {
 
 export function buildAnalysisUserPrompt(): string {
   return "متن پرونده در پیام‌های قبل آمده است. حالا تحلیل کامل پرونده را با ساختار ۶ عنوانی بنویس، به فارسیِ حقوقی و مختصر و دقیق.";
+}
+
+/* ────────────── تحلیل افزایشی (فقط اسناد جدید + به‌روزرسانی تحلیل قبلی) ────────────── */
+
+/**
+ * بافتار «تحلیل افزایشی»: تحلیل قبلی + فقط اسنادی که بعد از آن تحلیل استخراج شده‌اند.
+ * اگر سند جدیدی نباشد null برمی‌گردد (مسیر باید به تحلیل کامل برگردد).
+ */
+export async function buildCaseDeltaContextChunks(
+  caseId: number,
+  prevAnalysis: { createdAt: Date },
+): Promise<{ chunks: string[]; newDocCount: number } | null> {
+  const newDocs = await db
+    .select({ documentId: caseDocTexts.documentId, text: caseDocTexts.text, updatedAt: caseDocTexts.updatedAt })
+    .from(caseDocTexts)
+    .where(and(eq(caseDocTexts.caseId, caseId), sql`${caseDocTexts.updatedAt} > ${prevAnalysis.createdAt.toISOString()}`))
+    .orderBy(desc(caseDocTexts.updatedAt))
+    .limit(MAX_DOCS_IN_CONTEXT);
+  if (newDocs.length === 0) return null;
+
+  const names = await db.select({ id: caseDocuments.id, name: caseDocuments.name }).from(caseDocuments).where(eq(caseDocuments.caseId, caseId)).limit(60);
+  const nameMap = new Map(names.map((n) => [n.id, n.name]));
+
+  const [caseRow] = await db.select().from(cases).where(eq(cases.id, caseId)).limit(1);
+  const header = [
+    "مشخصات پرونده در سامانه:",
+    `- موضوع: ${caseRow?.subject ?? "—"}`,
+    `- مرحله: ${caseRow?.stage ?? "—"}`,
+    `- شرح موکل: ${(caseRow?.description ?? "").slice(0, 800)}`,
+  ].join("\n");
+  const parts: string[] = [header];
+  newDocs.forEach((d, i) => {
+    const name = nameMap.get(d.documentId) ?? `سند جدید ${i + 1}`;
+    parts.push(`─── سند جدید ${i + 1}: «${name}» ───\n${d.text.slice(0, MAX_DOC_CHARS)}`);
+  });
+
+  const joined = parts.join("\n\n");
+  const chunks: string[] = [];
+  for (let i = 0; i < joined.length; i += CONTEXT_CHUNK_CHARS) {
+    chunks.push(joined.slice(i, i + CONTEXT_CHUNK_CHARS));
+  }
+  return { chunks: chunks.slice(0, 3), newDocCount: newDocs.length };
+}
+
+/** تحلیل قبلی به‌عنوان چانک ورودی تحلیل افزایشی (هر بخش سقف‌دار) */
+export function buildPrevAnalysisChunk(prev: CaseAnalysisSections): string {
+  const cap = (s: string) => (s || "—").slice(0, 700);
+  return [
+    "─── تحلیل قبلی پرونده (مبنای به‌روزرسانی) ───",
+    ...SECTION_TITLES.map((s) => `### ${s.title}\n${cap(prev[s.key])}`),
+  ].join("\n");
+}
+
+export function buildDeltaAnalysisSystemPrompt(): string {
+  return [
+    "تو کارشناس ارشد حقوقی ایران هستی و «تحلیل قبلی یک پرونده» را با اسناد جدید به‌روز می‌کنی.",
+    "ورودی: تحلیل قبلی (۶بخشی) + مشخصات پرونده + فقط متن اسناد جدیدی که بعد از تحلیل قبلی اضافه شده‌اند.",
+    "خروجی را دقیقاً با همان ۶ عنوان و با همان ترتیب بنویس؛ هر عنوان در یک خط و به‌صورت «### عنوان» :",
+    ...SECTION_TITLES.map((s) => `### ${s.title}`),
+    "",
+    "قواعد الزامی:",
+    "۱) بخش‌های قبلی که با اسناد جدید تغییری نمی‌کنند را عیناً حفظ کن (با ویرایش جزئی اگر لازم است).",
+    "۲) تأثیر هر سند جدید را در بخش‌های مرتبط (خلاصه/قوت/ضعف/تناقض/مدارک ناقص/گام بعدی) بگنجان و نام سند جدید را صریح ذکر کن.",
+    "۳) اگر سند جدید با سند قبلی تناقض دارد، آن را در بخش تناقض‌ها با نقل دقیق از هر دو سند بیفزا.",
+    "۴) هر یافته باید مبنا داشته باشد: نام سند (قدیم یا جدید) یا «شرح موکل».",
+    "۵) تناقض‌ها همیشه «احتمالی»‌اند؛ هیچ تضمینی برای نتیجهٔ دادگاه نده.",
+    "۶) فقط به موادی که از وجودشان مطمئنی استناد کن؛ هرگز مادهٔ ناموجود نساز.",
+  ].join("\n");
+}
+
+export function buildDeltaAnalysisUserPrompt(): string {
+  return "تحلیل قبلی و اسناد جدید در پیام‌های قبل آمده است. تحلیل به‌روزشدهٔ کامل را با همان ساختار ۶ عنوانی بنویس — به فارسی حقوقی، مختصر و دقیق.";
 }
 
 /** لایحهٔ دفاعیه از دل پرونده — با سبک وکیل (بافتار جداگانه به‌صورت چانک ارسال می‌شود) */

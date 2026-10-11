@@ -8,13 +8,21 @@
 // ۴) تمرین دادگاه: لینک به شبیه‌سازی با همین پرونده
 // ============================================================
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Card, Button, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 import type { CaseDeskDoc } from "@/lib/case-desk";
+import {
+  CASE_KINDS,
+  buildChecklist,
+  checklistToText,
+  detectCaseKind,
+  getCaseKindInfo,
+  type CaseKind,
+} from "@/lib/case-checklist";
 
 function Spinner({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -85,6 +93,50 @@ export function CaseDeskClient({
   const [brief, setBrief] = useState("");
   const [copied, setCopied] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+
+  /* ---------- چک‌لیست مدارک (تشخیص خودکار نوع دعوا + ذخیرهٔ تیک‌ها در مرورگر) ---------- */
+  const autoKind = useMemo(() => detectCaseKind(caseRow.subject, caseRow.description), [caseRow.subject, caseRow.description]);
+  const [checklistKind, setChecklistKind] = useState<CaseKind | null>(null);
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [checklistCopied, setChecklistCopied] = useState(false);
+  const activeKind = checklistKind ?? autoKind;
+  const kindInfo = getCaseKindInfo(activeKind);
+  const checklistItems = useMemo(() => buildChecklist(activeKind), [activeKind]);
+  const doneCount = checklistItems.filter((i) => checked[i.key]).length;
+  const progressPct = checklistItems.length ? Math.round((doneCount / checklistItems.length) * 100) : 0;
+  const checklistKey = `dadban:checklist:${caseRow.caseNumber}`;
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      try {
+        const raw = localStorage.getItem(`dadban:checklist:${caseRow.caseNumber}`);
+        if (!raw) return;
+        const data = JSON.parse(raw) as { kind?: CaseKind; checked?: Record<string, boolean> };
+        if (data.kind && CASE_KINDS.some((k) => k.kind === data.kind)) setChecklistKind(data.kind);
+        if (data.checked && typeof data.checked === "object") setChecked(data.checked);
+      } catch { /* مرورگر قدیمی یا دادهٔ خراب — بی‌صدا */ }
+    });
+  }, [caseRow.caseNumber]);
+
+  function setChecklistState(nextKind: CaseKind, nextChecked: Record<string, boolean>) {
+    setChecklistKind(nextKind === autoKind ? null : nextKind);
+    setChecked(nextChecked);
+    try {
+      localStorage.setItem(checklistKey, JSON.stringify({ kind: nextKind, checked: nextChecked }));
+    } catch { /* حالت ناشناس/پرمشدگی حافظه — فقط UI آپدیت می‌ماند */ }
+  }
+
+  function toggleItem(key: string) {
+    setChecklistState(activeKind, { ...checked, [key]: !checked[key] });
+  }
+
+  async function copyChecklist() {
+    try {
+      await navigator.clipboard.writeText(checklistToText(activeKind, checked));
+      setChecklistCopied(true);
+      setTimeout(() => setChecklistCopied(false), 2000);
+    } catch { /* clipboard unavailable */ }
+  }
 
   const extractedCount = docs.filter((d) => d.chars !== null).length;
   const withText = extractedCount > 0;
@@ -184,8 +236,8 @@ export function CaseDeskClient({
     }
   }
 
-  /* ---------- تحلیل کل پرونده ---------- */
-  async function analyze() {
+  /* ---------- تحلیل کل پرونده (کامل یا افزایشی) ---------- */
+  async function analyze(mode: "full" | "delta" = "full") {
     setBusy("analyze");
     setError(null);
     setNotice(null);
@@ -193,7 +245,7 @@ export function CaseDeskClient({
     setRawStream("");
     await readSse(
       "/api/case-desk/analyze",
-      { caseNumber: caseRow.caseNumber },
+      { caseNumber: caseRow.caseNumber, mode },
       (acc) => setRawStream(acc),
       (obj) => {
         if (obj.sections && typeof obj.sections === "object") {
@@ -215,6 +267,9 @@ export function CaseDeskClient({
     );
     setBusy("none");
   }
+
+  /** تعداد سندِ با متنِ استخراج‌شده که بعد از تحلیل فعلی اضافه شده */
+  const deltaCount = analysis ? Math.max(0, extractedCount - analysis.docCount) : 0;
 
   /* ---------- تولید لایحه ---------- */
   async function makeBrief() {
@@ -333,7 +388,80 @@ export function CaseDeskClient({
         )}
       </Card>
 
-      {/* ۲) تحلیل کل پرونده */}
+      {/* ۲) چک‌لیست مدارک بر اساس نوع دعوا */}
+      <Card hover={false} id="desk-checklist" className="border-primary/20">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="flex items-center gap-2 text-[15px] font-bold text-foreground">
+            <Icon name="check" className="h-5 w-5 text-primary" />
+            {t("چک‌لیست مدارک لازم")}
+            <Badge tone="neutral">{t(kindInfo.title)}</Badge>
+            {autoKind !== "general" && checklistKind === null && (
+              <Badge tone="accent">{t("تشخیص خودکار از موضوع پرونده")}</Badge>
+            )}
+          </h3>
+          <Button size="sm" variant="outline" icon={checklistCopied ? "check" : "copy"} onClick={copyChecklist}>
+            {checklistCopied ? t("کپی شد") : t("کپی چک‌لیست")}
+          </Button>
+        </div>
+        <div className="mb-3 grid gap-3 sm:grid-cols-[200px_1fr] sm:items-end">
+          <div>
+            <label className="mb-1.5 block text-[13px] font-semibold text-foreground" htmlFor="checklist-kind">
+              {t("نوع دعوا")}
+            </label>
+            <select
+              id="checklist-kind"
+              className={inputCls + " h-11"}
+              value={activeKind}
+              onChange={(e) => setChecklistState(e.target.value as CaseKind, checked)}
+            >
+              {CASE_KINDS.map((k) => (
+                <option key={k.kind} value={k.kind}>{t(k.title)}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <div className="mb-1 flex items-center justify-between text-xs text-foreground-soft">
+              <span>{tt("{n} از {m} تکمیل شد", { n: String(doneCount), m: String(checklistItems.length) })}</span>
+              <span>{progressPct.toLocaleString("fa-IR")}٪</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={progressPct} aria-valuemin={0} aria-valuemax={100}>
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPct}%` }} />
+            </div>
+          </div>
+        </div>
+        <div className="max-h-80 space-y-2 overflow-y-auto pr-1" data-testid="checklist-items">
+          {checklistItems.map((item) => (
+            <label
+              key={item.key}
+              className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-border-strong bg-background p-2.5 transition-colors hover:border-primary/40"
+            >
+              <input
+                type="checkbox"
+                checked={!!checked[item.key]}
+                onChange={() => toggleItem(item.key)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--primary)]"
+                aria-label={item.label}
+              />
+              <span className="min-w-0">
+                <span className={`text-[13px] font-medium ${checked[item.key] ? "text-foreground-soft line-through" : "text-foreground"}`}>
+                  {item.label}
+                </span>
+                {item.required && (
+                  <span className="mx-1.5 inline-block align-middle text-[10px] font-bold text-accent-text">
+                    ({t("لازم")})
+                  </span>
+                )}
+                {item.hint && <span className="mt-0.5 block text-[11.5px] leading-5 text-foreground-soft">{item.hint}</span>}
+              </span>
+            </label>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-foreground-soft">
+          {t("این چک‌لیست راهنمای عمومی است؛ تکمیل خودکار به‌ازای نوع دعوا انجام می‌شود و تیک‌ها فقط در مرورگر شما ذخیره می‌گردند. تشخیص نهایی مدارک لازم با وکیل پرونده است.")}
+        </p>
+      </Card>
+
+      {/* ۳) تحلیل کل پرونده */}
       <Card hover={false} id="desk-analysis" className="border-primary/30">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 className="flex items-center gap-2 text-[15px] font-bold text-foreground">
@@ -344,8 +472,17 @@ export function CaseDeskClient({
             <Button size="sm" variant="ghost" icon="x" onClick={stop}>
               {t("توقف")}
             </Button>
+          ) : analysis && deltaCount > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="accent" icon="sparkles" onClick={() => void analyze("delta")} disabled={busy !== "none"} data-testid="analyze-delta-btn">
+                {tt("تحلیل افزایشی ({n} سند جدید)", { n: String(deltaCount) })}
+              </Button>
+              <Button size="sm" variant="outline" icon="search" onClick={() => void analyze("full")} disabled={busy !== "none"}>
+                {t("تحلیل کامل مجدد")}
+              </Button>
+            </div>
           ) : (
-            <Button size="sm" variant="accent" icon="sparkles" onClick={analyze} disabled={busy !== "none"}>
+            <Button size="sm" variant="accent" icon="sparkles" onClick={() => void analyze("full")} disabled={busy !== "none"}>
               {analysis ? t("تحلیل مجدد پرونده") : t("تحلیل کل پرونده")}
             </Button>
           )}
@@ -388,7 +525,7 @@ export function CaseDeskClient({
         )}
       </Card>
 
-      {/* ۳) لایحهٔ دفاعیه از دل پرونده */}
+      {/* ۴) لایحهٔ دفاعیه از دل پرونده */}
       <Card hover={false} id="desk-brief">
         <h3 className="mb-3 flex items-center gap-2 text-[15px] font-bold text-foreground">
           <Icon name="signature" className="h-5 w-5 text-primary" />
@@ -456,7 +593,7 @@ export function CaseDeskClient({
         )}
       </Card>
 
-      {/* ۴) تمرین دادگاه */}
+      {/* ۵) تمرین دادگاه */}
       <Card hover={false} className="border-accent/40 bg-accent-soft/30">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

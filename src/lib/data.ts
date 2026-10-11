@@ -11,7 +11,9 @@ export type IconKey =
   | "signature" | "handshake" | "fingerprint" | "certificate" | "coins"
   | "globe"
   /* آیکن‌های چت دستیار — تاریخچه گفتگو */
-  | "trash" | "copy";
+  | "trash" | "copy"
+  /* آیکن صدا — پخش صدای قاضی در شبیه‌سازی دادگاه */
+  | "volume" | "volume-off";
 
 /* ---------------- Legal topics (hero selector) ---------------- */
 export const LEGAL_TOPICS: { label: string; icon: IconKey; hint: string }[] = [

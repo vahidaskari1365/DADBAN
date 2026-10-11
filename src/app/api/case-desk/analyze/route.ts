@@ -13,9 +13,14 @@ import { caseAnalyses } from "@/db/schema";
 import {
   loadCaseForDesk,
   buildCaseContextChunks,
+  buildCaseDeltaContextChunks,
+  buildPrevAnalysisChunk,
   buildAnalysisSystemPrompt,
   buildAnalysisUserPrompt,
+  buildDeltaAnalysisSystemPrompt,
+  buildDeltaAnalysisUserPrompt,
   parseAnalysisSections,
+  latestCaseAnalysis,
 } from "@/lib/case-desk";
 
 export const runtime = "nodejs";
@@ -32,6 +37,7 @@ export async function POST(req: Request) {
   const body = await readJson(req, 4_096);
   const caseNumber = typeof body?.caseNumber === "string" ? body.caseNumber.trim().slice(0, 60) : "";
   if (!caseNumber) return Response.json({ ok: false, error: "شمارهٔ پرونده ارسال نشده است." }, { status: 422 });
+  const deltaRequested = body?.mode === "delta";
 
   const access = await loadCaseForDesk(user, caseNumber);
   if (!access.ok) {
@@ -40,19 +46,38 @@ export async function POST(req: Request) {
       { status: access.reason === "forbidden" ? 403 : 404 },
     );
   }
+
+  /* ── تحلیل افزایشی: تحلیل قبلی + فقط اسناد جدید — بی‌دلیل سبک‌تر از تحلیل کامل ── */
   let chunks: string[] = [];
   let docCount = 0;
+  let system = "";
+  let userPrompt = "";
+  let deltaMode = false;
+  let newDocCount = 0;
   try {
     const built = await buildCaseContextChunks(access.case.id);
     chunks = built.chunks;
     docCount = built.docCount;
+    system = buildAnalysisSystemPrompt();
+    userPrompt = buildAnalysisUserPrompt();
+    if (deltaRequested) {
+      const prev = await latestCaseAnalysis(access.case.id);
+      if (prev) {
+        const delta = await buildCaseDeltaContextChunks(access.case.id, { createdAt: prev.createdAt });
+        if (delta) {
+          deltaMode = true;
+          newDocCount = delta.newDocCount;
+          chunks = [buildPrevAnalysisChunk(prev), ...delta.chunks];
+          system = buildDeltaAnalysisSystemPrompt();
+          userPrompt = buildDeltaAnalysisUserPrompt();
+        }
+      }
+    }
   } catch (err) {
     console.error("[dadban] case-desk analyze: context build failed:", err);
     return Response.json({ ok: false, error: "ساخت بافتار پرونده ناموفق بود. ابتدا متن اسناد را استخراج کنید." }, { status: 502 });
   }
 
-  const system = buildAnalysisSystemPrompt();
-  const userPrompt = buildAnalysisUserPrompt();
   // بافتار پرونده به‌صورت چانک‌های ≤۶.۵k + پیام نهایی دستور (هماهنگ با normalizeMessages در llm.ts)
   const llmMessages = [...chunks.map((c) => ({ role: "user", content: c })), { role: "user", content: userPrompt }];
 
@@ -86,6 +111,7 @@ export async function POST(req: Request) {
         if (!full) throw new Error("ai-empty");
 
         // استریم تدریجی (هم‌الگوی دادخواست‌ساز)
+        if (!closed && !req.signal.aborted) send(controller, { phase: deltaMode ? "delta" : "full", newDocs: deltaMode ? newDocCount : undefined });
         for (let i = 0; i < full.length; i += 10) {
           if (req.signal.aborted || closed) break;
           send(controller, { delta: full.slice(i, i + 10) });

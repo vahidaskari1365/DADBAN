@@ -52,6 +52,8 @@ const paths: Record<IconKey, (p: P) => ReactElement> = {
   chevron: (p) => (<svg {...base(p)}><path d="m9 18 6-6-6-6" /></svg>),
   plus: (p) => (<svg {...base(p)}><path d="M12 5v14M5 12h14" /></svg>),
   filter: (p) => (<svg {...base(p)}><path d="M22 3H2l8 9.5V19l4 2v-8.5z" /></svg>),
+  volume: (p) => (<svg {...base(p)}><path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /></svg>),
+  "volume-off": (p) => (<svg {...base(p)}><path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="m22 9-6 6M16 9l6 6" /></svg>),
   x: (p) => (<svg {...base(p)}><path d="M18 6 6 18M6 6l12 12" /></svg>),
   send: (p) => (<svg {...base(p)}><path d="m22 2-7 20-4-9-9-4z" /><path d="M22 2 11 13" /></svg>),
   menu: (p) => (<svg {...base(p)}><path d="M4 6h16M4 12h16M4 18h16" /></svg>),
