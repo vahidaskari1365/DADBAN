@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LOCATIONS, faNum } from "@/lib/data";
+import { MoneyInput } from "@/components/money-input";
 import { LawyerPhoto } from "@/components/lawyer-photo";
 
 /**
@@ -274,14 +275,11 @@ export function ReferForm({
             <label htmlFor="ref-budget" className={labelCls}>
               بودجهٔ مورد انتظار (تومان — اختیاری)
             </label>
-            <input
+            <MoneyInput
               id="ref-budget"
               value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-              type="text"
-              inputMode="numeric"
-              dir="ltr"
-              placeholder="مثال: 50000000"
+              onValueChange={setBudget}
+              placeholder="مثال: 50,000,000"
               className={`${fieldCls} tnum`}
             />
           </div>

@@ -5,6 +5,7 @@ import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
 import { StatusBadge, UrgencyBadge, Timeline } from "@/components/managed";
 import { STATUS_LABELS, faNumSafe } from "@/lib/managed-labels";
+import { MoneyInput } from "@/components/money-input";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 
@@ -333,7 +334,7 @@ export default function ManagedOperations({ currentRole }: { currentRole: string
                 <div className="rounded-xl border border-border p-3">
                   <label className="mb-1 block text-xs font-medium text-muted">{t("صدور پیش‌فاکتور جدید (تومان)")}</label>
                   <div className="flex gap-2">
-                    <input value={quoteTotal} onChange={(e) => setQuoteTotal(e.target.value)} type="number" placeholder={t("مبلغ کل")}
+                    <MoneyInput value={quoteTotal} onValueChange={setQuoteTotal} placeholder={t("مبلغ کل — مثلاً 15,000,000")}
                       className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary" />
                     <Button disabled={busy} size="sm" icon="send" onClick={createQuote}>{t("صدور")}</Button>
                   </div>

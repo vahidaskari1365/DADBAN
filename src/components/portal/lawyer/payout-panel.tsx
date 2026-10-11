@@ -7,6 +7,7 @@ import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { StatusBadge } from "@/components/panel-widgets";
 import { formatToman, formatJalali, labelStatus, shortToman, toEn } from "@/lib/money";
+import { MoneyInput } from "@/components/money-input";
 import type { PayoutItem } from "./portal-server";
 
 /** فرم و فهرست درخواست‌های برداشت — POST /api/portal/lawyer/finance */
@@ -92,11 +93,10 @@ export function PayoutPanel({
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1.5 block text-xs text-muted">مبلغ (تومان) — قابل برداشت: {shortToman(available)}</span>
-              <input
+              <MoneyInput
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                inputMode="numeric"
-                placeholder="مثلاً ۵۰۰۰۰۰۰۰"
+                onValueChange={setAmount}
+                placeholder="مثلاً 50,000,000"
                 className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
               />
             </label>

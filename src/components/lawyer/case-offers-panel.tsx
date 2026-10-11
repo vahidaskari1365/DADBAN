@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
+import { MoneyInput } from "@/components/money-input";
 import { relativeTimeJalali, formatJalaliDateTime } from "@/lib/jalali";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
@@ -215,13 +216,10 @@ export function CaseOffersPanel() {
                     aria-label={tf("نظر شما دربارهٔ پرونده {n}", { n: c.caseNumber })}
                   />
                   <div className="flex gap-2">
-                    <input
+                    <MoneyInput
                       value={price[c.id] ?? ""}
-                      onChange={(e) => setPrice((p) => ({ ...p, [c.id]: e.target.value }))}
-                      type="number"
-                      inputMode="numeric"
-                      min={0}
-                      placeholder={t("قیمت اعلامی (تومان)")}
+                      onValueChange={(v) => setPrice((p) => ({ ...p, [c.id]: v }))}
+                      placeholder={t("قیمت اعلامی (تومان) — مثلاً 5,000,000")}
                       className="h-10 w-full rounded-xl border border-border-strong bg-background px-3 text-xs outline-none focus:border-primary"
                       aria-label={t("قیمت اعلامی به تومان")}
                     />

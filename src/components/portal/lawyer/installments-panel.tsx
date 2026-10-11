@@ -7,6 +7,7 @@ import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { StatusBadge } from "@/components/panel-widgets";
 import { formatToman, formatJalali, labelStatus, shortToman, toEn, toFa } from "@/lib/money";
+import { MoneyInput } from "@/components/money-input";
 
 export type InstallmentView = {
   id: number;
@@ -171,11 +172,10 @@ export function InstallmentsPanel({
             <div className="mt-4 grid gap-3 rounded-xl border border-dashed border-border p-4 sm:grid-cols-[1fr_110px_auto] sm:items-end">
               <label className="block">
                 <span className="mb-1.5 block text-xs text-muted">مبلغ درخواست اعتبار برای موکل (تومان)</span>
-                <input
+                <MoneyInput
                   value={creditAmount}
-                  onChange={(e) => setCreditAmount(e.target.value)}
-                  inputMode="numeric"
-                  placeholder="مثلاً ۹۰۰۰۰۰۰۰"
+                  onValueChange={setCreditAmount}
+                  placeholder="مثلاً 90,000,000"
                   className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
                 />
               </label>
@@ -257,11 +257,10 @@ export function InstallmentsPanel({
           <div className="mt-4 grid gap-3 rounded-xl border border-dashed border-border p-4 sm:grid-cols-[1fr_170px_auto] sm:items-end">
             <label className="block">
               <span className="mb-1.5 block text-xs text-muted">مبلغ قسط جدید (تومان)</span>
-              <input
+              <MoneyInput
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                inputMode="numeric"
-                placeholder="مثلاً ۸۲۰۰۰۰۰۰"
+                onValueChange={setAmount}
+                placeholder="مثلاً 82,000,000"
                 className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
               />
             </label>

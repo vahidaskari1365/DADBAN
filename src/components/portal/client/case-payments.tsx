@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/icons";
 import { StatusBadge } from "@/components/panel-widgets";
 import { formatJalali, formatToman, groupFa, labelStatus, toEn, toFa } from "@/lib/money";
+import { MoneyInput } from "@/components/money-input";
 import type { CreditItem, InstallmentItem } from "./types";
 
 const CREDIT_STEPS = ["ثبت درخواست", "ارسال به تأمین‌کننده", "اعتبارسنجی", "تأیید", "واریز"] as const;
@@ -277,12 +278,11 @@ export default function CasePayments({
             <label htmlFor="dp-credit-amount" className="mb-1 block text-xs font-semibold text-foreground-soft">
               مبلغ درخواستی (تومان)
             </label>
-            <input
+            <MoneyInput
               id="dp-credit-amount"
               value={amount}
-              onChange={(e) => setAmount(e.target.value.replace(/[^\d۰-۹]/g, ""))}
-              inputMode="numeric"
-              placeholder="مثلاً ۵۰٬۰۰۰٬۰۰۰"
+              onValueChange={setAmount}
+              placeholder="مثلاً 50,000,000"
               className="h-11 w-full rounded-xl border border-border-strong bg-background px-3 text-sm outline-none focus:border-primary"
             />
             {amount && (

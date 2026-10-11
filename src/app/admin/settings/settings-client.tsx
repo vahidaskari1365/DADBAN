@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { toFa, formatToman } from "@/lib/money";
+import { MoneyInput } from "@/components/money-input";
 import { formatJalaliLong } from "@/lib/jalali";
 
 type SettingsMap = Record<string, string>;
@@ -172,16 +173,26 @@ export default function SettingsClient({ settings, legalReviews }: { settings: S
           </label>
           <p className="mt-1.5 text-xs leading-6 text-muted">{f.hint}</p>
           <div className="mt-3 flex items-center gap-2">
-            <input
-              id={`set-${f.key}`}
-              type={f.type}
-              value={values[f.key] ?? ""}
-              onChange={(e) => setValues((prev) => ({ ...prev, [f.key]: e.target.value }))}
-              dir={f.type === "number" ? "ltr" : "ltr"}
-              className="h-11 w-full max-w-[220px] rounded-xl border border-border bg-background px-3.5 text-sm font-bold text-foreground outline-none transition-colors focus:border-accent"
-              min={f.type === "number" ? 0 : undefined}
-              required
-            />
+            {f.suffix === "تومان" ? (
+              <MoneyInput
+                id={`set-${f.key}`}
+                value={values[f.key] ?? ""}
+                onValueChange={(v) => setValues((prev) => ({ ...prev, [f.key]: v }))}
+                className="h-11 w-full max-w-[220px] rounded-xl border border-border bg-background px-3.5 text-sm font-bold text-foreground outline-none transition-colors focus:border-accent"
+                required
+              />
+            ) : (
+              <input
+                id={`set-${f.key}`}
+                type={f.type}
+                value={values[f.key] ?? ""}
+                onChange={(e) => setValues((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                dir="ltr"
+                className="h-11 w-full max-w-[220px] rounded-xl border border-border bg-background px-3.5 text-sm font-bold text-foreground outline-none transition-colors focus:border-accent"
+                min={f.type === "number" ? 0 : undefined}
+                required
+              />
+            )}
             {f.suffix && <span className="text-xs font-bold text-muted">{f.suffix}</span>}
           </div>
           {f.key === "payout_min" && Number(values[f.key] || 0) > 0 && (

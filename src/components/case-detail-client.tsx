@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Container, Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
+import { MoneyInput } from "@/components/money-input";
 import { relativeTimeJalali } from "@/lib/jalali";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
@@ -315,13 +316,10 @@ export function CaseDetailClient({ caseId }: { caseId: number }) {
 
                     <label className="mt-3 block">
                       <span className="text-xs font-bold text-foreground">{t("قیمت پیشنهادی (تومان) *")}</span>
-                      <input
+                      <MoneyInput
                         value={bidPrice}
-                        onChange={(e) => setBidPrice(e.target.value.replace(/[^\d]/g, ""))}
-                        type="text"
-                        inputMode="numeric"
-                        dir="ltr"
-                        placeholder={t("مثلاً 5000000")}
+                        onValueChange={setBidPrice}
+                        placeholder={t("مثلاً 5,000,000")}
                         className={fieldCls + " mt-1.5 text-end"}
                         aria-label={t("قیمت پیشنهادی (تومان) *")}
                         data-testid="proposal-price"

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { shortToman, toFa, toEn } from "@/lib/money";
+import { MoneyInput } from "@/components/money-input";
 import type { MarketItem } from "./portal-server";
 
 const SPECIALTIES = ["همه تخصص‌ها", "ملکی", "کیفری", "خانواده", "چک و اسناد", "قراردادها", "تجاری", "حقوقی"];
@@ -234,11 +235,10 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
               </div>
               <label className="block">
                 <span className="mb-1.5 block text-xs text-muted">حق‌الوکاله پیشنهادی (تومان)</span>
-                <input
+                <MoneyInput
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  inputMode="numeric"
-                  placeholder="مثلاً ۱۲۰۰۰۰۰۰۰"
+                  onValueChange={setAmount}
+                  placeholder="مثلاً 120,000,000"
                   className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
                 />
                 {amount && <span className="mt-1 block text-[11px] text-accent">{shortToman(toEn(amount).replace(/[^\d]/g, ""))} تومان</span>}

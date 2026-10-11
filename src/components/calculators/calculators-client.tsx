@@ -5,6 +5,7 @@ import { Card, Button, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { faNum } from "@/lib/data";
+import { MoneyInput } from "@/components/money-input";
 import type { IconKey } from "@/lib/data";
 import { useT } from "@/lib/i18n/provider";
 
@@ -150,12 +151,10 @@ function MahrCalc() {
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <Field label={t("مبلغ مهریه (تومان)")} hint={t("نتیجه با هر تغییر، زنده به‌روز می‌شود")}>
-            <input
-              type="text"
-              inputMode="numeric"
+            <MoneyInput
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder={t("مثلاً ۱۰۰۰۰۰۰۰۰۰")}
+              onValueChange={setAmount}
+              placeholder={t("مثلاً 1,000,000,000")}
               className={fieldCls}
             />
           </Field>
@@ -280,11 +279,9 @@ function DiyaCalc() {
           </select>
         </Field>
         <Field label={t("دیهٔ کامل (ریال)")} hint={t("مبلغ پیش‌فرض بر اساس سال انتخابی — قابل ویرایش")}>
-          <input
-            type="text"
-            inputMode="numeric"
+          <MoneyInput
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onValueChange={setAmount}
             className={fieldCls}
           />
         </Field>
@@ -383,11 +380,9 @@ function DelayCalc() {
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <Field label={t("مبلغ دیه (ریال)")}>
-            <input
-              type="text"
-              inputMode="numeric"
+            <MoneyInput
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onValueChange={setAmount}
               className={fieldCls}
             />
           </Field>
@@ -497,11 +492,9 @@ function CourtFeeCalc() {
         {kind === "mali" ? (
           <>
             <Field label={t("مبلغ خواسته (تومان)")}>
-              <input
-                type="text"
-                inputMode="numeric"
+              <MoneyInput
                 value={claim}
-                onChange={(e) => setClaim(e.target.value)}
+                onValueChange={setClaim}
                 className={fieldCls}
               />
             </Field>
@@ -543,11 +536,9 @@ function CourtFeeCalc() {
               label={t("هزینهٔ ثابت دعوای غیرمالی (تومان)")}
               hint={t("قابل ویرایش بر اساس مصوبهٔ سال جاری")}
             >
-              <input
-                type="text"
-                inputMode="numeric"
+              <MoneyInput
                 value={fixed}
-                onChange={(e) => setFixed(e.target.value)}
+                onValueChange={setFixed}
                 className={fieldCls}
               />
             </Field>
@@ -627,11 +618,9 @@ function LawyerFeeCalc() {
 
       <div className="mt-5">
         <Field label={t("سرمایهٔ دعوی (تومان)")}>
-          <input
-            type="text"
-            inputMode="numeric"
+          <MoneyInput
             value={capital}
-            onChange={(e) => setCapital(e.target.value)}
+            onValueChange={setCapital}
             className={fieldCls}
           />
         </Field>
@@ -653,12 +642,10 @@ function LawyerFeeCalc() {
               <td className="py-2 font-semibold text-foreground">{t("پلهٔ اول")}</td>
               <td className="py-2 text-muted">{t("تا")} {formatToman(FEE_B1)}</td>
               <td className="py-2">
-                <input
+                <MoneyInput
                   aria-label={t("مبلغ ثابت پلهٔ اول (تومان)")}
-                  type="text"
-                  inputMode="numeric"
                   value={fixed1}
-                  onChange={(e) => setFixed1(e.target.value)}
+                  onValueChange={setFixed1}
                   className={`${fieldCls} w-28`}
                 />
               </td>

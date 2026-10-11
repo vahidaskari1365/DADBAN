@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { ALL_PROVINCES, LOCATIONS, LEGAL_TOPICS, faPrice } from "@/lib/data";
+import { MoneyInput } from "@/components/money-input";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 
@@ -286,13 +287,10 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
               <span className="mb-1.5 flex items-center gap-1 text-xs font-medium text-muted">
                 <Icon name={icon} className="h-3.5 w-3.5" /> {tf("تعرفه {label}", { label })}
               </span>
-              <input
-                type="number"
-                min={0}
-                max={100000000}
+              <MoneyInput
                 value={value}
-                onChange={(e) => setter(e.target.value)}
-                dir="ltr"
+                onValueChange={(v) => setter(v === "" ? "" : String(Math.min(Number(v), 100000000)))}
+                placeholder="مثلاً 2,000,000"
                 className={inputCls}
               />
             </label>
