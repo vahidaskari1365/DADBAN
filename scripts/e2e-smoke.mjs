@@ -67,20 +67,20 @@ function dadbanCookie(res) {
   return null;
 }
 
-/** جستجوی بازگشتی اولین شیئی که caseNumber دارد (شکل پاسخ board ممکن است تغییر کند) */
-function findByCaseNumber(node, caseNumber, depth = 0) {
+/** جستجوی بازگشتی اولین شیئی که subject یکتا دارد (board عمداً caseNumber/تماس را ماسک می‌کند) */
+function findBySubject(node, subject, depth = 0) {
   if (!node || depth > 8) return null;
   if (Array.isArray(node)) {
     for (const item of node) {
-      const hit = findByCaseNumber(item, caseNumber, depth + 1);
+      const hit = findBySubject(item, subject, depth + 1);
       if (hit) return hit;
     }
     return null;
   }
   if (typeof node === "object") {
-    if (node.caseNumber === caseNumber && Number.isFinite(Number(node.id))) return node;
+    if (node.subject === subject && Number.isFinite(Number(node.id))) return node;
     for (const v of Object.values(node)) {
-      const hit = findByCaseNumber(v, caseNumber, depth + 1);
+      const hit = findBySubject(v, subject, depth + 1);
       if (hit) return hit;
     }
   }
@@ -134,13 +134,14 @@ async function main() {
   }
 
   /* ۴) ثبت پرونده → مزایده → پذیرش */
+  const SUBJECT = `[تست خودکار E2E ${new Date().toISOString().slice(0, 16)}] بررسی مسیر مزایده`;
   let caseNumber = null;
   let trackingToken = null;
   try {
     const { res, json } = await api("/api/cases", {
       method: "POST",
       body: {
-        subject: "[تست خودکار E2E] بررسی مسیر مزایده",
+        subject: SUBJECT,
         city: "تهران",
         name: "کاربر تست خودکار",
         phone: CLIENT.identifier,
@@ -162,7 +163,7 @@ async function main() {
   if (caseNumber && lawyerCookie) {
     try {
       const { res, json } = await api("/api/cases/board", { cookie: lawyerCookie });
-      const found = findByCaseNumber(json, caseNumber);
+      const found = findBySubject(json, SUBJECT);
       record("بازار پرونده‌ها (وکیل)", res.status === 200 && !!found, found ? `caseId=${found.id}` : "پروندهٔ تست در board نیست");
       if (found) {
         const offerRes = await api("/api/cases/offers", {
