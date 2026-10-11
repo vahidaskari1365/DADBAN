@@ -3,10 +3,11 @@ import { getDraftDef, missingRequired, buildSystemPrompt, buildUserPrompt } from
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
 import { styleBlockForUser } from "@/lib/lawyer-style";
-import { askLLM } from "@/lib/llm";
+import { askLLMRetry as askLLM } from "@/lib/llm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 const json = (obj: unknown, status: number) =>
   new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json" } });

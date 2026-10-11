@@ -362,6 +362,23 @@ export async function askLLM(
   return null;
 }
 
+/**
+ * askLLM با یک تلاش دوم — برای تولیدهای بلند (دادخواست/لایحه/تحلیل) که
+ * ارائه‌دهنده‌ها گاهی به‌صورت گذرا خالی برمی‌گردانند؛ تأمین‌کنندهٔ خراب در
+ * تلاش دوم کنار می‌رود (circuit breaker) و شانس موفقیت بالا می‌رود.
+ */
+export async function askLLMRetry(
+  messages: LlmMessage[],
+  maxTokens = 400,
+  systemPrompt = SYSTEM_LEGAL,
+  opts?: { sanitize?: boolean },
+): Promise<string | null> {
+  const first = await askLLM(messages, maxTokens, systemPrompt, opts);
+  if (first && first.trim().length > 1) return first;
+  await new Promise((r) => setTimeout(r, 1500));
+  return askLLM(messages, maxTokens, systemPrompt, opts);
+}
+
 /* ─── استریم زنده (SSE) — پاسخ تدریجی برای چتِ سریع مثل چت‌بات‌ها ─────── */
 
 /** پاکسازی سبک هر تکهٔ استریم — بدون trim تا فاصلهٔ بین کلمات از بین نرود */

@@ -7,7 +7,7 @@
 
 import { rateLimit, readJson, clientIp } from "@/lib/api-security";
 import { getCurrentUser } from "@/lib/user-auth";
-import { askLLM } from "@/lib/llm";
+import { askLLMRetry as askLLM } from "@/lib/llm";
 import { db } from "@/db";
 import { caseAnalyses } from "@/db/schema";
 import {
@@ -20,7 +20,7 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
