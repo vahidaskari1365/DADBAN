@@ -4,10 +4,6 @@
     {
       "path": "/api/ai/law-sync",
       "schedule": "30 0 * * *"
-    },
-    {
-      "path": "/api/health",
-      "schedule": "*/10 * * * *"
     }
   ]
 }
