@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       const traits = (
         (await Promise.race([
           askLLM([{ role: "user", content: userPrompt }], 600, system),
-          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 50_000)),
+          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 100_000)),
         ])) ?? ""
       ).trim();
       if (!traits) return json({ ok: false, error: "استخراج سبک ناموفق بود. دوباره تلاش کنید." }, 502);

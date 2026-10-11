@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     const raw = (
       (await Promise.race([
         askLLM(history.slice(-14), 700, session.scenario),
-        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 70_000)),
+        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 100_000)),
       ])) ?? ""
     ).trim();
     if (!raw) return Response.json({ ok: false, error: "پاسخ جلسه دریافت نشد. دوباره تلاش کنید." }, { status: 502 });

@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     const feedback = (
       (await Promise.race([
         askLLM([{ role: "user", content: userPrompt }], 1400, system),
-        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 80_000)),
+        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 100_000)),
       ])) ?? ""
     ).trim();
     await db

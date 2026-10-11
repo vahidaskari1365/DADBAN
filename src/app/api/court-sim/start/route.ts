@@ -67,7 +67,7 @@ export async function POST(req: Request) {
           700,
           scenario,
         ),
-        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 70_000)),
+        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 100_000)),
       ])) ?? ""
     ).trim();
     if (!opening) return Response.json({ ok: false, error: "شروع جلسه ناموفق بود. دوباره تلاش کنید." }, { status: 502 });
