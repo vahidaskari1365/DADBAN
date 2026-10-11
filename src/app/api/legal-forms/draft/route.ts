@@ -1,6 +1,9 @@
 import { getZai, isAiAvailable } from "@/lib/ai";
 import { rateLimit, readJson, clientIp } from "@/lib/api-security";
 import { getDraftDef, missingRequired, buildSystemPrompt, buildUserPrompt } from "@/lib/legal-drafts";
+import { getCurrentUser } from "@/lib/user-auth";
+import { isLawyerSideRole } from "@/lib/roles";
+import { styleBlockForUser } from "@/lib/lawyer-style";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,8 +56,21 @@ export async function POST(req: Request) {
     return json({ ok: false, error: "سرویس هوش مصنوعی موقتاً در دسترس نیست. بعداً تلاش کنید." }, 503);
   }
 
-  const system = buildSystemPrompt(def);
+  const systemBase = buildSystemPrompt(def);
   const user = buildUserPrompt(def, answers);
+
+  // «سبک اختصاصی وکیل»: اگر کاربر لاگین‌شده وکیل باشد و پروفایل سبک داشته باشد،
+  // ادبیات سند باید با سبک خودِ او هم‌سانی بگیرد (نه ادبیات عمومی مدل).
+  let system = systemBase;
+  try {
+    const current = await getCurrentUser();
+    if (current && (isLawyerSideRole(current.role) || current.role === "staff" || current.role === "supervisor")) {
+      const styleBlock = await styleBlockForUser(current.id);
+      if (styleBlock) system = `${systemBase}\n\n${styleBlock}`;
+    }
+  } catch {
+    /* بدون سبک هم تولید ادامه می‌یابد */
+  }
 
   const encoder = new TextEncoder();
   const send = (controller: ReadableStreamDefaultController, obj: unknown) => {

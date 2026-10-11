@@ -225,6 +225,8 @@ export default async function LawyerDashboard() {
 
   /** دستورهای سریع وکیل — با فیلتر دسترسی */
   const quickActions: { label: string; desc: string; icon: IconKey; tone: Tone; href: string }[] = [
+    ...(isBoss ? [{ label: t("جعبه‌ابزار وکیل"), desc: t("دادخواست‌ساز، میز پرونده، شبیه‌سازی دادگاه"), icon: "briefcase" as IconKey, tone: "primary" as Tone, href: "/workspace" }] : []),
+    ...(isBoss ? [{ label: t("سبک نگارش من"), desc: t("اسناد مثل خودت نوشته شود"), icon: "sparkles" as IconKey, tone: "accent" as Tone, href: "/dashboard/lawyer/style" }] : []),
     ...(isBoss ? [{ label: t("پروفایل حرفه‌ای"), desc: t("ویرایش اطلاعات عمومی"), icon: "badge" as IconKey, tone: "primary" as Tone, href: "/dashboard/lawyer/profile" }] : []),
     ...(can("consultations") ? [{ label: t("کارتابل مشاوره"), desc: t("تأیید و مدیریت درخواست‌ها"), icon: "chat" as IconKey, tone: "accent" as Tone, href: "#consult-requests" }] : []),
     { label: t("دایرکتوری وکلا"), desc: t("جستجوی همکاران"), icon: "search", tone: "primary", href: "/lawyers" },
@@ -235,6 +237,7 @@ export default async function LawyerDashboard() {
 
   const nav: NavItem[] = [
     { label: t("نمای کلی"), icon: "home", active: true, href: "/dashboard/lawyer" },
+    { label: t("جعبه‌ابزار وکیل"), icon: "briefcase" as const, href: "/workspace" },
     ...(isBoss ? [{ label: t("پرونده‌های من"), icon: "folder" as const, href: "/dashboard/lawyer#my-cases" }] : []),
     ...(isBoss ? [{ label: t("پروفایل حرفه‌ای من"), icon: "badge" as const, href: "/dashboard/lawyer/profile" }] : []),
     { label: t("اعلان‌ها"), icon: "mail" as const, badge: unreadNotifs ? faNum(unreadNotifs) : undefined, href: "/dashboard/lawyer#notifications" },
@@ -384,11 +387,9 @@ export default async function LawyerDashboard() {
                       mine!.cases.map((c) => {
                         const contract = labelStatus("contract", c.contractStatus);
                         return (
-                          <Link
+                          <div
                             key={c.id}
-                            href={`/track-case?code=${encodeURIComponent(c.trackingToken)}`}
-                            aria-label={tf("پروندهٔ {s} — پیشرفت {p} درصد", { s: c.subject, p: faNum(c.progress) })}
-                            className="block rounded-xl border border-border p-3 transition-colors hover:border-primary/40 hover:bg-surface-2/60"
+                            className="rounded-xl border border-border p-3 transition-colors hover:border-primary/40 hover:bg-surface-2/60"
                           >
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <div className="min-w-0 flex-1">
@@ -404,11 +405,26 @@ export default async function LawyerDashboard() {
                                 <PanelStatusBadge tone={contract.tone}>{contract.label}</PanelStatusBadge>
                               </div>
                             </div>
-                            <div className="mt-2.5 flex items-center gap-2.5">
+                            <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
                               <Progress value={c.progress} />
                               <span className="shrink-0 text-[11px] font-bold text-muted tnum">{faNum(c.progress)}٪</span>
+                              <Link
+                                href={`/case-desk/${encodeURIComponent(c.caseNumber)}`}
+                                data-testid="case-desk-link"
+                                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary-soft px-2.5 py-1 text-[11px] font-bold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                                aria-label={tf("میز پروندهٔ {s}", { s: c.caseNumber })}
+                              >
+                                <Icon name="search" className="h-3.5 w-3.5" /> {t("میز پرونده")}
+                              </Link>
+                              <Link
+                                href={`/track-case?code=${encodeURIComponent(c.trackingToken)}`}
+                                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-surface-2 px-2.5 py-1 text-[11px] font-semibold text-foreground-soft transition-colors hover:text-foreground"
+                                aria-label={tf("پیگیری پروندهٔ {s}", { s: c.caseNumber })}
+                              >
+                                <Icon name="location" className="h-3.5 w-3.5" /> {t("پیگیری")}
+                              </Link>
                             </div>
-                          </Link>
+                          </div>
                         );
                       })
                     ) : (

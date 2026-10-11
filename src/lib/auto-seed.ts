@@ -583,6 +583,14 @@ export async function ensureExtendedSchema(): Promise<void> {
     `CREATE INDEX IF NOT EXISTS vault_documents_user_idx ON vault_documents (user_phone, created_at DESC)`,
     `CREATE TABLE IF NOT EXISTS telegram_links (id SERIAL PRIMARY KEY, chat_id TEXT NOT NULL UNIQUE, phone TEXT, active BOOLEAN NOT NULL DEFAULT true, last_message_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE INDEX IF NOT EXISTS telegram_links_phone_idx ON telegram_links (phone)`,
+    /* ── بستهٔ میز کار وکیل: سبک نگارش، کش متن اسناد، تحلیل پرونده، شبیه‌سازی دادگاه ── */
+    `CREATE TABLE IF NOT EXISTS lawyer_style (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL UNIQUE REFERENCES app_users(id) ON DELETE CASCADE, tone TEXT NOT NULL DEFAULT 'formal', fixed_opening TEXT NOT NULL DEFAULT '', fixed_closing TEXT NOT NULL DEFAULT '', samples TEXT NOT NULL DEFAULT '[]', traits TEXT NOT NULL DEFAULT '', updated_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS case_doc_texts (id SERIAL PRIMARY KEY, case_id INTEGER NOT NULL REFERENCES cases(id) ON DELETE CASCADE, document_id INTEGER NOT NULL UNIQUE REFERENCES case_documents(id) ON DELETE CASCADE, text TEXT NOT NULL, chars INTEGER NOT NULL DEFAULT 0, updated_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS case_doc_texts_case_idx ON case_doc_texts (case_id)`,
+    `CREATE TABLE IF NOT EXISTS case_analyses (id SERIAL PRIMARY KEY, case_id INTEGER NOT NULL REFERENCES cases(id) ON DELETE CASCADE, created_by INTEGER REFERENCES app_users(id) ON DELETE SET NULL, doc_count INTEGER NOT NULL DEFAULT 0, overview TEXT NOT NULL DEFAULT '', strengths TEXT NOT NULL DEFAULT '', weaknesses TEXT NOT NULL DEFAULT '', contradictions TEXT NOT NULL DEFAULT '', missing_docs TEXT NOT NULL DEFAULT '', next_steps TEXT NOT NULL DEFAULT '', created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS case_analyses_case_idx ON case_analyses (case_id, created_at DESC)`,
+    `CREATE TABLE IF NOT EXISTS court_sessions (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES app_users(id) ON DELETE CASCADE, case_id INTEGER REFERENCES cases(id) ON DELETE SET NULL, scenario TEXT NOT NULL DEFAULT '', messages TEXT NOT NULL DEFAULT '[]', turns INTEGER NOT NULL DEFAULT 0, feedback TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'active', title TEXT NOT NULL DEFAULT '', created_at TIMESTAMP NOT NULL DEFAULT now(), updated_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS court_sessions_user_idx ON court_sessions (user_id, created_at DESC)`,
   ];
   for (const stmt of stmts) {
     try {

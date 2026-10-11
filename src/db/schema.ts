@@ -1058,5 +1058,101 @@ export const telegramLinks = pgTable(
 );
 export type TelegramLink = typeof telegramLinks.$inferSelect;
 
+/* ── جعبه‌ابزار پیشرفتهٔ وکیل: سبک نگارش، میز پرونده، شبیه‌سازی دادگاه ──
+ * چهار جدول زیر زیرساخت «بستهٔ میز کار وکیل» است:
+ *  - lawyer_style: پروفایل سبک نگارش هر وکیل (لحن، ثابت‌ها، نمونه‌ها، traits استخراج‌شده)
+ *  - case_doc_texts: کشِ متن استخراج‌شده از مدارک پرونده (تا OCR/parse تکرار نشود)
+ *  - case_analyses: نتیجهٔ تحلیل کلِ پرونده (قوت/ضعف/تناقض/مدارک ناقص)
+ *  - court_sessions: جلسات شبیه‌سازی دادگاه (سناریو، پیام‌ها، بازخورد)
+ */
+
+export const lawyerStyle = pgTable("lawyer_style", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  /** formal | simple | mixed */
+  tone: text("tone").notNull().default("formal"),
+  fixedOpening: text("fixed_opening").notNull().default(""),
+  fixedClosing: text("fixed_closing").notNull().default(""),
+  /** JSON آرایهٔ نمونه‌ها: [{ name, text }] — حداکثر ۳ نمونه */
+  samples: text("samples").notNull().default("[]"),
+  /** خلاصهٔ سبک استخراج‌شده با AI از نمونه‌ها */
+  traits: text("traits").notNull().default(""),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export type LawyerStyle = typeof lawyerStyle.$inferSelect;
+
+export const caseDocTexts = pgTable(
+  "case_doc_texts",
+  {
+    id: serial("id").primaryKey(),
+    caseId: integer("case_id")
+      .notNull()
+      .references(() => cases.id, { onDelete: "cascade" }),
+    documentId: integer("document_id")
+      .notNull()
+      .unique()
+      .references(() => caseDocuments.id, { onDelete: "cascade" }),
+    text: text("text").notNull(),
+    chars: integer("chars").notNull().default(0),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    caseIdx: index("case_doc_texts_case_idx").on(t.caseId),
+  }),
+);
+export type CaseDocText = typeof caseDocTexts.$inferSelect;
+
+export const caseAnalyses = pgTable(
+  "case_analyses",
+  {
+    id: serial("id").primaryKey(),
+    caseId: integer("case_id")
+      .notNull()
+      .references(() => cases.id, { onDelete: "cascade" }),
+    createdBy: integer("created_by").references(() => users.id, { onDelete: "set null" }),
+    docCount: integer("doc_count").notNull().default(0),
+    overview: text("overview").notNull().default(""),
+    strengths: text("strengths").notNull().default(""),
+    weaknesses: text("weaknesses").notNull().default(""),
+    contradictions: text("contradictions").notNull().default(""),
+    missingDocs: text("missing_docs").notNull().default(""),
+    nextSteps: text("next_steps").notNull().default(""),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    caseIdx: index("case_analyses_case_idx").on(t.caseId, t.createdAt),
+  }),
+);
+export type CaseAnalysis = typeof caseAnalyses.$inferSelect;
+
+export const courtSessions = pgTable(
+  "court_sessions",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    caseId: integer("case_id").references(() => cases.id, { onDelete: "set null" }),
+    /** شرح سناریوی ساخته‌شده برای جلسه */
+    scenario: text("scenario").notNull().default(""),
+    /** JSON آرایهٔ پیام‌ها: [{ speaker: judge|opponent|lawyer|system, text, at }] */
+    messages: text("messages").notNull().default("[]"),
+    turns: integer("turns").notNull().default(0),
+    feedback: text("feedback").notNull().default(""),
+    /** active | ended */
+    status: text("status").notNull().default("active"),
+    title: text("title").notNull().default(""),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    userIdx: index("court_sessions_user_idx").on(t.userId, t.createdAt),
+  }),
+);
+export type CourtSession = typeof courtSessions.$inferSelect;
+
 /* جداول بازار پرونده‌ها (دادپیو) — در همین ماژول re-export می‌شوند تا همهٔ کد از "@/db/schema" مصرف کند */
 export * from "@/db/schema-marketplace";
