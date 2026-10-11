@@ -65,6 +65,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "judgments", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
     { path: "glossary", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
     { path: "legal-forms", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "calculators", priority: 0.7, changeFreq: "monthly" as const, lastMod: NOW },
     // کسب‌وکار و تعرفه
     { path: "business", priority: 0.7, changeFreq: "monthly" as const, lastMod: NOW },
     { path: "pricing", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },

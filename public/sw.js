@@ -11,7 +11,7 @@
 // v1.4.37 — همهٔ صفحات سایت: کادر هیروی همسان (پنل سرمه‌ای بازار) با عکس موضوعی
 // اختصاصی هر صفحه + دیمر و هالهٔ همسان؛ دکمه‌های ثانویه شیشه‌ای و بج‌های طلایی
 // روی پنل تیره؛ ۳۱ عکس جدید در public/images.
-const VERSION = "sharifmand-v1.4.43";
+const VERSION = "sharifmand-v1.4.44";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;

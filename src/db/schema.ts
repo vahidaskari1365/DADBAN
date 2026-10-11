@@ -1005,5 +1005,58 @@ export const legalReviews = pgTable(
 );
 export type LegalReviewRow = typeof legalReviews.$inferSelect;
 
+/* ── ۸) گاوصندوق اسناد شخصی — فایل واقعی کاربر در پنل (≤۵MB در دیتابیس) ──
+ * اختیاری: فایل پیش از آپلود با AES-GCM در «مرورگر» رمزنگاری می‌شود؛ کلید از
+ * عبارت عبور کاربر (PBKDF2) مشتق می‌شود و هرگز سرور را ترک نمی‌کند. برای کنترل
+ * «عبارت عبور اشتباه» در زمان دانلود، salt و اثر کوتاه کلید (key_check) ذخیره می‌شود.
+ */
+export const vaultDocuments = pgTable(
+  "vault_documents",
+  {
+    id: serial("id").primaryKey(),
+    /** شمارهٔ موبایل نرمال‌شدهٔ مالک — دسترسی شخصی، مثل app_documents */
+    userPhone: text("user_phone").notNull(),
+    name: text("name").notNull(),
+    /** قرارداد | دادخواست | هویتی | سند | سایر */
+    category: text("category").notNull().default("سایر"),
+    mime: text("mime").notNull().default("application/octet-stream"),
+    size: integer("size").notNull().default(0),
+    /** true = محتوا AES-GCM سمت مرورگر رمزنگاری شده */
+    encrypted: boolean("encrypted").notNull().default(false),
+    /** salt تصادفی PBKDF2 (hex) — فقط برای فایل‌های رمزنگاری‌شده */
+    kdfSalt: text("kdf_salt"),
+    /** اثر کوتاه کلید (hex ۱۶ کاراکتر) برای تشخیص عبارت عبور اشتباه */
+    keyCheck: text("key_check"),
+    data: bytea("data").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    userPhoneIdx: index("vault_documents_user_idx").on(t.userPhone, t.createdAt),
+  }),
+);
+export type VaultDocument = typeof vaultDocuments.$inferSelect;
+
+/* ── ۹) تلگرام — اتصال حساب به ربات دادبان برای اطلاع‌رسانی زندهٔ پرونده ──
+ * کاربر در ربات /start می‌زند و chat_id را در پنل پروفایل ثبت می‌کند؛
+ * اعلان‌های درون‌برنامه‌ای (موتور notify) به‌صورت best-effort تلگرامی هم می‌روند.
+ */
+export const telegramLinks = pgTable(
+  "telegram_links",
+  {
+    id: serial("id").primaryKey(),
+    /** شناسهٔ عددی چت تلگرام (به‌صورت رشته برای سازگاری) */
+    chatId: text("chat_id").notNull().unique(),
+    /** شمارهٔ موبایل نرمال‌شدهٔ کاربر متصل (اختیاری — اعلان‌های شخصی) */
+    phone: text("phone"),
+    active: boolean("active").notNull().default(true),
+    lastMessageAt: timestamp("last_message_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    phoneIdx: index("telegram_links_phone_idx").on(t.phone),
+  }),
+);
+export type TelegramLink = typeof telegramLinks.$inferSelect;
+
 /* جداول بازار پرونده‌ها (دادپیو) — در همین ماژول re-export می‌شوند تا همهٔ کد از "@/db/schema" مصرف کند */
 export * from "@/db/schema-marketplace";

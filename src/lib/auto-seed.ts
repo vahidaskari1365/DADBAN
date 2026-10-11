@@ -579,6 +579,10 @@ export async function ensureExtendedSchema(): Promise<void> {
     `CREATE TABLE IF NOT EXISTS lawyer_onboarding (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL, name TEXT NOT NULL, phone TEXT NOT NULL, email TEXT, license_no TEXT NOT NULL, lawyer_type TEXT NOT NULL DEFAULT 'wakil', city TEXT NOT NULL, province TEXT NOT NULL, experience_years INTEGER NOT NULL DEFAULT 0, specialties TEXT[] NOT NULL DEFAULT '{}', bio TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'pending', admin_note TEXT, agreement_version TEXT, agreement_signed_at TIMESTAMP, reviewed_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE INDEX IF NOT EXISTS lawyer_onboarding_status_idx ON lawyer_onboarding (status, created_at)`,
     `CREATE TABLE IF NOT EXISTS legal_reviews (id SERIAL PRIMARY KEY, page_slug TEXT NOT NULL UNIQUE, reviewer_name TEXT NOT NULL, reviewer_title TEXT NOT NULL DEFAULT 'وکیل دادگستری', summary TEXT NOT NULL DEFAULT '', reviewed_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS vault_documents (id SERIAL PRIMARY KEY, user_phone TEXT NOT NULL, name TEXT NOT NULL, category TEXT NOT NULL DEFAULT 'سایر', mime TEXT NOT NULL DEFAULT 'application/octet-stream', size INTEGER NOT NULL DEFAULT 0, encrypted BOOLEAN NOT NULL DEFAULT false, kdf_salt TEXT, key_check TEXT, data BYTEA NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS vault_documents_user_idx ON vault_documents (user_phone, created_at DESC)`,
+    `CREATE TABLE IF NOT EXISTS telegram_links (id SERIAL PRIMARY KEY, chat_id TEXT NOT NULL UNIQUE, phone TEXT, active BOOLEAN NOT NULL DEFAULT true, last_message_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS telegram_links_phone_idx ON telegram_links (phone)`,
   ];
   for (const stmt of stmts) {
     try {

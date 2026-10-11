@@ -45,6 +45,7 @@ export default async function LegalFormPage({ params }: { params: Promise<{ slug
       <PageHero variant="market" image="/images/hero-forms.png" title={tt("تنظیم {name}", { name: fName })} desc={fDesc} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("فرم‌های حقوقی"), href: "/legal-forms" }, { label: fName }]}>
         <div className="flex flex-wrap gap-2">
           <Button href="/consultation" variant="accent" icon="document">{t("ساخت فرم با وکیل")}</Button>
+          <Link href={`/legal-forms/${slug}/draft`} className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-sm font-bold text-white transition-colors hover:bg-white/20"><Icon name="sparkles" className="h-4 w-4" />{t("ساخت هوشمند سند")}</Link>
           <Link href="/contracts/builder" className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-sm font-bold text-white transition-colors hover:bg-white/20"><Icon name="sparkles" className="h-4 w-4" />{t("قراردادساز")}</Link>
         </div>
       </PageHero>
@@ -77,6 +78,7 @@ export default async function LegalFormPage({ params }: { params: Promise<{ slug
             <h3 className="font-bold text-foreground">{t("تنظیم تخصصی")}</h3>
             <p className="mt-1 text-xs text-muted">{tt("{name} شما توسط وکیل متخصص تنظیم و بازبینی می‌شود.", { name: fName })}</p>
             <Button href="/consultation" className="mt-3 w-full" icon="user">{t("درخواست تنظیم")}</Button>
+            <Button href={`/legal-forms/${slug}/draft`} variant="outline" className="mt-2 w-full" icon="sparkles">{t("ساخت هوشمند سند")}</Button>
           </Card>
           <Card hover={false} className="bg-primary-soft/50">
             <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft"><Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" /> {t("همه‌ی اسناد توسط وکلای عضو کانون تنظیم و مطابق قوانین روز هستند.")}</p>

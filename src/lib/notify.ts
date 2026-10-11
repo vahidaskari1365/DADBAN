@@ -2,6 +2,8 @@ import { db } from "@/db";
 import { userNotifications, users, lawyers } from "@/db/schema";
 import { and, eq, isNotNull, notInArray, or } from "drizzle-orm";
 import { ensureProfileSchema } from "@/lib/auto-seed";
+import { after } from "next/server";
+import { notifyTelegramByUserIds } from "@/lib/telegram";
 
 /**
  * موتور اعلان‌های درون‌برنامه‌ای دادبان — فرآیند بازار پرونده‌ها:
@@ -44,6 +46,25 @@ async function insertFor(userIds: number[], n: NotifyInput): Promise<void> {
       .values(unique.map((userId) => ({ userId, type: n.type, title: n.title, body: n.body ?? "", link: n.link ?? null, meta: n.meta ?? null })));
   } catch {
     /* non-fatal — اعلان هرگز مسیر اصلی را نباید بشکند */
+  }
+  /* اطلاع‌رسانی تلگرامی موازی — بعد از پاسخ اجرا می‌شود، best-effort، هرگز نمی‌شکند */
+  try {
+    const text = [
+      "🔔 دادبان",
+      n.title,
+      n.body
+        ? n.body.replace(/\{(\w+)\}/g, (_m, k: string) => {
+            const v = n.meta?.[k];
+            return v === undefined || v === null ? "" : String(v);
+          })
+        : "",
+      n.link ? `🔗 ${n.link}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    after(() => notifyTelegramByUserIds(unique, text));
+  } catch {
+    /* non-fatal — after() فقط در زمینهٔ درخواست معتبر است؛ بیرون آن نادیده گرفته می‌شود */
   }
 }
 

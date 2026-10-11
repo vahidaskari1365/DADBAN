@@ -11,6 +11,7 @@ import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
 import { ensureProfileSchema, ensureExtendedSchema } from "@/lib/auto-seed";
 import { PersonalInfoForm, PasswordForm, PhoneVerificationRow } from "@/components/profile/profile-forms";
+import { TelegramConnect } from "@/components/profile/telegram-connect";
 import { FavoritesPanel } from "@/components/profile/favorites-panel";
 import { formatJalaliLong as faDate } from "@/lib/jalali";
 import { getT } from "@/lib/i18n/server";
@@ -136,6 +137,9 @@ export default async function ClientProfilePage() {
         </p>
         <PhoneVerificationRow phone={user.phone} verified={user.phoneVerified === true} />
       </Card>
+
+      {/* اتصال تلگرام — اطلاع‌رسانی زندهٔ پرونده (ربات دادبان) */}
+      <TelegramConnect />
 
       {/* اطلاعات شخصی */}
       <Card hover={false}>

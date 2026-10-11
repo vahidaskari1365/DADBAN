@@ -35,6 +35,7 @@ const MENU_GROUPS: MenuGroup[] = [
       { label: "تحلیل قرارداد", href: "/contracts/review", icon: "file", desc: "کشف بندهای پرریسک" },
       { label: "قراردادساز", href: "/contracts/builder", icon: "document", desc: "ساخت قرارداد گام‌به‌گام" },
       { label: "فرم‌های حقوقی", href: "/legal-forms", icon: "mail", desc: "دادخواست، شکواییه، اظهارنامه" },
+      { label: "محاسبه‌گرهای حقوقی", href: "/calculators", icon: "coins", desc: "مهریه، دیه، هزینه دادرسی و حق‌الوکاله" },
     ],
   },
   {

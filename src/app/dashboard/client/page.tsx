@@ -15,6 +15,7 @@ import { ensureProfileSchema } from "@/lib/auto-seed";
 import { nextActionForCase, CASE_STATUS_FA, CASE_STAGE_FLOW } from "@/lib/case-facts";
 import DocumentsManager from "@/components/documents-manager";
 import { NotificationsPanel } from "@/components/notifications-panel";
+import { ReviewButton } from "@/components/reviews/review-button";
 import { FeeCard } from "@/components/fee/fee-card";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
@@ -443,7 +444,17 @@ export default async function ClientDashboard() {
                   <p className="truncate text-sm font-medium text-foreground">{c.subject}</p>
                   <p className="text-xs text-muted" dir="ltr">{t(CONSULT_TYPE_FA[c.type] ?? c.type)} • {faNum(c.duration)} {t("دقیقه")}</p>
                 </div>
-                <Badge tone="accent">{t(CONSULT_STATUS_FA[c.status] ?? c.status)}</Badge>
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <Badge tone="accent">{t(CONSULT_STATUS_FA[c.status] ?? c.status)}</Badge>
+                  {c.status === "completed" && c.lawyerId != null && (
+                    <ReviewButton
+                      consultationId={c.id}
+                      lawyerId={c.lawyerId}
+                      lawyerName={c.lawyerName ?? undefined}
+                      serviceDefault={t(CONSULT_TYPE_FA[c.type] ?? c.type)}
+                    />
+                  )}
+                </div>
               </div>
             )) : (
               <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">{t("مشاوره‌ای ثبت نکرده‌اید.")} <Link href="/consultation" className="text-accent-text hover:underline">{t("رزرو مشاوره آنلاین")}</Link></p>

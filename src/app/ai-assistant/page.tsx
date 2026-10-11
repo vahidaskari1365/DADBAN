@@ -6,6 +6,7 @@ import { Container, Button, Card, Badge } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { LawyerPicksFlow } from "@/components/ai/lawyer-picks";
+import { VoiceInputButton } from "@/components/ai/voice-input-button";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 import type { LegalGuidance } from "@/lib/legal-engine";
@@ -1045,6 +1046,11 @@ function AIAssistantContent() {
                       disabled={loading}
                       placeholder={t("مثلاً: چک برگشتی دارم و نمی‌دانم چطور طلبم را بگیرم…")}
                       className="w-full resize-none rounded-xl border border-border-strong bg-background p-3 text-sm text-foreground outline-none transition-colors focus:border-primary disabled:opacity-60"
+                    />
+                    <VoiceInputButton
+                      disabled={loading}
+                      onText={(txt) => setInput((prev) => (prev ? prev + " " + txt : txt))}
+                      testid="chat-mic"
                     />
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">

@@ -15,6 +15,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "قراردادساز", href: "/contracts/builder" },
       { label: "بررسی قرارداد", href: "/contracts/review" },
       { label: "فرم‌های حقوقی", href: "/legal-forms" },
+      { label: "محاسبه‌گرهای حقوقی", href: "/calculators" },
     ],
   },
   {
