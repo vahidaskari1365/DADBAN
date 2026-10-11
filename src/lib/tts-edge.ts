@@ -1,5 +1,4 @@
 import "server-only";
-import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 import { logger } from "./logger";
 
 /**
@@ -28,6 +27,8 @@ export async function edgeSynthesize(
   const text = input.slice(0, 1024).trim();
   if (!text) return null;
   try {
+    // لود تنبل: msedge-tts فقط وقتی واقعاً نیاز است import می‌شود تا باندل سرد سرورلس سبک بماند
+    const { MsEdgeTTS, OUTPUT_FORMAT } = await import("msedge-tts");
     const tts = new MsEdgeTTS();
     const voice = opts?.voice && opts.voice.startsWith("fa-") ? opts.voice : EDGE_VOICES.default;
     await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);

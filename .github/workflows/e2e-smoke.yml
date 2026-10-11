@@ -1,0 +1,32 @@
+name: E2E Smoke (production)
+
+# دود-تست ۵ مسیر طلایی دادبان روی محیط واقعی:
+# سلامت/دیتابیس، صفحهٔ اصلی + محاسبه‌گرها، ورود، چرخهٔ مزایده، دستیار AI.
+# روزی یک‌بار + قابل اجرای دستی از تب Actions.
+# اختیاری: secrets زیر را ست کنید تا حساب‌های تست سفارشی استفاده شود
+# (پیش‌فرض: حساب‌های seed عمومی داخل مخزن — E2E_BASE_URL پیش‌فرض پروداکشن).
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run E2E smoke
+        env:
+          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+          E2E_CLIENT_ID: ${{ secrets.E2E_CLIENT_ID }}
+          E2E_CLIENT_PW: ${{ secrets.E2E_CLIENT_PW }}
+          E2E_LAWYER_ID: ${{ secrets.E2E_LAWYER_ID }}
+          E2E_LAWYER_PW: ${{ secrets.E2E_LAWYER_PW }}
+        run: node scripts/e2e-smoke.mjs

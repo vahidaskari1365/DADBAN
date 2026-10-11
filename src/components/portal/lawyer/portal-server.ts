@@ -30,26 +30,38 @@ export type LawyerContext = {
   lawyerTitle: string;
 };
 
-/** تشخیص وکیل جاری از روی سشن؛ در نبود تطابق دقیق، وکیل نمونهٔ ۱ به‌عنوان محیط نمایش استفاده می‌شود. */
-export async function resolveLawyerContext(user: { name: string; role: string }): Promise<LawyerContext> {
+/**
+ * تشخیص وکیل جاری از روی سشن — امن: هرگز به وکیلِ دیگری (مثل نمونهٔ ۱) برنمی‌گردد.
+ * ترتیب: ① پیوند رسمی حساب کاربری (users.lawyerId) ② تطبیق دقیق نام ③ نام کوچک (فقط وکیل).
+ * فیکس امنیتی: فالبک قبلی به lawyerId=1 حذف شد — در نبود تطبیق، زمینهٔ «خالی/نمایشی»
+ * با lawyerId=0 برمی‌گردد تا هیچ‌وقت دادهٔ وکیل دیگری دیده یا ثبت نشود.
+ */
+export async function resolveLawyerContext(user: {
+  id?: number | null;
+  lawyerId?: number | null;
+  name: string;
+  role: string;
+}): Promise<LawyerContext> {
   const demo = !(user.role === "lawyer" || user.role === "trainee");
-  const fallback: LawyerContext = { lawyerId: 1, lawyer: null, demo, lawyerTitle: "وکیل پایه یک دادگستری" };
+  const empty: LawyerContext = { lawyerId: 0, lawyer: null, demo: true, lawyerTitle: "وکیل پایه یک دادگستری" };
   try {
+    // ① پیوند رسمی حساب کاربری → وکیل (مطمئن‌ترین مسیر)
+    if (user.lawyerId) {
+      const [byId] = (await db.select().from(lawyers).where(eq(lawyers.id, user.lawyerId)).limit(1)) as LawyerRow[];
+      if (byId) return { lawyerId: byId.id, lawyer: byId, demo, lawyerTitle: byId.title ?? empty.lawyerTitle };
+    }
+    // ② تطبیق نام (دقیق، سپس نام کوچک فقط برای وکیل)
     const rows = (await db.select().from(lawyers).limit(120)) as LawyerRow[];
     const list = Array.isArray(rows) ? rows : [];
     const firstName = user.name.trim().split(/\s+/)[0] ?? "";
     const matched =
       list.find((l) => l.name === user.name) ??
       (user.role === "lawyer" && firstName.length > 2 ? list.find((l) => l.name.includes(firstName)) : undefined);
-    const lawyer = matched ?? list.find((l) => l.id === 1) ?? list[0] ?? null;
-    return {
-      lawyerId: lawyer?.id ?? 1,
-      lawyer,
-      demo,
-      lawyerTitle: lawyer?.title ?? fallback.lawyerTitle,
-    };
+    if (matched) return { lawyerId: matched.id, lawyer: matched, demo, lawyerTitle: matched.title ?? empty.lawyerTitle };
+    // ③ بدون تطبیق — هیچ وکیلی نشان نده (خالی و صادقانه)
+    return empty;
   } catch {
-    return fallback;
+    return empty;
   }
 }
 

@@ -1,5 +1,5 @@
 /* ============================================================================
-   شریف‌مند — Service Worker (PWA offline + caching)
+   دادبان — Service Worker (PWA offline + caching)
    ----------------------------------------------------------------------------
    استراتژی‌ها:
    - Static assets (_next/static, fonts, icons): cache-first (همیشه سریع)
@@ -8,10 +8,9 @@
    - تصاویر: stale-while-revalidate
    ========================================================================== */
 
-// v1.4.37 — همهٔ صفحات سایت: کادر هیروی همسان (پنل سرمه‌ای بازار) با عکس موضوعی
-// اختصاصی هر صفحه + دیمر و هالهٔ همسان؛ دکمه‌های ثانویه شیشه‌ای و بج‌های طلایی
-// روی پنل تیره؛ ۳۱ عکس جدید در public/images.
-const VERSION = "sharifmand-v1.4.46";
+// v1.4.47 — برندسازی کلید کش (sharifmand → dadban) + صفحهٔ notifications واقعی شد
+// (ریدایرکت به پنل) + آماده‌سازی درگاه زرین‌پال.
+const VERSION = "dadban-v1.4.47";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;

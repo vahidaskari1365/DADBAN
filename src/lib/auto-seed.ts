@@ -141,6 +141,7 @@ const DDL = [
   `CREATE TABLE IF NOT EXISTS lawyer_availability (id SERIAL PRIMARY KEY, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, weekday INTEGER NOT NULL, start_min INTEGER NOT NULL, end_min INTEGER NOT NULL)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS lawyer_availability_rule_uniq ON lawyer_availability (lawyer_id, weekday, start_min)`,
   `CREATE TABLE IF NOT EXISTS payments (id SERIAL PRIMARY KEY, reference TEXT NOT NULL UNIQUE, order_type TEXT NOT NULL DEFAULT 'consultation', consultation_id INTEGER REFERENCES consultations(id) ON DELETE SET NULL, amount INTEGER NOT NULL, provider TEXT NOT NULL DEFAULT 'manual', status TEXT NOT NULL DEFAULT 'initiated', created_at TIMESTAMP NOT NULL DEFAULT now(), verified_at TIMESTAMP)`,
+  `ALTER TABLE payments ADD COLUMN IF NOT EXISTS meta JSONB`,
   `CREATE TABLE IF NOT EXISTS qa_submissions (id SERIAL PRIMARY KEY, name TEXT NOT NULL, phone TEXT, question TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending_review', created_at TIMESTAMP NOT NULL DEFAULT now())`,
   `CREATE TABLE IF NOT EXISTS events (id SERIAL PRIMARY KEY, event TEXT NOT NULL, path TEXT NOT NULL DEFAULT '', created_at TIMESTAMP NOT NULL DEFAULT now())`,
   /* --- ترجمهٔ محتوای پویا (مقالات/وکلا) برای زبان‌های غیر فارسی --- */

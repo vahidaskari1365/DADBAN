@@ -109,6 +109,13 @@ export async function POST(req: Request, { params }: RouteCtx) {
     if (!Number.isFinite(durationMonths) || durationMonths < 0 || durationMonths > 60) durationMonths = 0;
 
     const ctx = await resolveLawyerContext(user);
+    // فیکس امنیتی: بدون پروفایل وکیلِ واقعی، ثبت پیشنهاد ممنوع (قبلاً به وکیل نمونهٔ ۱ می‌افتاد)
+    if (!ctx.lawyerId) {
+      return NextResponse.json(
+        { ok: false, error: "پروفایل وکیل مرتبط با حساب شما یافت نشد؛ ثبت پیشنهاد ممکن نیست. با پشتیبانی در تماس باشید." },
+        { status: 403 },
+      );
+    }
     const aiMatchScore = computeMatchScore(ctx.lawyer, c);
 
     // اگر پیشنهاد در انتظارِ همان وکیل وجود دارد، همان به‌روزرسانی می‌شود (idempotent)

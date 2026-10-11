@@ -619,6 +619,8 @@ export const payments = pgTable("payments", {
   status: text("status").notNull().default("initiated"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   verifiedAt: timestamp("verified_at"),
+  /** دادهٔ جانبی درگاه (مثلاً authority زرین‌پال) — با ALTER ایدمپوتنت در auto-seed هم تضمین می‌شود */
+  meta: jsonb("meta").$type<{ authority?: string } | null>().default(null),
 });
 export type Payment = typeof payments.$inferSelect;
 
