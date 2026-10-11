@@ -20,7 +20,7 @@
 
 1. در Vercel: **Add New → Project** و مخزن `DADBAN` را انتخاب کنید.
 2. Vercel به‌طور خودکار Next.js را تشخیص می‌دهد؛ تنظیمات Build را دست نزنید.
-3. **Node.js Version**: در بخش Settings → General → Node.js Version گزینهٔ **22.x** را انتخاب کنید (پروژه به Node ≥22.12 نیاز دارد).
+3. **Node.js Version**: در بخش Settings → General → Node.js Version گزینهٔ **24.x** را انتخاب کنید (پروژه به Node ≥24 نیاز دارد؛ تنظیم فعلی همین است).
 
 ## گام ۳ — متغیرهای محیطی
 
@@ -75,7 +75,7 @@
 
 - **فریم‌ورک:** Next.js 16 (App Router) + React 19 + TypeScript 5
 - **دیتابیس:** PostgreSQL + Drizzle ORM (بدون DB هم سایت در حالت degraded بالا می‌آید)
-- **Node:** ≥22.12 (فایل `.nvmrc` موجود است)
+- **Node:** ≥24 (فایل `.nvmrc` موجود است)
 - **احراز هویت:** session امضاشده HMAC + scrypt + کوکی httpOnly/SameSite
 - **امنیت:** rate limiting روی همه APIها، هدرهای امنیتی (CSP/HSTS)، CSRF token
 - **پروکسی:** `src/proxy.ts` (استاندارد جدید Next.js 16 جایگزین middleware)
