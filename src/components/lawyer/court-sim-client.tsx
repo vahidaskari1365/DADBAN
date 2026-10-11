@@ -157,7 +157,7 @@ export function CourtSimClient({
       const res = await fetch("/api/ai/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text.slice(0, 1024) }),
+        body: JSON.stringify({ text: text.slice(0, 1024), voice: "judge" }),
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
