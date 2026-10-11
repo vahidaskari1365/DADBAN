@@ -8,6 +8,8 @@ import { LEGAL_TOPICS, ALL_PROVINCES, faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { buildFunnelOptions, saveFunnelSelections, type FunnelRecommendation, type RecommendationOption } from "@/lib/recommendation";
 import { trackEvent } from "@/lib/analytics";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 export const STAGES = ["هنوز اقدامی نکرده‌ام", "اظهارنامه/اخطار داده‌ام", "در دادگاه/دادسراست", "رأی صادر شده", "مرحله اجرا"];
 const TOTAL = 3;
@@ -46,6 +48,7 @@ function OptionCard({
 }
 
 export function ResultCard({ label, option, tone }: { label: string; option: RecommendationOption; tone: "primary" | "neutral" | "accent" }) {
+  const t = useT();
   const styles = {
     primary: "border-primary bg-primary-soft/40 ring-1 ring-primary/30",
     neutral: "border-border",
@@ -60,13 +63,15 @@ export function ResultCard({ label, option, tone }: { label: string; option: Rec
       </p>
       <p className="mt-1 text-xs leading-6 text-muted">{option.desc}</p>
       <Button href={option.href} size="sm" icon={option.icon} className="mt-3">
-        شروع
+        {t("شروع")}
       </Button>
     </div>
   );
 }
 
 function QuickStartInner() {
+  const t = useT();
+  const tf = templateT(t);
   const search = useSearchParams();
   const initialTopic = search.get("topic");
   const [step, setStep] = useState(0);
@@ -117,16 +122,17 @@ function QuickStartInner() {
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/15">
               <Icon name="bolt" className="h-6 w-6" />
             </span>
-            <h3 className="mt-5 text-2xl font-bold leading-snug">مسیر مناسب شما را مشخص می‌کنیم</h3>
+            <h3 className="mt-5 text-2xl font-bold leading-snug">{t("مسیر مناسب شما را مشخص می‌کنیم")}</h3>
             <p className="mt-3 text-sm leading-7 text-white/80">
-              به چند سؤال کوتاه پاسخ دهید؛ سه مسیر پیشنهادی شفاف با دلیل دریافت می‌کنید و
-              انتخاب‌هایتان در فرم بعدی خودکار پر می‌شود.
+              {t(
+                "به چند سؤال کوتاه پاسخ دهید؛ سه مسیر پیشنهادی شفاف با دلیل دریافت می‌کنید و انتخاب‌هایتان در فرم بعدی خودکار پر می‌شود.",
+              )}
             </p>
             <ul className="mt-5 space-y-2 text-xs text-white/75">
-              {["سه مسیر پیشنهادی با دلیل روشن", "انتخاب‌های شما ذخیره می‌شود", "بدون پر کردن مجدد فرم"].map((t) => (
-                <li key={t} className="flex items-center gap-2">
+              {["سه مسیر پیشنهادی با دلیل روشن", "انتخاب‌های شما ذخیره می‌شود", "بدون پر کردن مجدد فرم"].map((item) => (
+                <li key={item} className="flex items-center gap-2">
                   <Icon name="check" className="h-3.5 w-3.5 text-accent-text" />
-                  {t}
+                  {t(item)}
                 </li>
               ))}
             </ul>
@@ -143,7 +149,7 @@ function QuickStartInner() {
               ))}
             </div>
             <p className="mt-2 text-xs text-white/70">
-              گام {faNum((done ? TOTAL : step + 1))} از {faNum(TOTAL)}
+              {tf("گام {n} از {m}", { n: faNum((done ? TOTAL : step + 1)), m: faNum(TOTAL) })}
             </p>
           </div>
         </div>
@@ -153,26 +159,26 @@ function QuickStartInner() {
           {rec === null ? (
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-accent-text">
-                مسیر سریع دادبان
+                {t("مسیر سریع دادبان")}
               </p>
-              <h4 className="mt-2 text-xl font-bold text-foreground">{STEP_TITLES[step]}</h4>
+              <h4 className="mt-2 text-xl font-bold text-foreground">{t(STEP_TITLES[step])}</h4>
 
               <div className="mt-5">
                 {step === 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {LEGAL_TOPICS.map((t) => (
+                    {LEGAL_TOPICS.map((lt) => (
                       <button
-                        key={t.label}
+                        key={lt.label}
                         type="button"
-                        onClick={() => setTopic(t.label)}
+                        onClick={() => setTopic(lt.label)}
                         className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-all cursor-pointer ${
-                          topic === t.label
+                          topic === lt.label
                             ? "border-primary bg-primary text-primary-foreground"
                             : "border-border text-foreground-soft hover:border-primary/40 hover:bg-primary-soft"
                         }`}
                       >
-                        <Icon name={t.icon} className="h-4 w-4" />
-                        {t.label}
+                        <Icon name={lt.icon} className="h-4 w-4" />
+                        {t(lt.label)}
                       </button>
                     ))}
                   </div>
@@ -181,7 +187,7 @@ function QuickStartInner() {
                 {step === 1 && (
                   <div className="flex flex-col gap-2">
                     {STAGES.map((s) => (
-                      <OptionCard key={s} label={s} active={stage === s} onClick={() => setStage(s)} icon={stage === s ? "check" : undefined} />
+                      <OptionCard key={s} label={t(s)} active={stage === s} onClick={() => setStage(s)} icon={stage === s ? "check" : undefined} />
                     ))}
                   </div>
                 )}
@@ -210,15 +216,15 @@ function QuickStartInner() {
                             setDone(true);
                           }
                         }}
-                        aria-label="انتخاب استان"
+                        aria-label={t("انتخاب استان")}
                         className="h-13 w-full cursor-pointer appearance-none rounded-xl border border-border-strong bg-background py-3.5 pl-4 pr-11 text-sm font-medium text-foreground outline-none transition-colors focus:border-primary"
                       >
                         <option value="" disabled>
-                          استان خود را از فهرست انتخاب کنید…
+                          {t("استان خود را از فهرست انتخاب کنید…")}
                         </option>
                         {ALL_PROVINCES.map((p) => (
                           <option key={p} value={p}>
-                            استان {p}
+                            {tf("استان {p}", { p })}
                           </option>
                         ))}
                       </select>
@@ -227,7 +233,7 @@ function QuickStartInner() {
                       </span>
                     </div>
                     <p className="mt-2 text-[11px] text-muted">
-                      همه ۳۱ استان ایران در فهرست است — استان محل سکونت یا اقامت فعلی خود را انتخاب کنید.
+                      {t("همه ۳۱ استان ایران در فهرست است — استان محل سکونت یا اقامت فعلی خود را انتخاب کنید.")}
                     </p>
                   </div>
                 )}
@@ -239,10 +245,10 @@ function QuickStartInner() {
                   onClick={() => setStep((s) => Math.max(0, s - 1))}
                   className={`text-sm font-medium text-muted transition-colors hover:text-foreground ${step === 0 ? "invisible" : ""}`}
                 >
-                  → قبلی
+                  {t("→ قبلی")}
                 </button>
                 <Button onClick={goNext} disabled={!canNext} icon="arrow">
-                  {step === TOTAL - 1 ? "دیدن پیشنهاد" : "ادامه"}
+                  {step === TOTAL - 1 ? t("دیدن پیشنهاد") : t("ادامه")}
                 </Button>
               </div>
             </div>
@@ -251,12 +257,12 @@ function QuickStartInner() {
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-success/15 text-success">
                 <Icon name="check" className="h-6 w-6" />
               </span>
-              <h4 className="mt-4 text-xl font-bold text-foreground">پیشنهاد شما آماده است</h4>
+              <h4 className="mt-4 text-xl font-bold text-foreground">{t("پیشنهاد شما آماده است")}</h4>
               <p className="mt-1 text-sm leading-7 text-muted">{rec.nextStep}</p>
 
               {/* چرا این پیشنهاد؟ — توضیح‌پذیری */}
               <div className="mt-4 rounded-xl border border-border bg-surface-2/60 p-3.5">
-                <p className="text-xs font-bold text-foreground">چرا این پیشنهاد؟</p>
+                <p className="text-xs font-bold text-foreground">{t("چرا این پیشنهاد؟")}</p>
                 <ul className="mt-2 space-y-1 text-xs leading-6 text-muted">
                   {rec.reasons.map((r) => (
                     <li key={r} className="flex items-start gap-1.5">
@@ -269,7 +275,7 @@ function QuickStartInner() {
 
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 {rec.options.map((o, i) => (
-                  <ResultCard key={o.key} label={`گزینه ${faNum(i + 1)}`} option={o} tone={i === 0 ? "primary" : i === 1 ? "neutral" : "accent"} />
+                  <ResultCard key={o.key} label={tf("گزینه {n}", { n: faNum(i + 1) })} option={o} tone={i === 0 ? "primary" : i === 1 ? "neutral" : "accent"} />
                 ))}
               </div>
 
@@ -278,7 +284,7 @@ function QuickStartInner() {
                 onClick={reset}
                 className="mt-5 text-sm font-medium text-primary transition-colors hover:text-primary-hover"
               >
-                شروع دوباره
+                {t("شروع دوباره")}
               </button>
             </div>
           )}

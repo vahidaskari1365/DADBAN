@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -16,6 +17,7 @@ const DISMISS_KEY = "dadban_pwa_install_dismissed";
  * پس از رد کردن، تا ۷ روز دوباره نمایش داده نمی‌شود.
  */
 export function InstallPrompt() {
+  const t = useT();
   const [state, setState] = useState<{
     deferred: BeforeInstallPromptEvent | null;
     visible: boolean;
@@ -83,7 +85,7 @@ export function InstallPrompt() {
   return (
     <div
       role="dialog"
-      aria-label="نصب اپلیکیشن دادبان"
+      aria-label={t("نصب اپلیکیشن دادبان")}
       className="fixed inset-x-3 bottom-3 z-[80] mx-auto max-w-md animate-fade-up rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-lift)] sm:bottom-4 sm:left-4 sm:right-4 sm:m-0"
       style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
     >
@@ -92,9 +94,9 @@ export function InstallPrompt() {
           <Icon name="sparkles" className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-bold text-foreground">نصب اپلیکیشن دادبان</h3>
+          <h3 className="text-sm font-bold text-foreground">{t("نصب اپلیکیشن دادبان")}</h3>
           <p className="mt-0.5 text-xs leading-5 text-muted">
-            روی صفحه اصلی نصب کنید تا مثل یک اپ سریع‌تر و بدون مرورگر اجرا شود.
+            {t("روی صفحه اصلی نصب کنید تا مثل یک اپ سریع‌تر و بدون مرورگر اجرا شود.")}
           </p>
           <div className="mt-3 flex gap-2">
             <button
@@ -102,19 +104,19 @@ export function InstallPrompt() {
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
             >
               <Icon name="check" className="h-3.5 w-3.5" />
-              نصب کنید
+              {t("نصب کنید")}
             </button>
             <button
               onClick={onDismiss}
               className="inline-flex items-center rounded-lg px-3 py-2 text-xs font-medium text-muted transition-colors hover:bg-surface-2"
             >
-              بعداً
+              {t("بعداً")}
             </button>
           </div>
         </div>
         <button
           onClick={onDismiss}
-          aria-label="بستن"
+          aria-label={t("بستن")}
           className="-mt-1 -mr-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

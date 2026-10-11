@@ -4,6 +4,7 @@ import { PageHero } from "@/components/page-hero";
 import { Container, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { TRUST_PAGES } from "@/lib/content";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: "قوانین، حریم خصوصی و شفافیت",
@@ -12,16 +13,17 @@ export const metadata: Metadata = {
   alternates: { canonical: "/legal" },
 };
 
-export default function LegalIndexPage() {
+export default async function LegalIndexPage() {
+  const t = await getT();
   return (
     <>
       <PageHero
         variant="market"
         image="/images/hero-legal.png"
-        badge="قوانین"
-        title="قوانین، حریم خصوصی و شفافیت"
-        desc="همه‌ی قوانین و سیاست‌های دادبان در یک نگاه — شفاف، خوانا و قابل استناد."
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "قوانین" }]}
+        badge={t("قوانین")}
+        title={t("قوانین، حریم خصوصی و شفافیت")}
+        desc={t("همه‌ی قوانین و سیاست‌های دادبان در یک نگاه — شفاف، خوانا و قابل استناد.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قوانین") }]}
       />
       <Container className="py-12">
         <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2">
@@ -33,8 +35,8 @@ export default function LegalIndexPage() {
                     <Icon name="balance" className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="text-sm font-bold text-foreground group-hover:text-primary">{p.title}</h2>
-                    <p className="mt-1.5 text-xs leading-6 text-muted">{p.desc}</p>
+                    <h2 className="text-sm font-bold text-foreground group-hover:text-primary">{t(p.title)}</h2>
+                    <p className="mt-1.5 text-xs leading-6 text-muted">{t(p.desc)}</p>
                   </div>
                 </div>
               </Card>

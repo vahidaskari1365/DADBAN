@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { StatusBadge } from "@/components/panel-widgets";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 export type TeamMemberView = {
   id: number;
@@ -24,6 +26,8 @@ const STATUS_FA: Record<string, { label: string; tone: "green" | "gold" | "gray"
 
 /** مدیریت تیم و کارآموزان — GET/POST/PATCH /api/portal/lawyer/team */
 export function TeamManager({ initialMembers, canWrite }: { initialMembers: TeamMemberView[]; canWrite: boolean }) {
+  const t = useT();
+  const tf = templateT(t);
   const router = useRouter();
   const [members, setMembers] = useState<TeamMemberView[]>(initialMembers);
   const [open, setOpen] = useState(false);
@@ -35,11 +39,11 @@ export function TeamManager({ initialMembers, canWrite }: { initialMembers: Team
 
   async function invite() {
     if (name.trim().length < 3) {
-      toast.error("نام عضو را وارد کنید.");
+      toast.error(t("نام عضو را وارد کنید."));
       return;
     }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      toast.error("ایمیل معتبر نیست.");
+      toast.error(t("ایمیل معتبر نیست."));
       return;
     }
     setSaving(true);
@@ -52,16 +56,16 @@ export function TeamManager({ initialMembers, canWrite }: { initialMembers: Team
       const data = (await res.json()) as { ok: boolean; members?: TeamMemberView[]; error?: string };
       if (data.ok && data.members) {
         setMembers(data.members);
-        toast.success("دعوت‌نامه ارسال شد و عضو با وضعیت «دعوت‌شده» به تیم اضافه شد.");
+        toast.success(t("دعوت‌نامه ارسال شد و عضو با وضعیت «دعوت‌شده» به تیم اضافه شد."));
         setName("");
         setEmail("");
         setOpen(false);
         router.refresh();
       } else {
-        toast.error(data.error ?? "ثبت دعوت ناموفق بود.");
+        toast.error(data.error ? t(data.error) : t("ثبت دعوت ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setSaving(false);
     }
@@ -77,23 +81,23 @@ export function TeamManager({ initialMembers, canWrite }: { initialMembers: Team
       const data = (await res.json()) as { ok: boolean; members?: TeamMemberView[]; error?: string };
       if (data.ok && data.members) {
         setMembers(data.members);
-        toast.success("وضعیت عضو به‌روزرسانی شد.");
+        toast.success(t("وضعیت عضو به‌روزرسانی شد."));
       } else {
-        toast.error(data.error ?? "به‌روزرسانی ناموفق بود.");
+        toast.error(data.error ? t(data.error) : t("به‌روزرسانی ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     }
   }
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted">کارآموزان و همکاران با دسترسی محدود به بخش‌های تعیین‌شده می‌توانند در پرونده‌ها فعالیت کنند.</p>
+        <p className="text-xs text-muted">{t("کارآموزان و همکاران با دسترسی محدود به بخش‌های تعیین‌شده می‌توانند در پرونده‌ها فعالیت کنند.")}</p>
         {canWrite && !open && (
           <Button variant="primary" size="md" onClick={() => setOpen(true)}>
             <Icon name="plus" className="h-4 w-4" />
-            دعوت عضو
+            {t("دعوت عضو")}
           </Button>
         )}
       </div>
@@ -101,11 +105,11 @@ export function TeamManager({ initialMembers, canWrite }: { initialMembers: Team
       {open && (
         <div className="mt-3 space-y-3 rounded-2xl border border-border bg-surface-2/40 p-4">
           <div className="flex items-center justify-between">
-            <b className="text-sm text-foreground">دعوت عضو جدید</b>
+            <b className="text-sm text-foreground">{t("دعوت عضو جدید")}</b>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="بستن فرم دعوت"
+              aria-label={t("بستن فرم دعوت")}
               className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-foreground-soft hover:bg-surface-3"
             >
               <Icon name="x" className="h-4 w-4" />
@@ -113,16 +117,16 @@ export function TeamManager({ initialMembers, canWrite }: { initialMembers: Team
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
-              <span className="mb-1.5 block text-xs text-muted">نام و نام خانوادگی</span>
+              <span className="mb-1.5 block text-xs text-muted">{t("نام و نام خانوادگی")}</span>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="مثلاً علی رضایی"
+                placeholder={t("مثلاً علی رضایی")}
                 className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
               />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-xs text-muted">ایمیل</span>
+              <span className="mb-1.5 block text-xs text-muted">{t("ایمیل")}</span>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -132,29 +136,29 @@ export function TeamManager({ initialMembers, canWrite }: { initialMembers: Team
               />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-xs text-muted">نقش</span>
+              <span className="mb-1.5 block text-xs text-muted">{t("نقش")}</span>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
               >
-                <option value="trainee">کارآموز</option>
-                <option value="associate">همکار</option>
+                <option value="trainee">{t("کارآموز")}</option>
+                <option value="associate">{t("همکار")}</option>
               </select>
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-xs text-muted">دامنه دسترسی</span>
+              <span className="mb-1.5 block text-xs text-muted">{t("دامنه دسترسی")}</span>
               <input
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
-                placeholder="مثلاً مدارک و پیش‌نویس‌ها"
+                placeholder={t("مثلاً مدارک و پیش‌نویس‌ها")}
                 className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
               />
             </label>
           </div>
           <Button variant="primary" size="md" onClick={() => void invite()} disabled={saving}>
             <Icon name="send" className="h-4 w-4" />
-            {saving ? "در حال ارسال..." : "ارسال دعوت‌نامه"}
+            {saving ? t("در حال ارسال...") : t("ارسال دعوت‌نامه")}
           </Button>
         </div>
       )}
@@ -163,18 +167,18 @@ export function TeamManager({ initialMembers, canWrite }: { initialMembers: Team
         <table className="w-full min-w-[560px] border-collapse text-right">
           <thead>
             <tr className="text-xs text-muted">
-              <th className="border-b border-border px-3 py-2.5 font-medium">نام</th>
-              <th className="border-b border-border px-3 py-2.5 font-medium">نقش</th>
-              <th className="border-b border-border px-3 py-2.5 font-medium">دسترسی</th>
-              <th className="border-b border-border px-3 py-2.5 font-medium">وضعیت</th>
-              <th className="border-b border-border px-3 py-2.5 font-medium">مدیریت</th>
+              <th className="border-b border-border px-3 py-2.5 font-medium">{t("نام")}</th>
+              <th className="border-b border-border px-3 py-2.5 font-medium">{t("نقش")}</th>
+              <th className="border-b border-border px-3 py-2.5 font-medium">{t("دسترسی")}</th>
+              <th className="border-b border-border px-3 py-2.5 font-medium">{t("وضعیت")}</th>
+              <th className="border-b border-border px-3 py-2.5 font-medium">{t("مدیریت")}</th>
             </tr>
           </thead>
           <tbody>
             {members.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-3 py-8 text-center text-sm text-muted">
-                  عضوی در تیم ثبت نشده است.
+                  {t("عضوی در تیم ثبت نشده است.")}
                 </td>
               </tr>
             )}
@@ -186,22 +190,22 @@ export function TeamManager({ initialMembers, canWrite }: { initialMembers: Team
                     <b>{m.name}</b>
                     {m.email && <small className="mt-0.5 block text-[11px] text-muted" dir="ltr">{m.email}</small>}
                   </td>
-                  <td className="border-b border-border px-3 py-3">{m.role === "trainee" ? "کارآموز" : "همکار"}</td>
+                  <td className="border-b border-border px-3 py-3">{m.role === "trainee" ? t("کارآموز") : t("همکار")}</td>
                   <td className="border-b border-border px-3 py-3 text-muted">{m.scope}</td>
                   <td className="border-b border-border px-3 py-3">
-                    <StatusBadge tone={s.tone}>{s.label}</StatusBadge>
+                    <StatusBadge tone={s.tone}>{t(s.label)}</StatusBadge>
                   </td>
                   <td className="border-b border-border px-3 py-3">
                     {canWrite && (
                       <select
                         value={m.status}
                         onChange={(e) => void changeStatus(m.id, e.target.value)}
-                        aria-label={`تغییر وضعیت ${m.name}`}
+                        aria-label={tf("تغییر وضعیت {n}", { n: m.name })}
                         className="h-10 rounded-lg border border-border bg-surface px-2 text-xs outline-none focus:border-primary/40"
                       >
-                        <option value="active">فعال</option>
-                        <option value="invited">دعوت‌شده</option>
-                        <option value="disabled">غیرفعال</option>
+                        <option value="active">{t("فعال")}</option>
+                        <option value="invited">{t("دعوت‌شده")}</option>
+                        <option value="disabled">{t("غیرفعال")}</option>
                       </select>
                     )}
                   </td>

@@ -7,6 +7,8 @@ import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { StatusBadge } from "@/components/panel-widgets";
 import { WEEK_DAYS, formatJalaliLong, formatTime, labelStatus, toJalali, toFa } from "@/lib/money";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 import type { AppointmentItem } from "./portal-server";
 
 export type CalendarGroup = { key: string; dayLabel: string; weekday: string; items: AppointmentItem[] };
@@ -43,6 +45,8 @@ export function CalendarManager({
   canWrite: boolean;
 }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [items, setItems] = useState<AppointmentItem[]>(initialItems);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -58,11 +62,11 @@ export function CalendarManager({
 
   async function submit() {
     if (title.trim().length < 3) {
-      toast.error("عنوان رویداد را وارد کنید.");
+      toast.error(t("عنوان رویداد را وارد کنید."));
       return;
     }
     if (!date) {
-      toast.error("تاریخ رویداد را انتخاب کنید.");
+      toast.error(t("تاریخ رویداد را انتخاب کنید."));
       return;
     }
     setSaving(true);
@@ -82,17 +86,17 @@ export function CalendarManager({
       const data = (await res.json()) as { ok: boolean; appointments?: AppointmentItem[]; error?: string };
       if (data.ok && data.appointments) {
         setItems(data.appointments);
-        toast.success("رویداد به تقویم اضافه شد.");
+        toast.success(t("رویداد به تقویم اضافه شد."));
         setTitle("");
         setLocation("");
         setDate("");
         setOpen(false);
         router.refresh();
       } else {
-        toast.error(data.error ?? "افزودن رویداد ناموفق بود.");
+        toast.error(data.error ?? t("افزودن رویداد ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setSaving(false);
     }
@@ -101,11 +105,11 @@ export function CalendarManager({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted">جلسات رسیدگی، مشاوره‌ها و مهلت‌های قانونی در یک تقویم واحد.</p>
+        <p className="text-xs text-muted">{t("جلسات رسیدگی، مشاوره‌ها و مهلت‌های قانونی در یک تقویم واحد.")}</p>
         {canWrite && !open && (
           <Button variant="primary" size="md" onClick={() => setOpen(true)}>
             <Icon name="plus" className="h-4 w-4" />
-            افزودن رویداد
+            {t("افزودن رویداد")}
           </Button>
         )}
       </div>
@@ -113,11 +117,11 @@ export function CalendarManager({
       {open && (
         <div className="mt-3 space-y-3 rounded-2xl border border-border bg-surface-2/40 p-4">
           <div className="flex items-center justify-between">
-            <b className="text-sm text-foreground">رویداد جدید تقویم</b>
+            <b className="text-sm text-foreground">{t("رویداد جدید تقویم")}</b>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="بستن فرم رویداد"
+              aria-label={t("بستن فرم رویداد")}
               className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-foreground-soft hover:bg-surface-3"
             >
               <Icon name="x" className="h-4 w-4" />
@@ -125,38 +129,38 @@ export function CalendarManager({
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block sm:col-span-2">
-              <span className="mb-1.5 block text-xs text-muted">عنوان</span>
+              <span className="mb-1.5 block text-xs text-muted">{t("عنوان")}</span>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="مثلاً جلسه رسیدگی · پرونده الزام به تنظیم سند"
+                placeholder={t("مثلاً جلسه رسیدگی · پرونده الزام به تنظیم سند")}
                 className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
               />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-xs text-muted">نوع رویداد</span>
+              <span className="mb-1.5 block text-xs text-muted">{t("نوع رویداد")}</span>
               <select
                 value={kind}
                 onChange={(e) => setKind(e.target.value)}
                 className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
               >
-                <option value="hearing">جلسه رسیدگی</option>
-                <option value="consultation">مشاوره</option>
-                <option value="deadline">مهلت قانونی</option>
-                <option value="task">اقدام داخلی</option>
+                <option value="hearing">{t("جلسه رسیدگی")}</option>
+                <option value="consultation">{t("مشاوره")}</option>
+                <option value="deadline">{t("مهلت قانونی")}</option>
+                <option value="task">{t("اقدام داخلی")}</option>
               </select>
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-xs text-muted">مکان</span>
+              <span className="mb-1.5 block text-xs text-muted">{t("مکان")}</span>
               <input
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="مثلاً شعبه ۱۵ دادگاه عمومی حقوقی تهران"
+                placeholder={t("مثلاً شعبه ۱۵ دادگاه عمومی حقوقی تهران")}
                 className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
               />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-xs text-muted">تاریخ (میلادی تقویم سامانه)</span>
+              <span className="mb-1.5 block text-xs text-muted">{t("تاریخ (میلادی تقویم سامانه)")}</span>
               <input
                 type="date"
                 value={date}
@@ -165,7 +169,7 @@ export function CalendarManager({
               />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-xs text-muted">ساعت</span>
+              <span className="mb-1.5 block text-xs text-muted">{t("ساعت")}</span>
               <input
                 type="time"
                 value={time}
@@ -175,13 +179,13 @@ export function CalendarManager({
             </label>
             {caseOptions.length > 0 && (
               <label className="block sm:col-span-2">
-                <span className="mb-1.5 block text-xs text-muted">مرتبط با پرونده (اختیاری)</span>
+                <span className="mb-1.5 block text-xs text-muted">{t("مرتبط با پرونده (اختیاری)")}</span>
                 <select
                   value={caseId}
                   onChange={(e) => setCaseId(e.target.value)}
                   className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
                 >
-                  <option value="">بدون پرونده</option>
+                  <option value="">{t("بدون پرونده")}</option>
                   {caseOptions.map((c) => (
                     <option key={c.id} value={c.id}>{c.label}</option>
                   ))}
@@ -191,7 +195,7 @@ export function CalendarManager({
           </div>
           <Button variant="primary" size="md" onClick={() => void submit()} disabled={saving}>
             <Icon name="check" className="h-4 w-4" />
-            {saving ? "در حال ثبت..." : "ثبت رویداد"}
+            {saving ? t("در حال ثبت...") : t("ثبت رویداد")}
           </Button>
         </div>
       )}
@@ -199,10 +203,10 @@ export function CalendarManager({
       {/* فهرست گروه‌بندی‌شده */}
       <div className="mt-4 max-h-96 space-y-4 overflow-y-auto pl-1">
         {groups.length === 0 && (
-          <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">رویدادی در تقویم ثبت نشده است.</p>
+          <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">{t("رویدادی در تقویم ثبت نشده است.")}</p>
         )}
         {groups.map((g) => (
-          <section key={g.key} aria-label={`رویدادهای ${g.dayLabel}`}>
+          <section key={g.key} aria-label={tf("رویدادهای {d}", { d: g.dayLabel })}>
             <b className="mb-2 block text-[13px] font-bold text-foreground">
               {g.weekday} {formatJalaliLong(g.items[0]?.startsAt ?? "")}
             </b>
@@ -213,7 +217,7 @@ export function CalendarManager({
                   <div key={it.id} className="rounded-xl border border-border p-3.5">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <b className="text-[13px] text-foreground">{toFa(formatTime(it.startsAt))} · {it.title}</b>
-                      <StatusBadge tone={s.tone}>{s.label}</StatusBadge>
+                      <StatusBadge tone={s.tone}>{t(s.label)}</StatusBadge>
                     </div>
                     {it.location && (
                       <p className="mt-1 flex items-center gap-1 text-xs text-muted">
@@ -234,11 +238,11 @@ export function CalendarManager({
       <div className="mt-6">
         <b className="mb-2 flex items-center gap-2 text-[13px] font-bold text-foreground">
           <Icon name="alert" className="h-4 w-4 text-danger" />
-          مهلت‌های قانونی
+          {t("مهلت‌های قانونی")}
         </b>
         <div className="space-y-2">
           {deadlines.length === 0 && (
-            <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted">مهلت قانونی ثبت‌شده‌ای وجود ندارد.</p>
+            <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted">{t("مهلت قانونی ثبت‌شده‌ای وجود ندارد.")}</p>
           )}
           {deadlines.map((d) => (
             <div key={d.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-danger/30 bg-danger/5 p-3">
@@ -246,7 +250,7 @@ export function CalendarManager({
                 <b className="text-[13px] text-danger">{d.title}</b>
                 <p className="mt-0.5 text-xs text-muted">{formatJalaliLong(d.startsAt)} · {toFa(formatTime(d.startsAt))}</p>
               </div>
-              <span className="rounded-full bg-danger/15 px-2.5 py-1 text-[11px] font-bold text-danger">پایان مهلت</span>
+              <span className="rounded-full bg-danger/15 px-2.5 py-1 text-[11px] font-bold text-danger">{t("پایان مهلت")}</span>
             </div>
           ))}
         </div>

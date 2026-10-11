@@ -11,6 +11,8 @@ import { CONSULTATION_TYPES, faNum, faPrice } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { JalaliDatePicker } from "@/components/jalali-date-picker";
 import { trackEvent } from "@/lib/analytics";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 import { FaqAccordion } from "@/components/amazon/faq-accordion";
 import { TrustLine } from "@/components/amazon/trust-line";
 
@@ -48,6 +50,8 @@ interface Slot { start: string; label: string }
  * فیلد «نوع مورد نیاز مشاوره» حذف شد — موضوع در «شرح موضوع» نوشته می‌شود.
  */
 function BookingFormContent() {
+  const t = useT();
+  const tf = templateT(t);
   const search = useSearchParams();
   const [type, setType] = useState<"chat" | "voice" | "video">(() => {
     const t = search.get("type");
@@ -225,9 +229,9 @@ function BookingFormContent() {
   const lawyerField = (
     <div className="flex flex-col gap-1.5" data-testid="lawyer-field">
       <span className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-muted">
-        وکیل مورد نظر
+        {t("وکیل مورد نظر")}
         <Icon name="lock" className="h-3.5 w-3.5 text-muted" aria-hidden />
-        <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-bold text-muted">غیرقابل تغییر</span>
+        <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-bold text-muted">{t("غیرقابل تغییر")}</span>
       </span>
       <div
         data-testid="lawyer-locked"
@@ -240,24 +244,24 @@ function BookingFormContent() {
             {selectedLawyer.city ? <span className="font-medium text-muted"> — {selectedLawyer.city}</span> : null}
           </span>
         ) : (
-          <span className="truncate text-muted">معرفی بهترین وکیل توسط کارشناسان دادبان</span>
+          <span className="truncate text-muted">{t("معرفی بهترین وکیل توسط کارشناسان دادبان")}</span>
         )}
         {selectedLawyer && selectedOnline && (
           <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-bold text-success">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-success" /> آنلاین
+            <span className="h-2 w-2 animate-pulse rounded-full bg-success" /> {t("آنلاین")}
           </span>
         )}
       </div>
       <span className="text-[11px] leading-5 text-muted">
         {selectedLawyer ? (
-          "وکیل شما از فهرست وکلای صفحهٔ مشاوره انتخاب شده و در این فرم قابل تغییر نیست."
+          t("وکیل شما از فهرست وکلای صفحهٔ مشاوره انتخاب شده و در این فرم قابل تغییر نیست.")
         ) : (
           <>
-            برای انتخاب وکیل، از{" "}
+            {t("برای انتخاب وکیل، از")}{" "}
             <Link href="/consultation" className="font-bold text-primary underline underline-offset-4">
-              فهرست وکلای صفحهٔ مشاوره
+              {t("فهرست وکلای صفحهٔ مشاوره")}
             </Link>{" "}
-            استفاده کنید.
+            {t("استفاده کنید.")}
           </>
         )}
       </span>
@@ -271,7 +275,7 @@ function BookingFormContent() {
     <Card hover={false}>
       <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">۱</span>
-        نوع مشاوره را انتخاب کنید
+        {t("نوع مشاوره را انتخاب کنید")}
       </h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         {CONSULTATION_TYPES.map((c) => (
@@ -286,8 +290,8 @@ function BookingFormContent() {
             <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${type === c.key ? "bg-primary text-primary-foreground" : "bg-primary-soft text-primary"}`}>
               <Icon name={c.icon as IconKey} className="h-5 w-5" />
             </span>
-            <span className="text-sm font-bold text-foreground">{c.title}</span>
-            <span className="text-xs text-muted">{c.desc}</span>
+            <span className="text-sm font-bold text-foreground">{t(c.title)}</span>
+            <span className="text-xs text-muted">{t(c.desc)}</span>
           </button>
         ))}
       </div>
@@ -299,7 +303,7 @@ function BookingFormContent() {
     <Card hover={false} data-testid="schedule-card">
       <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">۲</span>
-        مدت و زمان موردنظر
+        {t("مدت و زمان موردنظر")}
       </h2>
       <div className="mt-4 grid grid-cols-3 gap-2">
         {DURATIONS[type].map((d) => (
@@ -311,7 +315,7 @@ function BookingFormContent() {
               duration === d.min ? "border-primary bg-primary-soft" : "border-border hover:bg-surface-2"
             }`}
           >
-            <p className="text-sm font-bold text-foreground">{faNum(d.min)} دقیقه</p>
+            <p className="text-sm font-bold text-foreground">{tf("{n} دقیقه", { n: faNum(d.min) })}</p>
             <p className="mt-0.5 text-xs text-muted">{faNum(d.price.toLocaleString("en-US"))} ت</p>
           </button>
         ))}
@@ -319,14 +323,14 @@ function BookingFormContent() {
       {/* تاریخ تمام‌عرض (تقویم جا می‌شود) و ساعت زیر آن — طبق درخواست کاربر */}
       <div className="mt-4 grid gap-3">
         <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold text-muted">تاریخ (شمسی)</span>
+          <span className="text-xs font-semibold text-muted">{t("تاریخ (شمسی)")}</span>
           <JalaliDatePicker value={date} onChange={setDate} />
         </div>
         {!lawyerSlug ? (
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-muted">ساعت پیشنهادی (اختیاری)</span>
+            <span className="text-xs font-semibold text-muted">{t("ساعت پیشنهادی (اختیاری)")}</span>
             <select value={time} onChange={(e) => setTime(e.target.value)} className={fieldCls}>
-              <option value="">ساعت ترجیحی</option>
+              <option value="">{t("ساعت ترجیحی")}</option>
               {["۰۹:۰۰ تا ۱۱:۰۰", "۱۱:۰۰ تا ۱۳:۰۰", "۱۴:۰۰ تا ۱۶:۰۰", "۱۶:۰۰ تا ۱۸:۰۰", "۱۸:۰۰ تا ۲۰:۰۰"].map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
@@ -334,15 +338,15 @@ function BookingFormContent() {
           </label>
         ) : (
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-muted">نوبت‌های آزاد (واقعی)</span>
+            <span className="text-xs font-semibold text-muted">{t("نوبت‌های آزاد (واقعی)")}</span>
             <div className="rounded-xl border border-border bg-surface-2/60 p-2.5">
               {!date ? (
-                <p className="px-1 py-1.5 text-[11px] text-muted">ابتدا تاریخ را انتخاب کنید.</p>
+                <p className="px-1 py-1.5 text-[11px] text-muted">{t("ابتدا تاریخ را انتخاب کنید.")}</p>
               ) : !slotsLoaded ? (
-                <p className="px-1 py-1.5 text-[11px] text-muted">در حال بررسی نوبت‌ها…</p>
+                <p className="px-1 py-1.5 text-[11px] text-muted">{t("در حال بررسی نوبت‌ها…")}</p>
               ) : slots.length === 0 ? (
                 <p className="px-1 py-1.5 text-[11px] leading-5 text-muted">
-                  برای این روز نوبتی خالی نیست؛ تاریخ دیگری را امتحان کنید.
+                  {t("برای این روز نوبتی خالی نیست؛ تاریخ دیگری را امتحان کنید.")}
                 </p>
               ) : (
                 <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
@@ -365,7 +369,7 @@ function BookingFormContent() {
             </div>
             {slot && (
               <p className="text-[11px] font-bold text-success">
-                نوبت انتخاب‌شده: {selectedSlot?.label}
+                {tf("نوبت انتخاب‌شده: {label}", { label: selectedSlot?.label ?? "" })}
               </p>
             )}
           </div>
@@ -373,8 +377,8 @@ function BookingFormContent() {
       </div>
       {lawyerSlug && (
         <p className="mt-2 text-[11px] leading-5 text-muted">
-          نوبت‌ها از برنامه واقعی وکیل (به وقت تهران) محاسبه می‌شوند و همین‌جا قطعی ثبت می‌شوند.
-          اگر نوبتی انتخاب نکنید، زمان توسط کارشناسان با شما هماهنگ می‌شود.
+          {t("نوبت‌ها از برنامه واقعی وکیل (به وقت تهران) محاسبه می‌شوند و همین‌جا قطعی ثبت می‌شوند.")}{" "}
+          {t("اگر نوبتی انتخاب نکنید، زمان توسط کارشناسان با شما هماهنگ می‌شود.")}
         </p>
       )}
     </Card>
@@ -385,34 +389,34 @@ function BookingFormContent() {
     <Card hover={false} data-testid="contact-card">
       <h2 className="flex items-center gap-2 text-sm font-bold text-foreground">
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">۳</span>
-        اطلاعات تماس و وکیل
+        {t("اطلاعات تماس و وکیل")}
       </h2>
       <div className="mt-4">
         {lawyerField}
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold text-muted">نام و نام خانوادگی</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="مثلاً علی رضایی" className={fieldCls} />
+          <span className="text-xs font-semibold text-muted">{t("نام و نام خانوادگی")}</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("مثلاً علی رضایی")} className={fieldCls} />
         </label>
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold text-muted">شماره موبایل</span>
+          <span className="text-xs font-semibold text-muted">{t("شماره موبایل")}</span>
           <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" autoComplete="tel" dir="ltr" className={fieldCls + " text-right"} placeholder="09123456789" />
         </label>
       </div>
       <label className="mt-3 flex flex-col gap-1.5">
-        <span className="text-xs font-semibold text-muted">شرح موضوع / سؤال شما</span>
-        <textarea value={subject} onChange={(e) => setSubject(e.target.value)} rows={3} placeholder="موضوع مشاوره را به اختصار بنویسید…" className={fieldCls + " h-auto resize-y py-2.5"} />
+        <span className="text-xs font-semibold text-muted">{t("شرح موضوع / سؤال شما")}</span>
+        <textarea value={subject} onChange={(e) => setSubject(e.target.value)} rows={3} placeholder={t("موضوع مشاوره را به اختصار بنویسید…")} className={fieldCls + " h-auto resize-y py-2.5"} />
       </label>
       {error && (
-        <div className="mt-3 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">{error}</div>
+        <div className="mt-3 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">{t(error)}</div>
       )}
       <Button onClick={submit} disabled={loading} icon="calendar" className="mt-4 w-full">
-        {loading ? "در حال ثبت…" : slot ? "ثبت نهایی نوبت" : "ثبت درخواست مشاوره"}
+        {loading ? t("در حال ثبت…") : slot ? t("ثبت نهایی نوبت") : t("ثبت درخواست مشاوره")}
       </Button>
       <TrustLine compact className="mt-3" />
       <p className="mt-2 text-center text-[11px] text-muted">
-        با ثبت، شرایط استفاده دادبان را می‌پذیرید. اطلاعات شما محرمانه است و هیچ مبلغی پیش از تأیید کسر نمی‌شود.
+        {t("با ثبت، شرایط استفاده دادبان را می‌پذیرید. اطلاعات شما محرمانه است و هیچ مبلغی پیش از تأیید کسر نمی‌شود.")}
       </p>
     </Card>
   );
@@ -420,45 +424,45 @@ function BookingFormContent() {
   // خلاصه رزرو (در دسکتاپ ستون چپ، زیر مدت‌وزمان)
   const summaryCard = (
     <Card hover={false} className="space-y-4" data-testid="summary-card">
-      <h3 className="font-bold text-foreground">خلاصه رزرو</h3>
+      <h3 className="font-bold text-foreground">{t("خلاصه رزرو")}</h3>
       <div className="space-y-2.5 text-sm">
         <div className="flex items-center justify-between">
-          <span className="text-muted">نوع مشاوره</span>
-          <span className="font-medium text-foreground">{CONSULTATION_TYPES.find((c) => c.key === type)?.title}</span>
+          <span className="text-muted">{t("نوع مشاوره")}</span>
+          <span className="font-medium text-foreground">{t(CONSULTATION_TYPES.find((c) => c.key === type)?.title ?? "")}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-muted">مدت</span>
-          <span className="font-medium text-foreground">{faNum(duration)} دقیقه</span>
+          <span className="text-muted">{t("مدت")}</span>
+          <span className="font-medium text-foreground">{tf("{n} دقیقه", { n: faNum(duration) })}</span>
         </div>
         {lawyerSlug && (
           <div className="flex items-center justify-between">
-            <span className="text-muted">وکیل</span>
+            <span className="text-muted">{t("وکیل")}</span>
             <span className="font-medium text-foreground">{lawyers.find((l) => l.slug === lawyerSlug)?.name ?? "—"}</span>
           </div>
         )}
         {selectedSlot && (
           <div className="flex items-center justify-between">
-            <span className="text-muted">زمان</span>
+            <span className="text-muted">{t("زمان")}</span>
             <span className="font-medium text-success">{selectedSlot.label}</span>
           </div>
         )}
       </div>
       <div className="border-t border-border pt-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-bold text-foreground">مبلغ قابل پرداخت</span>
-          <span className="text-lg font-extrabold text-primary">{faNum(price.toLocaleString("en-US"))} <span className="text-xs font-normal">تومان</span></span>
+          <span className="text-sm font-bold text-foreground">{t("مبلغ قابل پرداخت")}</span>
+          <span className="text-lg font-extrabold text-primary">{faNum(price.toLocaleString("en-US"))} <span className="text-xs font-normal">{t("تومان")}</span></span>
         </div>
-        <p className="mt-1 text-[11px] leading-5 text-muted">مبلغ نهایی است و هزینه پنهانی وجود ندارد.</p>
+        <p className="mt-1 text-[11px] leading-5 text-muted">{t("مبلغ نهایی است و هزینه پنهانی وجود ندارد.")}</p>
       </div>
       <div className="rounded-xl bg-surface-2 p-3">
         <p className="flex items-start gap-2 text-xs leading-5 text-muted">
           <Icon name="lock" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-          پرداخت پس از تأیید نوبت انجام می‌شود؛ بازگشت وجه طبق سیاست شفاف.
+          {t("پرداخت پس از تأیید نوبت انجام می‌شود؛ بازگشت وجه طبق سیاست شفاف.")}
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Badge tone="success" icon="shield">بازگشت وجه طبق سیاست شفاف</Badge>
-        <Badge tone="primary" icon="lock">محرمانگی</Badge>
+        <Badge tone="success" icon="shield">{t("بازگشت وجه طبق سیاست شفاف")}</Badge>
+        <Badge tone="primary" icon="lock">{t("محرمانگی")}</Badge>
       </div>
     </Card>
   );
@@ -493,39 +497,39 @@ function BookingFormContent() {
               </span>
             )}
             <span
-              title={selectedOnline ? "آنلاین" : "آفلاین"}
+              title={selectedOnline ? t("آنلاین") : t("آفلاین")}
               className={`absolute -bottom-0.5 -start-0.5 h-3.5 w-3.5 rounded-full border-2 border-surface ${selectedOnline ? "bg-success" : "bg-border-strong"}`}
             />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold text-primary">رزرو مشاوره با وکیل منتخب</p>
+            <p className="text-[11px] font-bold text-primary">{t("رزرو مشاوره با وکیل منتخب")}</p>
             <p className="mt-0.5 flex items-center gap-1.5 text-sm font-extrabold text-foreground">
               {selectedLawyer.name}
               {selectedLawyer.verified && (
-                <Icon name="badge" className="h-4 w-4 shrink-0 text-primary" aria-label="احراز هویت‌شده" />
+                <Icon name="badge" className="h-4 w-4 shrink-0 text-primary" aria-label={t("احراز هویت‌شده")} />
               )}
             </p>
             <p className="mt-0.5 text-[11px] leading-5 text-muted">
               {[
-                selectedLawyer.title ?? "وکیل پایه یک دادگستری",
+                t(selectedLawyer.title ?? "وکیل پایه یک دادگستری"),
                 selectedLawyer.city,
-                selectedLawyer.experienceYears ? `${faNum(selectedLawyer.experienceYears)} سال سابقه` : null,
+                selectedLawyer.experienceYears ? tf("{n} سال سابقه", { n: faNum(selectedLawyer.experienceYears) }) : null,
               ].filter(Boolean).join(" · ")}
             </p>
           </div>
           <div className="flex items-center gap-2 max-sm:w-full max-sm:justify-end">
             {selectedOnline ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--success)_14%,transparent)] px-2.5 py-1 text-[11px] font-bold text-success">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-success" /> آنلاین
+                <span className="h-2 w-2 animate-pulse rounded-full bg-success" /> {t("آنلاین")}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-medium text-muted">
-                <span className="h-2 w-2 rounded-full bg-border-strong" /> آفلاین
+                <span className="h-2 w-2 rounded-full bg-border-strong" /> {t("آفلاین")}
               </span>
             )}
             {/* وکیل غیرقابل تغییر است — تغییر فقط با انتخاب وکیل دیگر از فهرست صفحهٔ مشاوره */}
             <Button size="sm" variant="outline" href="/consultation" data-testid="change-lawyer-link">
-              تغییر وکیل
+              {t("تغییر وکیل")}
             </Button>
           </div>
         </div>
@@ -539,7 +543,7 @@ function BookingFormContent() {
             )}
             {!!selectedLawyer.priceChat && (
               <span className="ms-auto text-[11px] font-bold text-foreground tnum">
-                مشاوره متنی از {faPrice(selectedLawyer.priceChat)}
+                {tf("مشاوره متنی از {price}", { price: faPrice(selectedLawyer.priceChat) })}
               </span>
             )}
           </div>
@@ -556,22 +560,22 @@ function BookingFormContent() {
             <Icon name="check" className="h-8 w-8" />
           </span>
           <h1 className="mt-5 text-2xl font-extrabold text-foreground">
-            {result.slotLabel ? "نوبت شما ثبت شد" : "درخواست مشاوره ثبت شد"}
+            {result.slotLabel ? t("نوبت شما ثبت شد") : t("درخواست مشاوره ثبت شد")}
           </h1>
-          <p className="mt-2 text-sm leading-7 text-muted">{result.message}</p>
+          <p className="mt-2 text-sm leading-7 text-muted">{t(result.message)}</p>
           <Card hover={false} className="mt-6 text-right">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <span className="text-sm text-muted">شماره پیگیری</span>
+              <span className="text-sm text-muted">{t("شماره پیگیری")}</span>
               <span className="font-mono text-base font-bold text-primary" dir="ltr">{result.ticketNo}</span>
             </div>
             {result.slotLabel && (
               <div className="mt-3 flex items-center justify-between border-b border-border pb-3">
-                <span className="text-sm text-muted">زمان نوبت</span>
+                <span className="text-sm text-muted">{t("زمان نوبت")}</span>
                 <span className="font-bold text-foreground">{result.slotLabel}</span>
               </div>
             )}
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-sm text-muted">مبلغ مشاوره</span>
+              <span className="text-sm text-muted">{t("مبلغ مشاوره")}</span>
               <span className="font-bold text-foreground">{result.priceLabel}</span>
             </div>
           </Card>
@@ -580,31 +584,30 @@ function BookingFormContent() {
           {result.paymentMode === "sandbox" ? (
             <Card hover={false} className="mt-4 border-accent/40 bg-accent-soft/40 text-right">
               <p className="flex items-center gap-2 text-xs font-bold text-accent-text">
-                <Icon name="bolt" className="h-4 w-4" /> حالت آزمایکی (SANDBOX)
+                <Icon name="bolt" className="h-4 w-4" /> {t("حالت آزمایکی (SANDBOX)")}
               </p>
               <p className="mt-1.5 text-xs leading-6 text-foreground-soft">
-                درگاه واقعی هنوز متصل نشده است. این پرداخت شبیه‌سازی است و هیچ مبلغ واقعی جابه‌جا نمی‌شود.
+                {t("درگاه واقعی هنوز متصل نشده است. این پرداخت شبیه‌سازی است و هیچ مبلغ واقعی جابه‌جا نمی‌شود.")}
               </p>
               {paidSandbox ? (
                 <p className="mt-3 rounded-xl bg-success/10 px-3 py-2.5 text-xs font-bold text-success">
-                  پرداخت آزمایکی تأیید شد (Sandbox — تراکنش واقعی نیست)
+                  {t("پرداخت آزمایکی تأیید شد (Sandbox — تراکنش واقعی نیست)")}
                 </p>
               ) : (
                 <Button onClick={sandboxPay} variant="accent" icon="money" className="mt-3 w-full">
-                  پرداخت آزمایکی (Sandbox)
+                  {t("پرداخت آزمایکی (Sandbox)")}
                 </Button>
               )}
             </Card>
           ) : (
             <p className="mt-4 rounded-xl border border-border bg-surface-2 px-4 py-3 text-xs leading-6 text-muted">
-              وضعیت پرداخت: <span className="font-bold text-foreground">در انتظار تأیید کارشناسان</span> — پس از
-              تماس، جزئیات پرداخت شفاف اعلام می‌شود و پیش از آن هیچ مبلغی کسر نخواهد شد.
+              {t("وضعیت پرداخت:")} <span className="font-bold text-foreground">{t("در انتظار تأیید کارشناسان")}</span>{t(" — پس از تماس، جزئیات پرداخت شفاف اعلام می‌شود و پیش از آن هیچ مبلغی کسر نخواهد شد.")}
             </p>
           )}
 
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Button href="/track-case">پیگیری درخواست‌ها</Button>
-            <Button href="/consultation" variant="outline">مشاهده وکلای دیگر</Button>
+            <Button href="/track-case">{t("پیگیری درخواست‌ها")}</Button>
+            <Button href="/consultation" variant="outline">{t("مشاهده وکلای دیگر")}</Button>
           </div>
         </div>
       </Container>
@@ -616,9 +619,9 @@ function BookingFormContent() {
       <PageHero
         variant="market"
         image="/images/hero-booking.png"
-        title="تکمیل رزرو مشاوره"
-        desc="نوع مشاوره و زمان را انتخاب کنید؛ در کمتر از ۲ دقیقه ثبت می‌شود."
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "مشاوره", href: "/consultation" }, { label: "رزرو مشاوره" }]}
+        title={t("تکمیل رزرو مشاوره")}
+        desc={t("نوع مشاوره و زمان را انتخاب کنید؛ در کمتر از ۲ دقیقه ثبت می‌شود.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("مشاوره"), href: "/consultation" }, { label: t("رزرو مشاوره") }]}
       />
 
       <div id="booking-form" className="mx-auto w-full max-w-7xl scroll-mt-20 px-4 py-10 sm:px-6 lg:scroll-mt-22 lg:px-8">
@@ -650,10 +653,10 @@ function BookingFormContent() {
       <div className="mt-10">
         <FaqAccordion
           items={[
-            { q: "چطور وکیل مناسب را انتخاب کنم؟", a: "امتیاز واقعی، تعداد پرونده‌ها، سابقه و تعرفه شفاف هر وکیل در پروفایلش نمایش داده می‌شود؛ می‌توانید چند وکیل را مقایسه کنید و بهترین را انتخاب کنید." },
-            { q: "پرداخت چه زمانی انجام می‌شود؟", a: "هیچ مبلغی قبل از تأیید نوبت کسر نمی‌شود. پرداخت امن داخل سایت انجام می‌گیرد و طبق سیاست شفاف، در صورت ارائه‌نشدن خدمت، وجه بازگردانده می‌شود." },
-            { q: "اطلاعات من محرمانه می‌ماند؟", a: "بله. اطلاعات شما طبق سیاست حریم خصوصی فقط برای انجام همان مشاوره استفاده می‌شود و در اختیار هیچ شخص ثالثی قرار نمی‌گیرد." },
-            { q: "اگر از مشاوره راضی نبودم چه کنم؟", a: "تیم پشتیبانی دادبان در صورت بروز اختلاف، رسیدگی بی‌طرفانه انجام می‌دهد و مطابق سیاست بازگشت وجه عمل می‌کند." },
+            { q: t("چطور وکیل مناسب را انتخاب کنم؟"), a: t("امتیاز واقعی، تعداد پرونده‌ها، سابقه و تعرفه شفاف هر وکیل در پروفایلش نمایش داده می‌شود؛ می‌توانید چند وکیل را مقایسه کنید و بهترین را انتخاب کنید.") },
+            { q: t("پرداخت چه زمانی انجام می‌شود؟"), a: t("هیچ مبلغی قبل از تأیید نوبت کسر نمی‌شود. پرداخت امن داخل سایت انجام می‌گیرد و طبق سیاست شفاف، در صورت ارائه‌نشدن خدمت، وجه بازگردانده می‌شود.") },
+            { q: t("اطلاعات من محرمانه می‌ماند؟"), a: t("بله. اطلاعات شما طبق سیاست حریم خصوصی فقط برای انجام همان مشاوره استفاده می‌شود و در اختیار هیچ شخص ثالثی قرار نمی‌گیرد.") },
+            { q: t("اگر از مشاوره راضی نبودم چه کنم؟"), a: t("تیم پشتیبانی دادبان در صورت بروز اختلاف، رسیدگی بی‌طرفانه انجام می‌دهد و مطابق سیاست بازگشت وجه عمل می‌کند.") },
           ]}
         />
       </div>
@@ -666,11 +669,16 @@ export default function BookingForm() {
     <Suspense
       fallback={
         <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted">
-          در حال بارگذاری…
+          <SuspenseFallbackText />
         </div>
       }
     >
       <BookingFormContent />
     </Suspense>
   );
+}
+
+function SuspenseFallbackText() {
+  const t = useT();
+  return <>{t("در حال بارگذاری…")}</>;
 }

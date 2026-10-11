@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * «کارهای حضوری، با نمایندهٔ دادبان» — معرفی ۸ خدمت حضوری/اداری با قیمت.
@@ -25,6 +27,8 @@ export type InPersonService = {
 const spring = { type: "spring" as const, stiffness: 200, damping: 24 };
 
 export function InPersonServices({ services, totalCount }: { services: InPersonService[]; totalCount: number }) {
+  const t = useT();
+  const tf = templateT(t);
   if (services.length === 0) return null;
 
   return (
@@ -40,7 +44,7 @@ export function InPersonServices({ services, totalCount }: { services: InPersonS
         <div className="absolute inset-0 animate-[kenburns_30s_ease-in-out_infinite_alternate]">
           <Image
             src="/images/inperson-services.png"
-            alt="نماینده حقوقی دادبان با پرونده در راهرو دادگستری"
+            alt={t("نماینده حقوقی دادبان با پرونده در راهرو دادگستری")}
             fill
             sizes="(max-width: 1024px) 100vw, 480px"
             className="object-cover"
@@ -50,15 +54,15 @@ export function InPersonServices({ services, totalCount }: { services: InPersonS
         <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-[11px] font-black text-accent-foreground shadow-md">
             <Icon name="badge" className="h-3.5 w-3.5" />
-            با وکالت‌نامه رسمی
+            {t("با وکالت‌نامه رسمی")}
           </span>
           <p className="mt-3 text-lg font-black leading-7 text-primary-foreground">
-            صف اداره‌ها با ما؛
+            {t("صف اداره‌ها با ما؛")}
             <br />
-            کارتان با شما.
+            {t("کارتان با شما.")}
           </p>
           <p className="mt-1.5 text-xs leading-6 text-primary-foreground/70">
-            نمایندهٔ دادبان به‌جای شما حاضر می‌شود و هر گام در پنل‌تان گزارش می‌شود.
+            {t("نمایندهٔ دادبان به‌جای شما حاضر می‌شود و هر گام در پنل‌تان گزارش می‌شود.")}
           </p>
         </div>
       </motion.div>
@@ -87,7 +91,7 @@ export function InPersonServices({ services, totalCount }: { services: InPersonS
                 <h3 className="mt-3 text-sm font-black leading-6 text-foreground">{s.title}</h3>
                 <p className="mt-1 line-clamp-2 flex-1 text-[11px] leading-5 text-muted">{s.desc}</p>
                 <div className="mt-3 flex items-center justify-between border-t border-border pt-2.5">
-                  <span className="text-[11px] font-bold text-accent-text">از {faPrice(s.basePrice)} تومان</span>
+                  <span className="text-[11px] font-bold text-accent-text">{tf("از {p} تومان", { p: faPrice(s.basePrice) })}</span>
                   <span className="inline-flex items-center gap-1 text-[10px] text-muted">
                     <Icon name="clock" className="h-3 w-3" />
                     {s.estimatedTime}
@@ -112,9 +116,9 @@ export function InPersonServices({ services, totalCount }: { services: InPersonS
                 <Icon name="plus" className="h-5 w-5" />
               </span>
               <p className="text-sm font-black text-foreground">
-                همهٔ {faNum(totalCount)} خدمت دادبان
+                {tf("همهٔ {n} خدمت دادبان", { n: faNum(totalCount) })}
               </p>
-              <p className="text-[11px] text-muted">مشاهدهٔ فهرست کامل خدمات</p>
+              <p className="text-[11px] text-muted">{t("مشاهدهٔ فهرست کامل خدمات")}</p>
             </Link>
           </motion.div>
         </div>

@@ -8,12 +8,16 @@ import { isAdmin } from "@/lib/admin-auth";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { PageHero } from "@/components/page-hero";
 import { Container } from "@/components/ui";
+import { getT } from "@/lib/i18n/server";
 import SettingsClient from "./settings-client";
 
-export const metadata: Metadata = {
-  title: "تنظیمات پلتفرم — پنل مدیریت دادپیو",
-  description: "نرخ کمیسیون، حداقل برداشت، امتیاز تطبیق، تأمین‌کنندگان اعتبار و مدل موتور تطبیق دادپیو.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("تنظیمات پلتفرم — پنل مدیریت دادپیو"),
+    description: t("نرخ کمیسیون، حداقل برداشت، امتیاز تطبیق، تأمین‌کنندگان اعتبار و مدل موتور تطبیق دادپیو."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 const DEFAULTS: Record<string, string> = {
@@ -26,6 +30,7 @@ const DEFAULTS: Record<string, string> = {
 
 export default async function AdminSettingsPage() {
   if (!(await isAdmin())) redirect("/admin/login");
+  const t = await getT();
 
   let settings: Record<string, string> = { ...DEFAULTS };
   try {
@@ -58,10 +63,10 @@ export default async function AdminSettingsPage() {
   return (
     <>
       <PageHero
-        badge="Admin · تنظیمات"
-        title="تنظیمات پلتفرم"
-        desc="پارامترهای کلیدی مارکت‌پلیس دادپیو — کمیسیون، تسویه، آستانهٔ تطبیق و تأمین‌کنندگان"
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت", href: "/admin" }, { label: "تنظیمات" }]}
+        badge={t("Admin · تنظیمات")}
+        title={t("تنظیمات پلتفرم")}
+        desc={t("پارامترهای کلیدی مارکت‌پلیس دادپیو — کمیسیون، تسویه، آستانهٔ تطبیق و تأمین‌کنندگان")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("تنظیمات") }]}
       />
       <Container className="py-10">
         <SettingsClient settings={settings} legalReviews={reviews} />

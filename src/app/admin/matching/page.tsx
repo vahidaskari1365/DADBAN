@@ -8,16 +8,23 @@ import { PageHero } from "@/components/page-hero";
 import { Card, Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { toFa } from "@/lib/money";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 import MatchingTable, { type MatchingRow } from "./matching-table";
 
-export const metadata: Metadata = {
-  title: "مانیتور تطبیق هوشمند — پنل مدیریت دادپیو",
-  description: "پایش موتور تطبیق هوشمند دادپیو: دسته‌بندی AI پرونده‌ها، درصد اطمینان، تخمین هزینه و تحلیل مجدد.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("مانیتور تطبیق هوشمند — پنل مدیریت دادپیو"),
+    description: t("پایش موتور تطبیق هوشمند دادپیو: دسته‌بندی AI پرونده‌ها، درصد اطمینان، تخمین هزینه و تحلیل مجدد."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 export default async function AdminMatchingPage() {
   if (!(await isAdmin())) redirect("/admin/login");
+  const t = await getT();
+  const tf = templateT(t);
 
   let rows: MatchingRow[] = [];
   try {
@@ -69,10 +76,10 @@ export default async function AdminMatchingPage() {
   return (
     <>
       <PageHero
-        badge="Admin · تطبیق AI"
-        title="مانیتور تطبیق هوشمند"
-        desc="پایش موتور تطبیق دادپیو — ترکیب تخصص وکلا، امتیاز و تحلیل هوش مصنوعی روی پرونده‌های بازار"
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت", href: "/admin" }, { label: "تطبیق هوشمند" }]}
+        badge={t("Admin · تطبیق AI")}
+        title={t("مانیتور تطبیق هوشمند")}
+        desc={t("پایش موتور تطبیق دادپیو — ترکیب تخصص وکلا، امتیاز و تحلیل هوش مصنوعی روی پرونده‌های بازار")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("تطبیق هوشمند") }]}
       />
       <Container className="py-10">
         {/* ---------------- توضیح موتور ---------------- */}
@@ -82,16 +89,16 @@ export default async function AdminMatchingPage() {
               <Icon name="sparkles" className="h-6 w-6" />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="text-base font-extrabold text-foreground">موتور تطبیق هوشمند دادپیو</h2>
+              <h2 className="text-base font-extrabold text-foreground">{t("موتور تطبیق هوشمند دادپیو")}</h2>
               <p className="mt-1 text-sm leading-7 text-muted">
-                هر پرونده هنگام ثبت، با تحلیل متن (LLM + قواعد قطعی) دسته‌بندی و بر اساس تخصص وکلا، امتیاز و رتبه،
-                سابقه و شهر، به بهترین وکلای پلتفرم تطبیق داده می‌شود. درصد اطمینان و تخمین هزینه/مدت نیز تولید می‌شود؛
-                مدیر می‌تواند هر پرونده را «تحلیل مجدد» کند.
+                {t(
+                  "هر پرونده هنگام ثبت، با تحلیل متن (LLM + قواعد قطعی) دسته‌بندی و بر اساس تخصص وکلا، امتیاز و رتبه، سابقه و شهر، به بهترین وکلای پلتفرم تطبیق داده می‌شود. درصد اطمینان و تخمین هزینه/مدت نیز تولید می‌شود؛ مدیر می‌تواند هر پرونده را «تحلیل مجدد» کند.",
+                )}
               </p>
               <div className="mt-3 flex flex-wrap gap-4 text-xs font-bold text-foreground-soft">
-                <span>پرونده‌های تحلیل‌شده: {toFa(analyzed)} از {toFa(rows.length)}</span>
-                <span>میانگین اطمینان: {toFa(avgConfidence)}٪</span>
-                <span className="text-danger">فوری: {toFa(urgent)}</span>
+                <span>{tf("پرونده‌های تحلیل‌شده: {a} از {b}", { a: toFa(analyzed), b: toFa(rows.length) })}</span>
+                <span>{tf("میانگین اطمینان: {n}٪", { n: toFa(avgConfidence) })}</span>
+                <span className="text-danger">{tf("فوری: {n}", { n: toFa(urgent) })}</span>
               </div>
             </div>
           </div>
@@ -101,15 +108,15 @@ export default async function AdminMatchingPage() {
         <Card hover={false} className="mt-6">
           <h2 className="mb-4 flex items-center gap-2 text-base font-extrabold text-foreground">
             <Icon name="filter" className="h-4.5 w-4.5 text-accent" />
-            توزیع دسته‌های پرونده
+            {t("توزیع دسته‌های پرونده")}
           </h2>
           {distList.length === 0 ? (
-            <p className="text-sm text-muted">پرونده‌ای برای تحلیل توزیع وجود ندارد.</p>
+            <p className="text-sm text-muted">{t("پرونده‌ای برای تحلیل توزیع وجود ندارد.")}</p>
           ) : (
             <div className="space-y-3">
               {distList.map(([label, count]) => (
                 <div key={label} className="flex items-center gap-3">
-                  <span className="w-28 shrink-0 truncate text-xs font-bold text-foreground">{label}</span>
+                  <span className="w-28 shrink-0 truncate text-xs font-bold text-foreground">{t(label)}</span>
                   <div className="h-5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-3">
                     <span
                       className="block h-full rounded-full bg-accent"
@@ -117,7 +124,7 @@ export default async function AdminMatchingPage() {
                     />
                   </div>
                   <span className="w-14 shrink-0 text-left text-xs font-bold text-foreground-soft">
-                    {toFa(count)} مورد
+                    {tf("{n} مورد", { n: toFa(count) })}
                   </span>
                 </div>
               ))}

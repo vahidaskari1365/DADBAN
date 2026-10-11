@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import { LOCALES, LOCALE_COOKIE, LOCALE_META } from "@/lib/i18n";
-import { useLocale } from "@/lib/i18n/provider";
+import { useLocale, useT } from "@/lib/i18n/provider";
 
 /**
  * سوییچر زبان — کرهٔ زمین با منوی ۵ زبان (فارسی/انگلیسی/عربی/ترکی/چینی).
@@ -34,6 +34,7 @@ const purgeAndReload = async () => {
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   const locale = useLocale();
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -70,7 +71,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label="انتخاب زبان"
+        aria-label={t("انتخاب زبان")}
         aria-expanded={open}
         aria-haspopup="menu"
         data-testid="lang-switcher"
@@ -87,7 +88,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
       {open && (
         <div
           role="menu"
-          aria-label="انتخاب زبان"
+          aria-label={t("انتخاب زبان")}
           className="absolute end-0 top-full z-[70] mt-2 w-44 overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-[var(--shadow-lift)]"
         >
           {LOCALES.map((l) => (

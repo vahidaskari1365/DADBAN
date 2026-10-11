@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/ui";
 import { faNum } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export default async function PaymentResultPage({
   searchParams: Promise<{ state?: string; ref?: string }>;
 }) {
   const sp = await searchParams;
+  const t = await getT();
   const state = (sp.state ?? "").toLowerCase();
   const ref = (sp.ref ?? "").slice(0, 80);
 
@@ -75,8 +77,8 @@ export default async function PaymentResultPage({
     <Container className="py-14">
       <div className={`mx-auto max-w-lg rounded-3xl border p-8 text-center card-shadow ${borderClass}`}>
         <div className="mb-3 text-5xl">{config.emoji}</div>
-        <h1 className="mb-2 text-xl font-black text-foreground">{config.title}</h1>
-        <p className="mb-5 text-sm leading-6 text-muted">{config.desc}</p>
+        <h1 className="mb-2 text-xl font-black text-foreground">{t(config.title)}</h1>
+        <p className="mb-5 text-sm leading-6 text-muted">{t(config.desc)}</p>
         {ref ? (
           <p className="mb-5 inline-block rounded-xl bg-surface-2 px-4 py-2 text-xs text-muted" dir="ltr">
             {faNum(ref)}
@@ -87,13 +89,13 @@ export default async function PaymentResultPage({
             href="/"
             className="inline-flex h-11 items-center rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition hover:opacity-90"
           >
-            بازگشت به خانه
+            {t("بازگشت به خانه")}
           </Link>
           <Link
             href="/support"
             className="inline-flex h-11 items-center rounded-xl border border-border px-5 text-sm font-bold text-foreground transition hover:bg-surface-2"
           >
-            پشتیبانی
+            {t("پشتیبانی")}
           </Link>
         </div>
       </div>

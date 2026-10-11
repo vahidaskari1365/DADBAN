@@ -1,12 +1,14 @@
 import { Icon } from "@/components/icons";
 import { formatJalali, formatTime } from "@/lib/money";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 import type { EventItem } from "./portal-server";
 
 /**
  * تایم‌لاین عمودی روند پرونده — کلاس‌های امضای دادپیو:
  * dp-timeline + dp-timeline-item (done|doing) + dp-timeline-dot
  */
-export function CaseTimeline({
+export async function CaseTimeline({
   events,
   progress,
   showMeta = true,
@@ -15,6 +17,8 @@ export function CaseTimeline({
   progress: number;
   showMeta?: boolean;
 }) {
+  const t = await getT();
+  const tf = templateT(t);
   const withProgress = events.filter((e) => typeof e.progress === "number");
   const topProgress = withProgress.reduce((max, e) => Math.max(max, e.progress ?? 0), 0);
 
@@ -22,7 +26,7 @@ export function CaseTimeline({
     <div className="dp-timeline max-h-96 overflow-y-auto pl-1">
       {events.length === 0 && (
         <p className="rounded-xl border border-dashed border-border p-5 text-center text-sm text-muted">
-          هنوز اقدامی برای این پرونده ثبت نشده است.
+          {t("هنوز اقدامی برای این پرونده ثبت نشده است.")}
         </p>
       )}
       {events.map((e) => {
@@ -36,11 +40,11 @@ export function CaseTimeline({
               <strong className="text-[13px] font-bold text-foreground">{e.title}</strong>
               {typeof e.progress === "number" && (
                 <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-muted">
-                  مرحله {e.progress}٪
+                  {tf("مرحله {n}٪", { n: String(e.progress) })}
                 </span>
               )}
               {!e.visibleToClient && (
-                <span className="rounded-full bg-danger/10 px-2 py-0.5 text-[10px] font-semibold text-danger">داخلی</span>
+                <span className="rounded-full bg-danger/10 px-2 py-0.5 text-[10px] font-semibold text-danger">{t("داخلی")}</span>
               )}
             </div>
             {showMeta && (
@@ -58,7 +62,9 @@ export function CaseTimeline({
 }
 
 /** نوار پیشرفت + برچسب — نسخهٔ کوچک برای کارت داشبورد */
-export function CaseProgressHeader({ progress, tag }: { progress: number; tag?: string }) {
+export async function CaseProgressHeader({ progress, tag }: { progress: number; tag?: string }) {
+  const t = await getT();
+  const tf = templateT(t);
   return (
     <div className="flex items-center gap-3">
       <div className="h-2 w-full max-w-56 overflow-hidden rounded-full bg-surface-3">
@@ -66,7 +72,7 @@ export function CaseProgressHeader({ progress, tag }: { progress: number; tag?: 
       </div>
       <span className="flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-bold text-primary">
         <Icon name="bolt" className="h-3 w-3" />
-        {progress}٪ پیشرفت{tag ? ` · ${tag}` : ""}
+        {tf("{n}٪ پیشرفت", { n: String(progress) })}{tag ? ` · ${tag}` : ""}
       </span>
     </div>
   );

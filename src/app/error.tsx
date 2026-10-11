@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { reportClientError } from "@/lib/report-error";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * Error boundary for page-level runtime errors. Rendered inside the root
@@ -14,6 +15,7 @@ export default function ErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useT();
   useEffect(() => {
     // Log server-side so runtime errors stay observable in production.
     console.error("[dadban] page error:", error);
@@ -31,9 +33,9 @@ export default function ErrorPage({
             <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
           </svg>
         </div>
-        <h2 className="mt-5 text-xl font-bold text-foreground">خطایی رخ داد</h2>
+        <h2 className="mt-5 text-xl font-bold text-foreground">{t("خطایی رخ داد")}</h2>
         <p className="mt-2 text-sm leading-6 text-muted">
-          مشکلی در بارگذاری این صفحه پیش آمد. دوباره تلاش کنید؛ اگر مشکل ادامه داشت، کمی بعد مراجعه کنید.
+          {t("مشکلی در بارگذاری این صفحه پیش آمد. دوباره تلاش کنید؛ اگر مشکل ادامه داشت، کمی بعد مراجعه کنید.")}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button
@@ -41,7 +43,7 @@ export default function ErrorPage({
             onClick={() => reset()}
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover"
           >
-            تلاش دوباره
+            {t("تلاش دوباره")}
           </button>
           <button
             type="button"
@@ -50,7 +52,7 @@ export default function ErrorPage({
             }}
             className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-2"
           >
-            بازگشت به خانه
+            {t("بازگشت به خانه")}
           </button>
         </div>
       </div>

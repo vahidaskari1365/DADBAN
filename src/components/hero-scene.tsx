@@ -8,6 +8,7 @@ import { Meteors } from "@/components/magicui/meteors";
  * Hero background for a legal platform.
  */
 export function HeroScene() {
+  const t = useT();
   return (
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
       <div
@@ -68,14 +69,14 @@ export function HeroScene() {
       />
 
       {/* Floating glass trust cards */}
-      <FloatCard className="right-[5%] top-[20%] hidden lg:flex" icon="badge" title="وکیل تأییدشده" sub="احراز هویتشده" tone="primary" />
-      <FloatCard className="left-[4%] top-[30%] hidden lg:flex" icon="badge" title="وکیل تأییدشده" sub="پروانه راستی‌آمایی‌شده" tone="accent" />
-      <FloatCard className="right-[9%] bottom-[16%] hidden xl:flex" icon="bolt" title="پاسخ سریع" sub="کمتر از ۳۰ دقیقه" tone="success" />
-      <FloatCard className="left-[7%] bottom-[20%] hidden xl:flex" icon="lock" title="اطلاعات محرمانه" sub="رمزنگاریشده" tone="primary" />
+      <FloatCard className="right-[5%] top-[20%] hidden lg:flex" icon="badge" title={t("وکیل تأییدشده")} sub={t("احراز هویتشده")} tone="primary" />
+      <FloatCard className="left-[4%] top-[30%] hidden lg:flex" icon="badge" title={t("وکیل تأییدشده")} sub={t("پروانه راستی‌آمایی‌شده")} tone="accent" />
+      <FloatCard className="right-[9%] bottom-[16%] hidden xl:flex" icon="bolt" title={t("پاسخ سریع")} sub={t("کمتر از ۳۰ دقیقه")} tone="success" />
+      <FloatCard className="left-[7%] bottom-[20%] hidden xl:flex" icon="lock" title={t("اطلاعات محرمانه")} sub={t("رمزنگاریشده")} tone="primary" />
 
       {/* Scroll cue */}
       <div className="absolute bottom-5 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-1 md:flex">
-        <span className="text-[10px] font-medium text-muted">برای کشف، اسکرول کنید</span>
+        <span className="text-[10px] font-medium text-muted">{t("برای کشف، اسکرول کنید")}</span>
         <span className="flex h-9 w-5 items-start justify-center rounded-full border-2 border-border-strong p-1">
           <span className="h-2 w-1 rounded-full bg-muted-soft animate-scroll-cue" />
         </span>

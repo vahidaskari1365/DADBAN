@@ -6,6 +6,8 @@ import { Container, SectionHeading, StarRating } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { formatJalali } from "@/lib/jalali";
 import { faNum } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * ReviewsSpotlight — «برترین نظرات کاربران» به سبک آمازون (Top reviews).
@@ -49,14 +51,16 @@ export async function ReviewsSpotlight() {
 
   // میانگین واقعی همین مجموعه
   const avg = rows.reduce((s, r) => s + r.rating, 0) / rows.length;
+  const t = await getT();
+  const tf = templateT(t);
 
   return (
     <section aria-labelledby="reviews-title" className="mt-24">
       <Container>
         <SectionHeading
-          eyebrow="تجربه واقعی کاربران"
-          title="نظر کسانی که از دادبان استفاده کردند"
-          desc={`میانگین امتیاز ${faNum(avg.toFixed(1))} از ۵ — فقط نظرات تأییدشده کاربران پلتفرم`}
+          eyebrow={t("تجربه واقعی کاربران")}
+          title={t("نظر کسانی که از دادبان استفاده کردند")}
+          desc={tf("میانگین امتیاز {n} از ۵ — فقط نظرات تأییدشده کاربران پلتفرم", { n: faNum(avg.toFixed(1)) })}
         />
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {rows.map((r) => (
@@ -71,7 +75,7 @@ export async function ReviewsSpotlight() {
                   style={{ backgroundColor: "color-mix(in oklab, var(--success) 12%, transparent)" }}
                 >
                   <Icon name="check" className="h-3 w-3" />
-                  کاربر تأییدشده
+                  {t("کاربر تأییدشده")}
                 </span>
               </div>
               <blockquote className="mt-3 flex-1 text-sm leading-7 text-foreground">
@@ -87,7 +91,7 @@ export async function ReviewsSpotlight() {
                     href={`/lawyers/${r.lawyerSlug}`}
                     className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
                   >
-                    وکیل: {r.lawyerName}
+                    {tf("وکیل: {n}", { n: r.lawyerName })}
                     <Icon name="chevron" className="h-3 w-3 rotate-180" />
                   </Link>
                 </div>

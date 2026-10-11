@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Container, Button, Badge, StarRating, EmptyState } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * فهرست وکلای قابل گفتگو در صفحه مشاوره:
@@ -42,6 +44,8 @@ export function ConsultLawyerDirectory({
   /** حضور زنده به بالا کشیده می‌شود تا نوار «وکیل منتخب» فرم هم همان وضعیت را نشان دهد */
   onPresence?: (online: string[]) => void;
 }) {
+  const t = useT();
+  const tf = templateT(t);
   const [lawyers, setLawyers] = useState<DirectoryLawyer[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [online, setOnline] = useState<string[]>([]);
@@ -118,22 +122,21 @@ export function ConsultLawyerDirectory({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 id="directory-title" className="text-pretty text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
-              وکیل خود را انتخاب کنید و همین‌جا گفتگو کنید
+              {t("وکیل خود را انتخاب کنید و همین‌جا گفتگو کنید")}
             </h2>
             <p className="mt-2 text-sm leading-7 text-muted">
-              وضعیت آنلاین بودن وکلا واقعی است؛ روی «شروع گفتگو» بزنید و سؤال‌تان را بنویسید —
-              اگر وکیل آفلاین باشد، پیام شما ذخیره می‌شود و در پنل وکیل پاسخ می‌گیرید.
+              {t("وضعیت آنلاین بودن وکلا واقعی است؛ روی «شروع گفتگو» بزنید و سؤال‌تان را بنویسید — اگر وکیل آفلاین باشد، پیام شما ذخیره می‌شود و در پنل وکیل پاسخ می‌گیرید.")}
             </p>
           </div>
           <Badge tone={onlineCount > 0 ? "success" : "neutral"} icon="bolt">
-            {loaded ? `${faNum(onlineCount)} وکیل آنلاین` : "در حال بررسی وضعیت…"}
+            {loaded ? tf("{n} وکیل آنلاین", { n: faNum(onlineCount) }) : t("در حال بررسی وضعیت…")}
           </Badge>
         </div>
 
         {/* فیلترها */}
-        <div className="mt-5 flex flex-wrap items-center gap-2" role="group" aria-label="فیلتر وکلا">
+        <div className="mt-5 flex flex-wrap items-center gap-2" role="group" aria-label={t("فیلتر وکلا")}>
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted">
-            <Icon name="filter" className="h-4 w-4" /> نوع کار:
+            <Icon name="filter" className="h-4 w-4" /> {t("نوع کار:")}
           </span>
           <button
             onClick={() => setSp("")}
@@ -144,7 +147,7 @@ export function ConsultLawyerDirectory({
                 : "border-border bg-surface text-foreground-soft hover:border-primary/40 hover:text-primary"
             }`}
           >
-            همه
+            {t("همه")}
           </button>
           {specialtyOptions.map((s) => (
             <button
@@ -157,7 +160,7 @@ export function ConsultLawyerDirectory({
                   : "border-border bg-surface text-foreground-soft hover:border-primary/40 hover:text-primary"
               }`}
             >
-              {s}
+              {t(s)}
             </button>
           ))}
           <button
@@ -170,7 +173,7 @@ export function ConsultLawyerDirectory({
             }`}
           >
             <span className={`h-2 w-2 rounded-full ${onlyOnline ? "bg-success" : "bg-border-strong"}`} />
-            فقط آنلاین‌ها
+            {t("فقط آنلاین‌ها")}
           </button>
         </div>
 
@@ -185,9 +188,9 @@ export function ConsultLawyerDirectory({
           <div className="mt-6">
             <EmptyState
               icon="search"
-              title="وکیلی با این فیلتر پیدا نشد"
-              desc="فیلتر تخصص یا «فقط آنلاین‌ها» را بردارید، یا درخواست رزرو بدهید تا کارشناسان دادبان بهترین وکیل را معرفی کنند."
-              action={{ href: "/consultation/book", label: "ثبت درخواست مشاوره" }}
+              title={t("وکیلی با این فیلتر پیدا نشد")}
+              desc={t("فیلتر تخصص یا «فقط آنلاین‌ها» را بردارید، یا درخواست رزرو بدهید تا کارشناسان دادبان بهترین وکیل را معرفی کنند.")}
+              action={{ href: "/consultation/book", label: t("ثبت درخواست مشاوره") }}
             />
           </div>
         ) : (
@@ -209,7 +212,7 @@ export function ConsultLawyerDirectory({
                       {hasPhoto ? (
                         <Image
                           src={l.photoUrl as string}
-                          alt={`عکس ${l.name}`}
+                          alt={tf("عکس {name}", { name: l.name })}
                           width={56}
                           height={56}
                           className="h-14 w-14 rounded-2xl object-cover"
@@ -225,7 +228,7 @@ export function ConsultLawyerDirectory({
                         </span>
                       )}
                       <span
-                        title={on ? "آنلاین" : "آفلاین"}
+                        title={on ? t("آنلاین") : t("آفلاین")}
                         className={`absolute -bottom-0.5 -start-0.5 h-3.5 w-3.5 rounded-full border-2 border-surface ${on ? "bg-success" : "bg-border-strong"}`}
                       />
                     </span>
@@ -238,16 +241,16 @@ export function ConsultLawyerDirectory({
                           {l.name}
                         </Link>
                         {l.verified && (
-                          <Icon name="badge" className="h-4 w-4 shrink-0 text-primary" aria-label="احراز هویت‌شده" />
+                          <Icon name="badge" className="h-4 w-4 shrink-0 text-primary" aria-label={t("احراز هویت‌شده")} />
                         )}
                       </div>
-                      <p className="mt-0.5 truncate text-[11px] text-muted">{l.title ?? "وکیل پایه یک دادگستری"}</p>
+                      <p className="mt-0.5 truncate text-[11px] text-muted">{t(l.title ?? "وکیل پایه یک دادگستری")}</p>
                       <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted">
                         <span className="inline-flex items-center gap-1">
-                          <Icon name="location" className="h-3 w-3" /> {l.city}
+                          <Icon name="location" className="h-3 w-3" /> {t(l.city)}
                         </span>
                         <span className="inline-flex items-center gap-1">
-                          <Icon name="briefcase" className="h-3 w-3" /> {faNum(l.experienceYears)} سال سابقه
+                          <Icon name="briefcase" className="h-3 w-3" /> {tf("{n} سال سابقه", { n: faNum(l.experienceYears) })}
                         </span>
                       </div>
                     </div>
@@ -255,7 +258,7 @@ export function ConsultLawyerDirectory({
 
                   <div className="mt-3 flex flex-wrap gap-1">
                     {(l.specialties ?? []).slice(0, 3).map((s) => (
-                      <Badge key={s} tone="primary">{s}</Badge>
+                      <Badge key={s} tone="primary">{t(s)}</Badge>
                     ))}
                     {(l.specialties?.length ?? 0) > 3 && (
                       <Badge tone="neutral">+{faNum(l.specialties.length - 3)}</Badge>
@@ -266,23 +269,23 @@ export function ConsultLawyerDirectory({
                     <StarRating rating={l.rating ?? 0} count={l.reviewCount} />
                     {on ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--success)_14%,transparent)] px-2.5 py-1 text-[11px] font-bold text-success">
-                        <span className="h-2 w-2 animate-pulse rounded-full bg-success" /> آنلاین
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-success" /> {t("آنلاین")}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-medium text-muted">
-                        <span className="h-2 w-2 rounded-full bg-border-strong" /> آفلاین
+                        <span className="h-2 w-2 rounded-full bg-border-strong" /> {t("آفلاین")}
                       </span>
                     )}
                   </div>
 
                   <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
                     <div>
-                      <p className="text-[10px] text-muted">مشاوره متنی از</p>
+                      <p className="text-[10px] text-muted">{t("مشاوره متنی از")}</p>
                       <p className="text-xs font-bold text-foreground tnum">{faPrice(l.priceChat ?? 0)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" onClick={() => onBook(l)} data-testid={`book-${l.slug}`}>
-                        رزرو مشاوره
+                        {t("رزرو مشاوره")}
                       </Button>
                       <Button
                         size="sm"
@@ -291,7 +294,7 @@ export function ConsultLawyerDirectory({
                         onClick={() => onChat(l)}
                         data-testid={`chat-${l.slug}`}
                       >
-                        شروع گفتگو
+                        {t("شروع گفتگو")}
                       </Button>
                     </div>
                   </div>

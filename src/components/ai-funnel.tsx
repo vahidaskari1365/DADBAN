@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
 
 const SUGGESTIONS = [
   "مستأجر اجاره نمی‌دهد، چه کنم؟",
@@ -13,6 +14,7 @@ const SUGGESTIONS = [
 
 export default function AIFunnel() {
   const router = useRouter();
+  const t = useT();
   const [q, setQ] = useState("");
 
   function go(query: string) {
@@ -28,12 +30,13 @@ export default function AIFunnel() {
       <div className="relative grid items-center gap-8 lg:grid-cols-[1.5fr_1fr]">
         <div>
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">
-            <Icon name="sparkles" className="h-4 w-4" /> هوش مصنوعی حقوقی
+            <Icon name="sparkles" className="h-4 w-4" /> {t("هوش مصنوعی حقوقی")}
           </span>
-          <h2 className="mt-4 text-2xl font-bold leading-snug sm:text-3xl">دستیار حقوقی هوشمند، ۲۴ ساعته راهنمای شماست</h2>
+          <h2 className="mt-4 text-2xl font-bold leading-snug sm:text-3xl">{t("دستیار حقوقی هوشمند، ۲۴ ساعته راهنمای شماست")}</h2>
           <p className="mt-3 max-w-xl text-sm leading-7 text-white/85">
-            موضوع خود را بنویسید؛ دستیار دادبان بهترین اقدام بعدی را پیشنهاد می‌دهد و در موضوعات تخصصی،
-            شما را به وکیل متخصص وصل می‌کند — جایگزین وکیل نیست.
+            {t(
+              "موضوع خود را بنویسید؛ دستیار دادبان بهترین اقدام بعدی را پیشنهاد می‌دهد و در موضوعات تخصصی، شما را به وکیل متخصص وصل می‌کند — جایگزین وکیل نیست.",
+            )}
           </p>
           <form
             className="mt-6 flex flex-col gap-2 sm:flex-row"
@@ -45,11 +48,11 @@ export default function AIFunnel() {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="موضوع حقوقی خود را بنویسید…"
+              placeholder={t("موضوع حقوقی خود را بنویسید…")}
               className="w-full rounded-xl border-0 bg-white/95 px-4 py-3 text-sm text-foreground outline-none ring-2 ring-transparent focus:ring-accent"
             />
             <Button type="submit" variant="accent" icon="arrow">
-              دریافت راهنمایی
+              {t("دریافت راهنمایی")}
             </Button>
           </form>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -60,7 +63,7 @@ export default function AIFunnel() {
                 onClick={() => go(s)}
                 className="rounded-full bg-white/10 px-3 py-1.5 text-xs text-white/90 backdrop-blur transition hover:bg-white/20"
               >
-                {s}
+                {t(s)}
               </button>
             ))}
           </div>
@@ -70,13 +73,14 @@ export default function AIFunnel() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
               <Icon name="sparkles" className="h-4 w-4" />
             </span>
-            <span className="text-sm font-semibold">دستیار دادبان</span>
+            <span className="text-sm font-semibold">{t("دستیار دادبان")}</span>
           </div>
           <div className="mt-3 space-y-2 text-xs">
-            <p className="rounded-xl rounded-tr-sm bg-white/15 px-3 py-2">مستأجر من سه ماه اجاره نداده، چه کنم؟</p>
+            <p className="rounded-xl rounded-tr-sm bg-white/15 px-3 py-2">{t("مستأجر من سه ماه اجاره نداده، چه کنم؟")}</p>
             <p className="rounded-xl rounded-tl-sm bg-white/25 px-3 py-2 leading-6">
-              موضوع ملک و اجاره شناسایی شد. مدارک لازم: قرارداد اجاره و گواهی پرداخت. مراحل بعدی: اظهارنامه،
-              دادخواست تخلیه و پیگیری اجرا — در صورت نیاز به وکیل متخصص وصل می‌شوید.
+              {t(
+                "موضوع ملک و اجاره شناسایی شد. مدارک لازم: قرارداد اجاره و گواهی پرداخت. مراحل بعدی: اظهارنامه، دادخواست تخلیه و پیگیری اجرا — در صورت نیاز به وکیل متخصص وصل می‌شوید.",
+              )}
             </p>
           </div>
         </div>

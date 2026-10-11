@@ -9,15 +9,22 @@ import { PageHero } from "@/components/page-hero";
 import { Container } from "@/components/ui";
 import OnboardingClient from "./onboarding-client";
 import { faNum } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 
-export const metadata: Metadata = {
-  title: "صف روی‌بوردینگ وکلا — پنل مدیریت دادبان",
-  description: "بررسی و تأیید درخواست‌های همکاری وکلای واقعی: مدارک، پروانه، تخصص‌ها و قرارداد همکاری.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("صف روی‌بوردینگ وکلا — پنل مدیریت دادبان"),
+    description: t("بررسی و تأیید درخواست‌های همکاری وکلای واقعی: مدارک، پروانه، تخصص‌ها و قرارداد همکاری."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 export default async function AdminOnboardingPage() {
   if (!(await isAdmin())) redirect("/admin/login");
+  const t = await getT();
+  const tf = templateT(t);
 
   // جدول روی‌بوردینگ — best-effort؛ در نبود دیتابیس صف خالی + پیام صادقانه
   try {
@@ -44,13 +51,13 @@ export default async function AdminOnboardingPage() {
   return (
     <>
       <PageHero
-        badge="Admin · روی‌بوردینگ"
-        title="صف تأیید وکلای واقعی"
-        desc="بررسی درخواست‌های همکاری، راستی‌آزمایی پروانه و تأیید/رد متقاضیان — تأیید یعنی ساخت خودکار پروفایل عمومی و اتصال حساب کاربری متقاضی."
+        badge={t("Admin · روی‌بوردینگ")}
+        title={t("صف تأیید وکلای واقعی")}
+        desc={t("بررسی درخواست‌های همکاری، راستی‌آزمایی پروانه و تأیید/رد متقاضیان — تأیید یعنی ساخت خودکار پروفایل عمومی و اتصال حساب کاربری متقاضی.")}
         breadcrumb={[
-          { label: "خانه", href: "/" },
-          { label: "پنل مدیریت", href: "/admin" },
-          { label: "روی‌بوردینگ وکلا" },
+          { label: t("خانه"), href: "/" },
+          { label: t("پنل مدیریت"), href: "/admin" },
+          { label: t("روی‌بوردینگ وکلا") },
         ]}
       >
         <span
@@ -61,7 +68,7 @@ export default async function AdminOnboardingPage() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#eec97b] opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[#eec97b]" />
           </span>
-          {faNum(pendingCount)} درخواست در انتظار بررسی
+          {tf("{n} درخواست در انتظار بررسی", { n: faNum(pendingCount) })}
         </span>
       </PageHero>
 

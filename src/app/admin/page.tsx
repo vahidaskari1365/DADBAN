@@ -8,6 +8,8 @@ import { Container, Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { PageHero } from "@/components/page-hero";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +43,8 @@ async function getStats() {
 
 export default async function AdminPage() {
   if (!(await isAdmin())) redirect("/admin/login");
+  const t = await getT();
+  const tf = templateT(t);
   const s = await getStats();
   let recent: { id: number; slug: string; title: string; views: number; publishedAt: Date }[] = [];
   try {
@@ -69,15 +73,15 @@ export default async function AdminPage() {
       <PageHero
         variant="market"
         image="/images/hero-admin.png"
-        badge="Admin · پنل مدیریت"
-        title="داشبورد مدیریت دادبان"
-        desc="مدیریت محتوا، داده‌های سایت و آمار بازدید — با ورود امن مدیر."
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت" }]}
+        badge={t("Admin · پنل مدیریت")}
+        title={t("داشبورد مدیریت دادبان")}
+        desc={t("مدیریت محتوا، داده‌های سایت و آمار بازدید — با ورود امن مدیر.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت") }]}
       >
         <div className="flex flex-wrap gap-2">
-          <Button href="/admin/articles/new" variant="accent" icon="plus" size="sm">مقاله جدید</Button>
-          <Link href="/admin/articles" className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-bold text-white transition-colors hover:bg-white/20"><Icon name="book" className="h-3.5 w-3.5" />مدیریت مقالات</Link>
-          <Link href="/api/admin/logout" className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-bold text-white transition-colors hover:bg-white/20"><Icon name="x" className="h-3.5 w-3.5" />خروج</Link>
+          <Button href="/admin/articles/new" variant="accent" icon="plus" size="sm">{t("مقاله جدید")}</Button>
+          <Link href="/admin/articles" className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-bold text-white transition-colors hover:bg-white/20"><Icon name="book" className="h-3.5 w-3.5" />{t("مدیریت مقالات")}</Link>
+          <Link href="/api/admin/logout" className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-bold text-white transition-colors hover:bg-white/20"><Icon name="x" className="h-3.5 w-3.5" />{t("خروج")}</Link>
         </div>
       </PageHero>
       <Container className="py-12">
@@ -90,7 +94,7 @@ export default async function AdminPage() {
                 </span>
                 <span>
                   <span className="block text-xl font-black text-foreground">{faNum(st.value)}</span>
-                  <span className="text-xs font-semibold text-foreground-soft">{st.label}</span>
+                  <span className="text-xs font-semibold text-foreground-soft">{t(st.label)}</span>
                 </span>
               </Card>
             </Link>
@@ -100,11 +104,11 @@ export default async function AdminPage() {
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-black text-foreground">آخرین مقالات</h2>
-              <Button href="/admin/articles" variant="ghost" size="sm">همه مقالات</Button>
+              <h2 className="text-lg font-black text-foreground">{t("آخرین مقالات")}</h2>
+              <Button href="/admin/articles" variant="ghost" size="sm">{t("همه مقالات")}</Button>
             </div>
             <div className="space-y-3">
-              {recent.length === 0 && <Card hover={false}><p className="text-sm text-foreground-soft">دیتابیس در دسترس نیست یا مقاله‌ای ثبت نشده است.</p></Card>}
+              {recent.length === 0 && <Card hover={false}><p className="text-sm text-foreground-soft">{t("دیتابیس در دسترس نیست یا مقاله‌ای ثبت نشده است.")}</p></Card>}
               {recent.map((a) => (
                 <Card key={a.id} hover className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
@@ -112,8 +116,8 @@ export default async function AdminPage() {
                     <p className="mt-0.5 text-xs text-foreground-soft" dir="ltr">/{a.slug}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    <Badge tone="neutral">{faNum(a.views)} بازدید</Badge>
-                    <Link href={`/admin/articles/${a.id}/edit`} className="text-sm font-semibold text-primary hover:underline">ویرایش</Link>
+                    <Badge tone="neutral">{tf("{n} بازدید", { n: faNum(a.views) })}</Badge>
+                    <Link href={`/admin/articles/${a.id}/edit`} className="text-sm font-semibold text-primary hover:underline">{t("ویرایش")}</Link>
                   </div>
                 </Card>
               ))}
@@ -122,7 +126,7 @@ export default async function AdminPage() {
 
           <div id="tracking">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-black text-foreground">مدیریت سریع</h2>
+              <h2 className="text-lg font-black text-foreground">{t("مدیریت سریع")}</h2>
             </div>
             <div className="space-y-3">
               {[
@@ -142,7 +146,7 @@ export default async function AdminPage() {
                 <Link key={m.label + m.href} href={m.href}>
                   <Card hover className="flex items-center gap-3">
                     <Icon name={m.icon} className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-bold text-foreground">{m.label}</span>
+                    <span className="text-sm font-bold text-foreground">{t(m.label)}</span>
                   </Card>
                 </Link>
               ))}

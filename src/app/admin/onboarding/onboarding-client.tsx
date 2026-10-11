@@ -7,6 +7,8 @@ import { Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { formatJalaliDateTime } from "@/lib/jalali";
 import { faNum } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * صف روی‌بوردینگ وکلای واقعی — کارتابل ادمین.
@@ -56,14 +58,16 @@ export default function OnboardingClient({
   degraded: boolean;
 }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [tab, setTab] = useState<Tab>("pending");
   const [busyId, setBusyId] = useState<number | null>(null);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
   const [rejectNote, setRejectNote] = useState("");
   const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
 
-  function flash(ok: boolean, t: string) {
-    setToast({ ok, text: t });
+  function flash(ok: boolean, text: string) {
+    setToast({ ok, text });
     window.setTimeout(() => setToast(null), 5000);
   }
 
@@ -90,27 +94,27 @@ export default function OnboardingClient({
       const d = await res.json();
       if (!res.ok || !d.ok) {
         if (res.status === 401) {
-          flash(false, "نشست ادمین منقضی شده؛ دوباره وارد شوید.");
+          flash(false, t("نشست ادمین منقضی شده؛ دوباره وارد شوید."));
         } else {
-          flash(false, d.error || "انجام اقدام ناموفق بود؛ دوباره تلاش کنید.");
+          flash(false, d.error ? t(d.error) : t("انجام اقدام ناموفق بود؛ دوباره تلاش کنید."));
         }
         return;
       }
       if (action === "approve") {
         const emailLine = d.emailAttempted
           ? d.emailNotified
-            ? " نتیجه با ایمیل به متقاضی اطلاع داده شد."
-            : " ایمیل اطلاع‌رسانی ارسال نشد (پروایدر فعال نیست) — نتیجه را دستی اطلاع دهید."
+            ? " " + t("نتیجه با ایمیل به متقاضی اطلاع داده شد.")
+            : " " + t("ایمیل اطلاع‌رسانی ارسال نشد (پروایدر فعال نیست) — نتیجه را دستی اطلاع دهید.")
           : "";
-        flash(true, `درخواست تأیید شد؛ پروفایل وکیل ساخته شد و حساب متقاضی متصل گردید.${emailLine}`);
+        flash(true, t("درخواست تأیید شد؛ پروفایل وکیل ساخته شد و حساب متقاضی متصل گردید.") + emailLine);
       } else {
-        flash(true, "درخواست رد شد و توضیح کارشناس ثبت گردید.");
+        flash(true, t("درخواست رد شد و توضیح کارشناس ثبت گردید."));
       }
       setRejectingId(null);
       setRejectNote("");
       router.refresh();
     } catch {
-      flash(false, "خطای شبکه؛ اتصال خود را بررسی کنید.");
+      flash(false, t("خطای شبکه؛ اتصال خود را بررسی کنید."));
     } finally {
       setBusyId(null);
     }
@@ -127,20 +131,20 @@ export default function OnboardingClient({
     <div>
       {/* آمار صف */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="در انتظار بررسی" value={faNum(counts.pending)} hint="صف جاری کارشناس" icon="clock" tone={counts.pending > 0 ? "gold" : "default"} />
-        <StatCard label="تأییدشده" value={faNum(counts.approved)} hint="پروفایل ساخته‌شده" icon="badge" tone="success" />
-        <StatCard label="ردشده" value={faNum(counts.rejected)} hint="با توضیح کارشناس" icon="x" tone="danger" />
-        <StatCard label="کل درخواست‌ها" value={faNum(counts.all)} hint="۲۰۰ رکورد اخیر" icon="folder" />
+        <StatCard label={t("در انتظار بررسی")} value={faNum(counts.pending)} hint={t("صف جاری کارشناس")} icon="clock" tone={counts.pending > 0 ? "gold" : "default"} />
+        <StatCard label={t("تأییدشده")} value={faNum(counts.approved)} hint={t("پروفایل ساخته‌شده")} icon="badge" tone="success" />
+        <StatCard label={t("ردشده")} value={faNum(counts.rejected)} hint={t("با توضیح کارشناس")} icon="x" tone="danger" />
+        <StatCard label={t("کل درخواست‌ها")} value={faNum(counts.all)} hint={t("۲۰۰ رکورد اخیر")} icon="folder" />
       </div>
 
       {degraded && (
         <p role="status" className="mt-4 rounded-xl border border-accent/30 bg-accent-soft/30 px-3 py-2 text-xs leading-6 text-accent-text">
-          فهرست درخواست‌ها موقتاً در دسترس نیست (خطای دیتابیس)؛ به‌محض رفع مشکل همین‌جا نمایش داده می‌شود.
+          {t("فهرست درخواست‌ها موقتاً در دسترس نیست (خطای دیتابیس)؛ به‌محض رفع مشکل همین‌جا نمایش داده می‌شود.")}
         </p>
       )}
 
       {/* تب‌ها */}
-      <div className="mt-6 flex flex-wrap items-center gap-2" role="tablist" aria-label="فیلتر وضعیت درخواست‌ها">
+      <div className="mt-6 flex flex-wrap items-center gap-2" role="tablist" aria-label={t("فیلتر وضعیت درخواست‌ها")}>
         {TABS.map((tb) => {
           const active = tab === tb.id;
           return (
@@ -156,7 +160,7 @@ export default function OnboardingClient({
                   : "border border-border bg-surface text-foreground-soft hover:border-primary/40 hover:text-primary"
               }`}
             >
-              {tb.label}
+              {t(tb.label)}
               <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${active ? "bg-white/25 text-white" : "bg-surface-2 text-muted"}`}>
                 {faNum(counts[tb.id])}
               </span>
@@ -170,8 +174,8 @@ export default function OnboardingClient({
         {!degraded && filtered.length === 0 && (
           <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm leading-7 text-muted">
             {tab === "pending"
-              ? "درخواستی در صف بررسی نیست؛ به‌محض ثبت فرم همکاری در /join-as-lawyer همین‌جا می‌نشیند."
-              : "موردی با این فیلتر یافت نشد."}
+              ? t("درخواستی در صف بررسی نیست؛ به‌محض ثبت فرم همکاری در /join-as-lawyer همین‌جا می‌نشیند.")
+              : t("موردی با این فیلتر یافت نشد.")}
           </p>
         )}
 
@@ -185,31 +189,31 @@ export default function OnboardingClient({
                   <p className="flex flex-wrap items-center gap-2 text-base font-extrabold text-foreground">
                     <Icon name="user" className="h-4.5 w-4.5 text-primary" />
                     {r.name}
-                    <StatusBadge tone={st.tone}>{st.label}</StatusBadge>
+                    <StatusBadge tone={st.tone}>{t(st.label)}</StatusBadge>
                     <span className="text-xs font-bold text-muted">#{faNum(r.id)}</span>
                   </p>
                   <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
                     <span dir="ltr" className="font-mono">{r.phone}</span>
                     {r.email && <span dir="ltr" className="font-mono">{r.email}</span>}
-                    <span>پروانه: <b className="font-mono" dir="ltr">{r.licenseNo}</b></span>
-                    <span>{LAWYER_TYPE_FA[r.lawyerType] ?? r.lawyerType}</span>
+                    <span>{t("پروانه:")} <b className="font-mono" dir="ltr">{r.licenseNo}</b></span>
+                    <span>{t(LAWYER_TYPE_FA[r.lawyerType] ?? r.lawyerType)}</span>
                     <span className="inline-flex items-center gap-1">
                       <Icon name="location" className="h-3.5 w-3.5" />
                       {r.province} / {r.city}
                     </span>
-                    <span>سابقه: {faNum(r.experienceYears)} سال</span>
-                    {r.userId != null && <span>کاربر متصل: #{faNum(r.userId)}</span>}
+                    <span>{tf("سابقه: {n} سال", { n: faNum(r.experienceYears) })}</span>
+                    {r.userId != null && <span>{tf("کاربر متصل: #{n}", { n: faNum(r.userId) })}</span>}
                   </p>
                 </div>
                 <div className="shrink-0 text-end text-[11px] leading-5 text-muted">
-                  <p>ثبت: {formatJalaliDateTime(r.createdAt)}</p>
+                  <p>{t("ثبت:")} {formatJalaliDateTime(r.createdAt)}</p>
                   {r.agreementSignedAt && (
-                    <p className="flex items-center justify-end gap-1 text-success" title={`نسخهٔ ${r.agreementVersion ?? "—"}`}>
+                    <p className="flex items-center justify-end gap-1 text-success" title={tf("نسخهٔ {v}", { v: r.agreementVersion ?? "—" })}>
                       <Icon name="signature" className="h-3.5 w-3.5" />
-                      قرارداد امضاشده ({r.agreementVersion ?? "—"})
+                      {tf("قرارداد امضاشده ({v})", { v: r.agreementVersion ?? "—" })}
                     </p>
                   )}
-                  {r.reviewedAt && <p>بررسی: {formatJalaliDateTime(r.reviewedAt)}</p>}
+                  {r.reviewedAt && <p>{t("بررسی:")} {formatJalaliDateTime(r.reviewedAt)}</p>}
                 </div>
               </div>
 
@@ -217,7 +221,7 @@ export default function OnboardingClient({
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {r.specialties.map((s) => (
                   <span key={s} className="rounded-full border border-primary/25 bg-primary-soft px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                    {s}
+                    {t(s)}
                   </span>
                 ))}
               </div>
@@ -228,7 +232,7 @@ export default function OnboardingClient({
               )}
               {r.adminNote && (
                 <p className="mt-3 rounded-xl border border-border bg-surface-2/50 p-3 text-xs leading-6 text-muted">
-                  توضیح کارشناس: {r.adminNote}
+                  {t("توضیح کارشناس:")} {r.adminNote}
                 </p>
               )}
 
@@ -238,7 +242,7 @@ export default function OnboardingClient({
                   {rejectingId === r.id ? (
                     <div className="space-y-2">
                       <label htmlFor={`reject-note-${r.id}`} className="block text-xs font-bold text-foreground-soft">
-                        توضیح رد (برای متقاضی الزامی است) *
+                        {t("توضیح رد (برای متقاضی الزامی است) *")}
                       </label>
                       <textarea
                         id={`reject-note-${r.id}`}
@@ -246,7 +250,7 @@ export default function OnboardingClient({
                         onChange={(e) => setRejectNote(e.target.value)}
                         rows={2}
                         maxLength={500}
-                        placeholder="مثال: تصویر پروانه واضح نیست؛ لطفاً با پشتیبانی تماس بگیرید."
+                        placeholder={t("مثال: تصویر پروانه واضح نیست؛ لطفاً با پشتیبانی تماس بگیرید.")}
                         className="min-h-11 w-full rounded-xl border border-border-strong bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary"
                       />
                       <div className="flex flex-wrap items-center gap-2">
@@ -258,7 +262,7 @@ export default function OnboardingClient({
                           className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-danger px-4 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <Icon name="x" className="h-4 w-4" />
-                          {busy ? "در حال ثبت…" : "ثبت رد درخواست"}
+                          {busy ? t("در حال ثبت…") : t("ثبت رد درخواست")}
                         </button>
                         <button
                           type="button"
@@ -269,7 +273,7 @@ export default function OnboardingClient({
                           disabled={busy}
                           className="inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-bold text-muted transition-colors hover:text-foreground"
                         >
-                          انصراف
+                          {t("انصراف")}
                         </button>
                       </div>
                     </div>
@@ -283,7 +287,7 @@ export default function OnboardingClient({
                         className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-success px-4 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Icon name="check" className="h-4 w-4" />
-                        {busy ? "در حال بررسی…" : "تأیید — ساخت پروفایل و اتصال حساب"}
+                        {busy ? t("در حال بررسی…") : t("تأیید — ساخت پروفایل و اتصال حساب")}
                       </button>
                       <button
                         type="button"
@@ -295,7 +299,7 @@ export default function OnboardingClient({
                         className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-danger/40 bg-danger/5 px-4 text-sm font-bold text-danger transition-colors hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Icon name="x" className="h-4 w-4" />
-                        رد
+                        {t("رد")}
                       </button>
                     </div>
                   )}

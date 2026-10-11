@@ -6,6 +6,8 @@ import { Badge, StarRating } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LawyerPhoto } from "@/components/lawyer-photo";
 import { faNum, faPrice } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * کیت شخصی‌سازی به سبک آمازون:
@@ -67,6 +69,8 @@ export function LawyerViewRecorder({ lawyer }: { lawyer: Omit<ViewedLawyer, "ts"
 }
 
 function LawyerMiniCard({ l }: { l: ViewedLawyer }) {
+  const t = useT();
+  const tf = templateT(t);
   return (
     <Link
       href={`/lawyers/${l.slug}`}
@@ -90,7 +94,7 @@ function LawyerMiniCard({ l }: { l: ViewedLawyer }) {
       <div className="mt-2.5 flex items-center justify-between border-t border-border pt-2.5">
         <StarRating rating={l.rating} count={l.reviewCount} />
         <span className="text-[11px] font-semibold text-foreground">
-          از {faPrice(l.priceChat)}
+          {tf("از {p}", { p: faPrice(l.priceChat) })}
         </span>
       </div>
     </Link>
@@ -137,6 +141,8 @@ export function LawyerDiscovery({
   excludeSlug?: string;
   hideRecent?: boolean;
 }) {
+  const t = useT();
+  const tf = templateT(t);
   const [recent, setRecent] = useState<ViewedLawyer[] | null>(null);
   const [top, setTop] = useState<ViewedLawyer[] | null>(null);
 
@@ -184,9 +190,9 @@ export function LawyerDiscovery({
     <div className="space-y-5" data-discovery>
       {!hideRecent && recentList.length > 0 && (
         <Rail
-          title="بازدیدهای اخیر شما"
+          title={t("بازدیدهای اخیر شما")}
           icon="clock"
-          desc="ادامه از جایی که رها کردی"
+          desc={t("ادامه از جایی که رها کردی")}
         >
           {recentList.map((l) => (
             <LawyerMiniCard key={`r-${l.slug}`} l={l} />
@@ -196,12 +202,12 @@ export function LawyerDiscovery({
 
       {topList.length > 0 && (
         <Rail
-          title={personalized ? "پیشنهاد برای شما" : "انتخاب کاربران دادبان"}
+          title={personalized ? t("پیشنهاد برای شما") : t("انتخاب کاربران دادبان")}
           icon="sparkles"
           desc={
             personalized
-              ? "بر اساس تخصص‌هایی که به آن‌ها علاقه نشان دادی"
-              : "وکلای تأییدشده با بالاترین امتیاز واقعی"
+              ? t("بر اساس تخصص‌هایی که به آن‌ها علاقه نشان دادی")
+              : t("وکلای تأییدشده با بالاترین امتیاز واقعی")
           }
         >
           {ranked.map((l) => (
@@ -212,7 +218,7 @@ export function LawyerDiscovery({
 
       {recentList.length > 0 && (
         <p className="text-center text-[11px] text-muted">
-          سابقه بازدید فقط روی دستگاه خودت ذخیره می‌شود — {faNum(recentList.length)} وکیل
+          {tf("سابقه بازدید فقط روی دستگاه خودت ذخیره می‌شود — {n} وکیل", { n: faNum(recentList.length) })}
         </p>
       )}
     </div>

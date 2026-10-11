@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
+import { templateT, type TTemplateFn } from "@/lib/i18n/core";
 
 /**
  * LiveActivity — اعلان اثبات اجتماعی زنده (Social proof) به سبک آمازون.
@@ -17,20 +19,22 @@ type Item = { kind: string; text: string; ts: string };
 
 const HIDDEN_ROUTES = ["/admin", "/manage", "/dashboard", "/developer", "/login", "/register"];
 
-function agoFa(ts: string): string {
+function agoFa(ts: string, tf: TTemplateFn): string {
   const diff = Math.max(0, Date.now() - new Date(ts).getTime());
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "همین لحظه";
-  if (m < 60) return `${m} دقیقه پیش`;
+  if (m < 1) return tf("همین لحظه", {});
+  if (m < 60) return tf("{n} دقیقه پیش", { n: String(m) });
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h} ساعت پیش`;
-  return `${Math.floor(h / 24)} روز پیش`;
+  if (h < 24) return tf("{n} ساعت پیش", { n: String(h) });
+  return tf("{n} روز پیش", { n: String(Math.floor(h / 24)) });
 }
 
 const faDigits = (s: string | number) =>
   String(s).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
 
 export function LiveActivity() {
+  const t = useT();
+  const tf = templateT(t);
   const pathname = usePathname() || "/";
   const [items, setItems] = useState<Item[]>([]);
   const [current, setCurrent] = useState<Item | null>(null);
@@ -97,12 +101,12 @@ export function LiveActivity() {
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold leading-6 text-foreground">{current.text}</p>
           <p className="mt-0.5 text-[10px] text-muted">
-            {faDigits(agoFa(current.ts))} · فعالیت واقعی پلتفرم
+            {faDigits(agoFa(current.ts, tf))} · {t("فعالیت واقعی پلتفرم")}
           </p>
         </div>
         <button
           type="button"
-          aria-label="بستن اعلان"
+          aria-label={t("بستن اعلان")}
           onClick={() => {
             setVisible(false);
             shown.current = 5; // دیگر نمایش نده

@@ -8,6 +8,8 @@ import { formatJalaliTime } from "@/lib/jalali";
 import { faNum } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
 import { ConsultationClient } from "@/components/consultation-client";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * پنل گفتگوی متنی موکل ↔ وکیل — بدون WebSocket (HTTP polling روی دیتابیس، سازگار با Vercel).
@@ -111,6 +113,8 @@ export function ConsultChatPanel({
   clientDisplayName?: string;
   onClose: () => void;
 }) {
+  const t = useT();
+  const tf = templateT(t);
   const isClient = role === "client";
   const [name, setName] = useState<string>(() => {
     /* پنل فقط پس از کلیک کاربر mount می‌شود؛ پس خواندن localStorage در init امن است */
@@ -155,7 +159,7 @@ export function ConsultChatPanel({
   const noteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const myName = isClient ? name.trim() || "کاربر" : lawyer.name;
-  const headerTitle = isClient ? lawyer.name : clientDisplayName ?? "گفتگو با موکل";
+  const headerTitle = isClient ? lawyer.name : clientDisplayName ?? t("گفتگو با موکل");
 
   const setPhase = useCallback((p: CallPhase) => {
     phaseRef.current = p;
@@ -294,7 +298,7 @@ export function ConsultChatPanel({
           clearCallTimers();
           setPhase("idle");
           setCallRoomBoth(null);
-          showCallNote("تماس رد شد");
+          showCallNote(t("تماس رد شد"));
         }
         return;
       }
@@ -308,9 +312,9 @@ export function ConsultChatPanel({
       setRinging(null);
       setPhase("idle");
       setCallRoomBoth(null);
-      if (wasActive) showCallNote(`تماس پایان یافت — مدت: ${fmtDur(dur)}`);
+      if (wasActive) showCallNote(tf("تماس پایان یافت — مدت: {dur}", { dur: fmtDur(dur) }));
     },
-    [role, roomId, sendSignal, setPhase, setCallRoomBoth, showCallNote, clearCallTimers],
+    [role, roomId, sendSignal, setPhase, setCallRoomBoth, showCallNote, clearCallTimers, t, tf],
   );
 
   useEffect(() => {
@@ -361,18 +365,18 @@ export function ConsultChatPanel({
       setElapsed(0);
       setRinging(null);
       sendSignal(roomId, "call_invite", { callRoom: room, mode, from: role, name: myNameRef.current });
-      const t = setTimeout(() => {
+      const timer = setTimeout(() => {
         if (phaseRef.current === "waiting" && callRoomRef.current === room) {
           sendSignal(roomId, "call_end", { callRoom: room, mode, from: role, name: myNameRef.current });
           sendSignal(room, "call_end", { callRoom: room, mode, from: role, name: myNameRef.current });
           setPhase("idle");
           setCallRoomBoth(null);
-          showCallNote("پاسخی نبود");
+          showCallNote(t("پاسخی نبود"));
         }
       }, CALL_TIMEOUT_MS);
-      callTimersRef.current.push(t);
+      callTimersRef.current.push(timer);
     },
-    [roomId, role, headerTitle, sendSignal, setCallRoomBoth, setPhase, showCallNote],
+    [roomId, role, headerTitle, sendSignal, setCallRoomBoth, setPhase, showCallNote, t],
   );
 
   const startCallInvite = useCallback(
@@ -446,18 +450,18 @@ export function ConsultChatPanel({
     setRinging(null);
     setPhase("idle");
     setCallRoomBoth(null);
-    showCallNote(wasActive ? `تماس پایان یافت — مدت: ${fmtDur(dur)}` : "تماس لغو شد");
-  }, [roomId, callMode, role, sendSignal, setCallRoomBoth, setPhase, showCallNote, clearCallTimers]);
+    showCallNote(wasActive ? tf("تماس پایان یافت — مدت: {dur}", { dur: fmtDur(dur) }) : t("تماس لغو شد"));
+  }, [roomId, callMode, role, sendSignal, setCallRoomBoth, setPhase, showCallNote, clearCallTimers, t, tf]);
 
   /* زنگ بی‌پاسخ — ۶۰ ثانیه بعد خودکار جمع می‌شود (تماس‌گیرنده خودش timeout دارد) */
   useEffect(() => {
     if (!ringing) return;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setRinging(null);
-      showCallNote("پاسخی داده نشد");
+      showCallNote(t("پاسخی داده نشد"));
     }, RING_AUTO_DISMISS_MS);
-    return () => clearTimeout(t);
-  }, [ringing, showCallNote]);
+    return () => clearTimeout(timer);
+  }, [ringing, showCallNote, t]);
 
   /* تایمر تماس فعال */
   useEffect(() => {
@@ -502,7 +506,7 @@ export function ConsultChatPanel({
   const startChat = () => {
     const clean = name.trim();
     if (!clean) {
-      setError("برای شروع گفتگو نام خود را وارد کنید.");
+      setError(t("برای شروع گفتگو نام خود را وارد کنید."));
       return;
     }
     setError(null);
@@ -557,7 +561,7 @@ export function ConsultChatPanel({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={`گفتگو با ${headerTitle}`}
+        aria-label={tf("گفتگو با {name}", { name: headerTitle })}
         className="relative flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border bg-surface shadow-2xl sm:h-auto sm:max-h-[80vh] sm:max-w-lg sm:rounded-3xl"
       >
         {/* هدر */}
@@ -573,13 +577,13 @@ export function ConsultChatPanel({
             {isClient && (
               <p className="text-[11px] text-muted">
                 {lawyerOnline == null
-                  ? "در حال بررسی وضعیت…"
+                  ? t("در حال بررسی وضعیت…")
                   : lawyerOnline
-                    ? "وکیل آنلاین است — معمولاً بلافاصله پاسخ می‌دهد"
-                    : "وکیل فعلاً آفلاین است — پیام شما ذخیره می‌شود"}
+                    ? t("وکیل آنلاین است — معمولاً بلافاصله پاسخ می‌دهد")
+                    : t("وکیل فعلاً آفلاین است — پیام شما ذخیره می‌شود")}
               </p>
             )}
-            {!isClient && <p className="text-[11px] text-muted">پاسخ به موکل</p>}
+            {!isClient && <p className="text-[11px] text-muted">{t("پاسخ به موکل")}</p>}
           </div>
           {lawyerOnline != null && isClient && (
             <span
@@ -590,7 +594,7 @@ export function ConsultChatPanel({
               }`}
             >
               <span className={`h-2 w-2 rounded-full ${lawyerOnline ? "bg-success" : "bg-border-strong"}`} />
-              {lawyerOnline ? "آنلاین" : "آفلاین"}
+              {lawyerOnline ? t("آنلاین") : t("آفلاین")}
             </span>
           )}
           {roomId && (
@@ -600,8 +604,8 @@ export function ConsultChatPanel({
                 data-testid="call-voice-btn"
                 onClick={() => startCallInvite("voice")}
                 disabled={!!confirmMode}
-                aria-label="تماس صوتی"
-                title="تماس صوتی"
+                aria-label={t("تماس صوتی")}
+                title={t("تماس صوتی")}
                 className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-muted transition-colors hover:bg-surface-2 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50"
               >
                 <Icon name="phone" className="h-5 w-5" />
@@ -611,8 +615,8 @@ export function ConsultChatPanel({
                 data-testid="call-video-btn"
                 onClick={() => startCallInvite("video")}
                 disabled={!!confirmMode}
-                aria-label="تماس تصویری"
-                title="تماس تصویری"
+                aria-label={t("تماس تصویری")}
+                title={t("تماس تصویری")}
                 className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-muted transition-colors hover:bg-surface-2 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50"
               >
                 <Icon name="video" className="h-5 w-5" />
@@ -622,7 +626,7 @@ export function ConsultChatPanel({
           <button
             ref={closeRef}
             onClick={onClose}
-            aria-label="بستن گفتگو"
+            aria-label={t("بستن گفتگو")}
             className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl text-muted transition-colors hover:bg-surface-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             <Icon name="x" className="h-5 w-5" />
@@ -637,14 +641,15 @@ export function ConsultChatPanel({
               <span className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-primary">
                 <Icon name="chat" className="h-7 w-7" />
               </span>
-              <h3 className="text-base font-bold text-foreground">گفتگوی متنی با {lawyer.name}</h3>
+              <h3 className="text-base font-bold text-foreground">{tf("گفتگوی متنی با {name}", { name: lawyer.name })}</h3>
               <p className="mt-1.5 text-xs leading-6 text-muted">
-                نام خود را وارد کنید و سؤال حقوقی‌تان را بنویسید؛ پیام‌ها محرمانه می‌مانند و
-                {lawyerOnline === false ? " پس از آنلاین شدن وکیل" : ""} در همین گفتگو پاسخ می‌گیرید.
+                {t("نام خود را وارد کنید و سؤال حقوقی‌تان را بنویسید؛ پیام‌ها محرمانه می‌مانند و")}
+                {lawyerOnline === false ? t(" پس از آنلاین شدن وکیل") : ""}
+                {t(" در همین گفتگو پاسخ می‌گیرید.")}
               </p>
             </div>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-muted">نام شما</span>
+              <span className="text-xs font-semibold text-muted">{t("نام شما")}</span>
               <input
                 value={name}
                 onChange={(e) => { setName(e.target.value); setError(null); }}
@@ -656,14 +661,14 @@ export function ConsultChatPanel({
             </label>
             {error && (
               <p role="alert" className="rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">
-                {error}
+                {t(error)}
               </p>
             )}
             <Button onClick={startChat} icon="chat" className="w-full">
-              شروع گفتگو
+              {t("شروع گفتگو")}
             </Button>
             <p className="text-center text-[11px] leading-5 text-muted">
-              گفتگو مخصوص همین مشاوره است؛ طبق سیاست حریم خصوصی، اطلاعات شما در اختیار هیچ شخص ثالثی قرار نمی‌گیرد.
+              {t("گفتگو مخصوص همین مشاوره است؛ طبق سیاست حریم خصوصی، اطلاعات شما در اختیار هیچ شخص ثالثی قرار نمی‌گیرد.")}
             </p>
           </div>
         ) : callPhase !== "idle" ? (
@@ -682,7 +687,7 @@ export function ConsultChatPanel({
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold text-foreground">{callPeerLabel || headerTitle}</p>
                   <p className="text-[11px] text-muted">
-                    {callPhase === "waiting" ? "در حال زنگ زدن…" : callMode === "video" ? "تماس تصویری" : "تماس صوتی"}
+                    {callPhase === "waiting" ? t("در حال زنگ زدن…") : callMode === "video" ? t("تماس تصویری") : t("تماس صوتی")}
                   </p>
                 </div>
               </div>
@@ -699,11 +704,11 @@ export function ConsultChatPanel({
                 type="button"
                 data-testid="call-end"
                 onClick={endActiveCall}
-                aria-label="پایان تماس"
+                aria-label={t("پایان تماس")}
                 className="inline-flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl bg-danger px-3.5 text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger"
               >
                 <HangupIcon />
-                پایان تماس
+                {t("پایان تماس")}
               </button>
             </div>
 
@@ -714,9 +719,9 @@ export function ConsultChatPanel({
                     <span className="absolute inset-0 animate-ping rounded-full bg-primary/15" aria-hidden />
                     <Icon name={callMode === "video" ? "video" : "phone"} className="h-7 w-7" />
                   </span>
-                  <p className="text-sm font-bold text-foreground">در حال زنگ زدن…</p>
+                  <p className="text-sm font-bold text-foreground">{t("در حال زنگ زدن…")}</p>
                   <p className="max-w-64 text-xs leading-6 text-muted">
-                    تا {faNum(60)} ثانیه منتظر پاسخ می‌مانیم؛ اگر پاسخی نبود، تماس خودکار پایان می‌یابد.
+                    {tf("تا {n} ثانیه منتظر پاسخ می‌مانیم؛ اگر پاسخی نبود، تماس خودکار پایان می‌یابد.", { n: faNum(60) })}
                   </p>
                 </div>
               ) : callRoom ? (
@@ -740,10 +745,10 @@ export function ConsultChatPanel({
               {messages.length === 0 && (
                 <div className="mt-6 text-center">
                   <p className="text-xs leading-6 text-muted">
-                    گفتگو آغاز شد.
+                    {t("گفتگو آغاز شد.")}
                     {isClient
-                      ? " سؤال حقوقی‌تان را به‌طور خلاصه بنویسید تا وکیل پاسخ دهد."
-                      : " پیام موکل را ببینید و پاسخ دهید."}
+                      ? t(" سؤال حقوقی‌تان را به‌طور خلاصه بنویسید تا وکیل پاسخ دهد.")
+                      : t(" پیام موکل را ببینید و پاسخ دهید.")}
                   </p>
                 </div>
               )}
@@ -785,7 +790,7 @@ export function ConsultChatPanel({
             {/* خطا */}
             {error && (
               <p role="alert" className="mx-4 mb-2 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">
-                {error}
+                {t(error)}
               </p>
             )}
 
@@ -797,18 +802,18 @@ export function ConsultChatPanel({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(); } }}
-                  placeholder="پیام خود را بنویسید…"
+                  placeholder={t("پیام خود را بنویسید…")}
                   className="h-11 flex-1 rounded-xl border border-border-strong bg-background px-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
                   maxLength={1000}
-                  aria-label="متن پیام"
+                  aria-label={t("متن پیام")}
                 />
-                <Button onClick={() => void send()} disabled={sending || !input.trim()} icon="send" aria-label="ارسال پیام" className="shrink-0 px-4">
-                  ارسال
+                <Button onClick={() => void send()} disabled={sending || !input.trim()} icon="send" aria-label={t("ارسال پیام")} className="shrink-0 px-4">
+                  {t("ارسال")}
                 </Button>
               </div>
               {isClient && lawyerOnline === false && (
                 <p className="mt-2 text-[11px] leading-5 text-muted">
-                  <Icon name="clock" className="ml-0.5 inline h-3.5 w-3.5" /> وکیل آفلاین است؛ پیام ذخیره می‌شود و به‌محض ورود وکیل به پنل، پاسخ می‌گیرید.
+                  <Icon name="clock" className="ml-0.5 inline h-3.5 w-3.5" /> {t("وکیل آفلاین است؛ پیام ذخیره می‌شود و به‌محض ورود وکیل به پنل، پاسخ می‌گیرید.")}
                 </p>
               )}
             </div>
@@ -822,7 +827,7 @@ export function ConsultChatPanel({
               data-testid="call-ringing"
               role="alertdialog"
               aria-modal="true"
-              aria-label={ringing.mode === "video" ? "تماس تصویری ورودی" : "تماس صوتی ورودی"}
+              aria-label={ringing.mode === "video" ? t("تماس تصویری ورودی") : t("تماس صوتی ورودی")}
               className="w-full rounded-t-3xl border border-border bg-surface p-5 shadow-2xl sm:max-w-sm sm:rounded-3xl"
             >
               <div className="flex items-center gap-3">
@@ -833,7 +838,7 @@ export function ConsultChatPanel({
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold text-foreground">{ringing.name}</p>
                   <p className="text-xs text-muted">
-                    {ringing.mode === "video" ? "تماس تصویری ورودی…" : "تماس صوتی ورودی…"}
+                    {ringing.mode === "video" ? t("تماس تصویری ورودی…") : t("تماس صوتی ورودی…")}
                   </p>
                 </div>
               </div>
@@ -842,21 +847,21 @@ export function ConsultChatPanel({
                   type="button"
                   data-testid="call-accept"
                   onClick={acceptCall}
-                  aria-label="پذیرش تماس"
+                  aria-label={t("پذیرش تماس")}
                   className="inline-flex h-12 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-success text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success"
                 >
                   <Icon name="phone" className="h-4 w-4" />
-                  پذیرش
+                  {t("پذیرش")}
                 </button>
                 <button
                   type="button"
                   data-testid="call-reject"
                   onClick={rejectCall}
-                  aria-label="رد تماس"
+                  aria-label={t("رد تماس")}
                   className="inline-flex h-12 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-danger text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger"
                 >
                   <HangupIcon />
-                  رد
+                  {t("رد")}
                 </button>
               </div>
             </div>
@@ -869,12 +874,12 @@ export function ConsultChatPanel({
             <div
               role="alertdialog"
               aria-modal="true"
-              aria-label="شروع تماس جدید"
+              aria-label={t("شروع تماس جدید")}
               className="w-full rounded-t-3xl border border-border bg-surface p-5 shadow-2xl sm:max-w-sm sm:rounded-3xl"
             >
-              <p className="text-sm font-bold text-foreground">تماس جدیدی شروع می‌کنید؟</p>
+              <p className="text-sm font-bold text-foreground">{t("تماس جدیدی شروع می‌کنید؟")}</p>
               <p className="mt-1 text-xs leading-6 text-muted">
-                تماس فعلی پایان می‌یابد و {confirmMode === "video" ? "تماس تصویری" : "تماس صوتی"} جدیدی برای طرف مقابل زنگ می‌خورد.
+                {tf("تماس فعلی پایان می‌یابد و {mode} جدیدی برای طرف مقابل زنگ می‌خورد.", { mode: confirmMode === "video" ? "تماس تصویری" : "تماس صوتی" })}
               </p>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <button
@@ -882,14 +887,14 @@ export function ConsultChatPanel({
                   onClick={() => acceptNewCall(confirmMode)}
                   className="h-11 cursor-pointer rounded-xl bg-primary text-sm font-bold text-primary-foreground transition-all hover:opacity-90 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
-                  پایان و تماس جدید
+                  {t("پایان و تماس جدید")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setConfirmMode(null)}
                   className="h-11 cursor-pointer rounded-xl border border-border bg-surface text-sm font-bold text-foreground transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
-                  انصراف
+                  {t("انصراف")}
                 </button>
               </div>
             </div>

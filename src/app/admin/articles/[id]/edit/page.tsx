@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Container, Card, Button } from "@/components/ui";
+import { useT } from "@/lib/i18n/provider";
 
 const fieldCls =
   "w-full rounded-xl border border-border-strong bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary";
@@ -9,6 +10,7 @@ const fieldCls =
 export default function EditArticlePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const t = useT();
   const [form, setForm] = useState({
     slug: "",
     title: "",
@@ -64,7 +66,7 @@ export default function EditArticlePage() {
       router.push("/admin/articles");
       router.refresh();
     } else {
-      setError(data.error ?? "خطا در ذخیره مقاله");
+      setError(data.error ? t(data.error) : t("خطا در ذخیره مقاله"));
     }
   };
 
@@ -72,58 +74,58 @@ export default function EditArticlePage() {
     <Container className="py-10">
       <div className="mx-auto max-w-3xl">
         <div className="mb-6">
-          <h1 className="text-xl font-black text-foreground">ویرایش مقاله</h1>
-          <p className="mt-1 text-sm text-foreground-soft">تغییرات را اعمال و ذخیره کنید.</p>
+          <h1 className="text-xl font-black text-foreground">{t("ویرایش مقاله")}</h1>
+          <p className="mt-1 text-sm text-foreground-soft">{t("تغییرات را اعمال و ذخیره کنید.")}</p>
         </div>
         {loading ? (
-          <p className="text-sm text-foreground-soft">در حال بارگذاری...</p>
+          <p className="text-sm text-foreground-soft">{t("در حال بارگذاری...")}</p>
         ) : (
           <Card hover={false}>
             <form onSubmit={submit} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                  <span className="text-sm font-bold text-foreground">عنوان مقاله *</span>
+                  <span className="text-sm font-bold text-foreground">{t("عنوان مقاله *")}</span>
                   <input className={`${fieldCls} mt-1.5`} value={form.title} onChange={set("title")} required />
                 </label>
                 <label className="block">
-                  <span className="text-sm font-bold text-foreground">اسلاگ (آدرس) *</span>
+                  <span className="text-sm font-bold text-foreground">{t("اسلاگ (آدرس) *")}</span>
                   <input className={`${fieldCls} mt-1.5`} dir="ltr" value={form.slug} onChange={set("slug")} required />
                 </label>
                 <label className="block">
-                  <span className="text-sm font-bold text-foreground">دسته‌بندی</span>
+                  <span className="text-sm font-bold text-foreground">{t("دسته‌بندی")}</span>
                   <select className={`${fieldCls} mt-1.5`} value={form.category} onChange={set("category")}>
                     {["آموزش", "خانواده", "ملک", "کیفری", "چک و اسناد", "شرکت‌ها", "کار", "ارث", "مالیات", "مهاجرت"].map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>{t(c)}</option>
                     ))}
                   </select>
                 </label>
                 <label className="block">
-                  <span className="text-sm font-bold text-foreground">زمان مطالعه (دقیقه)</span>
+                  <span className="text-sm font-bold text-foreground">{t("زمان مطالعه (دقیقه)")}</span>
                   <input type="number" min={1} className={`${fieldCls} mt-1.5`} value={form.readTime} onChange={set("readTime")} />
                 </label>
               </div>
               <label className="block">
-                <span className="text-sm font-bold text-foreground">خلاصه مقاله</span>
+                <span className="text-sm font-bold text-foreground">{t("خلاصه مقاله")}</span>
                 <textarea rows={2} className={`${fieldCls} mt-1.5`} value={form.excerpt} onChange={set("excerpt")} required />
               </label>
               <label className="block">
-                <span className="text-sm font-bold text-foreground">متن مقاله *</span>
+                <span className="text-sm font-bold text-foreground">{t("متن مقاله *")}</span>
                 <textarea rows={12} className={`${fieldCls} mt-1.5 leading-7`} value={form.content} onChange={set("content")} required />
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                  <span className="text-sm font-bold text-foreground">نویسنده</span>
+                  <span className="text-sm font-bold text-foreground">{t("نویسنده")}</span>
                   <input className={`${fieldCls} mt-1.5`} value={form.author} onChange={set("author")} />
                 </label>
                 <label className="block">
-                  <span className="text-sm font-bold text-foreground">عنوان نویسنده</span>
+                  <span className="text-sm font-bold text-foreground">{t("عنوان نویسنده")}</span>
                   <input className={`${fieldCls} mt-1.5`} value={form.authorRole} onChange={set("authorRole")} />
                 </label>
               </div>
               {error && <p className="text-sm font-semibold text-danger">{error}</p>}
               <div className="flex gap-2 pt-2">
-                <Button type="submit" disabled={saving}>{saving ? "در حال ذخیره..." : "ذخیره تغییرات"}</Button>
-                <Button type="button" variant="ghost" onClick={() => router.push("/admin/articles")}>انصراف</Button>
+                <Button type="submit" disabled={saving}>{saving ? t("در حال ذخیره...") : t("ذخیره تغییرات")}</Button>
+                <Button type="button" variant="ghost" onClick={() => router.push("/admin/articles")}>{t("انصراف")}</Button>
               </div>
             </form>
           </Card>

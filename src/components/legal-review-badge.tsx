@@ -3,6 +3,8 @@ import { legalReviews, type LegalReviewRow } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Icon } from "@/components/icons";
 import { formatJalaliLong } from "@/lib/jalali";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * بارگذاری best-effort ردیف بازبینی — خطاها اینجا جذب می‌شوند (بدون دیتابیس هم صفحه سالم می‌ماند).
@@ -25,11 +27,13 @@ async function loadReview(slug: string): Promise<LegalReviewRow | null> {
 export default async function LegalReviewBadge({ slug }: { slug: string }) {
   const row = await loadReview(slug);
   if (!row) return null;
+  const t = await getT();
+  const tf = templateT(t);
 
   return (
     <div
       role="note"
-      aria-label="بازبینی حقوقی"
+      aria-label={t("بازبینی حقوقی")}
       className="flex items-start gap-3 rounded-2xl border border-[color-mix(in_oklab,var(--success)_28%,transparent)] bg-[color-mix(in_oklab,var(--success)_8%,transparent)] p-4"
     >
       <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_oklab,var(--success)_14%,transparent)] text-success">
@@ -37,10 +41,10 @@ export default async function LegalReviewBadge({ slug }: { slug: string }) {
       </span>
       <div className="min-w-0">
         <p className="text-sm font-bold leading-6 text-success">
-          بازبینی حقوقی: {row.reviewerName} — {row.reviewerTitle}
+          {tf("بازبینی حقوقی: {n} — {t}", { n: row.reviewerName, t: row.reviewerTitle })}
         </p>
         {row.summary && <p className="mt-1 text-xs leading-6 text-muted">{row.summary}</p>}
-        <p className="mt-1.5 text-[11px] font-medium text-muted">تاریخ بازبینی: {formatJalaliLong(row.reviewedAt)}</p>
+        <p className="mt-1.5 text-[11px] font-medium text-muted">{tf("تاریخ بازبینی: {d}", { d: formatJalaliLong(row.reviewedAt) })}</p>
       </div>
     </div>
   );

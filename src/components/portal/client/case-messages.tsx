@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import { timeAgo } from "@/lib/money";
+import { useT } from "@/lib/i18n/provider";
 import type { MessageItem } from "./types";
 
 /**
@@ -21,6 +22,7 @@ export default function CaseMessages({
   viewerRole: string;
   initialMessages: MessageItem[];
 }) {
+  const t = useT();
   const [messages, setMessages] = useState<MessageItem[]>(initialMessages);
   const [live, setLive] = useState(false);
   const [body, setBody] = useState("");
@@ -145,13 +147,13 @@ export default function CaseMessages({
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok || !data.ok) {
-        setError(data.error ?? "ارسال پیام ناموفق بود.");
+        setError(data.error ?? t("ارسال پیام ناموفق بود."));
       } else {
         setBody("");
         await load();
       }
     } catch {
-      setError("خطا در ارتباط با سرور.");
+      setError(t("خطا در ارتباط با سرور."));
     } finally {
       setSending(false);
     }
@@ -169,7 +171,7 @@ export default function CaseMessages({
       >
         {messages.length === 0 && (
           <p className="p-6 text-center text-sm text-muted">
-            هنوز پیامی رد و بدل نشده است. اولین پیام را برای وکیل خود بنویسید.
+            {t("هنوز پیامی رد و بدل نشده است. اولین پیام را برای وکیل خود بنویسید.")}
           </p>
         )}
         {messages.map((m) => {
@@ -185,7 +187,7 @@ export default function CaseMessages({
               >
                 <div className={`mb-1 flex items-center gap-2 text-[11px] font-semibold ${own ? "text-primary-foreground/75" : "text-muted"}`}>
                   <Icon name={own ? "user" : "gavel"} className="h-3 w-3" />
-                  <span>{m.senderName || (own ? "شما" : "طرف پرونده")}</span>
+                  <span>{m.senderName || (own ? t("شما") : t("طرف پرونده"))}</span>
                   <span className="font-normal opacity-70">{timeAgo(m.createdAt)}</span>
                 </div>
                 <p className="whitespace-pre-wrap break-words">{m.body}</p>
@@ -203,7 +205,7 @@ export default function CaseMessages({
 
       <div className="mt-3 flex items-end gap-2">
         <label htmlFor="dp-msg-body" className="sr-only">
-          متن پیام
+          {t("متن پیام")}
         </label>
         <textarea
           id="dp-msg-body"
@@ -217,7 +219,7 @@ export default function CaseMessages({
           }}
           rows={2}
           maxLength={2000}
-          placeholder="پیام خود را بنویسید… (Enter برای ارسال)"
+          placeholder={t("پیام خود را بنویسید… (Enter برای ارسال)")}
           className="min-h-11 flex-1 resize-none rounded-xl border border-border-strong bg-background px-3 py-2.5 text-sm outline-none transition-colors focus:border-primary"
         />
         <button
@@ -225,16 +227,16 @@ export default function CaseMessages({
           onClick={() => void send()}
           disabled={sending || !body.trim()}
           className="inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition-all hover:bg-primary-hover disabled:opacity-50"
-          aria-label="ارسال پیام"
+          aria-label={t("ارسال پیام")}
         >
           <Icon name="send" className="h-4 w-4" />
-          <span className="hidden sm:inline">{sending ? "در حال ارسال…" : "ارسال"}</span>
+          <span className="hidden sm:inline">{sending ? t("در حال ارسال…") : t("ارسال")}</span>
         </button>
       </div>
 
       <p className="mt-2 flex items-center justify-between text-[11px] text-muted">
         <span className="flex items-center gap-1">
-          <Icon name="lock" className="h-3 w-3 text-success" /> گفتگوی امن؛ فقط طرفین پرونده دسترسی دارند.
+          <Icon name="lock" className="h-3 w-3 text-success" /> {t("گفتگوی امن؛ فقط طرفین پرونده دسترسی دارند.")}
         </span>
         {live ? (
           <span data-testid="case-live" className="flex items-center gap-1 font-semibold text-success">
@@ -242,10 +244,10 @@ export default function CaseMessages({
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
             </span>
-            زنده
+            {t("زنده")}
           </span>
         ) : (
-          <span>بروزرسانی خودکار هر ۵ ثانیه</span>
+          <span>{t("بروزرسانی خودکار هر ۵ ثانیه")}</span>
         )}
       </p>
     </div>

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Button, Card, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { CLASSIFICATION_LABELS, PRICE_TYPE_LABELS, CATEGORY_LABELS } from "@/lib/managed-labels";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 const inputCls =
   "w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary";
@@ -15,6 +17,8 @@ const CLASS_KEYS = Object.keys(CLASSIFICATION_LABELS);
 const PRICE_KEYS = Object.keys(PRICE_TYPE_LABELS);
 
 export default function ManagedServicesAdmin() {
+  const t = useT();
+  const tf = templateT(t);
   const [categories, setCategories] = useState<RowSnapshot[]>([]);
   const [services, setServices] = useState<RowSnapshot[]>([]);
   const [tab, setTab] = useState<"services" | "categories">("services");
@@ -58,12 +62,12 @@ export default function ManagedServicesAdmin() {
   }
 
   async function remove(kind: "services" | "categories", id: number) {
-    if (!confirm("حذف شود؟")) return;
+    if (!confirm(t("حذف شود؟"))) return;
     const resource = kind === "categories" ? "service-categories" : "managed-services";
     const res = await fetch(`/api/admin/${resource}?id=${id}`, { method: "DELETE" });
     const data = await res.json();
     if (!data.ok) {
-      setError(data.error ?? "حذف ناموفق");
+      setError(data.error ?? t("حذف ناموفق"));
       return;
     }
     await load();
@@ -103,7 +107,7 @@ export default function ManagedServicesAdmin() {
       setEditing(null);
       await load();
     } catch (e: any) {
-      setError(e?.message ?? "ذخیره ناموفق");
+      setError(e?.message ?? t("ذخیره ناموفق"));
     } finally {
       setBusy(false);
     }
@@ -115,20 +119,20 @@ export default function ManagedServicesAdmin() {
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Button variant={tab === "services" ? "primary" : "outline"} size="sm" onClick={() => setTab("services")}>
-          خدمات ({faNumSafe(services.length)})
+          {tf("خدمات ({n})", { n: faNumSafe(services.length) })}
         </Button>
         <Button variant={tab === "categories" ? "primary" : "outline"} size="sm" onClick={() => setTab("categories")}>
-          دسته‌بندی‌ها ({faNumSafe(categories.length)})
+          {tf("دسته‌بندی‌ها ({n})", { n: faNumSafe(categories.length) })}
         </Button>
         <div className="ms-auto">
           <Button size="sm" icon="plus" onClick={() => openNew(tab)}>
-            افزودن {tab === "services" ? "خدمت" : "دسته‌بندی"}
+            {tf("افزودن {x}", { x: tab === "services" ? t("خدمت") : t("دسته‌بندی") })}
           </Button>
         </div>
       </div>
 
-      {error && <div className="rounded-xl border border-danger/30 bg-danger/10 p-3 text-sm text-danger">{error}</div>}
-      {loading && <p className="text-sm text-muted">در حال بارگذاری…</p>}
+      {error && <div className="rounded-xl border border-danger/30 bg-danger/10 p-3 text-sm text-danger">{t(error)}</div>}
+      {loading && <p className="text-sm text-muted">{t("در حال بارگذاری…")}</p>}
 
       {!loading && tab === "services" && (
         <Card>
@@ -136,12 +140,12 @@ export default function ManagedServicesAdmin() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-right text-muted">
-                  <th className="p-3">عنوان</th>
-                  <th className="p-3">دسته</th>
-                  <th className="p-3">طبقه‌بندی</th>
-                  <th className="p-3">قیمت‌گذاری</th>
-                  <th className="p-3">پایه</th>
-                  <th className="p-3">وضعیت</th>
+                  <th className="p-3">{t("عنوان")}</th>
+                  <th className="p-3">{t("دسته")}</th>
+                  <th className="p-3">{t("طبقه‌بندی")}</th>
+                  <th className="p-3">{t("قیمت‌گذاری")}</th>
+                  <th className="p-3">{t("پایه")}</th>
+                  <th className="p-3">{t("وضعیت")}</th>
                   <th className="p-3"></th>
                 </tr>
               </thead>
@@ -149,22 +153,22 @@ export default function ManagedServicesAdmin() {
                 {services.map((s) => (
                   <tr key={s.id} className="border-b border-border/60">
                     <td className="p-3 font-medium">{s.title}</td>
-                    <td className="p-3">{CATEGORY_LABELS[s.category] ?? s.category}</td>
-                    <td className="p-3">{CLASSIFICATION_LABELS[s.classification] ?? s.classification}</td>
-                    <td className="p-3">{PRICE_TYPE_LABELS[s.priceType] ?? s.priceType}</td>
-                    <td className="p-3">{s.basePrice ? `${faNumSafe(s.basePrice)} تومان` : "—"}</td>
+                    <td className="p-3">{t(CATEGORY_LABELS[s.category] ?? s.category)}</td>
+                    <td className="p-3">{t(CLASSIFICATION_LABELS[s.classification] ?? s.classification)}</td>
+                    <td className="p-3">{t(PRICE_TYPE_LABELS[s.priceType] ?? s.priceType)}</td>
+                    <td className="p-3">{s.basePrice ? tf("{n} تومان", { n: faNumSafe(s.basePrice) }) : "—"}</td>
                     <td className="p-3">
-                      {s.active ? <Badge tone="success">فعال</Badge> : <Badge tone="neutral">غیرفعال</Badge>}
-                      {s.featured && <Badge tone="accent">ویژه</Badge>}
+                      {s.active ? <Badge tone="success">{t("فعال")}</Badge> : <Badge tone="neutral">{t("غیرفعال")}</Badge>}
+                      {s.featured && <Badge tone="accent">{t("ویژه")}</Badge>}
                     </td>
                     <td className="p-3 text-end">
-                      <button className="text-primary hover:underline" onClick={() => openEdit("services", s)}>ویرایش</button>
-                      <button className="ms-3 text-danger hover:underline" onClick={() => remove("services", s.id)}>حذف</button>
+                      <button className="text-primary hover:underline" onClick={() => openEdit("services", s)}>{t("ویرایش")}</button>
+                      <button className="ms-3 text-danger hover:underline" onClick={() => remove("services", s.id)}>{t("حذف")}</button>
                     </td>
                   </tr>
                 ))}
                 {services.length === 0 && (
-                  <tr><td colSpan={7} className="p-6 text-center text-muted">خدمتی ثبت نشده است.</td></tr>
+                  <tr><td colSpan={7} className="p-6 text-center text-muted">{t("خدمتی ثبت نشده است.")}</td></tr>
                 )}
               </tbody>
             </table>
@@ -178,9 +182,9 @@ export default function ManagedServicesAdmin() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-right text-muted">
-                  <th className="p-3">نام</th>
+                  <th className="p-3">{t("نام")}</th>
                   <th className="p-3">slug</th>
-                  <th className="p-3">ترتیب</th>
+                  <th className="p-3">{t("ترتیب")}</th>
                   <th className="p-3"></th>
                 </tr>
               </thead>
@@ -191,13 +195,13 @@ export default function ManagedServicesAdmin() {
                     <td className="p-3 text-muted">{c.slug}</td>
                     <td className="p-3">{faNumSafe(c.sortOrder ?? 0)}</td>
                     <td className="p-3 text-end">
-                      <button className="text-primary hover:underline" onClick={() => openEdit("categories", c)}>ویرایش</button>
-                      <button className="ms-3 text-danger hover:underline" onClick={() => remove("categories", c.id)}>حذف</button>
+                      <button className="text-primary hover:underline" onClick={() => openEdit("categories", c)}>{t("ویرایش")}</button>
+                      <button className="ms-3 text-danger hover:underline" onClick={() => remove("categories", c.id)}>{t("حذف")}</button>
                     </td>
                   </tr>
                 ))}
                 {categories.length === 0 && (
-                  <tr><td colSpan={4} className="p-6 text-center text-muted">دسته‌بندی ثبت نشده است.</td></tr>
+                  <tr><td colSpan={4} className="p-6 text-center text-muted">{t("دسته‌بندی ثبت نشده است.")}</td></tr>
                 )}
               </tbody>
             </table>
@@ -210,56 +214,56 @@ export default function ManagedServicesAdmin() {
           <div className="w-full max-w-2xl rounded-2xl border border-border bg-surface p-5" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-bold">
-                {editing.row ? "ویرایش" : "افزودن"} {editing.kind === "services" ? "خدمت" : "دسته‌بندی"}
+                {editing.row ? t("ویرایش") : t("افزودن")} {editing.kind === "services" ? t("خدمت") : t("دسته‌بندی")}
               </h3>
               <button onClick={() => setEditing(null)} className="text-muted hover:text-foreground"><Icon name="x" className="h-5 w-5" /></button>
             </div>
 
             {editing.kind === "categories" ? (
               <div className="grid gap-3">
-                <div><label className={labelCls}>نام</label><input className={inputCls} value={form.name ?? ""} onChange={(e) => set("name", e.target.value)} /></div>
+                <div><label className={labelCls}>{t("نام")}</label><input className={inputCls} value={form.name ?? ""} onChange={(e) => set("name", e.target.value)} /></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><label className={labelCls}>slug</label><input className={inputCls} value={form.slug ?? ""} onChange={(e) => set("slug", e.target.value)} /></div>
-                  <div><label className={labelCls}>ترتیب</label><input type="number" className={inputCls} value={form.sortOrder ?? 0} onChange={(e) => set("sortOrder", e.target.value)} /></div>
+                  <div><label className={labelCls}>{t("ترتیب")}</label><input type="number" className={inputCls} value={form.sortOrder ?? 0} onChange={(e) => set("sortOrder", e.target.value)} /></div>
                 </div>
-                <div><label className={labelCls}>آیکون</label><input className={inputCls} value={form.icon ?? ""} onChange={(e) => set("icon", e.target.value)} /></div>
-                <div><label className={labelCls}>توضیحات</label><textarea className={inputCls} rows={2} value={form.description ?? ""} onChange={(e) => set("description", e.target.value)} /></div>
+                <div><label className={labelCls}>{t("آیکون")}</label><input className={inputCls} value={form.icon ?? ""} onChange={(e) => set("icon", e.target.value)} /></div>
+                <div><label className={labelCls}>{t("توضیحات")}</label><textarea className={inputCls} rows={2} value={form.description ?? ""} onChange={(e) => set("description", e.target.value)} /></div>
               </div>
             ) : (
               <div className="grid gap-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className={labelCls}>عنوان</label><input className={inputCls} value={form.title ?? ""} onChange={(e) => set("title", e.target.value)} /></div>
+                  <div><label className={labelCls}>{t("عنوان")}</label><input className={inputCls} value={form.title ?? ""} onChange={(e) => set("title", e.target.value)} /></div>
                   <div><label className={labelCls}>slug</label><input className={inputCls} value={form.slug ?? ""} onChange={(e) => set("slug", e.target.value)} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className={labelCls}>دسته‌بندی</label>
+                    <label className={labelCls}>{t("دسته‌بندی")}</label>
                     <select className={inputCls} value={form.category ?? ""} onChange={(e) => set("category", e.target.value)}>
-                      {categories.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
+                      {categories.map((c) => <option key={c.id} value={c.slug}>{t(c.name)}</option>)}
                     </select>
                   </div>
-                  <div><label className={labelCls}>آیکون</label><input className={inputCls} value={form.icon ?? ""} onChange={(e) => set("icon", e.target.value)} /></div>
+                  <div><label className={labelCls}>{t("آیکون")}</label><input className={inputCls} value={form.icon ?? ""} onChange={(e) => set("icon", e.target.value)} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className={labelCls}>طبقه‌بندی (نیاز به وکیل/نظارت)</label>
+                    <label className={labelCls}>{t("طبقه‌بندی (نیاز به وکیل/نظارت)")}</label>
                     <select className={inputCls} value={form.classification ?? "LEGAL_INFO"} onChange={(e) => set("classification", e.target.value)}>
-                      {CLASS_KEYS.map((k) => <option key={k} value={k}>{CLASSIFICATION_LABELS[k]}</option>)}
+                      {CLASS_KEYS.map((k) => <option key={k} value={k}>{t(CLASSIFICATION_LABELS[k])}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className={labelCls}>نوع قیمت‌گذاری</label>
+                    <label className={labelCls}>{t("نوع قیمت‌گذاری")}</label>
                     <select className={inputCls} value={form.priceType ?? "FIXED"} onChange={(e) => set("priceType", e.target.value)}>
-                      {PRICE_KEYS.map((k) => <option key={k} value={k}>{PRICE_TYPE_LABELS[k]}</option>)}
+                      {PRICE_KEYS.map((k) => <option key={k} value={k}>{t(PRICE_TYPE_LABELS[k])}</option>)}
                     </select>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className={labelCls}>قیمت پایه (تومان)</label><input type="number" className={inputCls} value={form.basePrice ?? ""} onChange={(e) => set("basePrice", e.target.value)} /></div>
-                  <div><label className={labelCls}>زمان تقریبی</label><input className={inputCls} value={form.estimatedTime ?? ""} onChange={(e) => set("estimatedTime", e.target.value)} /></div>
+                  <div><label className={labelCls}>{t("قیمت پایه (تومان)")}</label><input type="number" className={inputCls} value={form.basePrice ?? ""} onChange={(e) => set("basePrice", e.target.value)} /></div>
+                  <div><label className={labelCls}>{t("زمان تقریبی")}</label><input className={inputCls} value={form.estimatedTime ?? ""} onChange={(e) => set("estimatedTime", e.target.value)} /></div>
                 </div>
-                <div><label className={labelCls}>توضیح کوتاه</label><input className={inputCls} value={form.shortDescription ?? ""} onChange={(e) => set("shortDescription", e.target.value)} /></div>
-                <div><label className={labelCls}>توضیحات</label><textarea className={inputCls} rows={3} value={form.description ?? ""} onChange={(e) => set("description", e.target.value)} /></div>
+                <div><label className={labelCls}>{t("توضیح کوتاه")}</label><input className={inputCls} value={form.shortDescription ?? ""} onChange={(e) => set("shortDescription", e.target.value)} /></div>
+                <div><label className={labelCls}>{t("توضیحات")}</label><textarea className={inputCls} rows={3} value={form.description ?? ""} onChange={(e) => set("description", e.target.value)} /></div>
                 <div className="flex flex-wrap gap-4 pt-1">
                   {[
                     ["requiresLawyer", "نیاز به وکیل"],
@@ -271,17 +275,17 @@ export default function ManagedServicesAdmin() {
                   ].map(([k, label]) => (
                     <label key={k} className="flex items-center gap-2 text-sm">
                       <input type="checkbox" checked={Boolean(form[k])} onChange={(e) => set(k, e.target.checked)} />
-                      {label as string}
+                      {t(label as string)}
                     </label>
                   ))}
                 </div>
               </div>
             )}
 
-            {error && <div className="mt-3 rounded-xl border border-danger/30 bg-danger/10 p-2 text-sm text-danger">{error}</div>}
+            {error && <div className="mt-3 rounded-xl border border-danger/30 bg-danger/10 p-2 text-sm text-danger">{t(error)}</div>}
             <div className="mt-4 flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setEditing(null)}>انصراف</Button>
-              <Button onClick={save} disabled={busy}>{busy ? "در حال ذخیره…" : "ذخیره"}</Button>
+              <Button variant="ghost" onClick={() => setEditing(null)}>{t("انصراف")}</Button>
+              <Button onClick={save} disabled={busy}>{busy ? t("در حال ذخیره…") : t("ذخیره")}</Button>
             </div>
           </div>
         </div>

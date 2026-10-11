@@ -1,8 +1,11 @@
 "use client";
 
 import { Toaster } from "@/components/ui/sonner";
+import { useLocale } from "@/lib/i18n/provider";
+import { dirFor } from "@/lib/i18n";
 
-/** توست فارسی دادپیو — یک‌بار در هر صفحه مونت می‌شود. */
+/** توست دادپیو — یک‌بار در هر صفحه مونت می‌شود؛ جهت آن از زبان فعلی پیروی می‌کند. */
 export function DpToaster() {
-  return <Toaster position="bottom-left" dir="rtl" richColors closeButton />;
+  const locale = useLocale();
+  return <Toaster position="bottom-left" dir={dirFor(locale)} richColors closeButton />;
 }

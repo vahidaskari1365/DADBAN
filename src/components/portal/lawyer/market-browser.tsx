@@ -8,6 +8,8 @@ import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { shortToman, toFa, toEn } from "@/lib/money";
 import { MoneyInput } from "@/components/money-input";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 import type { MarketItem } from "./portal-server";
 
 const SPECIALTIES = ["همه تخصص‌ها", "ملکی", "کیفری", "خانواده", "چک و اسناد", "قراردادها", "تجاری", "حقوقی"];
@@ -18,6 +20,8 @@ type Props = { initialItems: MarketItem[]; canOffer: boolean };
 /** بازار پرونده‌های جدید — فیلترها + کارت‌ها + مودال ارسال پیشنهاد قیمت */
 export function MarketBrowser({ initialItems, canOffer }: Props) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [items, setItems] = useState<MarketItem[]>(initialItems);
   const [q, setQ] = useState("");
   const [specialty, setSpecialty] = useState("all");
@@ -48,10 +52,10 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
         setItems(data.items);
         setHint(null);
       } else {
-        setHint(data.error ?? "دریافت فهرست پرونده‌ها ناموفق بود.");
+        setHint(data.error ?? t("دریافت فهرست پرونده‌ها ناموفق بود."));
       }
     } catch {
-      setHint("ارتباط با سرور برقرار نشد.");
+      setHint(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setLoading(false);
     }
@@ -68,7 +72,7 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
     if (!offerFor) return;
     const digits = toEn(amount).replace(/[^\d]/g, "");
     if (!digits || Number(digits) < 1_000_000) {
-      toast.error("مبلغ پیشنهادی باید حداقل ۱ میلیون تومان باشد.");
+      toast.error(t("مبلغ پیشنهادی باید حداقل ۱ میلیون تومان باشد."));
       return;
     }
     setSending(true);
@@ -84,14 +88,14 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
       });
       const data = (await res.json()) as { ok: boolean; error?: string; updated?: boolean };
       if (data.ok) {
-        toast.success(data.updated ? "پیشنهاد قبلی شما با مقادیر جدید به‌روزرسانی شد." : "پیشنهاد شما با موفقیت برای موکل ارسال شد.");
+        toast.success(data.updated ? t("پیشنهاد قبلی شما با مقادیر جدید به‌روزرسانی شد.") : t("پیشنهاد شما با موفقیت برای موکل ارسال شد."));
         setOfferFor(null);
         router.refresh();
       } else {
-        toast.error(data.error ?? "ارسال پیشنهاد ناموفق بود.");
+        toast.error(data.error ?? t("ارسال پیشنهاد ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setSending(false);
     }
@@ -107,8 +111,8 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && applyFilters({ q })}
-            placeholder="جستجو در موضوع پرونده..."
-            aria-label="جستجو در موضوع پرونده"
+            placeholder={t("جستجو در موضوع پرونده...")}
+            aria-label={t("جستجو در موضوع پرونده")}
             className="h-11 w-full rounded-xl border border-border bg-surface pr-9 pl-3 text-sm outline-none transition-colors focus:border-primary/40"
           />
         </div>
@@ -118,12 +122,12 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
             setSpecialty(e.target.value);
             void applyFilters({ specialty: e.target.value });
           }}
-          aria-label="فیلتر تخصص"
+          aria-label={t("فیلتر تخصص")}
           className="h-11 rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
         >
-          <option value="all">همه تخصص‌ها</option>
+          <option value="all">{t("همه تخصص‌ها")}</option>
           {SPECIALTIES.slice(1).map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>{t(s)}</option>
           ))}
         </select>
         <select
@@ -132,25 +136,25 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
             setCity(e.target.value);
             void applyFilters({ city: e.target.value });
           }}
-          aria-label="فیلتر شهر"
+          aria-label={t("فیلتر شهر")}
           className="h-11 rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
         >
-          <option value="all">همه شهرها</option>
+          <option value="all">{t("همه شهرها")}</option>
           {CITIES.slice(1).map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <option key={c} value={c}>{t(c)}</option>
           ))}
         </select>
         <Button variant="primary" size="md" onClick={() => void applyFilters()} disabled={loading} className="shrink-0">
           <Icon name="filter" className="h-4 w-4" />
-          {loading ? "در حال جستجو..." : "اعمال فیلتر"}
+          {loading ? t("در حال جستجو...") : t("اعمال فیلتر")}
         </Button>
       </div>
 
       {hint && <p className="mb-3 rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">{hint}</p>}
       {hasFilters && (
         <p className="mb-3 text-xs text-muted">
-          {toFa(items.length)} پرونده مطابق فیلترها
-          {loading ? " · در حال به‌روزرسانی..." : ""}
+          {tf("{n} پرونده مطابق فیلترها", { n: toFa(items.length) })}
+          {loading ? ` · ${t("در حال به‌روزرسانی...")}` : ""}
         </p>
       )}
 
@@ -158,7 +162,7 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
       <div className="max-h-[860px] space-y-3 overflow-y-auto pl-1">
         {items.length === 0 && !loading && (
           <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">
-            پروندهٔ بازی مطابق فیلترهای شما یافت نشد؛ بعداً دوباره بررسی کنید.
+            {t("پروندهٔ بازی مطابق فیلترهای شما یافت نشد؛ بعداً دوباره بررسی کنید.")}
           </p>
         )}
         {items.map((c) => (
@@ -167,20 +171,20 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
               <div className="min-w-0">
                 <h4 className="text-[15px] font-bold text-foreground">{c.subject}</h4>
                 <p className="mt-1 text-xs text-muted">
-                  پرونده {toFa(c.caseNumber)} · {c.city} · تطبیق هوشمند {toFa(c.matchScore)}٪
+                  {tf("پرونده {n} · {city} · تطبیق هوشمند {m}٪", { n: toFa(c.caseNumber), city: c.city, m: toFa(c.matchScore) })}
                 </p>
               </div>
-              <b className="dp-money whitespace-nowrap text-sm">{c.budget || (c.aiEstimate ? "تخمین AI" : "—")}</b>
+              <b className="dp-money whitespace-nowrap text-sm">{c.budget || (c.aiEstimate ? t("تخمین AI") : "—")}</b>
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span className="rounded-full bg-cyan/15 px-2.5 py-1 text-[11px] font-semibold text-[#1d7a8c]">{c.specialty}</span>
               <span className="rounded-full bg-accent-soft px-2.5 py-1 text-[11px] font-semibold text-accent">AI Match</span>
               {c.urgency === "high" && (
-                <span className="rounded-full bg-danger/10 px-2.5 py-1 text-[11px] font-semibold text-danger">فوری</span>
+                <span className="rounded-full bg-danger/10 px-2.5 py-1 text-[11px] font-semibold text-danger">{t("فوری")}</span>
               )}
               {c.proposalsCount > 0 && (
                 <span className="rounded-full bg-surface-2 px-2.5 py-1 text-[11px] text-muted">
-                  {toFa(c.proposalsCount)} پیشنهاد ثبت‌شده
+                  {tf("{n} پیشنهاد ثبت‌شده", { n: toFa(c.proposalsCount) })}
                 </span>
               )}
             </div>
@@ -189,16 +193,16 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
               <Button
                 variant="primary"
                 size="md"
-                onClick={() => (canOffer ? openOffer(c) : toast.error("ارسال پیشنهاد فقط با حساب وکیل امکان‌پذیر است."))}
+                onClick={() => (canOffer ? openOffer(c) : toast.error(t("ارسال پیشنهاد فقط با حساب وکیل امکان‌پذیر است.")))}
               >
                 <Icon name="send" className="h-4 w-4" />
-                ارسال پیشنهاد قیمت
+                {t("ارسال پیشنهاد قیمت")}
               </Button>
               <Link
                 href={`/lawyers`}
                 className="inline-flex h-11 items-center gap-2 rounded-xl border border-border bg-surface px-4 text-sm font-semibold text-foreground-soft transition-colors hover:bg-surface-2"
               >
-                مشاهده جزئیات
+                {t("مشاهده جزئیات")}
               </Link>
             </div>
           </article>
@@ -211,16 +215,16 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
           className="fixed inset-0 z-50 grid place-items-center bg-[rgba(6,12,27,.58)] p-4"
           role="dialog"
           aria-modal="true"
-          aria-label="ارسال پیشنهاد قیمت"
+          aria-label={t("ارسال پیشنهاد قیمت")}
           onClick={(e) => e.target === e.currentTarget && setOfferFor(null)}
         >
           <div className="animate-scale-in w-full max-w-lg overflow-hidden rounded-2xl bg-surface shadow-2xl">
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <b className="text-[15px] text-foreground">جزئیات پرونده و ارسال پیشنهاد</b>
+              <b className="text-[15px] text-foreground">{t("جزئیات پرونده و ارسال پیشنهاد")}</b>
               <button
                 type="button"
                 onClick={() => setOfferFor(null)}
-                aria-label="بستن"
+                aria-label={t("بستن")}
                 className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-foreground-soft hover:bg-surface-3"
               >
                 <Icon name="x" className="h-4 w-4" />
@@ -230,44 +234,44 @@ export function MarketBrowser({ initialItems, canOffer }: Props) {
               <div className="rounded-xl border border-border bg-surface-2/50 p-3">
                 <b className="text-sm text-foreground">{offerFor.subject}</b>
                 <p className="mt-1 text-xs text-muted">
-                  شماره پرونده: {toFa(offerFor.caseNumber)} · {offerFor.city} · بودجه اعلامی: {offerFor.budget ?? "—"}
+                  {tf("شماره پرونده: {n} · {city} · بودجه اعلامی: {b}", { n: toFa(offerFor.caseNumber), city: offerFor.city, b: offerFor.budget ?? "—" })}
                 </p>
               </div>
               <label className="block">
-                <span className="mb-1.5 block text-xs text-muted">حق‌الوکاله پیشنهادی (تومان)</span>
+                <span className="mb-1.5 block text-xs text-muted">{t("حق‌الوکاله پیشنهادی (تومان)")}</span>
                 <MoneyInput
                   value={amount}
                   onValueChange={setAmount}
-                  placeholder="مثلاً 120,000,000"
+                  placeholder={t("مثلاً 120,000,000")}
                   className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
                 />
-                {amount && <span className="mt-1 block text-[11px] text-accent">{shortToman(toEn(amount).replace(/[^\d]/g, ""))} تومان</span>}
+                {amount && <span className="mt-1 block text-[11px] text-accent">{tf("{n} تومان", { n: shortToman(toEn(amount).replace(/[^\d]/g, "")) })}</span>}
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-xs text-muted">مدت انجام (ماه — اختیاری)</span>
+                <span className="mb-1.5 block text-xs text-muted">{t("مدت انجام (ماه — اختیاری)")}</span>
                 <input
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   inputMode="numeric"
-                  placeholder="مثلاً ۶"
+                  placeholder={t("مثلاً ۶")}
                   className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-xs text-muted">توضیحات پیشنهاد (دامنه خدمات، اقساط و...)</span>
+                <span className="mb-1.5 block text-xs text-muted">{t("توضیحات پیشنهاد (دامنه خدمات، اقساط و...)")}</span>
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={4}
-                  placeholder="دامنه خدمات، مراحل پرونده و شرایط پرداخت را بنویسید..."
+                  placeholder={t("دامنه خدمات، مراحل پرونده و شرایط پرداخت را بنویسید...")}
                   className="min-h-24 w-full resize-y rounded-xl border border-border bg-surface p-3 text-sm outline-none focus:border-primary/40"
                 />
               </label>
               <Button variant="primary" size="lg" className="w-full" onClick={() => void submitOffer()} disabled={sending}>
                 <Icon name="send" className="h-4 w-4" />
-                {sending ? "در حال ارسال..." : "ارسال پیشنهاد به موکل"}
+                {sending ? t("در حال ارسال...") : t("ارسال پیشنهاد به موکل")}
               </Button>
-              <p className="text-center text-[11px] text-muted">پیشنهاد شما به‌همراه امتیاز تطبیق هوشمند برای موکل ارسال می‌شود.</p>
+              <p className="text-center text-[11px] text-muted">{t("پیشنهاد شما به‌همراه امتیاز تطبیق هوشمند برای موکل ارسال می‌شود.")}</p>
             </div>
           </div>
         </div>

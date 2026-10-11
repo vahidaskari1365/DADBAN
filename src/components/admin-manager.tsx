@@ -1,6 +1,8 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 type Row = Record<string, unknown> & { id: number };
 
@@ -79,6 +81,8 @@ const FA: Record<string, string> = { new: "جدید", reviewing: "در حال ب
 
 export default function AdminManager({ resource }: { resource: string }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const cfg = CONFIGS[resource];
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,15 +94,15 @@ export default function AdminManager({ resource }: { resource: string }) {
     try {
       const res = await fetch(`/api/admin/${resource}`);
       const data = await res.json();
-      if (!data.ok) { setError("خطا در دریافت داده‌ها"); return; }
+      if (!data.ok) { setError(t("خطا در دریافت داده‌ها")); return; }
       setError("");
       setRows(data.rows);
     } catch {
-      setError("خطا در ارتباط");
+      setError(t("خطا در ارتباط"));
     } finally {
       setLoading(false);
     }
-  }, [resource]);
+  }, [resource, t]);
   useEffect(() => { queueMicrotask(() => void load()); }, [load]);
 
   const changeStatus = async (row: Row, value: string) => {
@@ -114,17 +118,17 @@ export default function AdminManager({ resource }: { resource: string }) {
     void load();
   };
   const remove = async (row: Row) => {
-    if (!confirm(`حذف این ردیف؟ (${String(row.id)})`)) return;
+    if (!confirm(tf("حذف این ردیف؟ ({n})", { n: String(row.id) }))) return;
     await fetch(`/api/admin/${resource}?id=${row.id}`, { method: "DELETE" });
     void load();
   };
 
-  if (loading) return <p className="p-6 text-sm text-muted">در حال بارگذاری…</p>;
+  if (loading) return <p className="p-6 text-sm text-muted">{t("در حال بارگذاری…")}</p>;
   return (
     <div className="p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-foreground">{cfg.title}</h2>
-        <button onClick={() => router.push("/admin")} className="rounded-lg bg-surface-2 px-3 py-1.5 text-xs font-medium text-foreground-soft hover:bg-border">← بازگشت به داشبورد</button>
+        <h2 className="text-lg font-bold text-foreground">{t(cfg.title)}</h2>
+        <button onClick={() => router.push("/admin")} className="rounded-lg bg-surface-2 px-3 py-1.5 text-xs font-medium text-foreground-soft hover:bg-border">{t("← بازگشت به داشبورد")}</button>
       </div>
       {error && <p className="mb-3 text-sm font-semibold text-danger">{error}</p>}
       <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
@@ -132,13 +136,13 @@ export default function AdminManager({ resource }: { resource: string }) {
           <thead>
             <tr className="border-b border-border text-xs text-muted">
               <th className="p-3">#</th>
-              {cfg.cols.map((c) => <th key={c.key} className="p-3">{c.label}</th>)}
-              {cfg.statusField && <th className="p-3">وضعیت</th>}
-              <th className="p-3">عملیات</th>
+              {cfg.cols.map((c) => <th key={c.key} className="p-3">{t(c.label)}</th>)}
+              {cfg.statusField && <th className="p-3">{t("وضعیت")}</th>}
+              <th className="p-3">{t("عملیات")}</th>
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 && <tr><td colSpan={cfg.cols.length + 3} className="p-6 text-center text-muted">داده‌ای ثبت نشده است.</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={cfg.cols.length + 3} className="p-6 text-center text-muted">{t("داده‌ای ثبت نشده است.")}</td></tr>}
             {rows.map((r, i) => (
               <tr key={r.id} className="border-b border-border/60 last:border-0 hover:bg-surface-2/40">
                 <td className="p-3 text-muted">{i + 1}</td>
@@ -153,7 +157,7 @@ export default function AdminManager({ resource }: { resource: string }) {
                   <StatusCell field={cfg.statusField} options={cfg.statusOptions} row={r} saving={saving} onChange={(id, v) => changeStatus(id, v)} />
                 ) : null}
                 <td className="p-3">
-                  <button onClick={() => remove(r)} className="rounded-lg bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger hover:bg-danger/20">حذف</button>
+                  <button onClick={() => remove(r)} className="rounded-lg bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger hover:bg-danger/20">{t("حذف")}</button>
                 </td>
               </tr>
             ))}
@@ -171,6 +175,7 @@ function StatusCell({ field, options, row, saving, onChange }: {
   saving: number | null;
   onChange: (row: Row, value: string) => void;
 }) {
+  const t = useT();
   const current = String(row[field]);
   if (options) {
     return (
@@ -181,7 +186,7 @@ function StatusCell({ field, options, row, saving, onChange }: {
           onChange={(e) => onChange(row, e.target.value)}
           className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
         >
-          {options.map((o) => <option key={o} value={o}>{FA[o] ?? o}</option>)}
+          {options.map((o) => <option key={o} value={o}>{t(FA[o] ?? o)}</option>)}
         </select>
       </td>
     );
@@ -194,7 +199,7 @@ function StatusCell({ field, options, row, saving, onChange }: {
         disabled={saving === row.id}
         className={`rounded-full px-2.5 py-1 text-xs font-bold ${active ? "bg-success/15 text-success" : "bg-surface-2 text-muted"}`}
       >
-        {active ? "فعال" : "غیرفعال"}
+        {active ? t("فعال") : t("غیرفعال")}
       </button>
     </td>
   );

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container, Logo } from "./ui";
+import { SITE_TAGLINE } from "@/lib/brand";
 import { Icon } from "./icons";
 import NewsletterForm from "./newsletter-form";
 import type { IconKey } from "@/lib/data";
@@ -79,7 +80,7 @@ export async function Footer() {
               aria-label={t("دادبان — صفحه اصلی")}
               className="inline-block transition-opacity hover:opacity-85"
             >
-              <Logo />
+              <Logo tagline={t(SITE_TAGLINE)} />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-7 text-muted">
               {t(

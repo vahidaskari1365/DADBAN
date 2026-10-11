@@ -9,7 +9,7 @@
    ========================================================================== */
 
 // v1.4.50 — تکمیل ترجمه‌ها: لایهٔ EXT_B9 با ۷۲۴ کلید جدید (تولید LLM + اعتبارسنجی) → پوشش دیکشنری ۱۰۰٪ در en/ar/tr/zh
-const VERSION = "dadban-v1.4.50";
+const VERSION = "dadban-v1.4.51";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;

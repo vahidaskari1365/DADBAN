@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
 
 type CaseOption = { id: number; label: string };
 
@@ -11,6 +12,7 @@ type CaseOption = { id: number; label: string };
  * (این API متعلق به ایجنت پنل وکیل است — در صورت 403/404 پیام مناسب نمایش داده می‌شود.)
  */
 export default function TraineeActionForm({ cases, actorName }: { cases: CaseOption[]; actorName: string }) {
+  const t = useT();
   const [caseId, setCaseId] = useState(cases[0] ? String(cases[0].id) : "");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -21,11 +23,11 @@ export default function TraineeActionForm({ cases, actorName }: { cases: CaseOpt
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!caseId) {
-      setMsg({ ok: false, text: "ابتدا پروندهٔ موردنظر را انتخاب کنید." });
+      setMsg({ ok: false, text: t("ابتدا پروندهٔ موردنظر را انتخاب کنید.") });
       return;
     }
     if (!title.trim()) {
-      setMsg({ ok: false, text: "عنوان اقدام را وارد کنید." });
+      setMsg({ ok: false, text: t("عنوان اقدام را وارد کنید.") });
       return;
     }
     setBusy(true);
@@ -43,20 +45,20 @@ export default function TraineeActionForm({ cases, actorName }: { cases: CaseOpt
         }),
       });
       if (res.ok) {
-        setMsg({ ok: true, text: "اقدام با موفقیت در کارتابل پرونده ثبت شد." });
+        setMsg({ ok: true, text: t("اقدام با موفقیت در کارتابل پرونده ثبت شد.") });
         setTitle("");
         setDescription("");
       } else if (res.status === 401) {
-        setMsg({ ok: false, text: "برای ثبت اقدام باید وارد حساب کاربری شوید." });
+        setMsg({ ok: false, text: t("برای ثبت اقدام باید وارد حساب کاربری شوید.") });
       } else if (res.status === 403) {
-        setMsg({ ok: false, text: "دسترسی ثبت اقدام برای این پرونده ندارید — فقط وکیل یا کارآموزِ همان پرونده مجاز است." });
+        setMsg({ ok: false, text: t("دسترسی ثبت اقدام برای این پرونده ندارید — فقط وکیل یا کارآموزِ همان پرونده مجاز است.") });
       } else if (res.status === 404) {
-        setMsg({ ok: false, text: "سرویس ثبت اقدام هنوز در دسترس نیست؛ بعداً تلاش کنید." });
+        setMsg({ ok: false, text: t("سرویس ثبت اقدام هنوز در دسترس نیست؛ بعداً تلاش کنید.") });
       } else {
-        setMsg({ ok: false, text: "ثبت اقدام ناموفق بود؛ لطفاً دوباره تلاش کنید." });
+        setMsg({ ok: false, text: t("ثبت اقدام ناموفق بود؛ لطفاً دوباره تلاش کنید.") });
       }
     } catch {
-      setMsg({ ok: false, text: "خطای شبکه؛ اتصال خود را بررسی کنید." });
+      setMsg({ ok: false, text: t("خطای شبکه؛ اتصال خود را بررسی کنید.") });
     } finally {
       setBusy(false);
     }
@@ -67,10 +69,10 @@ export default function TraineeActionForm({ cases, actorName }: { cases: CaseOpt
   const labelCls = "mb-1.5 block text-xs font-bold text-foreground-soft";
 
   return (
-    <form onSubmit={submit} className="space-y-3.5" aria-label="فرم ثبت اقدام پرونده">
+    <form onSubmit={submit} className="space-y-3.5" aria-label={t("فرم ثبت اقدام پرونده")}>
       <div>
         <label htmlFor="ta-case" className={labelCls}>
-          پرونده
+          {t("پرونده")}
         </label>
         <select
           id="ta-case"
@@ -79,7 +81,7 @@ export default function TraineeActionForm({ cases, actorName }: { cases: CaseOpt
           className={inputCls}
           disabled={cases.length === 0 || busy}
         >
-          {cases.length === 0 && <option value="">پرونده‌ای برای ارجاع وجود ندارد</option>}
+          {cases.length === 0 && <option value="">{t("پرونده‌ای برای ارجاع وجود ندارد")}</option>}
           {cases.map((c) => (
             <option key={c.id} value={c.id}>
               {c.label}
@@ -89,13 +91,13 @@ export default function TraineeActionForm({ cases, actorName }: { cases: CaseOpt
       </div>
       <div>
         <label htmlFor="ta-title" className={labelCls}>
-          عنوان اقدام
+          {t("عنوان اقدام")}
         </label>
         <input
           id="ta-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="مثال: پیگیری ابلاغیه دادگاه و تهیهٔ لایحه"
+          placeholder={t("مثال: پیگیری ابلاغیه دادگاه و تهیهٔ لایحه")}
           className={inputCls}
           maxLength={120}
           disabled={busy}
@@ -103,13 +105,13 @@ export default function TraineeActionForm({ cases, actorName }: { cases: CaseOpt
       </div>
       <div>
         <label htmlFor="ta-desc" className={labelCls}>
-          شرح اقدام (اختیاری)
+          {t("شرح اقدام (اختیاری)")}
         </label>
         <textarea
           id="ta-desc"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="خلاصهٔ اقدام انجام‌شده، مراجع و نتیجهٔ آن…"
+          placeholder={t("خلاصهٔ اقدام انجام‌شده، مراجع و نتیجهٔ آن…")}
           className="min-h-24 w-full rounded-xl border border-border bg-background px-3.5 py-3 text-sm leading-6 text-foreground outline-none transition-colors focus:border-accent"
           maxLength={800}
           disabled={busy}
@@ -123,7 +125,7 @@ export default function TraineeActionForm({ cases, actorName }: { cases: CaseOpt
           className="h-4 w-4 accent-[#d5a84c]"
           disabled={busy}
         />
-        <span>نمایش این اقدام به موکل در پیگیری پرونده</span>
+        <span>{t("نمایش این اقدام به موکل در پیگیری پرونده")}</span>
       </label>
 
       {msg && (
@@ -143,7 +145,7 @@ export default function TraineeActionForm({ cases, actorName }: { cases: CaseOpt
         className="btn-gold inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition-all disabled:opacity-50"
       >
         <Icon name="check" className="h-4 w-4" />
-        {busy ? "در حال ثبت…" : "ثبت اقدام در کارتابل"}
+        {busy ? t("در حال ثبت…") : t("ثبت اقدام در کارتابل")}
       </button>
     </form>
   );

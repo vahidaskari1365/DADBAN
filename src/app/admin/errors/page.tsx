@@ -10,12 +10,17 @@ import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { formatJalaliDateTime, relativeTimeJalali } from "@/lib/jalali";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 import ErrorsRefreshButton from "./refresh-button";
 
-export const metadata: Metadata = {
-  title: "پایش خطاهای داخلی — پنل مدیریت دادپیو",
-  description: "خطاهای ثبت‌شدهٔ سمت سرور و کلاینت در جدول app_errors — جایگزین داخلی Sentry بدون کلید خارجی.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("پایش خطاهای داخلی — پنل مدیریت دادپیو"),
+    description: t("خطاهای ثبت‌شدهٔ سمت سرور و کلاینت در جدول app_errors — جایگزین داخلی Sentry بدون کلید خارجی."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 type ErrorRow = typeof appErrors.$inferSelect;
@@ -69,16 +74,18 @@ async function loadErrorsDashboard(): Promise<ErrorsDashboard> {
 export default async function AdminErrorsPage() {
   // گارد ادمین — همان الگوی بقیهٔ صفحات پنل مدیریت
   if (!(await isAdmin())) redirect("/admin/login");
+  const t = await getT();
+  const tf = templateT(t);
 
   const { c24, c7, latest, rows } = await loadErrorsDashboard();
 
   return (
     <>
       <PageHero
-        badge="Admin · پایش"
-        title="پایش خطاهای داخلی"
-        desc="خطاهای سمت سرور و کلاینت که در جدول app_errors ثبت شده‌اند — جایگزین داخلی Sentry، بدون کلید خارجی"
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت", href: "/admin" }, { label: "خطاها" }]}
+        badge={t("Admin · پایش")}
+        title={t("پایش خطاهای داخلی")}
+        desc={t("خطاهای سمت سرور و کلاینت که در جدول app_errors ثبت شده‌اند — جایگزین داخلی Sentry، بدون کلید خارجی")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("خطاها") }]}
       >
         <ErrorsRefreshButton />
       </PageHero>
@@ -87,24 +94,24 @@ export default async function AdminErrorsPage() {
         {/* کارت‌های آماری */}
         <div className="grid gap-4 sm:grid-cols-3">
           <Card hover={false}>
-            <p className="text-xs font-bold text-muted">خطاهای ۲۴ ساعت اخیر (سرور + کلاینت)</p>
+            <p className="text-xs font-bold text-muted">{t("خطاهای ۲۴ ساعت اخیر (سرور + کلاینت)")}</p>
             <p className={`mt-2 text-3xl font-extrabold ${c24 > 0 ? "text-danger" : "text-success"}`}>{faNum(c24)}</p>
           </Card>
           <Card hover={false}>
-            <p className="text-xs font-bold text-muted">خطاهای ۷ روز اخیر</p>
+            <p className="text-xs font-bold text-muted">{t("خطاهای ۷ روز اخیر")}</p>
             <p className="mt-2 text-3xl font-extrabold text-foreground">{faNum(c7)}</p>
           </Card>
           <Card hover={false}>
-            <p className="text-xs font-bold text-muted">آخرین خطا</p>
+            <p className="text-xs font-bold text-muted">{t("آخرین خطا")}</p>
             {latest ? (
               <>
                 <p className="mt-2 line-clamp-2 break-words text-sm font-bold text-foreground">{latest.message}</p>
                 <p className="mt-1 text-[11px] text-muted">
-                  {SOURCE_FA[latest.source] ?? latest.source} • {relativeTimeJalali(latest.createdAt)}
+                  {t(SOURCE_FA[latest.source] ?? latest.source)} • {relativeTimeJalali(latest.createdAt)}
                 </p>
               </>
             ) : (
-              <p className="mt-2 text-sm font-bold text-success">ثبت نشده</p>
+              <p className="mt-2 text-sm font-bold text-success">{t("ثبت نشده")}</p>
             )}
           </Card>
         </div>
@@ -117,11 +124,11 @@ export default async function AdminErrorsPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   {row.level === "warning" ? (
                     <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
-                      <Icon name="alert" className="h-3 w-3" /> هشدار
+                      <Icon name="alert" className="h-3 w-3" /> {t("هشدار")}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[11px] font-bold text-danger">
-                      <Icon name="alert" className="h-3 w-3" /> خطا
+                      <Icon name="alert" className="h-3 w-3" /> {t("خطا")}
                     </span>
                   )}
                   <span
@@ -129,7 +136,7 @@ export default async function AdminErrorsPage() {
                       row.source === "server" ? "border-primary/20 bg-primary-soft text-primary" : "border-border bg-surface-2 text-foreground-soft"
                     }`}
                   >
-                    {SOURCE_FA[row.source] ?? row.source}
+                    {t(SOURCE_FA[row.source] ?? row.source)}
                   </span>
                   <span className="mr-auto text-[11px] text-muted" title={formatJalaliDateTime(row.createdAt)}>
                     {relativeTimeJalali(row.createdAt)} — {formatJalaliDateTime(row.createdAt)}
@@ -140,7 +147,7 @@ export default async function AdminErrorsPage() {
 
                 {row.stack && (
                   <details className="mt-2">
-                    <summary className="cursor-pointer text-xs font-semibold text-primary hover:underline">نمایش کامل stack</summary>
+                    <summary className="cursor-pointer text-xs font-semibold text-primary hover:underline">{t("نمایش کامل stack")}</summary>
                     <pre
                       dir="ltr"
                       className="nice-scroll mt-2 max-h-64 overflow-auto rounded-xl bg-surface-2 p-3 text-left text-[11px] leading-5 text-muted"
@@ -157,7 +164,7 @@ export default async function AdminErrorsPage() {
                       <span dir="ltr" className="max-w-[320px] truncate">{row.url}</span>
                     </span>
                   )}
-                  <span>{row.userId ? `کاربر #${faNum(row.userId)}` : "مهمان"}</span>
+                  <span>{row.userId ? tf("کاربر #{n}", { n: faNum(row.userId) }) : t("مهمان")}</span>
                   {row.userAgent && <span className="max-w-[240px] truncate" dir="ltr" title={row.userAgent}>{shortUa(row.userAgent)}</span>}
                 </div>
               </Card>
@@ -165,7 +172,7 @@ export default async function AdminErrorsPage() {
           </div>
         ) : (
           <div data-testid="errors-table">
-            <EmptyState icon="check" title="خطای ثبت‌شده‌ای نیست — همه‌چیز سالم است" desc="خطاهای سمت سرور و کلاینت به‌محض رخ دادن همین‌جا نمایش داده می‌شوند." />
+            <EmptyState icon="check" title={t("خطای ثبت‌شده‌ای نیست — همه‌چیز سالم است")} desc={t("خطاهای سمت سرور و کلاینت به‌محض رخ دادن همین‌جا نمایش داده می‌شوند.")} />
           </div>
         )}
       </Container>

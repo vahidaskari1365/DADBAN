@@ -1,9 +1,11 @@
 "use client";
 
 import { useTheme } from "./theme-provider";
+import { useT } from "@/lib/i18n/provider";
 
 export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const { theme, mounted, toggle } = useTheme();
+  const t = useT();
 
   const isDark = theme === "dark";
 
@@ -11,8 +13,8 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
     <button
       type="button"
       onClick={toggle}
-      aria-label={isDark ? "تغییر به حالت روشن" : "تغییر به حالت تاریک"}
-      title={isDark ? "حالت روشن" : "حالت تاریک"}
+      aria-label={isDark ? t("تغییر به حالت روشن") : t("تغییر به حالت تاریک")}
+      title={isDark ? t("حالت روشن") : t("حالت تاریک")}
       className={
         compact
           ? "inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-foreground-soft transition-colors duration-200 hover:bg-surface-2 hover:text-foreground"
@@ -33,7 +35,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
       ) : (
         <span className="block h-[18px] w-[18px]" />
       )}
-      {!compact && <span>{mounted ? (isDark ? "روشن" : "تاریک") : "تم"}</span>}
+      {!compact && <span>{mounted ? (isDark ? t("روشن") : t("تاریک")) : t("تم")}</span>}
     </button>
   );
 }

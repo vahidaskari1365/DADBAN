@@ -6,6 +6,8 @@ import { StatusBadge } from "@/components/panel-widgets";
 import { Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { formatToman, formatJalali, labelStatus, toFa } from "@/lib/money";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 type CreditRow = {
   id: number;
@@ -46,6 +48,8 @@ function nextStatuses(current: string): string[] {
 
 export default function ProvidersClient({ rows }: { rows: CreditRow[] }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [picked, setPicked] = useState<Record<number, string>>({});
   const [busyId, setBusyId] = useState<number | null>(null);
   const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
@@ -58,7 +62,7 @@ export default function ProvidersClient({ rows }: { rows: CreditRow[] }) {
   async function apply(row: CreditRow) {
     const status = picked[row.id];
     if (!status) {
-      flash(false, "ابتدا وضعیت مقصد را انتخاب کنید.");
+      flash(false, t("ابتدا وضعیت مقصد را انتخاب کنید."));
       return;
     }
     setBusyId(row.id);
@@ -69,15 +73,15 @@ export default function ProvidersClient({ rows }: { rows: CreditRow[] }) {
         body: JSON.stringify({ status }),
       });
       if (res.ok) {
-        flash(true, `درخواست ${toFa(row.id)} به وضعیت «${labelStatus("credit", status).label}» تغییر کرد.`);
+        flash(true, tf("درخواست {n} به وضعیت «{s}» تغییر کرد.", { n: toFa(row.id), s: labelStatus("credit", status).label }));
         router.refresh();
       } else if (res.status === 401) {
-        flash(false, "نشست ادمین منقضی شده؛ دوباره وارد شوید.");
+        flash(false, t("نشست ادمین منقضی شده؛ دوباره وارد شوید."));
       } else {
-        flash(false, "تغییر وضعیت ناموفق بود؛ دوباره تلاش کنید.");
+        flash(false, t("تغییر وضعیت ناموفق بود؛ دوباره تلاش کنید."));
       }
     } catch {
-      flash(false, "خطای شبکه؛ اتصال خود را بررسی کنید.");
+      flash(false, t("خطای شبکه؛ اتصال خود را بررسی کنید."));
     } finally {
       setBusyId(null);
     }
@@ -90,27 +94,27 @@ export default function ProvidersClient({ rows }: { rows: CreditRow[] }) {
     <Card hover={false}>
       <h2 className="mb-4 flex items-center gap-2 text-base font-extrabold text-foreground">
         <Icon name="money" className="h-4.5 w-4.5 text-accent" />
-        درخواست‌های تأمین اعتبار حق‌الوکاله
+        {t("درخواست‌های تأمین اعتبار حق‌الوکاله")}
       </h2>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[900px] text-right">
           <thead>
             <tr className="border-b border-border">
               <th className={th}>#</th>
-              <th className={th}>پرونده</th>
-              <th className={th}>تأمین‌کننده</th>
-              <th className={th}>مبلغ / مدت</th>
-              <th className={th}>کد پیگیری</th>
-              <th className={th}>وضعیت</th>
-              <th className={th}>تغییر وضعیت</th>
-              <th className={th}>ثبت</th>
+              <th className={th}>{t("پرونده")}</th>
+              <th className={th}>{t("تأمین‌کننده")}</th>
+              <th className={th}>{t("مبلغ / مدت")}</th>
+              <th className={th}>{t("کد پیگیری")}</th>
+              <th className={th}>{t("وضعیت")}</th>
+              <th className={th}>{t("تغییر وضعیت")}</th>
+              <th className={th}>{t("ثبت")}</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
                 <td colSpan={8} className="p-6 text-center text-sm text-muted">
-                  درخواست اعتباری ثبت نشده است.
+                  {t("درخواست اعتباری ثبت نشده است.")}
                 </td>
               </tr>
             )}
@@ -124,16 +128,16 @@ export default function ProvidersClient({ rows }: { rows: CreditRow[] }) {
                     <b className="block max-w-[180px] truncate">{r.caseSubject ?? `#${toFa(r.caseId)}`}</b>
                     <small className="text-[11px] text-muted">{formatJalali(r.createdAt)}</small>
                   </td>
-                  <td className={`${td} whitespace-nowrap font-bold`}>{PROVIDER_LABEL[r.provider] ?? r.provider}</td>
+                  <td className={`${td} whitespace-nowrap font-bold`}>{t(PROVIDER_LABEL[r.provider] ?? r.provider)}</td>
                   <td className={td}>
                     <span className="dp-money whitespace-nowrap">{formatToman(r.amount)}</span>
-                    <small className="block text-[11px] text-muted">{toFa(r.months)} ماهه</small>
+                    <small className="block text-[11px] text-muted">{tf("{n} ماهه", { n: toFa(r.months) })}</small>
                   </td>
                   <td className={`${td} text-xs text-muted`} dir="ltr">
                     {r.referenceCode || "—"}
                   </td>
                   <td className={td}>
-                    <StatusBadge tone={st.tone}>{st.label}</StatusBadge>
+                    <StatusBadge tone={st.tone}>{t(st.label)}</StatusBadge>
                     {r.statusDetail && (
                       <small className="mt-1 block max-w-[150px] text-[10px] leading-5 text-muted">{r.statusDetail}</small>
                     )}
@@ -143,18 +147,18 @@ export default function ProvidersClient({ rows }: { rows: CreditRow[] }) {
                       <select
                         value={picked[r.id] ?? ""}
                         onChange={(e) => setPicked((prev) => ({ ...prev, [r.id]: e.target.value }))}
-                        aria-label={`تغییر وضعیت درخواست ${r.id}`}
+                        aria-label={tf("تغییر وضعیت درخواست {n}", { n: toFa(r.id) })}
                         className="h-11 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground"
                       >
-                        <option value="">انتخاب وضعیت…</option>
+                        <option value="">{t("انتخاب وضعیت…")}</option>
                         {STATUSES.filter((s) => nexts.includes(s)).map((s) => (
                           <option key={s} value={s}>
-                            {labelStatus("credit", s).label}
+                            {t(labelStatus("credit", s).label)}
                           </option>
                         ))}
                       </select>
                     ) : (
-                      <span className="text-[11px] text-muted">چرخهٔ کامل — بدون تغییر</span>
+                      <span className="text-[11px] text-muted">{t("چرخهٔ کامل — بدون تغییر")}</span>
                     )}
                   </td>
                   <td className={td}>
@@ -164,7 +168,7 @@ export default function ProvidersClient({ rows }: { rows: CreditRow[] }) {
                       disabled={busyId === r.id || nexts.length === 0 || !picked[r.id]}
                       className="min-h-11 rounded-lg bg-primary-soft px-3.5 text-xs font-bold text-primary transition-colors hover:bg-primary-soft/70 disabled:opacity-40"
                     >
-                      {busyId === r.id ? "…" : "اعمال"}
+                      {busyId === r.id ? "…" : t("اعمال")}
                     </button>
                   </td>
                 </tr>
@@ -181,7 +185,7 @@ export default function ProvidersClient({ rows }: { rows: CreditRow[] }) {
             toast.ok ? "bg-success text-white" : "bg-danger text-white"
           }`}
         >
-          {toast.text}
+          {t(toast.text)}
         </div>
       )}
     </Card>

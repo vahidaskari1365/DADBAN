@@ -1,6 +1,7 @@
 import { Container, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { TrustLine } from "./trust-line";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * HowItWorks — «چطور کار می‌کند؟» سه‌مرحله‌ای به سبک آمازون.
@@ -27,19 +28,20 @@ const STEPS = [
   },
 ];
 
-export function HowItWorks() {
+export async function HowItWorks() {
+  const t = await getT();
   return (
     <section aria-labelledby="how-it-works-title" className="rounded-3xl border border-border bg-surface p-6 card-shadow sm:p-10">
       <div className="text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-bold text-accent-text">
           <Icon name="bolt" className="h-3.5 w-3.5" />
-          ساده مثل ۱، ۲، ۳
+          {t("ساده مثل ۱، ۲، ۳")}
         </span>
         <h2 id="how-it-works-title" className="mt-3 text-2xl font-black text-foreground sm:text-3xl">
-          چطور کار می‌کند؟
+          {t("چطور کار می‌کند؟")}
         </h2>
         <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-muted">
-          از ثبت درخواست تا شروع کار، همه‌چیز آنلاین و شفاف است.
+          {t("از ثبت درخواست تا شروع کار، همه‌چیز آنلاین و شفاف است.")}
         </p>
       </div>
 
@@ -49,18 +51,18 @@ export function HowItWorks() {
         {STEPS.map((s) => (
           <li key={s.n} className="relative flex flex-col items-center text-center">
             <span className="relative z-10 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-xl font-black text-primary-foreground shadow-[var(--shadow-lift)]">
-              {s.n}
+              {t(s.n)}
             </span>
             <Icon name={s.icon} className="mt-4 h-6 w-6 text-primary" />
-            <h3 className="mt-2 text-base font-bold text-foreground">{s.title}</h3>
-            <p className="mt-1.5 max-w-xs text-xs leading-6 text-muted">{s.desc}</p>
+            <h3 className="mt-2 text-base font-bold text-foreground">{t(s.title)}</h3>
+            <p className="mt-1.5 max-w-xs text-xs leading-6 text-muted">{t(s.desc)}</p>
           </li>
         ))}
       </ol>
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button href="/lawyers" icon="search">پیدا کردن وکیل</Button>
-        <Button href="/case/new" variant="outline" icon="folder">ثبت پرونده</Button>
+        <Button href="/lawyers" icon="search">{t("پیدا کردن وکیل")}</Button>
+        <Button href="/case/new" variant="outline" icon="folder">{t("ثبت پرونده")}</Button>
       </div>
       <TrustLine className="mt-5" compact />
     </section>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * StickyCta — نوار اقدام چسبان موبایل به سبک «Buy Now» آمازون.
@@ -18,6 +19,7 @@ export function StickyCta({
   label: string;
   sub?: string;
 }) {
+  const t = useT();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -43,10 +45,10 @@ export function StickyCta({
       <div className="rounded-2xl border border-border bg-surface/95 p-2.5 shadow-[var(--shadow-lift)] backdrop-blur">
         <Button href={href} className="w-full" tabIndex={show ? 0 : -1}>
           <Icon name="bolt" className="h-4 w-4" />
-          {label}
+          {t(label)}
         </Button>
         {sub && (
-          <p className="mt-1.5 text-center text-[10px] font-semibold text-muted">{sub}</p>
+          <p className="mt-1.5 text-center text-[10px] font-semibold text-muted">{t(sub)}</p>
         )}
       </div>
     </div>

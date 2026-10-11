@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n/provider";
 
 /* ============================================================
    VoiceInputButton — دکمهٔ میکروفون ورودی صوتی چت هوشمند
@@ -46,6 +47,7 @@ export function VoiceInputButton({
 }: VoiceInputButtonProps) {
   const [phase, setPhase] = useState<VoicePhase>("idle");
   const [error, setError] = useState("");
+  const t = useT();
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -107,7 +109,7 @@ export function VoiceInputButton({
       if (!blob || blob.size === 0) {
         if (aliveRef.current) {
           setPhase("idle");
-          setError("صدایی ضبط نشد. لطفاً دوباره تلاش کنید.");
+          setError(t("صدایی ضبط نشد. لطفاً دوباره تلاش کنید."));
         }
         return;
       }
@@ -124,12 +126,12 @@ export function VoiceInputButton({
       } else {
         // خطای صادقانهٔ سرور — هیچ‌وقت ساکت نیستیم
         setPhase("idle");
-        setError(data?.error || "تبدیل گفتار به متن ناموفق بود. دوباره تلاش کنید.");
+        setError(data?.error || t("تبدیل گفتار به متن ناموفق بود. دوباره تلاش کنید."));
       }
     } catch {
       if (aliveRef.current) {
         setPhase("idle");
-        setError("ارتباط با سرور برقرار نشد. دوباره تلاش کنید.");
+        setError(t("ارتباط با سرور برقرار نشد. دوباره تلاش کنید."));
       }
     }
   }
@@ -141,7 +143,7 @@ export function VoiceInputButton({
       !navigator.mediaDevices?.getUserMedia ||
       typeof MediaRecorder === "undefined"
     ) {
-      setError("مرورگر شما از ضبط صدا پشتیبانی نمی‌کند. لطفاً از مرورگر به‌روزشده استفاده کنید.");
+      setError(t("مرورگر شما از ضبط صدا پشتیبانی نمی‌کند. لطفاً از مرورگر به‌روزشده استفاده کنید."));
       return;
     }
     try {
@@ -184,11 +186,11 @@ export function VoiceInputButton({
       setPhase("idle");
       const name = err instanceof DOMException ? err.name : "";
       if (name === "NotAllowedError" || name === "SecurityError") {
-        setError("دسترسی به میکروفون رد شد. لطفاً مجوز میکروفون را در مرورگر فعال کنید.");
+        setError(t("دسترسی به میکروفون رد شد. لطفاً مجوز میکروفون را در مرورگر فعال کنید."));
       } else if (name === "NotFoundError" || name === "OverconstrainedError") {
-        setError("میکروفونی پیدا نشد. اتصال میکروفون را بررسی کنید.");
+        setError(t("میکروفونی پیدا نشد. اتصال میکروفون را بررسی کنید."));
       } else {
-        setError("شروع ضبط ناموفق بود. لطفاً دوباره تلاش کنید.");
+        setError(t("شروع ضبط ناموفق بود. لطفاً دوباره تلاش کنید."));
       }
     }
   }
@@ -208,10 +210,10 @@ export function VoiceInputButton({
   const isTranscribing = phase === "transcribing";
 
   const label = isRecording
-    ? "در حال ضبط — برای پایان کلیک کنید"
+    ? t("در حال ضبط — برای پایان کلیک کنید")
     : isTranscribing
-      ? "در حال تبدیل گفتار به متن…"
-      : "ورودی صوتی — برای شروع ضبط کلیک کنید";
+      ? t("در حال تبدیل گفتار به متن…")
+      : t("ورودی صوتی — برای شروع ضبط کلیک کنید");
 
   return (
     <span className="relative inline-flex shrink-0" data-testid={testid}>

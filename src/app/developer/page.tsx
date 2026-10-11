@@ -5,6 +5,7 @@ import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { ERD_DOMAINS, ERD_STATS } from "@/lib/erd";
 import { faNum } from "@/lib/data";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: "نقشه‌ی دیتابیس (ERD) — معماری دادبان",
@@ -12,20 +13,21 @@ export const metadata: Metadata = {
   alternates: { canonical: "/developer" },
 };
 
-export default function DeveloperPage() {
+export default async function DeveloperPage() {
+  const t = await getT();
   return (
     <>
       <PageHero
         variant="market"
         image="/images/hero-developer.png"
         badge="Developer · Data Model"
-        title="نقشه‌ی دیتابیس (ERD)"
-        desc="معماری ماژولار دیتابیس دادبان در ۱۳ دامنه‌ی مستقل — طرح‌نامه‌ی واقعی PostgreSQL با کلیدها، ایندکس‌ها و روابط. مبنای توسعه‌ی NestJS + Prisma/Drizzle."
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "نقشه‌ی دیتابیس" }]}
+        title={t("نقشه‌ی دیتابیس (ERD)")}
+        desc={t("معماری ماژولار دیتابیس دادبان در ۱۳ دامنه‌ی مستقل — طرح‌نامه‌ی واقعی PostgreSQL با کلیدها، ایندکس‌ها و روابط. مبنای توسعه‌ی NestJS + Prisma/Drizzle.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("نقشه‌ی دیتابیس") }]}
       >
         <div className="flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgb(230_185_78/0.35)] bg-[rgb(230_185_78/0.14)] px-3 py-1 text-xs font-semibold text-[#eec97b]">{faNum(ERD_STATS.tables)} جدول</span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">{faNum(ERD_STATS.domains)} دامنه</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgb(230_185_78/0.35)] bg-[rgb(230_185_78/0.14)] px-3 py-1 text-xs font-semibold text-[#eec97b]">{faNum(ERD_STATS.tables)} {t("جدول")}</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">{faNum(ERD_STATS.domains)} {t("دامنه")}</span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">{faNum(ERD_STATS.enums)} Enum</span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">schema: core</span>
         </div>
@@ -41,22 +43,22 @@ export default function DeveloperPage() {
                     <Icon name={domain.icon} className="h-5 w-5" />
                   </span>
                   <div>
-                    <h2 className="text-xl font-bold text-foreground">{domain.group}</h2>
-                    <p className="text-xs text-muted">{faNum(domain.tables.length)} جدول</p>
+                    <h2 className="text-xl font-bold text-foreground">{t(domain.group)}</h2>
+                    <p className="text-xs text-muted">{faNum(domain.tables.length)} {t("جدول")}</p>
                   </div>
                 </div>
 
                 <div className="mt-5 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-                  {domain.tables.map((t) => (
-                    <div key={t.name} className="overflow-hidden rounded-2xl border border-border bg-surface card-shadow">
+                  {domain.tables.map((tbl) => (
+                    <div key={tbl.name} className="overflow-hidden rounded-2xl border border-border bg-surface card-shadow">
                       <div className="flex items-center justify-between border-b border-border bg-surface-2 px-4 py-3">
-                        <h3 className="font-mono text-sm font-bold text-foreground" dir="ltr">{t.name}</h3>
-                        {t.relation && <Badge tone="accent">{t.relation}</Badge>}
+                        <h3 className="font-mono text-sm font-bold text-foreground" dir="ltr">{tbl.name}</h3>
+                        {tbl.relation && <Badge tone="accent">{tbl.relation}</Badge>}
                       </div>
                       <div className="p-4">
-                        <p className="mb-3 text-xs leading-5 text-muted">{t.desc}</p>
+                        <p className="mb-3 text-xs leading-5 text-muted">{t(tbl.desc)}</p>
                         <div className="space-y-1">
-                          {t.columns.map((c) => (
+                          {tbl.columns.map((c) => (
                             <div key={c.name} className="flex items-center gap-2 text-xs">
                               {c.pk ? (
                                 <span className="font-mono text-[10px] font-bold text-accent-text">PK</span>
@@ -72,9 +74,9 @@ export default function DeveloperPage() {
                             </div>
                           ))}
                         </div>
-                        {t.indexes.length > 0 && (
+                        {tbl.indexes.length > 0 && (
                           <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border pt-3">
-                            {t.indexes.map((idx) => (
+                            {tbl.indexes.map((idx) => (
                               <span key={idx} className="rounded-md bg-surface-2 px-2 py-0.5 font-mono text-[10px] text-muted" dir="ltr">{idx}</span>
                             ))}
                           </div>
@@ -90,14 +92,14 @@ export default function DeveloperPage() {
 
         <div className="mt-12">
           <Card hover={false} className="bg-primary-soft/50">
-            <h3 className="flex items-center gap-2 text-sm font-bold text-foreground"><Icon name="landmark" className="h-4 w-4 text-primary" /> سه ستون طراحی</h3>
+            <h3 className="flex items-center gap-2 text-sm font-bold text-foreground"><Icon name="landmark" className="h-4 w-4 text-primary" /> {t("سه ستون طراحی")}</h3>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {[
                 { t: "Data Model", d: "چه داده‌ای و با چه رابطه‌ای ذخیره می‌شود." },
                 { t: "Authorization Model", d: "RBAC + دسترسی مبتنی بر عضویت در پرونده." },
                 { t: "Audit Trail", d: "ردیابی کامل عملیات روی پرونده و سند." },
               ].map((x) => (
-                <div key={x.t} className="rounded-xl border border-border bg-surface p-3"><p className="text-sm font-bold text-foreground">{x.t}</p><p className="mt-1 text-xs leading-5 text-muted">{x.d}</p></div>
+                <div key={x.t} className="rounded-xl border border-border bg-surface p-3"><p className="text-sm font-bold text-foreground">{x.t}</p><p className="mt-1 text-xs leading-5 text-muted">{t(x.d)}</p></div>
               ))}
             </div>
           </Card>

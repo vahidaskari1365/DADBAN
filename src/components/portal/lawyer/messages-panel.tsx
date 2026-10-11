@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { formatJalali, formatTime } from "@/lib/money";
+import { useT } from "@/lib/i18n/provider";
 import type { MessageItem } from "./portal-server";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -28,6 +29,7 @@ export function MessagesPanel({
   meName: string;
 }) {
   const router = useRouter();
+  const t = useT();
   const [messages, setMessages] = useState<MessageItem[]>(initialMessages);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
@@ -35,7 +37,7 @@ export function MessagesPanel({
   async function send() {
     const text = body.trim();
     if (text.length < 2) {
-      toast.error("متن پیام را وارد کنید.");
+      toast.error(t("متن پیام را وارد کنید."));
       return;
     }
     setSending(true);
@@ -49,13 +51,13 @@ export function MessagesPanel({
       if (data.ok && data.messages) {
         setMessages(data.messages);
         setBody("");
-        toast.success("پیام ارسال شد.");
+        toast.success(t("پیام ارسال شد."));
         router.refresh();
       } else {
-        toast.error(data.error ?? "ارسال پیام ناموفق بود.");
+        toast.error(data.error ?? t("ارسال پیام ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setSending(false);
     }
@@ -65,14 +67,14 @@ export function MessagesPanel({
     <div>
       <div className="mb-3 flex items-center justify-between gap-2">
         <p className="text-xs text-muted">
-          گفتگو: <b className="text-foreground-soft">{caseLabel}</b>
+          {t("گفتگو:")} <b className="text-foreground-soft">{caseLabel}</b>
         </p>
-        <span className="rounded-full bg-cyan/15 px-2.5 py-1 text-[11px] font-semibold text-[#1d7a8c]">رمزشده</span>
+        <span className="rounded-full bg-cyan/15 px-2.5 py-1 text-[11px] font-semibold text-[#1d7a8c]">{t("رمزشده")}</span>
       </div>
 
       <div className="max-h-96 space-y-3 overflow-y-auto rounded-2xl bg-surface-2/40 p-3">
         {messages.length === 0 && (
-          <p className="p-6 text-center text-sm text-muted">هنوز پیامی رد و بدل نشده است؛ اولین پیام را بفرستید.</p>
+          <p className="p-6 text-center text-sm text-muted">{t("هنوز پیامی رد و بدل نشده است؛ اولین پیام را بفرستید.")}</p>
         )}
         {messages.map((m) => {
           const mine = m.senderName === meName && m.senderRole !== "client";
@@ -84,7 +86,7 @@ export function MessagesPanel({
                 }`}
               >
                 <span className={`mb-1 block text-[10px] font-bold ${mine ? "text-cyan" : "text-accent"}`}>
-                  {ROLE_LABEL[m.senderRole] ?? m.senderRole} · {m.senderName}
+                  {t(ROLE_LABEL[m.senderRole] ?? m.senderRole)} · {m.senderName}
                 </span>
                 {m.body}
               </div>
@@ -98,18 +100,18 @@ export function MessagesPanel({
 
       <div className="mt-3 flex items-end gap-2">
         <label className="flex-1">
-          <span className="sr-only">متن پیام</span>
+          <span className="sr-only">{t("متن پیام")}</span>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={2}
-            placeholder="پیام خود را بنویسید..."
+            placeholder={t("پیام خود را بنویسید...")}
             className="min-h-11 w-full resize-y rounded-xl border border-border bg-surface p-3 text-sm outline-none focus:border-primary/40"
           />
         </label>
         <Button variant="primary" size="md" onClick={() => void send()} disabled={sending} className="shrink-0">
           <Icon name="send" className="h-4 w-4" />
-          {sending ? "..." : "ارسال"}
+          {sending ? "..." : t("ارسال")}
         </Button>
       </div>
     </div>

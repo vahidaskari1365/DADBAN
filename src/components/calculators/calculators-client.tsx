@@ -7,7 +7,7 @@ import { Reveal } from "@/components/reveal";
 import { faNum } from "@/lib/data";
 import { MoneyInput } from "@/components/money-input";
 import type { IconKey } from "@/lib/data";
-import { useT } from "@/lib/i18n/provider";
+import { useT, useLocale } from "@/lib/i18n/provider";
 
 /* ————— داده‌های پیش‌فرض (همه قابل ویرایش توسط کاربر) ————— */
 
@@ -117,6 +117,7 @@ function ApproxBadge({ label }: { label: string }) {
 
 function MahrCalc() {
   const t = useT();
+  const locale = useLocale();
   const [amount, setAmount] = useState("1000000000");
   const [contractYear, setContractYear] = useState(1395);
   const [payYear, setPayYear] = useState(1404);
@@ -172,7 +173,7 @@ function MahrCalc() {
             >
               {MAHR_YEARS.map((y) => (
                 <option key={y} value={y}>
-                  {t("سال")} {faNum(y)}
+                  {t("سال")} {locale === "fa" || locale === "ar" ? faNum(y) : y}
                 </option>
               ))}
             </select>
@@ -189,7 +190,7 @@ function MahrCalc() {
             >
               {MAHR_YEARS.map((y) => (
                 <option key={y} value={y}>
-                  {t("سال")} {faNum(y)}
+                  {t("سال")} {locale === "fa" || locale === "ar" ? faNum(y) : y}
                 </option>
               ))}
             </select>
@@ -233,6 +234,7 @@ function MahrCalc() {
 
 function DiyaCalc() {
   const t = useT();
+  const locale = useLocale();
   const [year, setYear] = useState(1404);
   const [amount, setAmount] = useState(String(DIYA_FULL_RIAL[1404]));
   const [percent, setPercent] = useState("100");
@@ -273,7 +275,7 @@ function DiyaCalc() {
           >
             {DIYA_YEARS.map((y) => (
               <option key={y} value={y}>
-                {t("سال")} {faNum(y)}
+                {t("سال")} {locale === "fa" || locale === "ar" ? faNum(y) : y}
               </option>
             ))}
           </select>
@@ -345,6 +347,7 @@ function DiyaCalc() {
 
 function DelayCalc() {
   const t = useT();
+  const locale = useLocale();
   const [amount, setAmount] = useState(String(DIYA_FULL_RIAL[1404]));
   const [years, setYears] = useState("1");
   const [months, setMonths] = useState("0");
@@ -430,6 +433,7 @@ function DelayCalc() {
 
 function CourtFeeCalc() {
   const t = useT();
+  const locale = useLocale();
   const [kind, setKind] = useState<"mali" | "ghayr">("mali");
   const [claim, setClaim] = useState("100000000");
   const [stage, setStage] = useState<"badavi" | "tajdid" | "fargham">("badavi");
@@ -483,7 +487,7 @@ function CourtFeeCalc() {
                     : "border border-border bg-surface text-foreground-soft hover:bg-surface-2"
                 }`}
               >
-                {k.label}
+                {t(k.label)}
               </button>
             ))}
           </div>
@@ -574,6 +578,7 @@ function CourtFeeCalc() {
 
 function LawyerFeeCalc() {
   const t = useT();
+  const locale = useLocale();
   const [capital, setCapital] = useState("50000000");
   const [fixed1, setFixed1] = useState("300000");
   const [r2, setR2] = useState("6");
@@ -764,6 +769,7 @@ type CalcId = "mahr" | "diya" | "delay" | "court-fee" | "fee-lawyer";
 
 export function CalculatorsClient() {
   const t = useT();
+  const locale = useLocale();
   const [active, setActive] = useState<CalcId>("mahr");
 
   const TABS: { id: CalcId; label: string; icon: IconKey }[] = [

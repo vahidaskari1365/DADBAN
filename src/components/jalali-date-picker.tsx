@@ -8,6 +8,7 @@
 import { useMemo, useState } from "react";
 import { toJalaali, toGregorian, jalaaliMonthLength } from "jalaali-js";
 import { JALALI_MONTHS, toPersianDigits } from "@/lib/jalali";
+import { useT } from "@/lib/i18n/provider";
 
 const WEEKDAY_HEADERS = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
 
@@ -50,6 +51,7 @@ export function JalaliDatePicker({
   maxDaysAhead?: number;
 }) {
   const todayIso = useMemo(() => todayTehranIso(), []);
+  const t = useT();
   const min = minIso && /^\d{4}-\d{2}-\d{2}$/.test(minIso) && minIso > todayIso ? minIso : todayIso;
   const maxIso = useMemo(() => {
     const d = new Date(`${min}T00:00:00Z`);
@@ -105,19 +107,19 @@ export function JalaliDatePicker({
           type="button"
           onClick={() => goMonth(1)}
           disabled={nextDisabled}
-          aria-label="ماه بعد"
+          aria-label={t("ماه بعد")}
           className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
         >
           ‹
         </button>
         <p className="text-sm font-extrabold text-foreground">
-          {JALALI_MONTHS[view.jm - 1]} {toPersianDigits(view.jy)}
+          {t(JALALI_MONTHS[view.jm - 1])} {toPersianDigits(view.jy)}
         </p>
         <button
           type="button"
           onClick={() => goMonth(-1)}
           disabled={prevDisabled}
-          aria-label="ماه قبل"
+          aria-label={t("ماه قبل")}
           className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
         >
           ›
@@ -128,7 +130,7 @@ export function JalaliDatePicker({
       <div className="mt-2 grid grid-cols-7 gap-1">
         {WEEKDAY_HEADERS.map((w) => (
           <span key={w} className="flex h-6 items-center justify-center text-[10px] font-bold text-muted">
-            {w}
+            {t(w)}
           </span>
         ))}
       </div>
@@ -160,7 +162,7 @@ export function JalaliDatePicker({
 
       {/* مقدار انتخاب‌شده */}
       <div className="mt-2 flex items-center justify-between border-t border-border pt-2">
-        <span className="text-[11px] text-muted">{value ? "تاریخ انتخابی:" : "تاریخی انتخاب نشده"}</span>
+        <span className="text-[11px] text-muted">{value ? t("تاریخ انتخابی:") : t("تاریخی انتخاب نشده")}</span>
         <span className="flex items-center gap-2">
           {value && (
             <button
@@ -168,11 +170,11 @@ export function JalaliDatePicker({
               onClick={() => onChange("")}
               className="cursor-pointer text-[11px] font-medium text-danger transition-colors hover:text-danger/80"
             >
-              پاک کردن
+              {t("پاک کردن")}
             </button>
           )}
           <span className="text-xs font-bold text-foreground">
-            {value && selected ? `${toPersianDigits(selected.jd)} ${JALALI_MONTHS[selected.jm - 1]} ${toPersianDigits(selected.jy)}` : "—"}
+            {value && selected ? `${toPersianDigits(selected.jd)} ${t(JALALI_MONTHS[selected.jm - 1])} ${toPersianDigits(selected.jy)}` : "—"}
           </span>
         </span>
       </div>

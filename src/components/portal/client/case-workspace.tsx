@@ -7,6 +7,7 @@ import { Progress, StatusBadge } from "@/components/panel-widgets";
 import type { IconKey } from "@/lib/data";
 import { formatJalaliLong, formatToman, labelStatus, toFa } from "@/lib/money";
 import { nextActionForCase } from "@/lib/case-facts";
+import { useT } from "@/lib/i18n/provider";
 import CaseMessages from "./case-messages";
 import CaseTimeline from "./case-timeline";
 import CasePayments from "./case-payments";
@@ -62,14 +63,15 @@ export default function CaseWorkspace({
 }) {
   const showProposals = proposals.length > 0 && !lawyer;
   const [tab, setTab] = useState<TabKey>(initialTab);
+  const t = useT();
 
   const tabs: { key: TabKey; label: string; icon: IconKey; badge?: number }[] = [
-    { key: "overview", label: "پرونده", icon: "folder" },
-    { key: "timeline", label: "تایم‌لاین", icon: "clock", badge: events.length },
-    { key: "messages", label: "پیام‌ها", icon: "chat", badge: unreadCount },
-    { key: "payments", label: "پرداخت و اقساط", icon: "money", badge: installments.filter((i) => i.status === "pending" || i.status === "late").length },
-    { key: "contract", label: "قرارداد", icon: "stamp" },
-    ...(showProposals ? [{ key: "proposals" as TabKey, label: "پیشنهادها", icon: "mail" as const, badge: proposals.filter((p) => p.status === "pending").length }] : []),
+    { key: "overview", label: t("پرونده"), icon: "folder" },
+    { key: "timeline", label: t("تایم‌لاین"), icon: "clock", badge: events.length },
+    { key: "messages", label: t("پیام‌ها"), icon: "chat", badge: unreadCount },
+    { key: "payments", label: t("پرداخت و اقساط"), icon: "money", badge: installments.filter((i) => i.status === "pending" || i.status === "late").length },
+    { key: "contract", label: t("قرارداد"), icon: "stamp" },
+    ...(showProposals ? [{ key: "proposals" as TabKey, label: t("پیشنهادها"), icon: "mail" as const, badge: proposals.filter((p) => p.status === "pending").length }] : []),
   ];
 
   const caseStatus = labelStatus("case", kase.status);
@@ -85,15 +87,15 @@ export default function CaseWorkspace({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-lg font-extrabold text-foreground">{kase.subject}</h2>
-              <StatusBadge tone={caseStatus.tone}>{caseStatus.label}</StatusBadge>
+              <StatusBadge tone={caseStatus.tone}>{t(caseStatus.label)}</StatusBadge>
               {kase.urgency !== "normal" && (
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${urgency.cls}`}>{urgency.label}</span>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${urgency.cls}`}>{t(urgency.label)}</span>
               )}
             </div>
             <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
               <span dir="ltr" className="font-mono">{kase.caseNumber}</span>
               <span>{kase.city}{kase.province ? ` · ${kase.province}` : ""}</span>
-              {kase.createdAt && <span>ثبت: {formatJalaliLong(kase.createdAt)}</span>}
+              {kase.createdAt && <span>{t("ثبت:")} {formatJalaliLong(kase.createdAt)}</span>}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -101,7 +103,7 @@ export default function CaseWorkspace({
               href="/dashboard/client"
               className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-surface px-3 text-xs font-semibold text-foreground transition-colors hover:bg-surface-2"
             >
-              <Icon name="home" className="h-4 w-4" /> داشبورد موکل
+              <Icon name="home" className="h-4 w-4" /> {t("داشبورد موکل")}
             </Link>
           </div>
         </div>
@@ -109,16 +111,16 @@ export default function CaseWorkspace({
         {/* نوار پیشرفت کلی */}
         <div className="mt-4">
           <div className="mb-1.5 flex items-center justify-between text-xs">
-            <span className="font-semibold text-foreground-soft">پیشرفت کلی پرونده</span>
+            <span className="font-semibold text-foreground-soft">{t("پیشرفت کلی پرونده")}</span>
             <span className="font-extrabold text-accent">{toFa(kase.progress)}٪</span>
           </div>
           <Progress value={kase.progress} />
-          <p className="mt-1.5 text-[11px] text-muted">مرحله فعلی: {kase.stage}</p>
+          <p className="mt-1.5 text-[11px] text-muted">{t("مرحله فعلی:")} {kase.stage}</p>
         </div>
       </div>
 
       {/* تب‌ها — موبایل: اسکرول افقی */}
-      <div role="tablist" aria-label="بخش‌های پرونده" className="-mx-1 overflow-x-auto pb-1">
+      <div role="tablist" aria-label={t("بخش‌های پرونده")} className="-mx-1 overflow-x-auto pb-1">
         <div className="flex min-w-max gap-1.5 rounded-2xl border border-border bg-surface p-1.5 shadow-sm">
           {tabs.map((t) => {
             const active = tab === t.key;
@@ -154,7 +156,7 @@ export default function CaseWorkspace({
               <div className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-accent/30 bg-accent-soft/50 p-4">
                 <div className="min-w-0">
                   <p className="flex items-center gap-1.5 text-xs font-bold text-accent">
-                    <Icon name="bolt" className="h-4 w-4" /> اقدام بعدی
+                    <Icon name="bolt" className="h-4 w-4" /> {t("اقدام بعدی")}
                   </p>
                   <h3 className="mt-1 text-sm font-bold text-foreground">{next.action}</h3>
                   <p className="mt-1 text-xs leading-6 text-foreground-soft">{next.detail}</p>
@@ -164,38 +166,38 @@ export default function CaseWorkspace({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <p className="text-xs text-muted">شرح پرونده</p>
+                <p className="text-xs text-muted">{t("شرح پرونده")}</p>
                 <p className="mt-1 text-sm leading-7 text-foreground-soft">{kase.description}</p>
               </div>
               <div>
-                <p className="text-xs text-muted">تخصص حقوقی</p>
+                <p className="text-xs text-muted">{t("تخصص حقوقی")}</p>
                 <p className="mt-1 flex items-center gap-1.5 text-sm font-bold text-foreground">
                   <Icon name="scale" className="h-4 w-4 text-accent" /> {kase.specialty}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted">شهر / استان</p>
+                <p className="text-xs text-muted">{t("شهر / استان")}</p>
                 <p className="mt-1 flex items-center gap-1.5 text-sm font-bold text-foreground">
                   <Icon name="location" className="h-4 w-4 text-accent" /> {kase.city}
                   {kase.province ? ` — ${kase.province}` : ""}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted">بودجهٔ اعلامی</p>
+                <p className="text-xs text-muted">{t("بودجهٔ اعلامی")}</p>
                 <p className="mt-1 text-sm font-bold text-foreground">{kase.budget ?? "—"}</p>
               </div>
               <div>
-                <p className="text-xs text-muted">مبلغ قرارداد (حق‌الوکالهٔ توافقی)</p>
+                <p className="text-xs text-muted">{t("مبلغ قرارداد (حق‌الوکالهٔ توافقی)")}</p>
                 <p className="dp-money mt-1 text-sm">{formatToman(kase.feeAgreed)}</p>
               </div>
               <div>
-                <p className="text-xs text-muted">وضعیت قرارداد</p>
+                <p className="text-xs text-muted">{t("وضعیت قرارداد")}</p>
                 <p className="mt-1">
-                  <StatusBadge tone={contractStatus.tone}>{contractStatus.label}</StatusBadge>
+                  <StatusBadge tone={contractStatus.tone}>{t(contractStatus.label)}</StatusBadge>
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted">مرحلهٔ رسیدگی</p>
+                <p className="text-xs text-muted">{t("مرحلهٔ رسیدگی")}</p>
                 <p className="mt-1 text-sm font-bold text-foreground">{kase.stage}</p>
               </div>
             </div>
@@ -203,7 +205,7 @@ export default function CaseWorkspace({
             {/* وکیل منتخب */}
             <div className="rounded-2xl border border-border bg-surface-2/30 p-4">
               <p className="flex items-center gap-2 text-xs font-semibold text-muted">
-                <Icon name="gavel" className="h-4 w-4 text-accent" /> وکیل منتخب
+                <Icon name="gavel" className="h-4 w-4 text-accent" /> {t("وکیل منتخب")}
               </p>
               {lawyer ? (
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
@@ -231,14 +233,14 @@ export default function CaseWorkspace({
                     href={`/lawyers/${lawyer.slug}`}
                     className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-surface px-3 text-xs font-semibold text-foreground transition-colors hover:bg-surface-2"
                   >
-                    مشاهده پروفایل
+                    {t("مشاهده پروفایل")}
                     <Icon name="chevron" className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               ) : (
                 <p className="mt-2 flex items-start gap-2 text-xs leading-6 text-muted">
                   <Icon name="clock" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  هنوز وکیل منتخبی تعیین نشده است؛ پیشنهادهای وکلا را در تب «پیشنهادها» مقایسه و یکی را پذیرش کنید.
+                  {t("هنوز وکیل منتخبی تعیین نشده است؛ پیشنهادهای وکلا را در تب «پیشنهادها» مقایسه و یکی را پذیرش کنید.")}
                 </p>
               )}
             </div>

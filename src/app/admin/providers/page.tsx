@@ -9,16 +9,23 @@ import { PageHero } from "@/components/page-hero";
 import { Card, Badge, Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { toFa, shortToman } from "@/lib/money";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 import ProvidersClient from "./providers-client";
 
-export const metadata: Metadata = {
-  title: "تأمین‌کنندگان اعتبار — پنل مدیریت دادپیو",
-  description: "وضعیت اتصال ازکی‌وام و بانک همکار، و پیگیری درخواست‌های تأمین اعتبار حق‌الوکاله.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("تأمین‌کنندگان اعتبار — پنل مدیریت دادپیو"),
+    description: t("وضعیت اتصال ازکی‌وام و بانک همکار، و پیگیری درخواست‌های تأمین اعتبار حق‌الوکاله."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 export default async function AdminProvidersPage() {
   if (!(await isAdmin())) redirect("/admin/login");
+  const t = await getT();
+  const tf = templateT(t);
 
   let rows: {
     id: number;
@@ -64,10 +71,10 @@ export default async function AdminProvidersPage() {
   return (
     <>
       <PageHero
-        badge="Admin · تأمین اعتبار"
-        title="تأمین‌کنندگان اعتبار"
-        desc="وضعیت اتصال تأمین‌کنندگان حق‌الوکاله و پیگیری چرخهٔ درخواست‌های اعتباری موکلان"
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت", href: "/admin" }, { label: "تأمین‌کنندگان" }]}
+        badge={t("Admin · تأمین اعتبار")}
+        title={t("تأمین‌کنندگان اعتبار")}
+        desc={t("وضعیت اتصال تأمین‌کنندگان حق‌الوکاله و پیگیری چرخهٔ درخواست‌های اعتباری موکلان")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("تأمین‌کنندگان") }]}
       />
       <Container className="py-10">
         {/* ---------------- کارت تأمین‌کنندگان ---------------- */}
@@ -79,22 +86,21 @@ export default async function AdminProvidersPage() {
                   <Icon name="bolt" className="h-6 w-6" />
                 </span>
                 <div>
-                  <h2 className="text-base font-extrabold text-foreground">ازکی‌وام</h2>
-                  <p className="mt-0.5 text-xs text-muted">تأمین اعتبار حق‌الوکاله — پرداخت اقساطی</p>
+                  <h2 className="text-base font-extrabold text-foreground">{t("ازکی‌وام")}</h2>
+                  <p className="mt-0.5 text-xs text-muted">{t("تأمین اعتبار حق‌الوکاله — پرداخت اقساطی")}</p>
                 </div>
               </div>
               <Badge tone="success">
                 <span className="ml-1 inline-block h-2 w-2 rounded-full bg-success" />
-                متصل (Adapter)
+                {t("متصل (Adapter)")}
               </Badge>
             </div>
             <p className="mt-4 rounded-xl bg-surface-2/60 p-3.5 text-xs leading-6 text-muted">
-              اتصال در حالت Adapter فعال است؛ نرخ سود، سقف مبلغ و کارمزد در نسخهٔ نهایی از API رسمی تأمین‌کننده
-              خوانده می‌شود. تا آن زمان درخواست‌ها با وضعیت‌های چرخهٔ داخلی (ارسال → اعتبارسنجی → تأیید/رد → واریز) پیگیری می‌شوند.
+              {t("اتصال در حالت Adapter فعال است؛ نرخ سود، سقف مبلغ و کارمزد در نسخهٔ نهایی از API رسمی تأمین‌کننده خوانده می‌شود. تا آن زمان درخواست‌ها با وضعیت‌های چرخهٔ داخلی (ارسال → اعتبارسنجی → تأیید/رد → واریز) پیگیری می‌شوند.")}
             </p>
             <div className="mt-3 flex flex-wrap gap-4 text-xs font-bold text-foreground-soft">
-              <span>درخواست‌های ثبت‌شده: {toFa(azkiCount)}</span>
-              <span>حجم: {shortToman(rows.filter((r) => r.provider === "azki").reduce((s, r) => s + Number(r.amount || 0), 0))}</span>
+              <span>{tf("درخواست‌های ثبت‌شده: {n}", { n: toFa(azkiCount) })}</span>
+              <span>{t("حجم:")} {shortToman(rows.filter((r) => r.provider === "azki").reduce((s, r) => s + Number(r.amount || 0), 0))}</span>
             </div>
           </Card>
 
@@ -105,19 +111,18 @@ export default async function AdminProvidersPage() {
                   <Icon name="landmark" className="h-6 w-6" />
                 </span>
                 <div>
-                  <h2 className="text-base font-extrabold text-foreground">بانک همکار</h2>
-                  <p className="mt-0.5 text-xs text-muted">تسهیل حقوقی و چک صیادی — در حال مذاکره</p>
+                  <h2 className="text-base font-extrabold text-foreground">{t("بانک همکار")}</h2>
+                  <p className="mt-0.5 text-xs text-muted">{t("تسهیل حقوقی و چک صیادی — در حال مذاکره")}</p>
                 </div>
               </div>
               <Badge tone="neutral">Placeholder</Badge>
             </div>
             <p className="mt-4 rounded-xl bg-surface-2/60 p-3.5 text-xs leading-6 text-muted">
-              این اتصال به‌صورت رزرو (Placeholder) نگهداری می‌شود؛ پس از امضای توافق‌نامهٔ بانکی، همان چرخهٔ وضعیت
-              ازکی‌وام برای این تأمین‌کننده نیز فعال خواهد شد و درخواست‌ها به‌صورت موازی ارسال می‌گردند.
+              {t("این اتصال به‌صورت رزرو (Placeholder) نگهداری می‌شود؛ پس از امضای توافق‌نامهٔ بانکی، همان چرخهٔ وضعیت ازکی‌وام برای این تأمین‌کننده نیز فعال خواهد شد و درخواست‌ها به‌صورت موازی ارسال می‌گردند.")}
             </p>
             <div className="mt-3 flex flex-wrap gap-4 text-xs font-bold text-foreground-soft">
-              <span>درخواست‌های ثبت‌شده: {toFa(bankCount)}</span>
-              <span>حجم: {shortToman(rows.filter((r) => r.provider === "partner_bank").reduce((s, r) => s + Number(r.amount || 0), 0))}</span>
+              <span>{tf("درخواست‌های ثبت‌شده: {n}", { n: toFa(bankCount) })}</span>
+              <span>{t("حجم:")} {shortToman(rows.filter((r) => r.provider === "partner_bank").reduce((s, r) => s + Number(r.amount || 0), 0))}</span>
             </div>
           </Card>
         </div>

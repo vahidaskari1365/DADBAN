@@ -31,11 +31,17 @@ export const isLocale = (v: string | undefined | null): v is Locale =>
 
 export const dirFor = (l: Locale): "rtl" | "ltr" => LOCALE_META[l].dir;
 
-/** سازندهٔ تابع ترجمه — روی کلاینت و سرور یکسان کار می‌کند */
+/** سازندهٔ تابع ترجمه — روی کلاینت و سرور یکسان کار می‌کند (تابع پایدار به‌ازای هر زبان) */
+const T_CACHE = new Map<Locale, TFn>();
 export const makeT =
-  (locale: Locale): TFn =>
-  (fa: string) =>
-    locale === "fa" ? fa : (DICTS[locale]?.[fa] ?? fa);
+  (locale: Locale): TFn => {
+    let fn = T_CACHE.get(locale);
+    if (!fn) {
+      fn = (fa: string) => (locale === "fa" ? fa : (DICTS[locale]?.[fa] ?? fa));
+      T_CACHE.set(locale, fn);
+    }
+    return fn;
+  };
 
 export type TTemplateFn = (
   template: string,

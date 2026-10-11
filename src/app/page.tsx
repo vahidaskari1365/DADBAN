@@ -65,7 +65,7 @@ export default async function HomePage() {
       <section className="mt-8" aria-label={t("موضوعات حقوقی پرجستجو")}>
         <Container>
           <p className="sr-only">
-            {t(LEGAL_TOPICS.map((tp) => tp.label).join("، "))}
+            {LEGAL_TOPICS.map((tp) => t(tp.label)).join("، ")}
           </p>
           <div className="relative overflow-hidden rounded-2xl border border-border bg-surface/60 py-1.5 [mask-image:linear-gradient(to_left,transparent,black_10%,black_90%,transparent)]">
             <div aria-hidden="true">

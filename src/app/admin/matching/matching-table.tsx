@@ -6,6 +6,8 @@ import { StatusBadge, Progress } from "@/components/panel-widgets";
 import { Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { labelStatus, toFa, formatJalali } from "@/lib/money";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 export type MatchingRow = {
   id: number;
@@ -39,6 +41,8 @@ type MatchResult = {
  */
 export default function MatchingTable({ rows }: { rows: MatchingRow[] }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [results, setResults] = useState<Record<number, MatchResult | { error: string }>>({});
   const [savingId, setSavingId] = useState<number | null>(null);
@@ -113,28 +117,28 @@ export default function MatchingTable({ rows }: { rows: MatchingRow[] }) {
     <Card hover={false}>
       <h2 className="mb-4 flex items-center gap-2 text-base font-extrabold text-foreground">
         <Icon name="folder" className="h-4.5 w-4.5 text-accent" />
-        پرونده‌های بازار و تحلیل AI
+        {t("پرونده‌های بازار و تحلیل AI")}
       </h2>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[860px] text-right">
           <thead>
             <tr className="border-b border-border">
               <th className={th}>#</th>
-              <th className={th}>پرونده</th>
-              <th className={th}>تخصص</th>
-              <th className={th}>دستهٔ AI</th>
-              <th className={th}>اطمینان</th>
-              <th className={th}>تخمین هزینه</th>
-              <th className={th}>پیشرفت</th>
-              <th className={th}>وضعیت</th>
-              <th className={th}>تحلیل مجدد</th>
+              <th className={th}>{t("پرونده")}</th>
+              <th className={th}>{t("تخصص")}</th>
+              <th className={th}>{t("دستهٔ AI")}</th>
+              <th className={th}>{t("اطمینان")}</th>
+              <th className={th}>{t("تخمین هزینه")}</th>
+              <th className={th}>{t("پیشرفت")}</th>
+              <th className={th}>{t("وضعیت")}</th>
+              <th className={th}>{t("تحلیل مجدد")}</th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
                 <td colSpan={9} className="p-6 text-center text-sm text-muted">
-                  پرونده‌ای ثبت نشده است.
+                  {t("پرونده‌ای ثبت نشده است.")}
                 </td>
               </tr>
             )}
@@ -155,7 +159,7 @@ export default function MatchingTable({ rows }: { rows: MatchingRow[] }) {
                     {row.aiCategory ? (
                       <StatusBadge tone="cyan">{row.aiCategory}</StatusBadge>
                     ) : (
-                      <span className="text-xs text-muted">تحلیل نشده</span>
+                      <span className="text-xs text-muted">{t("تحلیل نشده")}</span>
                     )}
                   </td>
                   <td className={td}>
@@ -171,10 +175,10 @@ export default function MatchingTable({ rows }: { rows: MatchingRow[] }) {
                     <small className="mt-1 block text-[10px] text-muted">{toFa(row.progress)}٪</small>
                   </td>
                   <td className={td}>
-                    <StatusBadge tone={st.tone}>{st.label}</StatusBadge>
+                    <StatusBadge tone={st.tone}>{t(st.label)}</StatusBadge>
                     {row.urgency === "high" && (
                       <div className="mt-1">
-                        <StatusBadge tone="red">فوری</StatusBadge>
+                        <StatusBadge tone="red">{t("فوری")}</StatusBadge>
                       </div>
                     )}
                   </td>
@@ -185,19 +189,19 @@ export default function MatchingTable({ rows }: { rows: MatchingRow[] }) {
                       disabled={busyId === row.id}
                       className="min-h-11 rounded-lg bg-primary-soft px-3 text-xs font-bold text-primary transition-colors hover:bg-primary-soft/70 disabled:opacity-50"
                     >
-                      {busyId === row.id ? "در حال تحلیل…" : "تحلیل مجدد"}
+                      {busyId === row.id ? t("در حال تحلیل…") : t("تحلیل مجدد")}
                     </button>
                     {result && (
                       <div className="mt-2 max-w-[260px] rounded-xl border border-border bg-background p-3">
                         {"error" in result ? (
-                          <p className="text-xs font-bold leading-6 text-danger">{result.error}</p>
+                          <p className="text-xs font-bold leading-6 text-danger">{t(result.error)}</p>
                         ) : (
                           <>
                             <p className="text-xs font-bold text-foreground">
-                              دسته: <span className="text-accent">{result.category}</span> · اطمینان {toFa(result.confidence)}٪
+                              {t("دسته:")} <span className="text-accent">{result.category}</span> · {t("اطمینان")} {toFa(result.confidence)}٪
                             </p>
                             <p className="mt-1 text-[11px] leading-6 text-muted">
-                              {result.summary || "—"} — هزینه: {result.feeRange} — {toFa(result.lawyerCount)} وکیل پیشنهادی
+                              {tf("{s} — هزینه: {fee} — {n} وکیل پیشنهادی", { s: result.summary || "—", fee: result.feeRange, n: toFa(result.lawyerCount) })}
                             </p>
                             <button
                               type="button"
@@ -205,7 +209,7 @@ export default function MatchingTable({ rows }: { rows: MatchingRow[] }) {
                               disabled={savingId === row.id}
                               className="mt-2 min-h-11 w-full rounded-lg bg-success/10 px-3 text-[11px] font-bold text-success transition-colors hover:bg-success/20 disabled:opacity-50"
                             >
-                              {savingId === row.id ? "در حال ذخیره…" : "ذخیرهٔ نتیجه روی پرونده"}
+                              {savingId === row.id ? t("در حال ذخیره…") : t("ذخیرهٔ نتیجه روی پرونده")}
                             </button>
                           </>
                         )}

@@ -6,6 +6,8 @@ import { Card, Button, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { LEGAL_TOPICS, LOCATIONS, faNum } from "@/lib/data";
 import { formatJalaliDateTime } from "@/lib/jalali";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * فرم «همکاری با دادبان» — روی‌بوردینگ وکلای واقعی (/join-as-lawyer).
@@ -49,6 +51,8 @@ type Props = {
 };
 
 export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
+  const t = useT();
+  const tf = templateT(t);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -100,7 +104,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
     e.preventDefault();
     setError(null);
     if (!canSubmit) {
-      setError("لطفاً فیلدهای الزامی را کامل و درست پر کنید و قرارداد همکاری را بپذیرید.");
+      setError(t("لطفاً فیلدهای الزامی را کامل و درست پر کنید و قرارداد همکاری را بپذیرید."));
       return;
     }
     setSending(true);
@@ -124,10 +128,10 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
         }),
       });
       const d = await res.json();
-      if (!d.ok) throw new Error(d.error || "ثبت درخواست انجام نشد؛ دوباره تلاش کنید.");
+      if (!d.ok) throw new Error(d.error || t("ثبت درخواست انجام نشد؛ دوباره تلاش کنید."));
       setDone(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "ثبت درخواست انجام نشد؛ دوباره تلاش کنید.");
+      setError(err instanceof Error ? err.message : t("ثبت درخواست انجام نشد؛ دوباره تلاش کنید."));
     } finally {
       setSending(false);
     }
@@ -140,13 +144,13 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
           <Icon name="badge" className="h-7 w-7" />
         </span>
-        <h2 className="mt-4 text-xl font-extrabold text-foreground">حساب شما از قبل به پروفایل وکیل متصل است</h2>
+        <h2 className="mt-4 text-xl font-extrabold text-foreground">{t("حساب شما از قبل به پروفایل وکیل متصل است")}</h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-muted">
-          برای ویرایش اطلاعات حرفه‌ای، تعرفه‌ها و تخصص‌ها به پنل وکیل بروید.
+          {t("برای ویرایش اطلاعات حرفه‌ای، تعرفه‌ها و تخصص‌ها به پنل وکیل بروید.")}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Button href="/dashboard/lawyer/profile" icon="badge">پروفایل حرفه‌ای من</Button>
-          <Button href="/dashboard/lawyer" variant="outline" icon="home">پنل وکیل</Button>
+          <Button href="/dashboard/lawyer/profile" icon="badge">{t("پروفایل حرفه‌ای من")}</Button>
+          <Button href="/dashboard/lawyer" variant="outline" icon="home">{t("پنل وکیل")}</Button>
         </div>
       </Card>
     );
@@ -164,25 +168,25 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
           <Icon name={approved ? "check" : "clock"} className="h-7 w-7" />
         </span>
         <h2 className="mt-4 text-xl font-extrabold text-foreground">
-          {approved ? "درخواست شما تأیید شد" : "درخواست شما در حال بررسی است"}
+          {approved ? t("درخواست شما تأیید شد") : t("درخواست شما در حال بررسی است")}
         </h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-muted">
           {approved
-            ? "پروفایل وکیل شما فعال شده است؛ برای تنظیم تعرفه‌ها و تخصص‌ها وارد پنل وکیل شوید."
-            : `درخواست شما در ${formatJalaliDateTime(activeRequest.createdAt)} ثبت شده و توسط کارشناسان بررسی می‌شود (۳ تا ۵ روز کاری).`}
+            ? t("پروفایل وکیل شما فعال شده است؛ برای تنظیم تعرفه‌ها و تخصص‌ها وارد پنل وکیل شوید.")
+            : tf("درخواست شما در {d} ثبت شده و توسط کارشناسان بررسی می‌شود (۳ تا ۵ روز کاری).", { d: formatJalaliDateTime(activeRequest.createdAt) })}
         </p>
         {activeRequest.adminNote && (
           <p className="mx-auto mt-3 max-w-md rounded-xl border border-border bg-surface-2/50 p-3 text-xs leading-6 text-foreground-soft">
-            توضیح کارشناس: {activeRequest.adminNote}
+            {tf("توضیح کارشناس: {n}", { n: activeRequest.adminNote })}
           </p>
         )}
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           {approved ? (
-            <Button href="/dashboard/lawyer" icon="home">ورود به پنل وکیل</Button>
+            <Button href="/dashboard/lawyer" icon="home">{t("ورود به پنل وکیل")}</Button>
           ) : (
-            <Button href="/support" variant="outline" icon="shield">تماس با پشتیبانی</Button>
+            <Button href="/support" variant="outline" icon="shield">{t("تماس با پشتیبانی")}</Button>
           )}
-          <Button href="/" variant="ghost">صفحهٔ اصلی</Button>
+          <Button href="/" variant="ghost">{t("صفحهٔ اصلی")}</Button>
         </div>
       </Card>
     );
@@ -195,19 +199,19 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
           <Icon name="check" className="h-7 w-7" />
         </span>
-        <h2 className="mt-4 text-xl font-extrabold text-foreground">درخواست شما ثبت شد</h2>
+        <h2 className="mt-4 text-xl font-extrabold text-foreground">{t("درخواست شما ثبت شد")}</h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-muted">
-          نتیجهٔ بررسی ۳ تا ۵ روز کاری از طریق پنل کاربری یا پشتیبانی به شما اطلاع داده می‌شود.
+          {t("نتیجهٔ بررسی ۳ تا ۵ روز کاری از طریق پنل کاربری یا پشتیبانی به شما اطلاع داده می‌شود.")}
         </p>
         <p className="mx-auto mt-1 max-w-md text-[11px] leading-5 text-muted">
-          شمارهٔ پیگیری شما همان شمارهٔ موبایلی است که در فرم وارد کردید؛ در تماس با پشتیبانی آن را اعلام کنید.
+          {t("شمارهٔ پیگیری شما همان شمارهٔ موبایلی است که در فرم وارد کردید؛ در تماس با پشتیبانی آن را اعلام کنید.")}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Button href="/support" variant="outline" icon="shield">پشتیبانی</Button>
+          <Button href="/support" variant="outline" icon="shield">{t("پشتیبانی")}</Button>
           {loggedIn ? (
-            <Button href="/dashboard/client" icon="home">پنل کاربری</Button>
+            <Button href="/dashboard/client" icon="home">{t("پنل کاربری")}</Button>
           ) : (
-            <Button href="/register" icon="user">ساخت حساب کاربری برای پیگیری</Button>
+            <Button href="/register" icon="user">{t("ساخت حساب کاربری برای پیگیری")}</Button>
           )}
         </div>
       </Card>
@@ -220,34 +224,36 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
         <div className="mb-5 rounded-2xl border border-danger/30 bg-danger/5 p-4" role="status" data-testid="join-rejected-note">
           <p className="flex items-start gap-2 text-xs leading-6 text-danger">
             <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0" />
-            درخواست قبلی شما رد شده است{rejectedRequest.reviewedAt ? ` (${formatJalaliDateTime(rejectedRequest.reviewedAt)})` : ""}.
-            {rejectedRequest.adminNote ? ` توضیح کارشناس: ${rejectedRequest.adminNote}` : ""}
-            {" "}می‌توانید با اصلاح اطلاعات، درخواست جدید ثبت کنید.
+            {t("درخواست قبلی شما رد شده است")}
+            {rejectedRequest.reviewedAt ? ` (${formatJalaliDateTime(rejectedRequest.reviewedAt)})` : ""}.
+            {rejectedRequest.adminNote ? ` ${tf("توضیح کارشناس: {n}", { n: rejectedRequest.adminNote })}` : ""}
+            {" "}
+            {t("می‌توانید با اصلاح اطلاعات، درخواست جدید ثبت کنید.")}
           </p>
         </div>
       )}
 
       <Card hover={false} className="p-6 card-shadow" data-testid="join-form">
-        <h2 className="text-xl font-extrabold text-foreground">فرم درخواست همکاری</h2>
+        <h2 className="text-xl font-extrabold text-foreground">{t("فرم درخواست همکاری")}</h2>
         <p className="mt-1 text-xs leading-6 text-muted">
-          اطلاعات شما محرمانه بررسی می‌شود؛ پس از تأیید کارشناس، پروفایل عمومی وکیل شما ساخته و حساب کاربری‌تان به آن متصل می‌شود.
+          {t("اطلاعات شما محرمانه بررسی می‌شود؛ پس از تأیید کارشناس، پروفایل عمومی وکیل شما ساخته و حساب کاربری‌تان به آن متصل می‌شود.")}
         </p>
 
         {error && (
           <p className="mt-4 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2.5 text-xs font-bold text-danger" role="alert">
-            {error}
+            {t(error)}
           </p>
         )}
 
         <form onSubmit={submit} className="mt-5 space-y-5">
           {/* نام */}
           <div>
-            <label htmlFor="jl-name" className={labelCls}>نام و نام خانوادگی *</label>
+            <label htmlFor="jl-name" className={labelCls}>{t("نام و نام خانوادگی *")}</label>
             <input
               id="jl-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="مثال: سارا محمدی"
+              placeholder={t("مثال: سارا محمدی")}
               className={fieldCls}
               maxLength={120}
               autoComplete="name"
@@ -257,7 +263,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
           {/* موبایل + ایمیل */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="jl-phone" className={labelCls}>شمارهٔ موبایل *</label>
+              <label htmlFor="jl-phone" className={labelCls}>{t("شمارهٔ موبایل *")}</label>
               <input
                 id="jl-phone"
                 value={phone}
@@ -271,12 +277,12 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
                 autoComplete="tel"
               />
               {phone !== "" && !phoneOk && (
-                <p className="mt-1 text-[11px] text-danger">شماره باید به‌صورت ۰۹XXXXXXXXX باشد.</p>
+                <p className="mt-1 text-[11px] text-danger">{t("شماره باید به‌صورت ۰۹XXXXXXXXX باشد.")}</p>
               )}
             </div>
             <div>
               <label htmlFor="jl-email" className={labelCls}>
-                ایمیل <span className="font-normal text-muted">(اختیاری)</span>
+                {t("ایمیل")} <span className="font-normal text-muted">{t("(اختیاری)")}</span>
               </label>
               <input
                 id="jl-email"
@@ -290,7 +296,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
                 autoComplete="email"
               />
               {email !== "" && !emailOk && (
-                <p className="mt-1 text-[11px] text-danger">قالب ایمیل درست نیست.</p>
+                <p className="mt-1 text-[11px] text-danger">{t("قالب ایمیل درست نیست.")}</p>
               )}
             </div>
           </div>
@@ -298,20 +304,20 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
           {/* پروانه + نوع وکالت */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="jl-license" className={labelCls}>شمارهٔ پروانهٔ وکالت *</label>
+              <label htmlFor="jl-license" className={labelCls}>{t("شمارهٔ پروانهٔ وکالت *")}</label>
               <input
                 id="jl-license"
                 value={licenseNo}
                 onChange={(e) => setLicenseNo(e.target.value)}
                 dir="ltr"
-                placeholder="مثال: 12345"
+                placeholder={t("مثال: 12345")}
                 className={`${fieldCls} tnum`}
                 maxLength={60}
               />
             </div>
             <div>
-              <span className={labelCls}>نوع *</span>
-              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="نوع وکالت">
+              <span className={labelCls}>{t("نوع *")}</span>
+              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t("نوع وکالت")}>
                 {(
                   [
                     { value: "wakil", label: "وکیل رسمی", icon: "gavel" as const },
@@ -337,7 +343,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
                         className="sr-only"
                       />
                       <Icon name={opt.icon} className="h-4 w-4" />
-                      {opt.label}
+                      {t(opt.label)}
                     </label>
                   );
                 })}
@@ -348,7 +354,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
           {/* استان + شهر */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="jl-province" className={labelCls}>استان *</label>
+              <label htmlFor="jl-province" className={labelCls}>{t("استان *")}</label>
               <select
                 id="jl-province"
                 value={province}
@@ -358,14 +364,14 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
                 }}
                 className={fieldCls}
               >
-                <option value="">انتخاب استان…</option>
+                <option value="">{t("انتخاب استان…")}</option>
                 {LOCATIONS.map((l) => (
                   <option key={l.province} value={l.province}>{l.province}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label htmlFor="jl-city" className={labelCls}>شهر *</label>
+              <label htmlFor="jl-city" className={labelCls}>{t("شهر *")}</label>
               <select
                 id="jl-city"
                 value={city}
@@ -373,7 +379,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
                 className={fieldCls}
                 disabled={!province}
               >
-                <option value="">{province ? "انتخاب شهر…" : "ابتدا استان را انتخاب کنید"}</option>
+                <option value="">{province ? t("انتخاب شهر…") : t("ابتدا استان را انتخاب کنید")}</option>
                 {cities.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -383,7 +389,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
 
           {/* سابقهٔ کار */}
           <div>
-            <label htmlFor="jl-exp" className={labelCls}>سابقهٔ کار (سال) *</label>
+            <label htmlFor="jl-exp" className={labelCls}>{t("سابقهٔ کار (سال) *")}</label>
             <input
               id="jl-exp"
               value={experienceYears}
@@ -391,19 +397,19 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
               type="text"
               inputMode="numeric"
               dir="ltr"
-              placeholder="مثال: 7"
+              placeholder={t("مثال: 7")}
               className={`${fieldCls} tnum`}
               aria-invalid={experienceYears !== "" && !expOk}
             />
             {experienceYears !== "" && !expOk && (
-              <p className="mt-1 text-[11px] text-danger">سابقه را به عدد سال (۰ تا ۷۰) وارد کنید.</p>
+              <p className="mt-1 text-[11px] text-danger">{t("سابقه را به عدد سال (۰ تا ۷۰) وارد کنید.")}</p>
             )}
           </div>
 
           {/* تخصص‌ها — چیپ چندانتخابی */}
           <fieldset>
             <legend className={labelCls}>
-              تخصص‌ها * <span className="ms-1 font-normal text-muted">(حداکثر {faNum(6)} مورد — انتخاب‌شده: {faNum(specialties.length)})</span>
+              {t("تخصص‌ها")} * <span className="ms-1 font-normal text-muted">{tf("(حداکثر {m} مورد — انتخاب‌شده: {s})", { m: faNum(6), s: faNum(specialties.length) })}</span>
             </legend>
             <div className="flex flex-wrap gap-2">
               {LEGAL_TOPICS.map((topic) => {
@@ -416,7 +422,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
                     onClick={() => toggleSpecialty(topic.label)}
                     aria-pressed={active}
                     disabled={disabled}
-                    title={topic.hint}
+                    title={t(topic.hint)}
                     className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-all ${
                       active
                         ? "border-primary bg-primary text-primary-foreground shadow-sm"
@@ -426,7 +432,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
                     }`}
                   >
                     {active && <Icon name="check" className="h-3.5 w-3.5" />}
-                    {topic.label}
+                    {t(topic.label)}
                   </button>
                 );
               })}
@@ -436,9 +442,9 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
           {/* دربارهٔ من */}
           <div>
             <label htmlFor="jl-bio" className={labelCls}>
-              دربارهٔ من
+              {t("دربارهٔ من")}
               <span className="ms-2 font-normal text-muted">
-                ({faNum(bioLen)}/{faNum(1000)} نویسه)
+                {tf("({n}/{m} نویسه)", { n: faNum(bioLen), m: faNum(1000) })}
               </span>
             </label>
             <textarea
@@ -447,7 +453,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
               onChange={(e) => setBio(e.target.value)}
               rows={4}
               maxLength={1000}
-              placeholder="معرفی کوتاه حرفه‌ای: حوزه‌های تمرکز، سوابق برجسته، زبان‌ها و…"
+              placeholder={t("معرفی کوتاه حرفه‌ای: حوزه‌های تمرکز، سوابق برجسته، زبان‌ها و…")}
               className={`${fieldCls} resize-y leading-7`}
             />
           </div>
@@ -456,14 +462,14 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
           <div className="rounded-2xl border border-border-strong bg-surface-2/40 p-4" data-testid="join-agreement">
             <p className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Icon name="signature" className="h-4.5 w-4.5 text-accent-text" />
-              قرارداد همکاری با دادبان
-              <Badge tone="accent">{AGREEMENT_VERSION_LABEL}</Badge>
+              {t("قرارداد همکاری با دادبان")}
+              <Badge tone="accent">{t(AGREEMENT_VERSION_LABEL)}</Badge>
             </p>
             <ul className="mt-3 space-y-2">
               {AGREEMENT_BULLETS.map((b, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs leading-6 text-foreground-soft">
                   <Icon name="check" className="mt-1 h-3.5 w-3.5 shrink-0 text-success" />
-                  {b}
+                  {t(b)}
                 </li>
               ))}
             </ul>
@@ -476,19 +482,19 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
                 data-testid="agree-check"
                 className="h-5 w-5 shrink-0 accent-[var(--primary)]"
               />
-              شرایط فوق را می‌پذیرم و امضای الکترونیکی می‌نمایم *
+              {t("شرایط فوق را می‌پذیرم و امضای الکترونیکی می‌نمایم *")}
             </label>
             <p className="mt-2 text-[11px] leading-5 text-muted">
-              با ثبت درخواست، زمان پذیرش و نسخهٔ قرارداد ({AGREEMENT_VERSION_LABEL}) به‌صورت تاریخ‌دار در پروندهٔ شما ثبت می‌شود.
+              {tf("با ثبت درخواست، زمان پذیرش و نسخهٔ قرارداد ({v}) به‌صورت تاریخ‌دار در پروندهٔ شما ثبت می‌شود.", { v: AGREEMENT_VERSION_LABEL })}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
             <Button type="submit" disabled={!canSubmit} icon="send" data-testid="join-submit">
-              {sending ? "در حال ارسال…" : "ثبت درخواست همکاری"}
+              {sending ? t("در حال ارسال…") : t("ثبت درخواست همکاری")}
             </Button>
             <Link href="/lawyers" className="text-xs font-bold text-muted transition-colors hover:text-primary">
-              انصراف و مشاهدهٔ وکلای دادبان
+              {t("انصراف و مشاهدهٔ وکلای دادبان")}
             </Link>
           </div>
         </form>

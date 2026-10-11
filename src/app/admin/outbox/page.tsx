@@ -10,11 +10,16 @@ import { Card, Badge, Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { toFa } from "@/lib/money";
 import { formatJalaliDateTime } from "@/lib/jalali";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 
-export const metadata: Metadata = {
-  title: "صندوق خروجی ایمیل — پنل مدیریت دادبان",
-  description: "آرشیو صادقانهٔ ایمیل‌های سامانه (رسید، خوش‌آمد، …) و اعضای خبرنامهٔ دادبان.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("صندوق خروجی ایمیل — پنل مدیریت دادبان"),
+    description: t("آرشیو صادقانهٔ ایمیل‌های سامانه (رسید، خوش‌آمد، …) و اعضای خبرنامهٔ دادبان."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 const KIND_LABELS: Record<string, string> = {
@@ -44,6 +49,8 @@ export default async function AdminOutboxPage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   if (!(await isAdmin())) redirect("/admin/login");
+  const t = await getT();
+  const tf = templateT(t);
   const sp = await searchParams;
   const tab = sp.tab === "newsletter" ? "newsletter" : "outbox";
 
@@ -82,10 +89,10 @@ export default async function AdminOutboxPage({
   return (
     <>
       <PageHero
-        badge="Admin · ایمیل"
-        title="صندوق خروجی ایمیل و خبرنامه"
-        desc="آرشیو صادقانهٔ همهٔ ایمیل‌های سامانه — چه ارسال‌شده، چه ناموفق و چه فقط ثبت‌شده — به‌همراه اعضای خبرنامه"
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت", href: "/admin" }, { label: "صندوق ایمیل" }]}
+        badge={t("Admin · ایمیل")}
+        title={t("صندوق خروجی ایمیل و خبرنامه")}
+        desc={t("آرشیو صادقانهٔ همهٔ ایمیل‌های سامانه — چه ارسال‌شده، چه ناموفق و چه فقط ثبت‌شده — به‌همراه اعضای خبرنامه")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("صندوق ایمیل") }]}
       />
       <Container className="py-10">
         {/* ---------------- بنر صداقت: حالت ثبت (بدون کلید ارسال) ---------------- */}
@@ -97,8 +104,8 @@ export default async function AdminOutboxPage({
           >
             <Icon name="alert" className="mt-1 h-5 w-5 shrink-0" aria-hidden />
             <p>
-              درگاه ایمیل تنظیم نشده؛ ایمیل‌ها فقط ثبت می‌شوند. کلید <span dir="ltr" className="font-bold">RESEND_API_KEY</span> یا{" "}
-              <span dir="ltr" className="font-bold">SMTP_URL</span> را در تنظیمات Vercel اضافه کنید.
+              {t("درگاه ایمیل تنظیم نشده؛ ایمیل‌ها فقط ثبت می‌شوند. کلید")} <span dir="ltr" className="font-bold">RESEND_API_KEY</span> {t("یا")}{" "}
+              <span dir="ltr" className="font-bold">SMTP_URL</span> {t("را در تنظیمات Vercel اضافه کنید.")}
             </p>
           </div>
         )}
@@ -106,10 +113,10 @@ export default async function AdminOutboxPage({
         {/* ---------------- آمار ۳۰ روز اخیر ---------------- */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[
-            { label: "ارسال‌شده (۳۰ روز)", value: stats.sent30, icon: "check" as const, tone: "text-success" },
-            { label: "ناموفق (۳۰ روز)", value: stats.failed30, icon: "alert" as const, tone: "text-danger" },
-            { label: "فقط ثبت‌شده (۳۰ روز)", value: stats.logged30, icon: "clock" as const, tone: "text-accent" },
-            { label: "اعضای خبرنامه", value: stats.subscribers, icon: "mail" as const, tone: "text-foreground" },
+            { label: t("ارسال‌شده (۳۰ روز)"), value: stats.sent30, icon: "check" as const, tone: "text-success" },
+            { label: t("ناموفق (۳۰ روز)"), value: stats.failed30, icon: "alert" as const, tone: "text-danger" },
+            { label: t("فقط ثبت‌شده (۳۰ روز)"), value: stats.logged30, icon: "clock" as const, tone: "text-accent" },
+            { label: t("اعضای خبرنامه"), value: stats.subscribers, icon: "mail" as const, tone: "text-foreground" },
           ].map((s) => (
             <Card key={s.label} hover={false} className="flex items-center gap-3">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
@@ -132,7 +139,7 @@ export default async function AdminOutboxPage({
                 tab === "outbox" ? "bg-primary-soft text-primary" : "text-foreground-soft hover:bg-surface-2"
               }`}
             >
-              صندوق خروجی
+              {t("صندوق خروجی")}
             </a>
             <a
               href={tabHref("newsletter")}
@@ -140,7 +147,7 @@ export default async function AdminOutboxPage({
                 tab === "newsletter" ? "bg-primary-soft text-primary" : "text-foreground-soft hover:bg-surface-2"
               }`}
             >
-              خبرنامه
+              {t("خبرنامه")}
             </a>
           </div>
 
@@ -151,14 +158,14 @@ export default async function AdminOutboxPage({
               className="btn-gold inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 text-sm font-bold"
             >
               <Icon name="file" className="h-4 w-4" aria-hidden />
-              خروجی CSV اعضا
+              {t("خروجی CSV اعضا")}
             </a>
           )}
         </div>
 
         {dbDown && (
           <p className="mt-5 rounded-2xl border border-border bg-surface-2/60 p-4 text-sm text-muted">
-            دیتابیس در دسترس نیست؛ داده‌های ایمیل و خبرنامه موقتاً نمایش داده نمی‌شوند.
+            {t("دیتابیس در دسترس نیست؛ داده‌های ایمیل و خبرنامه موقتاً نمایش داده نمی‌شوند.")}
           </p>
         )}
 
@@ -169,20 +176,20 @@ export default async function AdminOutboxPage({
               <table data-testid="outbox-table" className="w-full min-w-[880px] text-right">
                 <thead>
                   <tr className="border-b border-border text-xs font-bold text-muted">
-                    <th className="p-3">زمان</th>
-                    <th className="p-3">گیرنده</th>
-                    <th className="p-3">نوع</th>
-                    <th className="p-3">موضوع</th>
-                    <th className="p-3">وضعیت</th>
-                    <th className="p-3">سرویس</th>
-                    <th className="p-3">خطا</th>
+                    <th className="p-3">{t("زمان")}</th>
+                    <th className="p-3">{t("گیرنده")}</th>
+                    <th className="p-3">{t("نوع")}</th>
+                    <th className="p-3">{t("موضوع")}</th>
+                    <th className="p-3">{t("وضعیت")}</th>
+                    <th className="p-3">{t("سرویس")}</th>
+                    <th className="p-3">{t("خطا")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {outboxRows.length === 0 && (
                     <tr>
                       <td colSpan={7} className="p-6 text-center text-sm text-muted">
-                        هنوز ایمیلی ثبت نشده است.
+                        {t("هنوز ایمیلی ثبت نشده است.")}
                       </td>
                     </tr>
                   )}
@@ -194,17 +201,17 @@ export default async function AdminOutboxPage({
                         <td className="p-3 text-sm text-foreground" dir="ltr">
                           {r.toEmail}
                         </td>
-                        <td className="whitespace-nowrap p-3 text-sm text-muted">{KIND_LABELS[r.kind] ?? r.kind}</td>
+                        <td className="whitespace-nowrap p-3 text-sm text-muted">{t(KIND_LABELS[r.kind] ?? r.kind)}</td>
                         <td className="max-w-[260px] p-3">
                           <span className="line-clamp-2 text-sm font-bold text-foreground" title={r.subject}>
                             {r.subject}
                           </span>
                         </td>
                         <td className="p-3">
-                          <Badge tone={st.tone}>{st.label}</Badge>
+                          <Badge tone={st.tone}>{t(st.label)}</Badge>
                         </td>
                         <td className="whitespace-nowrap p-3 text-sm text-muted" dir="ltr">
-                          {PROVIDER_LABELS[r.provider] ?? r.provider}
+                          {t(PROVIDER_LABELS[r.provider] ?? r.provider)}
                         </td>
                         <td className="max-w-[200px] p-3">
                           {r.error ? (
@@ -221,14 +228,14 @@ export default async function AdminOutboxPage({
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-xs text-muted">آخرین {toFa(outboxRows.length)} ردیف از صندوق خروجی.</p>
+            <p className="mt-3 text-xs text-muted">{tf("آخرین {n} ردیف از صندوق خروجی.", { n: toFa(outboxRows.length) })}</p>
           </Card>
         ) : (
           <Card hover={false} className="mt-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-base font-extrabold text-foreground">اعضای خبرنامه</h2>
+              <h2 className="text-base font-extrabold text-foreground">{t("اعضای خبرنامه")}</h2>
               <span data-testid="newsletter-count" className="rounded-full bg-primary-soft px-3 py-1 text-sm font-bold text-primary">
-                {toFa(stats.subscribers)} عضو
+                {tf("{n} عضو", { n: toFa(stats.subscribers) })}
               </span>
             </div>
             <div className="mt-4 overflow-x-auto">
@@ -236,16 +243,16 @@ export default async function AdminOutboxPage({
                 <thead>
                   <tr className="border-b border-border text-xs font-bold text-muted">
                     <th className="p-3">#</th>
-                    <th className="p-3">ایمیل</th>
-                    <th className="p-3">وضعیت</th>
-                    <th className="p-3">تاریخ عضویت</th>
+                    <th className="p-3">{t("ایمیل")}</th>
+                    <th className="p-3">{t("وضعیت")}</th>
+                    <th className="p-3">{t("تاریخ عضویت")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {subscribers.length === 0 && (
                     <tr>
                       <td colSpan={4} className="p-6 text-center text-sm text-muted">
-                        هنوز عضوی ثبت نشده است.
+                        {t("هنوز عضوی ثبت نشده است.")}
                       </td>
                     </tr>
                   )}
@@ -256,7 +263,7 @@ export default async function AdminOutboxPage({
                         {s.email}
                       </td>
                       <td className="p-3">
-                        {s.active ? <Badge tone="success">فعال</Badge> : <Badge tone="neutral">غیرفعال</Badge>}
+                        {s.active ? <Badge tone="success">{t("فعال")}</Badge> : <Badge tone="neutral">{t("غیرفعال")}</Badge>}
                       </td>
                       <td className="whitespace-nowrap p-3 text-sm text-muted">{formatJalaliDateTime(s.createdAt)}</td>
                     </tr>
@@ -264,7 +271,7 @@ export default async function AdminOutboxPage({
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-xs text-muted">آخرین {toFa(subscribers.length)} عضو از مجموع {toFa(stats.subscribers)} عضو.</p>
+            <p className="mt-3 text-xs text-muted">{tf("آخرین {n} عضو از مجموع {m} عضو.", { n: toFa(subscribers.length), m: toFa(stats.subscribers) })}</p>
           </Card>
         )}
       </Container>

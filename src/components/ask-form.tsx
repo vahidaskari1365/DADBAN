@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
 
 export function AskForm() {
+  const t = useT();
   const [q, setQ] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -15,7 +17,7 @@ export function AskForm() {
        اعتبارسنجی هنگام submit + خطای درون‌خطی با aria-live */
     if (loading) return;
     if (!q.trim()) {
-      setError("لطفاً ابتدا سؤال خود را بنویسید.");
+      setError(t("لطفاً ابتدا سؤال خود را بنویسید."));
       return;
     }
     setError(null);
@@ -39,10 +41,10 @@ export function AskForm() {
         <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-success/15 text-success">
           <Icon name="check" className="h-6 w-6" />
         </span>
-        <p className="mt-3 text-sm font-bold text-foreground">سؤال شما ثبت شد!</p>
-        <p className="mt-1 text-xs text-muted">پس از بررسی توسط وکلای دادبان، پاسخ منتشر خواهد شد.</p>
+        <p className="mt-3 text-sm font-bold text-foreground">{t("سؤال شما ثبت شد!")}</p>
+        <p className="mt-1 text-xs text-muted">{t("پس از بررسی توسط وکلای دادبان، پاسخ منتشر خواهد شد.")}</p>
         <button onClick={() => setSent(false)} className="mt-3 text-xs font-medium text-primary hover:text-primary-hover">
-          پرسیدن سؤال دیگر
+          {t("پرسیدن سؤال دیگر")}
         </button>
       </div>
     );
@@ -51,10 +53,10 @@ export function AskForm() {
   return (
     <div className="rounded-2xl border border-border bg-surface p-5">
       <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
-        <Icon name="chat" className="h-4 w-4 text-primary" /> سؤال حقوقی خود را بپرسید
+        <Icon name="chat" className="h-4 w-4 text-primary" /> {t("سؤال حقوقی خود را بپرسید")}
       </h3>
-      <p className="mt-1 text-xs text-muted">سؤال شما توسط وکلای متخصص بررسی و پاسخ داده می‌شود.</p>
-      <label htmlFor="ask-question" className="sr-only">متن سؤال حقوقی شما</label>
+      <p className="mt-1 text-xs text-muted">{t("سؤال شما توسط وکلای متخصص بررسی و پاسخ داده می‌شود.")}</p>
+      <label htmlFor="ask-question" className="sr-only">{t("متن سؤال حقوقی شما")}</label>
       <textarea
         id="ask-question"
         value={q}
@@ -63,7 +65,7 @@ export function AskForm() {
           if (error) setError(null);
         }}
         rows={3}
-        placeholder="سؤال خود را بنویسید…"
+        placeholder={t("سؤال خود را بنویسید…")}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? "ask-question-error" : undefined}
         className="mt-3 w-full resize-y rounded-xl border border-border-strong bg-background p-3 text-sm text-foreground outline-none transition-colors focus:border-primary"
@@ -74,7 +76,7 @@ export function AskForm() {
         )}
       </div>
       <Button onClick={submit} disabled={loading} icon="send" className="mt-3 w-full" size="sm">
-        {loading ? "در حال ارسال…" : "ارسال سؤال"}
+        {loading ? t("در حال ارسال…") : t("ارسال سؤال")}
       </Button>
     </div>
   );

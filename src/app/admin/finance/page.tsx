@@ -7,16 +7,21 @@ import { and, asc, count, desc, eq, lt, or, sum } from "drizzle-orm";
 import { isAdmin } from "@/lib/admin-auth";
 import { PageHero } from "@/components/page-hero";
 import { Container } from "@/components/ui";
+import { getT } from "@/lib/i18n/server";
 import FinanceClient from "./finance-client";
 
-export const metadata: Metadata = {
-  title: "مالی، کمیسیون و تسویه — پنل مدیریت دادپیو",
-  description: "حجم پرداخت‌ها، کمیسیون پلتفرم، درخواست‌های برداشت وکلا و اقساط معوق مارکت‌پلیس دادپیو.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("مالی، کمیسیون و تسویه — پنل مدیریت دادپیو"),
+    description: t("حجم پرداخت‌ها، کمیسیون پلتفرم، درخواست‌های برداشت وکلا و اقساط معوق مارکت‌پلیس دادپیو."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 export default async function AdminFinancePage() {
   if (!(await isAdmin())) redirect("/admin/login");
+  const t = await getT();
 
   /* ---------------- دادهٔ مالی (try/catch — بدون دیتابیس هم امن) ---------------- */
   const empty = {
@@ -113,10 +118,10 @@ export default async function AdminFinancePage() {
   return (
     <>
       <PageHero
-        badge="Admin · مالی"
-        title="مالی، کمیسیون و تسویه"
-        desc="حجم پرداخت‌های مارکت‌پلیس، کمیسیون پلتفرم، تسویهٔ وکلا و پیگیری اقساط معوق"
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت", href: "/admin" }, { label: "مالی" }]}
+        badge={t("Admin · مالی")}
+        title={t("مالی، کمیسیون و تسویه")}
+        desc={t("حجم پرداخت‌های مارکت‌پلیس، کمیسیون پلتفرم، تسویهٔ وکلا و پیگیری اقساط معوق")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("مالی") }]}
       />
       <Container className="py-10">
         <FinanceClient {...empty} />

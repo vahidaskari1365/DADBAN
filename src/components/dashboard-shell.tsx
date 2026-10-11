@@ -126,7 +126,7 @@ export async function DashboardShell({
                   >
                     <Icon name={n.icon} className="h-4 w-4" />
                   </span>
-                  {n.label}
+                  {t(n.label)}
                   {n.badge && (
                     <span
                       className={`mr-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${

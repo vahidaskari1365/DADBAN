@@ -9,6 +9,7 @@ import { ReferForm } from "@/components/lawyer/refer-form";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
 import Link from "next/link";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default async function ReferPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const t = await getT();
 
   const user = await getCurrentUser();
   if (!user) redirect(`/login?redirect=/lawyers/${encodeURIComponent(slug)}/refer`);
@@ -54,16 +56,16 @@ export default async function ReferPage({
   return (
     <Container className="py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted" aria-label="مسیر صفحه">
-          <Link href="/dashboard/lawyer" className="hover:text-primary">پنل وکیل</Link>
+        <nav className="flex flex-wrap items-center gap-1.5 text-xs text-muted" aria-label={t("مسیر صفحه")}>
+          <Link href="/dashboard/lawyer" className="hover:text-primary">{t("پنل وکیل")}</Link>
           <span aria-hidden>/</span>
-          <Link href="/lawyers" className="hover:text-primary">دایرکتوری همکاران</Link>
+          <Link href="/lawyers" className="hover:text-primary">{t("دایرکتوری همکاران")}</Link>
           <span aria-hidden>/</span>
           <Link href={`/lawyers/${target.slug}`} className="hover:text-primary">{target.name}</Link>
           <span aria-hidden>/</span>
-          <span className="text-foreground-soft">درخواست همکاری</span>
+          <span className="text-foreground-soft">{t("درخواست همکاری")}</span>
         </nav>
-        <BackButton variant="bar" label="بازگشت به پروفایل همکار" fallback={`/lawyers/${target.slug}`} />
+        <BackButton variant="bar" label={t("بازگشت به پروفایل همکار")} fallback={`/lawyers/${target.slug}`} />
       </div>
 
       <div className="mt-6">

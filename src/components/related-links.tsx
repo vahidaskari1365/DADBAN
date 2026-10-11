@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { INTERNAL_LINK_MAP } from "@/lib/keywords";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * Internal Linking خودکار — یک بلوک «لینک‌های مرتبط» تولید می‌کند.
@@ -41,6 +42,7 @@ function inferGroup(href: string): string {
 }
 
 export function RelatedLinks({ pathname }: { pathname: string }) {
+  const t = useT();
   const links = useMemo<LinkItem[]>(() => {
     const matches = INTERNAL_LINK_MAP.filter((l) => l.from === pathname);
     // برای مسیرهای داینامیک (مثل /lawyers/[slug])، تطبیق prefix
@@ -68,15 +70,15 @@ export function RelatedLinks({ pathname }: { pathname: string }) {
   const groups = groupLinks(links);
 
   return (
-    <nav aria-label="لینک‌های مرتبط" className="mt-12 rounded-2xl border border-border bg-surface p-5 sm:p-6">
-      <h2 className="text-base font-bold text-foreground sm:text-lg">صفحات مرتبط</h2>
+    <nav aria-label={t("لینک‌های مرتبط")} className="mt-12 rounded-2xl border border-border bg-surface p-5 sm:p-6">
+      <h2 className="text-base font-bold text-foreground sm:text-lg">{t("صفحات مرتبط")}</h2>
       <p className="mt-1 text-xs text-muted">
-        برای رفتن به بخش‌های مرتبط، روی لینک‌های زیر کلیک کنید.
+        {t("برای رفتن به بخش‌های مرتبط، روی لینک‌های زیر کلیک کنید.")}
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {groups.map((group) => (
           <div key={group.title}>
-            <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-accent-text">{group.title}</h3>
+            <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-accent-text">{t(group.title)}</h3>
             <ul className="space-y-1.5">
               {group.items.map((link) => (
                 <li key={link.href}>

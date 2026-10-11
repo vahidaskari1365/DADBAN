@@ -9,6 +9,8 @@ import { FREE_LLM_PROVIDERS, FREE_LLM_UPDATED } from "@/data/free-llm-providers"
 import type { FreeLlmProvider } from "@/data/free-llm-providers";
 import { AGENT_SKILLS } from "@/data/agent-skills";
 import { AI_ACADEMY, ACADEMY_TRACKS, AGENT_SECURITY_CHECKLIST, GATEWAY_TIERS } from "@/data/ai-resources";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /* ============================================================
    جعبه‌ابزار منبع‌باز دادبان — پنج ابزار زنده:
@@ -49,6 +51,8 @@ function Scroll({ children, className = "" }: { children: React.ReactNode; class
 /* ─── ۱) کاتالوگ APIهای رایگان ─────────────────────────────────────────── */
 
 function LlmCatalog() {
+  const t = useT();
+  const tf = templateT(t);
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<"all" | "provider_api" | "inference_provider">("all");
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -83,26 +87,33 @@ function LlmCatalog() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="جستجوی تأمین‌کننده یا مدل… (مثلاً Cohere، llama، gemma)"
-            aria-label="جستجو در کاتالوگ APIهای رایگان"
+            placeholder={t("جستجوی تأمین‌کننده یا مدل… (مثلاً Cohere، llama، gemma)")}
+            aria-label={t("جستجو در کاتالوگ APIهای رایگان")}
             className="h-11 w-full rounded-xl border border-border bg-surface pr-10 pl-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
           />
         </div>
-        <div className="flex gap-2" role="group" aria-label="دسته‌بندی تأمین‌کنندگان">
-          {([["all", "همه"], ["provider_api", "تأمین‌کننده اصلی"], ["inference_provider", "واسط استنتاج"]] as const).map(([k, l]) => (
-            <button
-              key={k}
-              onClick={() => setCat(k)}
-              className={`h-11 cursor-pointer rounded-xl border px-3.5 text-xs font-bold transition-colors ${cat === k ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface text-muted hover:text-foreground"}`}
-            >
-              {l}
-            </button>
-          ))}
+        <div className="flex gap-2" role="group" aria-label={t("دسته‌بندی تأمین‌کنندگان")}>
+          {(["all", "provider_api", "inference_provider"] as const).map((k) => {
+            const l = k === "all" ? t("همه") : k === "provider_api" ? t("تأمین‌کننده اصلی") : t("واسط استنتاج");
+            return (
+              <button
+                key={k}
+                onClick={() => setCat(k)}
+                className={`h-11 cursor-pointer rounded-xl border px-3.5 text-xs font-bold transition-colors ${cat === k ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface text-muted hover:text-foreground"}`}
+              >
+                {l}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       <p className="text-xs text-muted">
-        {faNum(filtered.length)} تأمین‌کننده · {faNum(filtered.reduce((a, p) => a + p.models.length, 0))} مدل — داده‌ها از awesome-free-llm-apis (به‌روزرسانی منبع: {faNum(FREE_LLM_UPDATED.replace(/-/g, "/"))})
+        {tf("{n} تأمین‌کننده · {m} مدل — داده‌ها از awesome-free-llm-apis (به‌روزرسانی منبع: {d})", {
+          n: faNum(filtered.length),
+          m: faNum(filtered.reduce((a, p) => a + p.models.length, 0)),
+          d: faNum(FREE_LLM_UPDATED.replace(/-/g, "/")),
+        })}
       </p>
 
       <div className="mt-3 grid min-w-0 gap-3 lg:grid-cols-2">
@@ -110,12 +121,14 @@ function LlmCatalog() {
           <ProviderCard key={p.name} p={p} open={open.has(p.name)} onToggle={() => toggle(p.name)} />
         ))}
       </div>
-      {filtered.length === 0 && <p className="rounded-xl bg-surface-2 p-6 text-center text-sm text-muted">نتیجه‌ای یافت نشد — عبارت دیگری را امتحان کنید.</p>}
+      {filtered.length === 0 && <p className="rounded-xl bg-surface-2 p-6 text-center text-sm text-muted">{t("نتیجه‌ای یافت نشد — عبارت دیگری را امتحان کنید.")}</p>}
     </div>
   );
 }
 
 function ProviderCard({ p, open, onToggle }: { p: FreeLlmProvider; open: boolean; onToggle: () => void }) {
+  const t = useT();
+  const tf = templateT(t);
   return (
     <Card className="flex min-w-0 flex-col !p-4" hover={false}>
       <div className="flex items-start justify-between gap-2">
@@ -126,15 +139,15 @@ function ProviderCard({ p, open, onToggle }: { p: FreeLlmProvider; open: boolean
           </h4>
           <p className="mt-1 line-clamp-2 text-xs leading-6 text-muted" dir="ltr">{p.description}</p>
         </div>
-        <Badge tone="primary">{faNum(p.models.length)} مدل</Badge>
+        <Badge tone="primary">{tf("{n} مدل", { n: faNum(p.models.length) })}</Badge>
       </div>
       <p className="mt-2 truncate rounded-lg bg-surface-2 px-2 py-1.5 text-[11px] text-muted-soft" dir="ltr" title={p.baseUrl}>{p.baseUrl}</p>
       <div className="mt-3 flex items-center gap-2">
         <Button variant="soft" size="sm" onClick={onToggle} icon={open ? "chevron" : "plus"}>
-          {open ? "بستن جدول مدل‌ها" : "جدول مدل‌ها"}
+          {open ? t("بستن جدول مدل‌ها") : t("جدول مدل‌ها")}
         </Button>
         <a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-xl px-3.5 text-sm font-semibold text-primary hover:bg-primary-soft">
-          دریافت کلید <Icon name="arrow" className="h-3.5 w-3.5" />
+          {t("دریافت کلید")} <Icon name="arrow" className="h-3.5 w-3.5" />
         </a>
       </div>
       {open && (
@@ -142,10 +155,10 @@ function ProviderCard({ p, open, onToggle }: { p: FreeLlmProvider; open: boolean
           <table className="w-full min-w-[480px] border-collapse text-xs">
             <thead>
               <tr className="bg-surface-2 text-muted-soft">
-                <th className="p-2 text-start font-bold">مدل</th>
-                <th className="p-2 text-start font-bold">کانتکست</th>
-                <th className="p-2 text-start font-bold">خروجی</th>
-                <th className="p-2 text-start font-bold">سقف نرخ</th>
+                <th className="p-2 text-start font-bold">{t("مدل")}</th>
+                <th className="p-2 text-start font-bold">{t("کانتکست")}</th>
+                <th className="p-2 text-start font-bold">{t("خروجی")}</th>
+                <th className="p-2 text-start font-bold">{t("سقف نرخ")}</th>
               </tr>
             </thead>
             <tbody>
@@ -177,6 +190,8 @@ function WebTools() {
 }
 
 function PageReader() {
+  const t = useT();
+  const tf = templateT(t);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -193,9 +208,9 @@ function PageReader() {
       });
       const data = await res.json();
       if (data?.ok) setResult({ title: data.title, text: data.text, chars: data.chars, publishedTime: data.publishedTime });
-      else setError(data?.error ?? "خواندن صفحه ناموفق بود.");
+      else setError(data?.error ?? t("خواندن صفحه ناموفق بود."));
     } catch {
-      setError("ارتباط با سرور برقرار نشد.");
+      setError(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setLoading(false);
     }
@@ -205,9 +220,9 @@ function PageReader() {
     <Card className="flex min-w-0 flex-col" hover={false}>
       <h4 className="flex items-center gap-2 font-bold text-foreground">
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-soft text-primary"><Icon name="search" className="h-4 w-4" /></span>
-        خواندن صفحه وب
+        {t("خواندن صفحه وب")}
       </h4>
-      <p className="mt-2 text-xs leading-6 text-muted">آدرس هر صفحه‌ای را بدهید؛ متن اصلی، عنوان و تاریخ انتشار استخراج می‌شود (الهام از Agent-Reach).</p>
+      <p className="mt-2 text-xs leading-6 text-muted">{t("آدرس هر صفحه‌ای را بدهید؛ متن اصلی، عنوان و تاریخ انتشار استخراج می‌شود (الهام از Agent-Reach).")}</p>
       <div className="mt-3 flex gap-2">
         <input
           value={url}
@@ -215,10 +230,10 @@ function PageReader() {
           onKeyDown={(e) => { if (e.key === "Enter") void read(); }}
           placeholder="https://example.com/article"
           dir="ltr"
-          aria-label="آدرس صفحه برای خواندن"
+          aria-label={t("آدرس صفحه برای خواندن")}
           className="h-11 flex-1 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
         />
-        <Button onClick={() => void read()} disabled={loading || !url.trim()}>{loading ? "…" : "بخوان"}</Button>
+        <Button onClick={() => void read()} disabled={loading || !url.trim()}>{loading ? "…" : t("بخوان")}</Button>
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {["https://fa.wikipedia.org/wiki/حقوق_ایران", "https://www.rokna.ir/"].map((u) => (
@@ -228,15 +243,15 @@ function PageReader() {
         ))}
       </div>
       {error && <p className="mt-3 rounded-xl bg-danger/10 p-3 text-sm text-danger">{error}</p>}
-      {loading && <div className="mt-4"><Spinner label="در حال خواندن صفحه…" /></div>}
+      {loading && <div className="mt-4"><Spinner label={t("در حال خواندن صفحه…")} /></div>}
       {result && !loading && (
         <div className="mt-4 space-y-2">
           <p className="font-bold text-foreground">{result.title}</p>
-          {result.publishedTime && <p className="text-xs text-muted">انتشار: {result.publishedTime}</p>}
+          {result.publishedTime && <p className="text-xs text-muted">{tf("انتشار: {d}", { d: result.publishedTime })}</p>}
           <Scroll>
             <p className="whitespace-pre-wrap text-xs leading-6 text-foreground-soft">{result.text}</p>
           </Scroll>
-          <p className="text-[11px] text-muted-soft">{faNum(result.chars)} نویسه استخراج شد (نمایش تا ۱۲٬۰۰۰ نویسه).</p>
+          <p className="text-[11px] text-muted-soft">{tf("{n} نویسه استخراج شد (نمایش تا ۱۲٬۰۰۰ نویسه).", { n: faNum(result.chars) })}</p>
         </div>
       )}
     </Card>
@@ -250,6 +265,8 @@ interface RepoInfo {
 }
 
 function RepoAnalyzer() {
+  const t = useT();
+  const tf = templateT(t);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -267,9 +284,9 @@ function RepoAnalyzer() {
       });
       const data = await res.json();
       if (data?.ok) { setRepo(data.repo); setReadme(data.readmeExcerpt ?? ""); }
-      else setError(data?.error ?? "تحلیل مخزن ناموفق بود.");
+      else setError(data?.error ?? t("تحلیل مخزن ناموفق بود."));
     } catch {
-      setError("ارتباط با سرور برقرار نشد.");
+      setError(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setLoading(false);
     }
@@ -279,9 +296,9 @@ function RepoAnalyzer() {
     <Card className="flex min-w-0 flex-col" hover={false}>
       <h4 className="flex items-center gap-2 font-bold text-foreground">
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-soft text-primary"><Icon name="folder" className="h-4 w-4" /></span>
-        تحلیل مخزن گیت‌هاب
+        {t("تحلیل مخزن گیت‌هاب")}
       </h4>
-      <p className="mt-2 text-xs leading-6 text-muted">آدرس هر مخزن عمومی را بدهید؛ ستاره، فورک، زبان، موضوعات و گزیده‌ی README استخراج می‌شود.</p>
+      <p className="mt-2 text-xs leading-6 text-muted">{t("آدرس هر مخزن عمومی را بدهید؛ ستاره، فورک، زبان، موضوعات و گزیده‌ی README استخراج می‌شود.")}</p>
       <div className="mt-3 flex gap-2">
         <input
           value={url}
@@ -289,10 +306,10 @@ function RepoAnalyzer() {
           onKeyDown={(e) => { if (e.key === "Enter") void analyze(); }}
           placeholder="https://github.com/owner/repo"
           dir="ltr"
-          aria-label="آدرس مخزن گیت‌هاب"
+          aria-label={t("آدرس مخزن گیت‌هاب")}
           className="h-11 flex-1 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
         />
-        <Button onClick={() => void analyze()} disabled={loading || !url.trim()}>{loading ? "…" : "تحلیل"}</Button>
+        <Button onClick={() => void analyze()} disabled={loading || !url.trim()}>{loading ? "…" : t("تحلیل")}</Button>
       </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {["diegosouzapw/OmniRoute", "Panniantong/Agent-Reach", "patchy631/ai-engineering-hub"].map((r) => (
@@ -302,7 +319,7 @@ function RepoAnalyzer() {
         ))}
       </div>
       {error && <p className="mt-3 rounded-xl bg-danger/10 p-3 text-sm text-danger">{error}</p>}
-      {loading && <div className="mt-4"><Spinner label="در حال پرس‌وجو از گیت‌هاب…" /></div>}
+      {loading && <div className="mt-4"><Spinner label={t("در حال پرس‌وجو از گیت‌هاب…")} /></div>}
       {repo && !loading && (
         <div className="mt-4 space-y-3">
           <div>
@@ -311,10 +328,10 @@ function RepoAnalyzer() {
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
-              { l: "ستاره", v: repo.stars || "—", i: "star" as IconKey, raw: false },
-              { l: "فورک", v: repo.forks || "—", i: "folder" as IconKey, raw: false },
-              { l: "زبان اصلی", v: repo.language, i: "document" as IconKey, raw: true },
-              { l: "مجوز", v: repo.license || "—", i: "shield" as IconKey, raw: true },
+              { l: t("ستاره"), v: repo.stars || "—", i: "star" as IconKey, raw: false },
+              { l: t("فورک"), v: repo.forks || "—", i: "folder" as IconKey, raw: false },
+              { l: t("زبان اصلی"), v: repo.language, i: "document" as IconKey, raw: true },
+              { l: t("مجوز"), v: repo.license || "—", i: "shield" as IconKey, raw: true },
             ].map((s) => (
               <div key={s.l} className="rounded-xl border border-border bg-surface-2/60 p-2.5 text-center">
                 <Icon name={s.i} className="mx-auto h-4 w-4 text-primary" />
@@ -335,13 +352,13 @@ function RepoAnalyzer() {
           )}
           {repo.homepage && (
             <p className="text-[11px] text-muted-soft">
-              وب‌سایت: <a href={repo.homepage} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline" dir="ltr">{repo.homepage}</a>
+              {t("وب‌سایت:")} <a href={repo.homepage} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline" dir="ltr">{repo.homepage}</a>
             </p>
           )}
           <p className="text-[11px] text-muted-soft">
-            منبع داده: <span dir="ltr">{repo.source === "api" ? "GitHub REST API" : "HTML scrape fallback"}</span>
-            {repo.openIssues != null && <> · ایسیوهای باز: {faNum(repo.openIssues.toLocaleString("en-US"))}</>}
-            {repo.pushedAt && <> · آخرین پوش: <span dir="ltr">{repo.pushedAt}</span></>}
+            {t("منبع داده:")} <span dir="ltr">{repo.source === "api" ? "GitHub REST API" : "HTML scrape fallback"}</span>
+            {repo.openIssues != null && <> · {tf("ایسیوهای باز: {n}", { n: faNum(repo.openIssues.toLocaleString("en-US")) })}</>}
+            {repo.pushedAt && <> · {tf("آخرین پوش: {d}", { d: repo.pushedAt })}</>}
           </p>
           {readme && (
             <Scroll>
@@ -357,6 +374,8 @@ function RepoAnalyzer() {
 /* ─── ۳) کتابخانه مهارت‌های عامل ───────────────────────────────────────── */
 
 function SkillsLibrary() {
+  const t = useT();
+  const tf = templateT(t);
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState("همه");
   const cats = ["همه", "مهندسی", "بهره‌وری", "متفرقه"];
@@ -378,30 +397,30 @@ function SkillsLibrary() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="جستجوی مهارت… (مثلاً tdd، code-review، teach)"
-            aria-label="جستجو در مهارت‌ها"
+            placeholder={t("جستجوی مهارت… (مثلاً tdd، code-review، teach)")}
+            aria-label={t("جستجو در مهارت‌ها")}
             className="h-11 w-full rounded-xl border border-border bg-surface pr-10 pl-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-soft focus:border-primary"
           />
         </div>
-        <div className="flex gap-2" role="group" aria-label="دسته‌بندی مهارت‌ها">
+        <div className="flex gap-2" role="group" aria-label={t("دسته‌بندی مهارت‌ها")}>
           {cats.map((c) => (
             <button
               key={c}
               onClick={() => setCat(c)}
               className={`h-11 cursor-pointer rounded-xl border px-3.5 text-xs font-bold transition-colors ${cat === c ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface text-muted hover:text-foreground"}`}
             >
-              {c}
+              {t(c)}
             </button>
           ))}
         </div>
       </div>
-      <p className="text-xs text-muted">{faNum(filtered.length)} مهارت از مخزن mattpocock/skills — عامل‌ها این مهارت‌ها را در لحظه فراخوانی می‌کنند.</p>
+      <p className="text-xs text-muted">{tf("{n} مهارت از مخزن mattpocock/skills — عامل‌ها این مهارت‌ها را در لحظه فراخوانی می‌کنند.", { n: faNum(filtered.length) })}</p>
       <div className="scrollbar-thin grid max-h-[32rem] gap-3 overflow-y-auto pl-1 sm:grid-cols-2" style={{ scrollbarWidth: "thin" }}>
         {filtered.map((s) => (
           <Card key={s.slug} className="!p-4">
             <div className="flex items-center justify-between gap-2">
               <h4 className="font-bold text-foreground" dir="ltr">{s.slug}</h4>
-              <Badge tone="primary">{s.category}</Badge>
+              <Badge tone="primary">{t(s.category)}</Badge>
             </div>
             <p className="mt-2 text-xs leading-6 text-muted" dir="ltr">{s.description}</p>
             <a
@@ -410,12 +429,12 @@ function SkillsLibrary() {
               rel="noopener noreferrer"
               className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
             >
-              مشاهده SKILL.md <Icon name="arrow" className="h-3 w-3" />
+              {t("مشاهده SKILL.md")} <Icon name="arrow" className="h-3 w-3" />
             </a>
           </Card>
         ))}
       </div>
-      {filtered.length === 0 && <p className="rounded-xl bg-surface-2 p-6 text-center text-sm text-muted">مهارتی با این عبارت پیدا نشد.</p>}
+      {filtered.length === 0 && <p className="rounded-xl bg-surface-2 p-6 text-center text-sm text-muted">{t("مهارتی با این عبارت پیدا نشد.")}</p>}
     </div>
   );
 }
@@ -423,23 +442,25 @@ function SkillsLibrary() {
 /* ─── ۴) آکادمی مهندسی AI ──────────────────────────────────────────────── */
 
 function Academy() {
+  const t = useT();
+  const tf = templateT(t);
   const [track, setTrack] = useState<(typeof ACADEMY_TRACKS)[number]["key"]>("all");
   const filtered = track === "all" ? AI_ACADEMY : AI_ACADEMY.filter((a) => a.track === track);
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="مسیرهای آموزشی">
-        {ACADEMY_TRACKS.map((t) => (
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t("مسیرهای آموزشی")}>
+        {ACADEMY_TRACKS.map((tk) => (
           <button
-            key={t.key}
-            onClick={() => setTrack(t.key)}
-            className={`h-10 cursor-pointer rounded-xl border px-3.5 text-xs font-bold transition-colors ${track === t.key ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface text-muted hover:text-foreground"}`}
+            key={tk.key}
+            onClick={() => setTrack(tk.key)}
+            className={`h-10 cursor-pointer rounded-xl border px-3.5 text-xs font-bold transition-colors ${track === tk.key ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface text-muted hover:text-foreground"}`}
           >
-            {t.label}
+            {t(tk.label)}
           </button>
         ))}
       </div>
-      <p className="text-xs text-muted">{faNum(filtered.length)} پروژه‌ی منتخب از مخزن patchy631/ai-engineering-hub (بیش از ۱۱۰ پروژه) — هر پروژه شامل نوت‌بوک و کد اجرایی است.</p>
+      <p className="text-xs text-muted">{tf("{n} پروژه‌ی منتخب از مخزن patchy631/ai-engineering-hub (بیش از ۱۱۰ پروژه) — هر پروژه شامل نوت‌بوک و کد اجرایی است.", { n: faNum(filtered.length) })}</p>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((a) => (
           <a
@@ -449,8 +470,8 @@ function Academy() {
             rel="noopener noreferrer"
             className="group rounded-2xl border border-border bg-surface p-4 transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-[var(--shadow-lift)]"
           >
-            <h4 className="font-bold text-foreground">{a.faTitle}</h4>
-            <p className="mt-1.5 text-xs leading-6 text-muted">{a.faDesc}</p>
+            <h4 className="font-bold text-foreground">{t(a.faTitle)}</h4>
+            <p className="mt-1.5 text-xs leading-6 text-muted">{t(a.faDesc)}</p>
             <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-primary" dir="ltr">
               {a.slug} <Icon name="arrow" className="h-3 w-3" />
             </span>
@@ -471,6 +492,8 @@ interface HealthResult {
 }
 
 function InfraTools() {
+  const t = useT();
+  const tf = templateT(t);
   const [testing, setTesting] = useState(false);
   const [health, setHealth] = useState<HealthResult | null>(null);
   const [checked, setChecked] = useState<Set<string>>(new Set());
@@ -482,9 +505,9 @@ function InfraTools() {
       const res = await fetch("/api/ai/resources/gateway-health", { method: "POST" });
       const data = await res.json();
       if (data?.ok) setHealth(data);
-      else setHealth({ healthy: false, latencyMs: 0, message: "تست سلامت ناموفق بود.", tiers: [] });
+      else setHealth({ healthy: false, latencyMs: 0, message: t("تست سلامت ناموفق بود."), tiers: [] });
     } catch {
-      setHealth({ healthy: false, latencyMs: 0, message: "ارتباط با سرور برقرار نشد.", tiers: [] });
+      setHealth({ healthy: false, latencyMs: 0, message: t("ارتباط با سرور برقرار نشد."), tiers: [] });
     } finally {
       setTesting(false);
     }
@@ -507,34 +530,34 @@ function InfraTools() {
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h4 className="font-bold text-foreground">زنجیره‌ی مسیریابی دادبان</h4>
-            <p className="mt-1 text-xs leading-6 text-muted">الهام از OmniRoute: اگر طبقه‌ی بالادستی در دسترس نباشد، درخواست به‌طور خودکار به طبقه‌ی بعدی می‌رود.</p>
+            <h4 className="font-bold text-foreground">{t("زنجیره‌ی مسیریابی دادبان")}</h4>
+            <p className="mt-1 text-xs leading-6 text-muted">{t("الهام از OmniRoute: اگر طبقه‌ی بالادستی در دسترس نباشد، درخواست به‌طور خودکار به طبقه‌ی بعدی می‌رود.")}</p>
           </div>
           <Button onClick={() => void runHealth()} disabled={testing} icon="bolt" size="sm">
-            {testing ? "در حال تست…" : "تست سلامت دروازه"}
+            {testing ? t("در حال تست…") : t("تست سلامت دروازه")}
           </Button>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {GATEWAY_TIERS.map((t) => {
-            const active = health?.tiers?.find((x) => x.tier === t.tier)?.active ?? (t.needsKey ? null : true);
+          {GATEWAY_TIERS.map((tier) => {
+            const active = health?.tiers?.find((x) => x.tier === tier.tier)?.active ?? (tier.needsKey ? null : true);
             return (
-              <Card key={t.tier} className="!p-4" hover={false}>
+              <Card key={tier.tier} className="!p-4" hover={false}>
                 <div className="flex items-center justify-between">
-                  <Badge tone="primary">طبقه {faNum(t.tier)}</Badge>
+                  <Badge tone="primary">{tf("طبقه {n}", { n: faNum(tier.tier) })}</Badge>
                   <span
                     aria-hidden
                     className={`h-2.5 w-2.5 rounded-full ${active === null ? "bg-border-strong" : active ? "bg-[color-mix(in_oklab,var(--success)_70%,transparent)]" : "bg-danger/60"}`}
-                    title={active === null ? "نامشخص" : active ? "فعال" : "غیرفعال (کلید تنظیم نشده)"}
+                    title={active === null ? t("نامشخص") : active ? t("فعال") : t("غیرفعال (کلید تنظیم نشده)")}
                   />
                 </div>
-                <h5 className="mt-2.5 font-bold text-foreground" dir="ltr">{t.name}</h5>
-                <p className="text-[11px] text-primary" dir="ltr">{t.provider}</p>
-                <p className="mt-2 text-xs leading-6 text-muted">{t.desc}</p>
+                <h5 className="mt-2.5 font-bold text-foreground" dir="ltr">{t(tier.name)}</h5>
+                <p className="text-[11px] text-primary" dir="ltr">{tier.provider}</p>
+                <p className="mt-2 text-xs leading-6 text-muted">{t(tier.desc)}</p>
               </Card>
             );
           })}
         </div>
-        {testing && <div className="mt-4"><Spinner label="درخواست آزمایشی به زنجیره ارسال شد…" /></div>}
+        {testing && <div className="mt-4"><Spinner label={t("درخواست آزمایشی به زنجیره ارسال شد…")} /></div>}
         {health && !testing && (
           <div className={`mt-4 rounded-xl border p-4 text-sm leading-7 ${health.healthy ? "border-[color-mix(in_oklab,var(--success)_30%,transparent)] bg-[color-mix(in_oklab,var(--success)_10%,transparent)] text-foreground-soft" : "border-warning/30 bg-warning/10 text-foreground-soft"}`}>
             <span className="font-bold">{health.healthy ? "✓ " : "⚠ "}</span>{health.message}
@@ -546,11 +569,11 @@ function InfraTools() {
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h4 className="font-bold text-foreground">چک‌لیست امنیت عامل — الهام از ECC / AgentShield</h4>
-            <p className="mt-1 text-xs leading-6 text-muted">هشت کنترل ضروری برای اجرای امن عامل‌های هوشمند؛ موارد را با تکمیل شدن تیک بزنید.</p>
+            <h4 className="font-bold text-foreground">{t("چک‌لیست امنیت عامل — الهام از ECC / AgentShield")}</h4>
+            <p className="mt-1 text-xs leading-6 text-muted">{t("هشت کنترل ضروری برای اجرای امن عامل‌های هوشمند؛ موارد را با تکمیل شدن تیک بزنید.")}</p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-2.5 w-28 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="پیشرفت چک‌لیست امنیتی">
+            <div className="h-2.5 w-28 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t("پیشرفت چک‌لیست امنیتی")}>
               <div className="h-full rounded-full bg-primary transition-all duration-300" style={{ width: `${pct}%` }} />
             </div>
             <span className="text-xs font-extrabold text-primary">{faNum(pct)}٪</span>
@@ -570,8 +593,8 @@ function InfraTools() {
                   {done && <Icon name="check" className="h-3 w-3" />}
                 </span>
                 <span>
-                  <span className={`block text-sm font-bold ${done ? "text-primary" : "text-foreground"}`}>{c.title}</span>
-                  <span className="mt-1 block text-xs leading-6 text-muted">{c.desc}</span>
+                  <span className={`block text-sm font-bold ${done ? "text-primary" : "text-foreground"}`}>{t(c.title)}</span>
+                  <span className="mt-1 block text-xs leading-6 text-muted">{t(c.desc)}</span>
                 </span>
               </button>
             );
@@ -579,7 +602,7 @@ function InfraTools() {
         </div>
         {checked.size > 0 && (
           <button onClick={() => setChecked(new Set())} className="mt-3 cursor-pointer text-xs font-bold text-muted hover:text-foreground">
-            بازنشانی چک‌لیست
+            {t("بازنشانی چک‌لیست")}
           </button>
         )}
       </div>
@@ -590,25 +613,26 @@ function InfraTools() {
 /* ─── شل اصلی تب‌ها ────────────────────────────────────────────────────── */
 
 export function ResourcesTools() {
+  const t = useT();
   const [tab, setTab] = useState<TabKey>("llm");
 
   return (
     <div>
-      <div className="scrollbar-thin flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="ابزارهای منبع‌باز" style={{ scrollbarWidth: "thin" }}>
-        {TABS.map((t) => (
+      <div className="scrollbar-thin flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label={t("ابزارهای منبع‌باز")} style={{ scrollbarWidth: "thin" }}>
+        {TABS.map((tb) => (
           <button
-            key={t.key}
+            key={tb.key}
             role="tab"
-            aria-selected={tab === t.key}
-            onClick={() => setTab(t.key)}
-            className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition-all ${tab === t.key ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-surface text-muted hover:border-border-strong hover:text-foreground"}`}
+            aria-selected={tab === tb.key}
+            onClick={() => setTab(tb.key)}
+            className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition-all ${tab === tb.key ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-surface text-muted hover:border-border-strong hover:text-foreground"}`}
           >
-            <Icon name={t.icon} className="h-4 w-4" />
-            {t.label}
+            <Icon name={tb.icon} className="h-4 w-4" />
+            {t(tb.label)}
           </button>
         ))}
       </div>
-      <p className="mt-3 text-xs text-muted">{TABS.find((t) => t.key === tab)?.desc}</p>
+      <p className="mt-3 text-xs text-muted">{t(TABS.find((tb) => tb.key === tab)?.desc ?? "")}</p>
       <div className="mt-5" role="tabpanel">
         {tab === "llm" && <LlmCatalog />}
         {tab === "web" && <WebTools />}

@@ -1,5 +1,8 @@
+"use client";
+
 import { Icon } from "@/components/icons";
 import type { IconKey } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * TrustLine — خط اعتماد آمازونی («Secure transaction»).
@@ -14,10 +17,11 @@ const ITEMS: { icon: IconKey; label: string }[] = [
 ];
 
 export function TrustLine({ compact = false, className = "" }: { compact?: boolean; className?: string }) {
+  const t = useT();
   return (
     <ul
       className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-2 ${className}`}
-      aria-label="تعهدات دادبان"
+      aria-label={t("تعهدات دادبان")}
     >
       {ITEMS.map((it) => (
         <li
@@ -25,7 +29,7 @@ export function TrustLine({ compact = false, className = "" }: { compact?: boole
           className={`inline-flex items-center gap-1.5 font-semibold text-muted ${compact ? "text-[11px]" : "text-xs"}`}
         >
           <Icon name={it.icon} className={`${compact ? "h-3.5 w-3.5" : "h-4 w-4"} text-success`} />
-          {it.label}
+          {t(it.label)}
         </li>
       ))}
     </ul>

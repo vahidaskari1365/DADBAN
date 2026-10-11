@@ -6,6 +6,8 @@ import { Icon } from "./icons";
 import { faNum } from "@/lib/data";
 import { formatToman } from "@/lib/money";
 import type { IconKey } from "@/lib/data";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 export interface ProfileReview {
   id: number;
@@ -49,32 +51,34 @@ const TABS: { key: TabKey; label: string; icon: IconKey }[] = [
 
 /** تب‌های پروفایل وکیل — اطلاعات | تخصص‌ها | سوابق | نظرات */
 export function LawyerProfileTabs(props: ProfileTabsProps) {
+  const t = useT();
+  const tf = templateT(t);
   const [tab, setTab] = useState<TabKey>("info");
 
   return (
     <div>
       {/* نوار تب‌ها — اسکرول افقی روی موبایل */}
-      <div role="tablist" aria-label="بخش‌های پروفایل وکیل" className="flex gap-1.5 overflow-x-auto border-b border-border pb-px">
-        {TABS.map((t) => {
-          const active = tab === t.key;
+      <div role="tablist" aria-label={t("بخش‌های پروفایل وکیل")} className="flex gap-1.5 overflow-x-auto border-b border-border pb-px">
+        {TABS.map((tb) => {
+          const active = tab === tb.key;
           return (
             <button
-              key={t.key}
+              key={tb.key}
               type="button"
               role="tab"
-              id={`lawyer-tab-${t.key}`}
+              id={`lawyer-tab-${tb.key}`}
               aria-selected={active}
-              aria-controls={`lawyer-panel-${t.key}`}
-              onClick={() => setTab(t.key)}
+              aria-controls={`lawyer-panel-${tb.key}`}
+              onClick={() => setTab(tb.key)}
               className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-t-xl border-b-2 px-4 py-2.5 text-sm font-bold transition-colors ${
                 active
                   ? "border-[color:var(--gold)] bg-surface text-foreground"
                   : "border-transparent text-muted hover:bg-surface-2 hover:text-foreground"
               }`}
             >
-              <Icon name={t.icon} className={`h-4 w-4 ${active ? "text-accent" : ""}`} />
-              {t.label}
-              {t.key === "reviews" && (
+              <Icon name={tb.icon} className={`h-4 w-4 ${active ? "text-accent" : ""}`} />
+              {t(tb.label)}
+              {tb.key === "reviews" && (
                 <span className="rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] text-muted">{faNum(props.reviews.length)}</span>
               )}
             </button>
@@ -88,25 +92,25 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
           <div role="tabpanel" id="lawyer-panel-info" aria-labelledby="lawyer-tab-info" className="space-y-6">
             <section>
               <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-                <Icon name="user" className="h-5 w-5 text-accent" /> درباره من
+                <Icon name="user" className="h-5 w-5 text-accent" /> {t("درباره من")}
               </h3>
               <p className="mt-3 whitespace-pre-line text-sm leading-8 text-foreground-soft">{props.about}</p>
             </section>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div className="rounded-xl border border-border bg-surface p-3 text-center">
-                <p className="text-xs text-muted">شماره پروانه</p>
+                <p className="text-xs text-muted">{t("شماره پروانه")}</p>
                 <p className="mt-1 text-sm font-bold text-foreground" dir="ltr">{props.licenseNo}</p>
               </div>
               <div className="rounded-xl border border-border bg-surface p-3 text-center">
-                <p className="text-xs text-muted">زمان پاسخ</p>
+                <p className="text-xs text-muted">{t("زمان پاسخ")}</p>
                 <p className="mt-1 text-sm font-bold text-foreground">{props.responseTime}</p>
               </div>
               <div className="rounded-xl border border-border bg-surface p-3 text-center">
-                <p className="text-xs text-muted">رضایت موکلان</p>
+                <p className="text-xs text-muted">{t("رضایت موکلان")}</p>
                 <p className="mt-1 text-sm font-bold text-[#8a6420]">{faNum(props.satisfaction)}٪</p>
               </div>
               <div className="rounded-xl border border-border bg-surface p-3 text-center">
-                <p className="text-xs text-muted">بازدید پروفایل</p>
+                <p className="text-xs text-muted">{t("بازدید پروفایل")}</p>
                 <p className="mt-1 text-sm font-bold text-foreground">{faNum(props.views.toLocaleString("en-US"))}</p>
               </div>
             </div>
@@ -118,7 +122,7 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
           <div role="tabpanel" id="lawyer-panel-specialties" aria-labelledby="lawyer-tab-specialties" className="space-y-6">
             <section>
               <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-                <Icon name="scale" className="h-5 w-5 text-accent" /> حوزه‌های تخصص
+                <Icon name="scale" className="h-5 w-5 text-accent" /> {t("حوزه‌های تخصص")}
               </h3>
               <div className="mt-3 flex flex-wrap gap-2">
                 {props.specialties.map((s) => (
@@ -128,7 +132,7 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
                     className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary-soft px-3.5 py-1.5 text-sm font-semibold text-primary transition-colors hover:border-accent/50 hover:text-accent"
                   >
                     <Icon name="scale" className="h-3.5 w-3.5" />
-                    {s}
+                    {t(s)}
                   </a>
                 ))}
               </div>
@@ -136,7 +140,7 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
 
             <section>
               <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-                <Icon name="check" className="h-5 w-5 text-success" /> خدمات و تعرفه
+                <Icon name="check" className="h-5 w-5 text-success" /> {t("خدمات و تعرفه")}
               </h3>
               <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
                 {props.pricing.map((p) => (
@@ -145,8 +149,8 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
                       <Icon name={p.icon} className="h-5 w-5" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-foreground">{p.label}</p>
-                      <p className="mt-0.5 text-[11px] text-muted">{p.features.join(" • ")}</p>
+                      <p className="text-sm font-bold text-foreground">{t(p.label)}</p>
+                      <p className="mt-0.5 text-[11px] text-muted">{p.features.map((f) => t(f)).join(" • ")}</p>
                     </div>
                     <p className="dp-money shrink-0 text-sm">{formatToman(p.price)}</p>
                   </div>
@@ -156,7 +160,7 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
                   {props.services.map((s) => (
                     <div key={s} className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground-soft">
-                      <Icon name="check" className="h-4 w-4 shrink-0 text-success" /> {s}
+                      <Icon name="check" className="h-4 w-4 shrink-0 text-success" /> {t(s)}
                     </div>
                   ))}
                 </div>
@@ -175,21 +179,21 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
                   <Icon name="folder" className="h-4.5 w-4.5" />
                 </span>
                 <p className="mt-2 text-xl font-extrabold text-foreground sm:text-2xl">{faNum(props.caseCount)}</p>
-                <p className="mt-0.5 text-xs text-muted">پرونده موفق</p>
+                <p className="mt-0.5 text-xs text-muted">{t("پرونده موفق")}</p>
               </div>
               <div className="rounded-2xl border border-border bg-surface p-4 text-center card-shadow">
                 <span className="mx-auto inline-flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
                   <Icon name="star" className="h-4.5 w-4.5" />
                 </span>
                 <p className="mt-2 text-xl font-extrabold text-foreground sm:text-2xl">{faNum(props.satisfaction)}٪</p>
-                <p className="mt-0.5 text-xs text-muted">رضایت موکلان</p>
+                <p className="mt-0.5 text-xs text-muted">{t("رضایت موکلان")}</p>
               </div>
               <div className="rounded-2xl border border-border bg-surface p-4 text-center card-shadow">
                 <span className="mx-auto inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
                   <Icon name="briefcase" className="h-4.5 w-4.5" />
                 </span>
                 <p className="mt-2 text-xl font-extrabold text-foreground sm:text-2xl">{faNum(props.experienceYears)}</p>
-                <p className="mt-0.5 text-xs text-muted">سال سابقه</p>
+                <p className="mt-0.5 text-xs text-muted">{t("سال سابقه")}</p>
               </div>
             </div>
 
@@ -197,18 +201,18 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
             <div className="dp-timeline space-y-5 pr-1">
               <div className="dp-timeline-item done relative pr-8">
                 <span className="dp-timeline-dot" aria-hidden />
-                <p className="text-sm font-bold text-foreground">احراز هویت و تأیید پروانه</p>
-                <p className="mt-1 text-xs leading-6 text-muted">پروانه وکالت شماره {props.licenseNo} توسط کارشناسان دادپیو راستی‌آزمایی شده است.</p>
+                <p className="text-sm font-bold text-foreground">{t("احراز هویت و تأیید پروانه")}</p>
+                <p className="mt-1 text-xs leading-6 text-muted">{tf("پروانه وکالت شماره {no} توسط کارشناسان دادپیو راستی‌آزمایی شده است.", { no: props.licenseNo })}</p>
               </div>
               <div className="dp-timeline-item done relative pr-8">
                 <span className="dp-timeline-dot" aria-hidden />
-                <p className="text-sm font-bold text-foreground">تجربه حرفه‌ای — {faNum(props.experienceYears)} سال</p>
-                <p className="mt-1 text-xs leading-6 text-muted">فعالیت مستمر در حوزه‌های {props.specialties.join("، ")}.</p>
+                <p className="text-sm font-bold text-foreground">{tf("تجربه حرفه‌ای — {n} سال", { n: faNum(props.experienceYears) })}</p>
+                <p className="mt-1 text-xs leading-6 text-muted">{tf("فعالیت مستمر در حوزه‌های {sp}.", { sp: props.specialties.map((s) => t(s)).join("، ") })}</p>
               </div>
               <div className="dp-timeline-item doing relative pr-8">
                 <span className="dp-timeline-dot" aria-hidden />
-                <p className="text-sm font-bold text-foreground">{faNum(props.caseCount)} پرونده موفق</p>
-                <p className="mt-1 text-xs leading-6 text-muted">با رضایت {faNum(props.satisfaction)}٪ موکلان بر اساس {faNum(props.reviews.length)} نظر ثبت‌شده.</p>
+                <p className="text-sm font-bold text-foreground">{tf("{n} پرونده موفق", { n: faNum(props.caseCount) })}</p>
+                <p className="mt-1 text-xs leading-6 text-muted">{tf("با رضایت {s}٪ موکلان بر اساس {n} نظر ثبت‌شده.", { s: faNum(props.satisfaction), n: faNum(props.reviews.length) })}</p>
               </div>
             </div>
           </div>
@@ -218,7 +222,7 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
         {tab === "reviews" && (
           <div role="tabpanel" id="lawyer-panel-reviews" aria-labelledby="lawyer-tab-reviews">
             {props.reviews.length === 0 ? (
-              <EmptyState title="هنوز نظری ثبت نشده است" icon="chat" />
+              <EmptyState title={t("هنوز نظری ثبت نشده است")} icon="chat" />
             ) : (
               <div className="space-y-3">
                 {props.reviews.map((r) => (
@@ -231,7 +235,7 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
                       </div>
                       <StarRating rating={r.rating} />
                       <p className="mt-1.5 text-sm leading-7 text-foreground-soft">{r.comment}</p>
-                      {r.service && <div className="mt-2"><Badge tone="accent">{r.service}</Badge></div>}
+                      {r.service && <div className="mt-2"><Badge tone="accent">{r.service ? t(r.service) : r.service}</Badge></div>}
                     </div>
                   </div>
                 ))}

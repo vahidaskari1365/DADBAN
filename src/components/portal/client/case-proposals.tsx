@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { StatusBadge } from "@/components/panel-widgets";
 import { formatToman, labelStatus, timeAgo, toFa } from "@/lib/money";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 import type { LawyerLite, ProposalItem } from "./types";
 
 /**
@@ -20,12 +22,14 @@ export default function CaseProposals({
   lawyers: LawyerLite[];
 }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [proposals, setProposals] = useState<ProposalItem[]>(initialProposals);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
-  const nameOf = (p: ProposalItem) => p.lawyerName || lawyers.find((l) => l.id === p.lawyerId)?.name || `وکیل دادپیو (#${toFa(p.lawyerId)})`;
+  const nameOf = (p: ProposalItem) => p.lawyerName || lawyers.find((l) => l.id === p.lawyerId)?.name || tf("وکیل دادپیو (#{n})", { n: toFa(p.lawyerId) });
   const ratingOf = (p: ProposalItem) => lawyers.find((l) => l.id === p.lawyerId)?.rating ?? 0;
 
   const minAmount = Math.min(
@@ -60,18 +64,18 @@ export default function CaseProposals({
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok || !data.ok) {
-        setErr(data.error ?? "انجام عملیات ناموفق بود.");
+        setErr(data.error ?? t("انجام عملیات ناموفق بود."));
         return;
       }
       if (action === "accept") {
-        setMsg("پیشنهاد پذیرفته شد؛ کارشناسان دادپیو برای نهایی‌سازی قرارداد و معرفی وکیل با شما تماس می‌گیرند.");
+        setMsg(t("پیشنهاد پذیرفته شد؛ کارشناسان دادپیو برای نهایی‌سازی قرارداد و معرفی وکیل با شما تماس می‌گیرند."));
       } else {
-        setMsg("پیشنهاد رد شد.");
+        setMsg(t("پیشنهاد رد شد."));
       }
       await load();
       router.refresh();
     } catch {
-      setErr("خطا در ارتباط با سرور.");
+      setErr(t("خطا در ارتباط با سرور."));
     } finally {
       setBusyId(null);
     }
@@ -81,7 +85,7 @@ export default function CaseProposals({
     return (
       <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
         <Icon name="mail" className="mx-auto mb-2 h-6 w-6" />
-        هنوز پیشنهاد قیمتی ثبت نشده است. وکلای متخصص با بررسی پرونده، پیشنهاد خود را برای شما ارسال می‌کنند.
+        {t("هنوز پیشنهاد قیمتی ثبت نشده است. وکلای متخصص با بررسی پرونده، پیشنهاد خود را برای شما ارسال می‌کنند.")}
       </div>
     );
   }
@@ -96,7 +100,7 @@ export default function CaseProposals({
     <div className="space-y-4">
       <p className="flex items-center gap-2 text-xs text-muted">
         <Icon name="sparkles" className="h-4 w-4 text-accent" />
-        {toFa(proposals.length)} پیشنهاد برای پروندهٔ شما ثبت شده است؛ پیشنهادها را از نظر مبلغ، مدت و امتیاز تطبیق مقایسه کنید.
+        {tf("{n} پیشنهاد برای پروندهٔ شما ثبت شده است؛ پیشنهادها را از نظر مبلغ، مدت و امتیاز تطبیق مقایسه کنید.", { n: toFa(proposals.length) })}
       </p>
 
       {msg && (
@@ -138,36 +142,36 @@ export default function CaseProposals({
                 <div className="flex flex-wrap items-center gap-1.5">
                   {bestMatch && (
                     <span className="rounded-full bg-accent-soft px-2 py-1 text-[10px] font-bold text-accent">
-                      تطبیق هوشمند {toFa(p.aiMatchScore)}٪
+                      {tf("تطبیق هوشمند {n}٪", { n: toFa(p.aiMatchScore) })}
                     </span>
                   )}
                   {lowest && isPending && (
-                    <span className="rounded-full bg-success/10 px-2 py-1 text-[10px] font-bold text-success">کمترین مبلغ</span>
+                    <span className="rounded-full bg-success/10 px-2 py-1 text-[10px] font-bold text-success">{t("کمترین مبلغ")}</span>
                   )}
-                  <StatusBadge tone={s.tone}>{s.label}</StatusBadge>
+                  <StatusBadge tone={s.tone}>{t(s.label)}</StatusBadge>
                 </div>
               </div>
 
               <div className="mt-3 grid gap-2 rounded-xl bg-surface-2/50 p-3 text-xs sm:grid-cols-3">
                 <div>
-                  <p className="text-muted">حق‌الوکالهٔ پیشنهادی</p>
+                  <p className="text-muted">{t("حق‌الوکالهٔ پیشنهادی")}</p>
                   <p className="dp-money mt-0.5 text-sm">{formatToman(p.amount)}</p>
                 </div>
                 <div>
-                  <p className="text-muted">مدت پیشنهادی رسیدگی</p>
+                  <p className="text-muted">{t("مدت پیشنهادی رسیدگی")}</p>
                   <p className="mt-0.5 font-bold text-foreground">
-                    {p.durationMonths > 0 ? `${toFa(p.durationMonths)} ماه` : "—"}
+                    {p.durationMonths > 0 ? tf("{n} ماه", { n: toFa(p.durationMonths) }) : "—"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted">امتیاز تطبیق پرونده</p>
+                  <p className="text-muted">{t("امتیاز تطبیق پرونده")}</p>
                   <p className="mt-0.5 font-bold text-foreground">{toFa(p.aiMatchScore)}٪</p>
                 </div>
               </div>
 
               {p.note && (
                 <p className="mt-3 text-[13px] leading-6 text-foreground-soft">
-                  <span className="font-semibold text-foreground">یادداشت وکیل: </span>
+                  <span className="font-semibold text-foreground">{t("یادداشت وکیل: ")}</span>
                   {p.note}
                 </p>
               )}
@@ -181,7 +185,7 @@ export default function CaseProposals({
                     className="btn-gold inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition-all disabled:opacity-50"
                   >
                     <Icon name="check" className="h-4 w-4" />
-                    {busyId === p.id ? "در حال ثبت…" : "پذیرش پیشنهاد"}
+                    {busyId === p.id ? t("در حال ثبت…") : t("پذیرش پیشنهاد")}
                   </button>
                   <button
                     type="button"
@@ -190,7 +194,7 @@ export default function CaseProposals({
                     className="inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-danger/40 bg-surface px-5 text-sm font-bold text-danger transition-colors hover:bg-danger/5 disabled:opacity-50"
                   >
                     <Icon name="x" className="h-4 w-4" />
-                    رد
+                    {t("رد")}
                   </button>
                 </div>
               )}

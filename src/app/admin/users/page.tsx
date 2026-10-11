@@ -8,11 +8,16 @@ import { PageHero } from "@/components/page-hero";
 import { Card, Badge, Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { toFa, formatJalali } from "@/lib/money";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 
-export const metadata: Metadata = {
-  title: "کاربران و وکلا — پنل مدیریت دادپیو",
-  description: "مدیریت کاربران ثبت‌نام‌شده و پروفایل وکلای مارکت‌پلیس دادپیو.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("کاربران و وکلا — پنل مدیریت دادپیو"),
+    description: t("مدیریت کاربران ثبت‌نام‌شده و پروفایل وکلای مارکت‌پلیس دادپیو."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 const ROLE_LABELS: Record<string, { label: string; tone: "neutral" | "accent" | "success" | "primary" | "danger" }> = {
@@ -27,6 +32,8 @@ export default async function AdminUsersPage({
   searchParams: Promise<{ q?: string; role?: string; tab?: string }>;
 }) {
   if (!(await isAdmin())) redirect("/admin/login");
+  const t = await getT();
+  const tf = templateT(t);
   const sp = await searchParams;
   const q = (sp.q ?? "").trim().slice(0, 60);
   const role = (sp.role ?? "all").trim();
@@ -99,19 +106,19 @@ export default async function AdminUsersPage({
   return (
     <>
       <PageHero
-        badge="Admin · کاربران"
-        title="کاربران و وکلا"
-        desc="کاربران ثبت‌نام‌شدهٔ پلتفرم، وضعیت تأیید وکلا و آمار رشد جامعهٔ دادپیو"
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت", href: "/admin" }, { label: "کاربران و وکلا" }]}
+        badge={t("Admin · کاربران")}
+        title={t("کاربران و وکلا")}
+        desc={t("کاربران ثبت‌نام‌شدهٔ پلتفرم، وضعیت تأیید وکلا و آمار رشد جامعهٔ دادپیو")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("کاربران و وکلا") }]}
       />
       <Container className="py-10">
         {/* ---------------- آمار ---------------- */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[
-            { label: "کاربران ثبت‌نام‌شده", value: toFa(stats.totalUsers), icon: "user" as const, tone: "text-foreground" },
-            { label: "وکلای پلتفرم", value: toFa(stats.totalLawyers), icon: "badge" as const, tone: "text-accent" },
-            { label: "وکلای تأییدشده", value: toFa(stats.verifiedLawyers), icon: "check" as const, tone: "text-success" },
-            { label: "عضو جدید این هفته", value: toFa(stats.newUsersThisWeek), icon: "sparkles" as const, tone: "text-foreground" },
+            { label: t("کاربران ثبت‌نام‌شده"), value: toFa(stats.totalUsers), icon: "user" as const, tone: "text-foreground" },
+            { label: t("وکلای پلتفرم"), value: toFa(stats.totalLawyers), icon: "badge" as const, tone: "text-accent" },
+            { label: t("وکلای تأییدشده"), value: toFa(stats.verifiedLawyers), icon: "check" as const, tone: "text-success" },
+            { label: t("عضو جدید این هفته"), value: toFa(stats.newUsersThisWeek), icon: "sparkles" as const, tone: "text-foreground" },
           ].map((s) => (
             <Card key={s.label} hover={false} className="flex items-center gap-3">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
@@ -134,7 +141,7 @@ export default async function AdminUsersPage({
                 tab === "users" ? "bg-primary-soft text-primary" : "text-foreground-soft hover:bg-surface-2"
               }`}
             >
-              کاربران ({toFa(stats.totalUsers)})
+              {tf("کاربران ({n})", { n: toFa(stats.totalUsers) })}
             </a>
             <a
               href={tabHref("lawyers")}
@@ -142,7 +149,7 @@ export default async function AdminUsersPage({
                 tab === "lawyers" ? "bg-primary-soft text-primary" : "text-foreground-soft hover:bg-surface-2"
               }`}
             >
-              وکلا ({toFa(stats.totalLawyers)})
+              {tf("وکلا ({n})", { n: toFa(stats.totalLawyers) })}
             </a>
           </div>
 
@@ -152,26 +159,26 @@ export default async function AdminUsersPage({
               type="search"
               name="q"
               defaultValue={searchValue}
-              placeholder={tab === "users" ? "جستجوی نام یا موبایل…" : "جستجوی نام یا شهر…"}
-              aria-label="جستجو"
+              placeholder={tab === "users" ? t("جستجوی نام یا موبایل…") : t("جستجوی نام یا شهر…")}
+              aria-label={t("جستجو")}
               className="h-11 w-52 rounded-xl border border-border bg-background px-3.5 text-sm outline-none transition-colors focus:border-accent"
             />
             {tab === "users" && (
               <select
                 name="role"
                 defaultValue={role}
-                aria-label="فیلتر نقش"
+                aria-label={t("فیلتر نقش")}
                 className="h-11 rounded-xl border border-border bg-background px-3 text-sm font-bold text-foreground"
               >
-                <option value="all">همهٔ نقش‌ها</option>
-                <option value="client">موکل</option>
-                <option value="lawyer">وکیل</option>
-                <option value="admin">مدیر</option>
+                <option value="all">{t("همهٔ نقش‌ها")}</option>
+                <option value="client">{t("موکل")}</option>
+                <option value="lawyer">{t("وکیل")}</option>
+                <option value="admin">{t("مدیر")}</option>
               </select>
             )}
             <button type="submit" className="btn-gold inline-flex h-11 items-center gap-1.5 rounded-xl px-4 text-sm font-bold">
               <Icon name="search" className="h-4 w-4" />
-              جستجو
+              {t("جستجو")}
             </button>
           </form>
         </div>
@@ -184,17 +191,17 @@ export default async function AdminUsersPage({
                 <thead>
                   <tr className="border-b border-border text-xs font-bold text-muted">
                     <th className="p-3">#</th>
-                    <th className="p-3">نام</th>
-                    <th className="p-3">موبایل</th>
-                    <th className="p-3">نقش</th>
-                    <th className="p-3">تاریخ عضویت</th>
+                    <th className="p-3">{t("نام")}</th>
+                    <th className="p-3">{t("موبایل")}</th>
+                    <th className="p-3">{t("نقش")}</th>
+                    <th className="p-3">{t("تاریخ عضویت")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {userRows.length === 0 && (
                     <tr>
                       <td colSpan={5} className="p-6 text-center text-sm text-muted">
-                        کاربری مطابق جستجو یافت نشد.
+                        {t("کاربری مطابق جستجو یافت نشد.")}
                       </td>
                     </tr>
                   )}
@@ -208,7 +215,7 @@ export default async function AdminUsersPage({
                           {toFa(u.phone)}
                         </td>
                         <td className="p-3">
-                          <Badge tone={r.tone}>{r.label}</Badge>
+                          <Badge tone={r.tone}>{t(r.label)}</Badge>
                         </td>
                         <td className="p-3 text-sm text-muted">{formatJalali(u.createdAt)}</td>
                       </tr>
@@ -225,19 +232,19 @@ export default async function AdminUsersPage({
                 <thead>
                   <tr className="border-b border-border text-xs font-bold text-muted">
                     <th className="p-3">#</th>
-                    <th className="p-3">نام</th>
-                    <th className="p-3">شهر</th>
-                    <th className="p-3">امتیاز</th>
-                    <th className="p-3">تخصص‌ها</th>
-                    <th className="p-3">پرونده</th>
-                    <th className="p-3">وضعیت تأیید</th>
+                    <th className="p-3">{t("نام")}</th>
+                    <th className="p-3">{t("شهر")}</th>
+                    <th className="p-3">{t("امتیاز")}</th>
+                    <th className="p-3">{t("تخصص‌ها")}</th>
+                    <th className="p-3">{t("پرونده")}</th>
+                    <th className="p-3">{t("وضعیت تأیید")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {lawyerRows.length === 0 && (
                     <tr>
                       <td colSpan={7} className="p-6 text-center text-sm text-muted">
-                        وکیلی مطابق جستجو یافت نشد.
+                        {t("وکیلی مطابق جستجو یافت نشد.")}
                       </td>
                     </tr>
                   )}
@@ -251,7 +258,7 @@ export default async function AdminUsersPage({
                         <div className="flex flex-wrap gap-1">
                           {l.specialties.slice(0, 3).map((s) => (
                             <Badge key={s} tone="accent">
-                              {s}
+                              {t(s)}
                             </Badge>
                           ))}
                           {l.specialties.length > 3 && <Badge tone="neutral">+{toFa(l.specialties.length - 3)}</Badge>}
@@ -259,7 +266,7 @@ export default async function AdminUsersPage({
                       </td>
                       <td className="p-3 text-sm text-muted">{toFa(l.caseCount)}</td>
                       <td className="p-3">
-                        {l.verified ? <Badge tone="success">تأییدشده</Badge> : <Badge tone="neutral">در انتظار تأیید</Badge>}
+                        {l.verified ? <Badge tone="success">{t("تأییدشده")}</Badge> : <Badge tone="neutral">{t("در انتظار تأیید")}</Badge>}
                       </td>
                     </tr>
                   ))}

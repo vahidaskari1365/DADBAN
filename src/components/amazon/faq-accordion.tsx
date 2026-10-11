@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * FaqAccordion — بخش پرسش‌های متداول به سبک Customer Q&A آمازون.
@@ -15,12 +16,13 @@ export function FaqAccordion({
   title?: string;
 }) {
   const [open, setOpen] = useState<number | null>(0);
+  const t = useT();
 
   if (items.length === 0) return null;
 
   return (
-    <section aria-label={title} className="rounded-3xl border border-border bg-surface p-5 card-shadow sm:p-8">
-      <h2 className="text-center text-xl font-black text-foreground sm:text-2xl">{title}</h2>
+    <section aria-label={t(title)} className="rounded-3xl border border-border bg-surface p-5 card-shadow sm:p-8">
+      <h2 className="text-center text-xl font-black text-foreground sm:text-2xl">{t(title)}</h2>
       <div className="mx-auto mt-6 max-w-3xl space-y-2.5">
         {items.map((it, i) => {
           const isOpen = open === i;

@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { formatJalaliTime } from "@/lib/jalali";
 import { Icon } from "@/components/icons";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * کامپوننت مشاوره تصویری + صوتی + متنی real-time.
@@ -64,6 +66,8 @@ interface ConsultationClientProps {
 }
 
 export function ConsultationClient({ roomId, role, name, autoOffer = false, voiceOnly = false, onHangup }: ConsultationClientProps) {
+  const t = useT();
+  const tf = templateT(t);
   const [peerReady, setPeerReady] = useState(false);
   const [remoteName, setRemoteName] = useState<string | null>(null);
   const [inCall, setInCall] = useState(false);
@@ -393,8 +397,8 @@ export function ConsultationClient({ roomId, role, name, autoOffer = false, voic
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center text-white/70">
               <div className="h-12 w-12 animate-pulse rounded-full bg-white/20" />
               <p className="text-sm">
-                {status}
-                {peerReady && remoteName ? ` — ${remoteName} آنلاین است` : ""}
+                {t(status)}
+                {peerReady && remoteName ? tf(" — {name} آنلاین است", { name: remoteName }) : ""}
               </p>
             </div>
           )}
@@ -419,7 +423,7 @@ export function ConsultationClient({ roomId, role, name, autoOffer = false, voic
                 className={`flex h-11 w-11 items-center justify-center rounded-full transition-all active:scale-90 ${
                   micOn ? "bg-white/20 text-white" : "bg-red-500 text-white"
                 }`}
-                aria-label={micOn ? "قطع میکروفون" : "روشن کردن میکروفون"}
+                aria-label={micOn ? t("قطع میکروفون") : t("روشن کردن میکروفون")}
               >
                 <Icon name="chat" className="h-5 w-5" />
               </button>
@@ -428,14 +432,14 @@ export function ConsultationClient({ roomId, role, name, autoOffer = false, voic
                 className={`flex h-11 w-11 items-center justify-center rounded-full transition-all active:scale-90 ${
                   camOn ? "bg-white/20 text-white" : "bg-red-500 text-white"
                 }`}
-                aria-label={camOn ? "قطع دوربین" : "روشن کردن دوربین"}
+                aria-label={camOn ? t("قطع دوربین") : t("روشن کردن دوربین")}
               >
                 <Icon name="video" className="h-5 w-5" />
               </button>
               <button
                 onClick={endCall}
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-red-500 text-white transition-all active:scale-90"
-                aria-label="قطع تماس"
+                aria-label={t("قطع تماس")}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 9c-1.6 0-3.15.25-4.6.7v3.42c0 .4-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.956.956 0 0 1-.29-.7c0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 0 0-2.67-1.85.996.996 0 0 1-.56-.9V9.7C15.15 9.25 13.6 9 12 9z" />
@@ -452,29 +456,29 @@ export function ConsultationClient({ roomId, role, name, autoOffer = false, voic
             className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition-all active:scale-95"
           >
             <Icon name="video" className="h-5 w-5" />
-            شروع تماس تصویری / صوتی
+            {t("شروع تماس تصویری / صوتی")}
           </button>
         )}
 
         {error && (
-          <div className="mt-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+          <div className="mt-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">{t(error)}</div>
         )}
       </div>
 
       {/* بخش چت متنی */}
       <div className="flex flex-col rounded-2xl border border-border bg-surface">
         <div className="border-b border-border p-3">
-          <h3 className="text-sm font-bold text-foreground">چت متنی</h3>
+          <h3 className="text-sm font-bold text-foreground">{t("چت متنی")}</h3>
           <p className="mt-0.5 text-[10px] text-muted">
             {peerReady
-              ? `متصل${remoteName ? ` — ${remoteName}` : ""} · تاریخچه ۲۴ ساعت ذخیره می‌شود`
-              : status}
+              ? `${t("متصل")}${remoteName ? ` — ${remoteName}` : ""} · ${t("تاریخچه ۲۴ ساعت ذخیره می‌شود")}`
+              : t(status)}
           </p>
         </div>
         <div className="flex-1 overflow-y-auto p-3" style={{ maxHeight: "400px" }}>
           {chatMessages.length === 0 ? (
             <p className="text-center text-xs text-muted mt-8">
-              پیام‌ها اینجا نمایش داده می‌شوند
+              {t("پیام‌ها اینجا نمایش داده می‌شوند")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -493,7 +497,7 @@ export function ConsultationClient({ roomId, role, name, autoOffer = false, voic
                     {msg.message}
                   </div>
                   <span className="text-[10px] text-muted">
-                    {msg.isOwn ? "شما" : msg.sender} · {formatJalaliTime(msg.timestamp)}
+                    {msg.isOwn ? t("شما") : msg.sender} · {formatJalaliTime(msg.timestamp)}
                   </span>
                 </div>
               ))}
@@ -504,7 +508,7 @@ export function ConsultationClient({ roomId, role, name, autoOffer = false, voic
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted" style={{ animationDelay: "0.1s" }}></span>
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted" style={{ animationDelay: "0.2s" }}></span>
                   </span>
-                  طرف مقابل در حال تایپ...
+                  {t("طرف مقابل در حال تایپ...")}
                 </div>
               )}
               <div ref={chatEndRef} />
@@ -517,7 +521,7 @@ export function ConsultationClient({ roomId, role, name, autoOffer = false, voic
               value={chatInput}
               onChange={(e) => onChatInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendChat()}
-              placeholder={peerReady ? "پیام بنویسید..." : "در انتظار ورود طرف مقابل..."}
+              placeholder={peerReady ? t("پیام بنویسید...") : t("در انتظار ورود طرف مقابل...")}
               disabled={!peerReady}
               className="flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none disabled:opacity-50"
             />
@@ -525,7 +529,7 @@ export function ConsultationClient({ roomId, role, name, autoOffer = false, voic
               onClick={sendChat}
               disabled={!peerReady}
               className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-all active:scale-90 disabled:opacity-50"
-              aria-label="ارسال"
+              aria-label={t("ارسال")}
             >
               <Icon name="send" className="h-4 w-4" />
             </button>

@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button } from "@/components/ui";
+import { useT } from "@/lib/i18n/provider";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -44,16 +46,16 @@ export default function AdminLoginPage() {
         variant="market"
         image="/images/hero-admin.png"
         badge="Admin"
-        title="ورود مدیر"
-        desc="برای مدیریت سایت و محتوا وارد شوید."
-        breadcrumb={[{ label: "خانه", href: "/" }, { label: "ورود مدیر" }]}
+        title={t("ورود مدیر")}
+        desc={t("برای مدیریت سایت و محتوا وارد شوید.")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("ورود مدیر") }]}
       />
       <Container className="py-12">
         <div className="mx-auto max-w-md">
           <Card hover={false}>
             <form onSubmit={submit} className="space-y-4">
               <label className="block">
-                <span className="text-sm font-bold text-foreground">ایمیل</span>
+                <span className="text-sm font-bold text-foreground">{t("ایمیل")}</span>
                 <input
                   type="email"
                   dir="ltr"
@@ -65,7 +67,7 @@ export default function AdminLoginPage() {
                 />
               </label>
               <label className="block">
-                <span className="text-sm font-bold text-foreground">رمز عبور</span>
+                <span className="text-sm font-bold text-foreground">{t("رمز عبور")}</span>
                 <input
                   type="password"
                   dir="ltr"
@@ -76,9 +78,9 @@ export default function AdminLoginPage() {
                   required
                 />
               </label>
-              {error && <p className="text-sm font-semibold text-danger">{error}</p>}
+              {error && <p className="text-sm font-semibold text-danger">{t(error)}</p>}
               <Button type="submit" disabled={loading} className="w-full">
-                {loading ? "در حال ورود..." : "ورود به پنل"}
+                {loading ? t("در حال ورود...") : t("ورود به پنل")}
               </Button>
             </form>
           </Card>

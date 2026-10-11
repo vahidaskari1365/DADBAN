@@ -11,17 +11,24 @@ import { Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { getCurrentUser } from "@/lib/user-auth";
 import { toFa, formatJalaliLong, formatTime, timeAgo, labelStatus } from "@/lib/money";
+import { getT } from "@/lib/i18n/server";
+import { templateT } from "@/lib/i18n/core";
 import TraineeActionForm from "./trainee-action-form";
 
-export const metadata: Metadata = {
-  title: "پنل کارآموز — کارتابل ارجاعی دادپیو",
-  description: "کارتابل کارآموزان و همکاران حقوقی دادپیو: پرونده‌های ارجاعی، ثبت اقدام، مهلت‌ها و مسیر یادگیری.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("پنل کارآموز — کارتابل ارجاعی دادپیو"),
+    description: t("کارتابل کارآموزان و همکاران حقوقی دادپیو: پرونده‌های ارجاعی، ثبت اقدام، مهلت‌ها و مسیر یادگیری."),
+  };
+}
 export const dynamic = "force-dynamic";
 
 export default async function TraineeDashboard() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  const t = await getT();
+  const tf = templateT(t);
 
   /* ---------------- داده‌ها (همه try/catch — حالت بدون دیتابیس امن است) ---------------- */
   type ReferredCase = {
@@ -138,36 +145,36 @@ export default async function TraineeDashboard() {
   const deadlineCount = upcoming.filter((a) => a.kind === "deadline" || a.kind === "hearing").length;
 
   const nav = [
-    { label: "داشبورد", icon: "home" as const, active: true, href: "/dashboard/trainee" },
-    { label: "پرونده‌های ارجاعی", icon: "folder" as const, badge: toFa(referred.length), href: "/dashboard/trainee#cases" },
-    { label: "اقدامات ثبت‌شده", icon: "check" as const, badge: toFa(actionsTotal), href: "/dashboard/trainee#actions" },
-    { label: "مدارک", icon: "document" as const, href: "/dashboard/documents" },
-    { label: "یادگیری", icon: "book" as const, href: "/knowledge" },
-    { label: "تنظیمات", icon: "id" as const, href: "/dashboard/trainee#settings" },
+    { label: t("داشبورد"), icon: "home" as const, active: true, href: "/dashboard/trainee" },
+    { label: t("پرونده‌های ارجاعی"), icon: "folder" as const, badge: toFa(referred.length), href: "/dashboard/trainee#cases" },
+    { label: t("اقدامات ثبت‌شده"), icon: "check" as const, badge: toFa(actionsTotal), href: "/dashboard/trainee#actions" },
+    { label: t("مدارک"), icon: "document" as const, href: "/dashboard/documents" },
+    { label: t("یادگیری"), icon: "book" as const, href: "/knowledge" },
+    { label: t("تنظیمات"), icon: "id" as const, href: "/dashboard/trainee#settings" },
   ];
 
   return (
     <DashboardShell
       role="کارآموز"
-      title={`کارتابل ارجاعی ${user.name}`}
-      subtitle="پرونده‌های ارجاعی سرپرست تیم، ثبت اقدام در روند پرونده و مهلت‌های پیش‌رو"
+      title={tf("کارتابل ارجاعی {n}", { n: user.name })}
+      subtitle={t("پرونده‌های ارجاعی سرپرست تیم، ثبت اقدام در روند پرونده و مهلت‌های پیش‌رو")}
       userName={user.name}
-      userRole="کارآموز حقوقی"
+      userRole={t("کارآموز حقوقی")}
       nav={nav}
     >
       {/* ---------------- آمار ---------------- */}
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
-          label="پرونده‌های ارجاعی"
+          label={t("پرونده‌های ارجاعی")}
           value={toFa(referred.length)}
-          hint={demo ? "حالت نمایشی — پرونده‌های فعال بازار" : "ارجاع‌شده از سرپرست تیم"}
+          hint={demo ? t("حالت نمایشی — پرونده‌های فعال بازار") : t("ارجاع‌شده از سرپرست تیم")}
           icon="folder"
         />
-        <StatCard label="اقدامات ثبت‌شدهٔ من" value={toFa(actionsTotal)} hint="در روند پرونده‌ها" tone="gold" icon="check" />
+        <StatCard label={t("اقدامات ثبت‌شدهٔ من")} value={toFa(actionsTotal)} hint={t("در روند پرونده‌ها")} tone="gold" icon="check" />
         <StatCard
-          label="مهلت‌های نزدیک"
+          label={t("مهلت‌های نزدیک")}
           value={toFa(deadlineCount)}
-          hint="جلسه رسیدگی و مهلت قانونی"
+          hint={t("جلسه رسیدگی و مهلت قانونی")}
           tone={deadlineCount > 0 ? "danger" : "default"}
           icon="clock"
         />
@@ -180,16 +187,16 @@ export default async function TraineeDashboard() {
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <h2 className="flex items-center gap-2 text-base font-extrabold text-foreground">
                 <Icon name="folder" className="h-4.5 w-4.5 text-accent" />
-                پرونده‌های ارجاعی
+                {t("پرونده‌های ارجاعی")}
               </h2>
               {demo && (
-                <StatusBadge tone="cyan">حالت نمایشی — همهٔ پرونده‌های فعال</StatusBadge>
+                <StatusBadge tone="cyan">{t("حالت نمایشی — همهٔ پرونده‌های فعال")}</StatusBadge>
               )}
             </div>
             <div className="max-h-96 space-y-3 overflow-y-auto pl-1">
               {referred.length === 0 && (
                 <p className="rounded-xl bg-surface-2/60 p-4 text-sm text-muted">
-                  هنوز پرونده‌ای به شما ارجاع نشده است. هنگام ارجاع سرپرست، اینجا نمایش داده می‌شود.
+                  {t("هنوز پرونده‌ای به شما ارجاع نشده است. هنگام ارجاع سرپرست، اینجا نمایش داده می‌شود.")}
                 </p>
               )}
               {referred.map((c) => {
@@ -205,8 +212,8 @@ export default async function TraineeDashboard() {
                         </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-1.5">
-                        {urgent && <StatusBadge tone="red">فوری</StatusBadge>}
-                        <StatusBadge tone={st.tone}>{st.label}</StatusBadge>
+                        {urgent && <StatusBadge tone="red">{t("فوری")}</StatusBadge>}
+                        <StatusBadge tone={st.tone}>{t(st.label)}</StatusBadge>
                       </div>
                     </div>
                     <div className="mt-3 flex items-center gap-3">
@@ -216,7 +223,7 @@ export default async function TraineeDashboard() {
                         href={`/dashboard/cases/${c.id}`}
                         className="btn-gold shrink-0 rounded-lg px-3.5 py-2 text-xs font-bold"
                       >
-                        ورود به کارتابل
+                        {t("ورود به کارتابل")}
                       </Link>
                     </div>
                   </div>
@@ -231,7 +238,7 @@ export default async function TraineeDashboard() {
           <Card hover={false}>
             <h2 className="mb-4 flex items-center gap-2 text-base font-extrabold text-foreground">
               <Icon name="plus" className="h-4.5 w-4.5 text-accent" />
-              ثبت اقدام در پرونده
+              {t("ثبت اقدام در پرونده")}
             </h2>
             <TraineeActionForm
               cases={referred.map((c) => ({ id: c.id, label: `${c.subject} (${c.caseNumber})` }))}
@@ -246,11 +253,11 @@ export default async function TraineeDashboard() {
         <Card hover={false}>
           <h2 className="mb-4 flex items-center gap-2 text-base font-extrabold text-foreground">
             <Icon name="check" className="h-4.5 w-4.5 text-success" />
-            آخرین اقدامات ثبت‌شدهٔ من
+            {t("آخرین اقدامات ثبت‌شدهٔ من")}
           </h2>
           <div className="dp-timeline max-h-96 space-y-5 overflow-y-auto pr-1">
             {myActions.length === 0 && (
-              <p className="text-sm text-muted">هنوز اقدامی ثبت نکرده‌اید. از فرم «ثبت اقدام» شروع کنید.</p>
+              <p className="text-sm text-muted">{t("هنوز اقدامی ثبت نکرده‌اید. از فرم «ثبت اقدام» شروع کنید.")}</p>
             )}
             {myActions.map((ev) => (
               <div key={ev.id} className="dp-timeline-item done relative pr-8">
@@ -260,12 +267,12 @@ export default async function TraineeDashboard() {
                   <small className="text-[11px] text-muted">{timeAgo(ev.createdAt)}</small>
                 </div>
                 <p className="mt-1 text-xs leading-6 text-muted">
-                  {ev.caseSubject ? `پرونده: ${ev.caseSubject}` : `شناسه پرونده: ${toFa(ev.caseId)}`}
+                  {ev.caseSubject ? tf("پرونده: {s}", { s: ev.caseSubject }) : tf("شناسه پرونده: {n}", { n: toFa(ev.caseId) })}
                   {ev.description ? ` — ${ev.description}` : ""}
                 </p>
                 <div className="mt-1.5">
                   <StatusBadge tone={ev.visibleToClient ? "green" : "gray"}>
-                    {ev.visibleToClient ? "قابل مشاهده برای موکل" : "داخلی"}
+                    {ev.visibleToClient ? t("قابل مشاهده برای موکل") : t("داخلی")}
                   </StatusBadge>
                 </div>
               </div>
@@ -278,11 +285,11 @@ export default async function TraineeDashboard() {
           <Card hover={false}>
             <h2 className="mb-4 flex items-center gap-2 text-base font-extrabold text-foreground">
               <Icon name="calendar" className="h-4.5 w-4.5 text-danger" />
-              مهلت‌ها و جلسات پیش‌رو
+              {t("مهلت‌ها و جلسات پیش‌رو")}
             </h2>
             <div className="max-h-96 space-y-3 overflow-y-auto pl-1">
               {upcoming.length === 0 && (
-                <p className="text-sm text-muted">جلسه یا مهلتی در روزهای آینده ثبت نشده است.</p>
+                <p className="text-sm text-muted">{t("جلسه یا مهلتی در روزهای آینده ثبت نشده است.")}</p>
               )}
               {upcoming.map((a) => {
                 const k = labelStatus("appointment", a.kind);
@@ -291,11 +298,11 @@ export default async function TraineeDashboard() {
                     <div className="min-w-0">
                       <b className="block truncate text-[13px] text-foreground">{a.title}</b>
                       <p className="mt-1 text-[11px] text-muted">
-                        {formatJalaliLong(a.startsAt)} · ساعت {formatTime(a.startsAt)}
+                        {formatJalaliLong(a.startsAt)} · {tf("ساعت {t}", { t: formatTime(a.startsAt) })}
                         {a.location ? ` · ${a.location}` : ""}
                       </p>
                     </div>
-                    <StatusBadge tone={k.tone}>{k.label}</StatusBadge>
+                    <StatusBadge tone={k.tone}>{t(k.label)}</StatusBadge>
                   </div>
                 );
               })}
@@ -309,31 +316,31 @@ export default async function TraineeDashboard() {
         <Card hover={false}>
           <h2 className="mb-1 flex items-center gap-2 text-base font-extrabold text-foreground">
             <Icon name="book" className="h-4.5 w-4.5 text-accent" />
-            در حال یادگیری — آکادمی دادپیو
+            {t("در حال یادگیری — آکادمی دادپیو")}
           </h2>
-          <p className="mb-4 text-sm text-muted">مسیرهای پیشنهادی برای ارتقای مهارت‌های حقوقی و ابزارهای هوش مصنوعی</p>
+          <p className="mb-4 text-sm text-muted">{t("مسیرهای پیشنهادی برای ارتقای مهارت‌های حقوقی و ابزارهای هوش مصنوعی")}</p>
           <div className="grid gap-3 sm:grid-cols-3">
             {[
               {
                 icon: "sparkles" as const,
-                title: "مسیرهای هوش مصنوعی",
-                desc: "۱۸ پروژهٔ آموزشی AI در ۶ مسیر — از دستیار حقوقی تا تحلیل اسناد",
+                title: t("مسیرهای هوش مصنوعی"),
+                desc: t("۱۸ پروژهٔ آموزشی AI در ۶ مسیر — از دستیار حقوقی تا تحلیل اسناد"),
                 href: "/ai/resources",
-                cta: "مشاهدهٔ مسیرها",
+                cta: t("مشاهدهٔ مسیرها"),
               },
               {
                 icon: "book" as const,
-                title: "مقالات آکادمی",
-                desc: "مطالب آموزشی حقوقی دادپیو برای کارآموزان و همکاران",
+                title: t("مقالات آکادمی"),
+                desc: t("مطالب آموزشی حقوقی دادپیو برای کارآموزان و همکاران"),
                 href: "/knowledge",
-                cta: "ورود به آکادمی",
+                cta: t("ورود به آکادمی"),
               },
               {
                 icon: "scale" as const,
-                title: "پرونده‌های نمونه",
-                desc: "تحلیل پرونده‌های فعال بازار و الگوبرداری از روند وکلا",
+                title: t("پرونده‌های نمونه"),
+                desc: t("تحلیل پرونده‌های فعال بازار و الگوبرداری از روند وکلا"),
                 href: "/dashboard/trainee#cases",
-                cta: "کارتابل پرونده‌ها",
+                cta: t("کارتابل پرونده‌ها"),
               },
             ].map((it) => (
               <Link
@@ -358,23 +365,23 @@ export default async function TraineeDashboard() {
         <Card hover={false}>
           <h2 className="mb-3 flex items-center gap-2 text-base font-extrabold text-foreground">
             <Icon name="id" className="h-4.5 w-4.5 text-muted" />
-            حساب و تنظیمات
+            {t("حساب و تنظیمات")}
           </h2>
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <span className="rounded-full bg-primary-soft px-3 py-1.5 text-xs font-bold text-primary">{user.name}</span>
             <span className="text-xs text-muted" dir="ltr">
               {user.phone}
             </span>
-            <StatusBadge tone="gold">کارآموز حقوقی</StatusBadge>
+            <StatusBadge tone="gold">{t("کارآموز حقوقی")}</StatusBadge>
             <a
               href="/api/auth/logout"
               className="mr-auto rounded-xl border border-border px-4 py-2.5 text-xs font-bold text-danger transition-colors hover:bg-danger/10"
             >
-              خروج از حساب
+              {t("خروج از حساب")}
             </a>
           </div>
           <p className="mt-3 text-xs leading-6 text-muted">
-            محدودهٔ دسترسی شما: پرونده‌های ارجاعی و ثبت اقدام — تغییر نقش و سطوح دسترسی توسط سرپرست تیم از پنل مدیریت انجام می‌شود.
+            {t("محدودهٔ دسترسی شما: پرونده‌های ارجاعی و ثبت اقدام — تغییر نقش و سطوح دسترسی توسط سرپرست تیم از پنل مدیریت انجام می‌شود.")}
           </p>
         </Card>
       </div>

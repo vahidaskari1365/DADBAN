@@ -6,10 +6,14 @@ import { toast } from "sonner";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { toEn, toFa } from "@/lib/money";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /** فرم «ثبت اقدام جدید» در روند پرونده → POST /api/portal/cases/[id]/events */
 export function EventLogger({ caseId, canWrite }: { caseId: number; canWrite: boolean }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [progress, setProgress] = useState("");
@@ -19,7 +23,7 @@ export function EventLogger({ caseId, canWrite }: { caseId: number; canWrite: bo
 
   async function submit() {
     if (title.trim().length < 3) {
-      toast.error("عنوان اقدام را وارد کنید.");
+      toast.error(t("عنوان اقدام را وارد کنید."));
       return;
     }
     setSaving(true);
@@ -36,31 +40,31 @@ export function EventLogger({ caseId, canWrite }: { caseId: number; canWrite: bo
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
-        toast.success(visible ? "اقدام ثبت شد و برای موکل قابل مشاهده است." : "اقدام داخلی ثبت شد.");
+        toast.success(visible ? t("اقدام ثبت شد و برای موکل قابل مشاهده است.") : t("اقدام داخلی ثبت شد."));
         setTitle("");
         setDescription("");
         setProgress("");
         setOpen(false);
         router.refresh();
       } else {
-        toast.error(data.error ?? "ثبت اقدام ناموفق بود.");
+        toast.error(data.error ?? t("ثبت اقدام ناموفق بود."));
       }
     } catch {
-      toast.error("ارتباط با سرور برقرار نشد.");
+      toast.error(t("ارتباط با سرور برقرار نشد."));
     } finally {
       setSaving(false);
     }
   }
 
   if (!canWrite) {
-    return <p className="rounded-xl bg-surface-2 px-4 py-3 text-xs text-muted">ثبت اقدام فقط با حساب وکیل یا کارآموز امکان‌پذیر است.</p>;
+    return <p className="rounded-xl bg-surface-2 px-4 py-3 text-xs text-muted">{t("ثبت اقدام فقط با حساب وکیل یا کارآموز امکان‌پذیر است.")}</p>;
   }
 
   if (!open) {
     return (
       <Button variant="primary" size="md" onClick={() => setOpen(true)}>
         <Icon name="plus" className="h-4 w-4" />
-        ثبت اقدام جدید
+        {t("ثبت اقدام جدید")}
       </Button>
     );
   }
@@ -68,43 +72,43 @@ export function EventLogger({ caseId, canWrite }: { caseId: number; canWrite: bo
   return (
     <div className="w-full space-y-3 rounded-2xl border border-border bg-surface-2/40 p-4">
       <div className="flex items-center justify-between">
-        <b className="text-sm text-foreground">ثبت اقدام جدید</b>
+        <b className="text-sm text-foreground">{t("ثبت اقدام جدید")}</b>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          aria-label="بستن فرم"
+          aria-label={t("بستن فرم")}
           className="grid h-9 w-9 place-items-center rounded-lg bg-surface-2 text-foreground-soft hover:bg-surface-3"
         >
           <Icon name="x" className="h-4 w-4" />
         </button>
       </div>
       <label className="block">
-        <span className="mb-1.5 block text-xs text-muted">عنوان اقدام</span>
+        <span className="mb-1.5 block text-xs text-muted">{t("عنوان اقدام")}</span>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="مثلاً بررسی سند مالکیت"
+          placeholder={t("مثلاً بررسی سند مالکیت")}
           className="h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
         />
       </label>
       <label className="block">
-        <span className="mb-1.5 block text-xs text-muted">توضیحات</span>
+        <span className="mb-1.5 block text-xs text-muted">{t("توضیحات")}</span>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          placeholder="شرح اقدام انجام‌شده..."
+          placeholder={t("شرح اقدام انجام‌شده...")}
           className="min-h-20 w-full resize-y rounded-xl border border-border bg-surface p-3 text-sm outline-none focus:border-primary/40"
         />
       </label>
       <div className="flex flex-wrap items-center gap-4">
         <label className="block">
-          <span className="mb-1.5 block text-xs text-muted">پیشرفت کل پرونده (٪)</span>
+          <span className="mb-1.5 block text-xs text-muted">{t("پیشرفت کل پرونده (٪)")}</span>
           <input
             value={progress}
             onChange={(e) => setProgress(e.target.value)}
             inputMode="numeric"
-            placeholder="مثلاً ۶۵"
+            placeholder={t("مثلاً ۶۵")}
             className="h-11 w-28 rounded-xl border border-border bg-surface px-3 text-sm outline-none focus:border-primary/40"
           />
         </label>
@@ -115,15 +119,15 @@ export function EventLogger({ caseId, canWrite }: { caseId: number; canWrite: bo
             onChange={(e) => setVisible(e.target.checked)}
             className="h-4 w-4 accent-[#d5a84c]"
           />
-          قابل مشاهده برای موکل
+          {t("قابل مشاهده برای موکل")}
         </label>
       </div>
       <Button variant="primary" size="md" onClick={() => void submit()} disabled={saving}>
         <Icon name="check" className="h-4 w-4" />
-        {saving ? "در حال ثبت..." : "ثبت اقدام"}
+        {saving ? t("در حال ثبت...") : t("ثبت اقدام")}
       </Button>
       <p className="text-[11px] text-muted">
-        اگر پیشرفت جدید بیشتر از مقدار فعلی باشد، نوار پیشرفت پرونده به همان مقدار ({toFa(progress || "—")}٪) به‌روز می‌شود.
+        {tf("اگر پیشرفت جدید بیشتر از مقدار فعلی باشد، نوار پیشرفت پرونده به همان مقدار ({n}٪) به‌روز می‌شود.", { n: toFa(progress || "—") })}
       </p>
     </div>
   );

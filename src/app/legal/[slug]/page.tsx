@@ -4,6 +4,7 @@ import { PageHero } from "@/components/page-hero";
 import { Container, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { TRUST_PAGES } from "@/lib/content";
+import { getT } from "@/lib/i18n/server";
 
 export const revalidate = 300;
 
@@ -47,22 +48,23 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function LegalPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const t = await getT();
   const p = TRUST_PAGES.find((x) => x.slug === slug);
   if (!p) notFound();
   const blocks = CONTENT[slug] ?? [{ h: "اطلاعات کلی", p: p.desc }];
 
   return (
     <>
-      <PageHero variant="market" image="/images/hero-legal.png" title={p.title} desc={p.desc} breadcrumb={[{ label: "خانه", href: "/" }, { label: p.title }]} />
+      <PageHero variant="market" image="/images/hero-legal.png" title={t(p.title)} desc={t(p.desc)} breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t(p.title) }]} />
       <Container className="py-12">
         <div className="mx-auto max-w-3xl space-y-4">
           {blocks.map((b) => (
             <Card key={b.h} hover={false}>
-              <h2 className="flex items-center gap-2 text-lg font-bold text-foreground"><Icon name="check" className="h-5 w-5 text-success" /> {b.h}</h2>
-              <p className="mt-3 text-sm leading-8 text-foreground-soft">{b.p}</p>
+              <h2 className="flex items-center gap-2 text-lg font-bold text-foreground"><Icon name="check" className="h-5 w-5 text-success" /> {t(b.h)}</h2>
+              <p className="mt-3 text-sm leading-8 text-foreground-soft">{t(b.p)}</p>
             </Card>
           ))}
-          <p className="pt-2 text-center text-xs text-muted">این متن جنبه‌ی عمومی دارد و جایگزال مشاوره‌ی حقوقی تخصصی نیست.</p>
+          <p className="pt-2 text-center text-xs text-muted">{t("این متن جنبه‌ی عمومی دارد و جایگزال مشاوره‌ی حقوقی تخصصی نیست.")}</p>
         </div>
       </Container>
     </>

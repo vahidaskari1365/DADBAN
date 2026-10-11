@@ -13,6 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 
 /**
  * وضعیت قرارداد الکترونیکی پرونده — امضای الکترونیکی موکل پس از ارسال قرارداد.
@@ -31,6 +33,8 @@ export default function CaseContract({
   signedAt: string | null;
 }) {
   const router = useRouter();
+  const t = useT();
+  const tf = templateT(t);
   const [status, setStatus] = useState(contractStatus);
   const [signedAtLocal, setSignedAtLocal] = useState(signedAt);
   const [open, setOpen] = useState(false);
@@ -51,7 +55,7 @@ export default function CaseContract({
       });
       const data = (await res.json()) as { ok?: boolean; error?: string; signedAt?: string };
       if (!res.ok || !data.ok) {
-        setErr(data.error ?? "امضای قرارداد ناموفق بود.");
+        setErr(data.error ?? t("امضای قرارداد ناموفق بود."));
         return;
       }
       setStatus("signed");
@@ -60,7 +64,7 @@ export default function CaseContract({
       setDone(true);
       router.refresh();
     } catch {
-      setErr("خطا در ارتباط با سرور.");
+      setErr(t("خطا در ارتباط با سرور."));
     } finally {
       setBusy(false);
     }
@@ -72,13 +76,13 @@ export default function CaseContract({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Icon name="stamp" className="h-5 w-5 text-accent" />
-            <h3 className="text-sm font-bold text-foreground">قرارداد وکالت الکترونیکی</h3>
-            <StatusBadge tone={s.tone}>{s.label}</StatusBadge>
+            <h3 className="text-sm font-bold text-foreground">{t("قرارداد وکالت الکترونیکی")}</h3>
+            <StatusBadge tone={s.tone}>{t(s.label)}</StatusBadge>
           </div>
           <dl className="mt-3 grid gap-x-6 gap-y-2 text-xs text-muted sm:grid-cols-2">
             {contractCode && (
               <div className="flex gap-1">
-                <dt className="shrink-0">کد قرارداد:</dt>
+                <dt className="shrink-0">{t("کد قرارداد:")}</dt>
                 <dd dir="ltr" className="font-mono font-semibold text-foreground">
                   {contractCode}
                 </dd>
@@ -86,7 +90,7 @@ export default function CaseContract({
             )}
             {feeAgreed && (
               <div className="flex gap-1">
-                <dt className="shrink-0">حق‌الوکالهٔ توافقی:</dt>
+                <dt className="shrink-0">{t("حق‌الوکالهٔ توافقی:")}</dt>
                 <dd>
                   <b className="dp-money">{formatToman(feeAgreed)}</b>
                 </dd>
@@ -94,15 +98,15 @@ export default function CaseContract({
             )}
             {signedAtLocal && (
               <div className="flex gap-1">
-                <dt className="shrink-0">تاریخ امضا:</dt>
+                <dt className="shrink-0">{t("تاریخ امضا:")}</dt>
                 <dd className="font-semibold text-success">
-                  {formatJalaliLong(signedAtLocal)} · ساعت {formatTime(signedAtLocal)}
+                  {formatJalaliLong(signedAtLocal)} · {t("ساعت")} {formatTime(signedAtLocal)}
                 </dd>
               </div>
             )}
             <div className="flex gap-1">
-              <dt className="shrink-0">امضاکننده:</dt>
-              <dd>موکل (امضای الکترونیکی)</dd>
+              <dt className="shrink-0">{t("امضاکننده:")}</dt>
+              <dd>{t("موکل (امضای الکترونیکی)")}</dd>
             </div>
           </dl>
         </div>
@@ -114,7 +118,7 @@ export default function CaseContract({
             className="btn-gold inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition-all"
           >
             <Icon name="stamp" className="h-4 w-4" />
-            امضای الکترونیکی قرارداد
+            {t("امضای الکترونیکی قرارداد")}
           </button>
         )}
       </div>
@@ -122,18 +126,18 @@ export default function CaseContract({
       {status === "signed" && (
         <p className="flex items-center gap-2 rounded-xl bg-success/10 p-4 text-sm font-semibold text-success">
           <Icon name="badge" className="h-5 w-5 shrink-0" />
-          قرارداد امضا شده است. نسخهٔ نهایی برای وکیل و پشتیبانی دادپیو ثبت شد و روند پرونده آغاز می‌شود.
+          {t("قرارداد امضا شده است. نسخهٔ نهایی برای وکیل و پشتیبانی دادپیو ثبت شد و روند پرونده آغاز می‌شود.")}
         </p>
       )}
       {(status === "none" || status === "draft") && (
         <p className="flex items-start gap-2 rounded-xl border border-dashed border-border p-4 text-sm leading-6 text-muted">
           <Icon name="clock" className="mt-0.5 h-4 w-4 shrink-0" />
-          پس از توافق نهایی با وکیل، قرارداد از طرف او برای امضای شما ارسال می‌شود و همین‌جا قابل امضای الکترونیکی خواهد بود.
+          {t("پس از توافق نهایی با وکیل، قرارداد از طرف او برای امضای شما ارسال می‌شود و همین‌جا قابل امضای الکترونیکی خواهد بود.")}
         </p>
       )}
       {done && (
         <p className="flex items-center gap-1.5 text-xs font-semibold text-success">
-          <Icon name="check" className="h-4 w-4" /> امضا با موفقیت ثبت شد.
+          <Icon name="check" className="h-4 w-4" /> {t("امضا با موفقیت ثبت شد.")}
         </p>
       )}
       {err && (
@@ -147,12 +151,11 @@ export default function CaseContract({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
               <Icon name="stamp" className="h-5 w-5 text-accent" />
-              تأیید امضای الکترونیکی قرارداد
+              {t("تأیید امضای الکترونیکی قرارداد")}
             </DialogTitle>
             <DialogDescription className="text-right text-sm leading-7">
-              با امضای الکترونیکی، قرارداد وکالت این پرونده به‌صورت قطعی برای شما و وکیل ثبت می‌شود.
-              مبلغ و شرایط درج‌شده در قرارداد ملاک عمل خواهد بود.
-              {feeAgreed ? ` حق‌الوکالهٔ توافقی: ${formatToman(feeAgreed)}.` : ""}
+              {t("با امضای الکترونیکی، قرارداد وکالت این پرونده به‌صورت قطعی برای شما و وکیل ثبت می‌شود. مبلغ و شرایط درج‌شده در قرارداد ملاک عمل خواهد بود.")}
+              {feeAgreed ? tf(" حق‌الوکالهٔ توافقی: {n}", { n: `${formatToman(feeAgreed)}.` }) : ""}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-row justify-start gap-2">
@@ -163,7 +166,7 @@ export default function CaseContract({
               className="btn-gold inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition-all disabled:opacity-50"
             >
               <Icon name="check" className="h-4 w-4" />
-              {busy ? "در حال ثبت امضا…" : "تأیید و امضا"}
+              {busy ? t("در حال ثبت امضا…") : t("تأیید و امضا")}
             </button>
             <button
               type="button"
@@ -171,7 +174,7 @@ export default function CaseContract({
               disabled={busy}
               className="inline-flex h-11 items-center justify-center rounded-xl border border-border-strong bg-surface px-5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-2 disabled:opacity-50"
             >
-              انصراف
+              {t("انصراف")}
             </button>
           </DialogFooter>
         </DialogContent>

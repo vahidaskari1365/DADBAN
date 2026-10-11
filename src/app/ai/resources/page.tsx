@@ -5,6 +5,7 @@ import { Icon } from "@/components/icons";
 import { ResourcesTools } from "@/components/ai/resources-tools";
 import { SITE_NAME } from "@/lib/brand";
 import { OPEN_SOURCE_PROJECTS } from "@/data/ai-resources";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: "جعبه‌ابزار منبع‌باز هوش مصنوعی",
@@ -17,7 +18,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AiResourcesPage() {
+export default async function AiResourcesPage() {
+  const t = await getT();
   return (
     <div className="page-wash pb-16">
       {/* ─── Hero ─── */}
@@ -26,17 +28,18 @@ export default function AiResourcesPage() {
         <div aria-hidden className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-accent-soft blur-3xl" />
         <Container className="relative">
           <div className="py-12 sm:py-16 lg:py-20">
-            <Badge tone="accent" icon="sparkles">شش پروژه‌ی منبع‌باز، یک جعبه‌ابزار</Badge>
+            <Badge tone="accent" icon="sparkles">{t("شش پروژه‌ی منبع‌باز، یک جعبه‌ابزار")}</Badge>
             <h1 className="mt-4 max-w-3xl text-3xl font-black leading-[1.25] text-foreground sm:text-4xl lg:text-5xl">
-              جعبه‌ابزار <span className="text-primary">منبع‌باز</span> هوش مصنوعی دادبان
+              {t("جعبه‌ابزار")} <span className="text-primary">{t("منبع‌باز")}</span> {t("هوش مصنوعی دادبان")}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-muted sm:text-lg sm:leading-9">
-              کاتالوگ زنده‌ی APIهای رایگان، ابزارهای دسترسی وب برای عامل‌ها، کتابخانه‌ی مهارت‌ها، آکادمی آموزش و
-              موتور مسیریابی چندتأمین‌کننده — چرخه‌ی کامل هوش مصنوعی، بدون هیچ هزینه‌ای.
+              {t(
+                "کاتالوگ زنده‌ی APIهای رایگان، ابزارهای دسترسی وب برای عامل‌ها، کتابخانه‌ی مهارت‌ها، آکادمی آموزش و موتور مسیریابی چندتأمین‌کننده — چرخه‌ی کامل هوش مصنوعی، بدون هیچ هزینه‌ای.",
+              )}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Button href="#toolbox" size="lg" icon="bolt">مشاهده‌ی ابزارها</Button>
-              <Button href="/ai" variant="outline" size="lg" icon="sparkles">مرکز هوش مصنوعی</Button>
+              <Button href="#toolbox" size="lg" icon="bolt">{t("مشاهده‌ی ابزارها")}</Button>
+              <Button href="/ai" variant="outline" size="lg" icon="sparkles">{t("مرکز هوش مصنوعی")}</Button>
             </div>
           </div>
         </Container>
@@ -46,9 +49,9 @@ export default function AiResourcesPage() {
       <section className="mt-14">
         <Container>
           <SectionHeading
-            eyebrow="منبع‌های همکار"
-            title="شش مخزن منبع‌باز، یکپارچه در دادبان"
-            desc="هر مخزن یک لایه از پشته‌ی هوش مصنوعی را پوشش می‌دهد؛ همگی به‌صورت زنده و فارسی در همین صفحه قابل استفاده‌اند."
+            eyebrow={t("منبع‌های همکار")}
+            title={t("شش مخزن منبع‌باز، یکپارچه در دادبان")}
+            desc={t("هر مخزن یک لایه از پشته‌ی هوش مصنوعی را پوشش می‌دهد؛ همگی به‌صورت زنده و فارسی در همین صفحه قابل استفاده‌اند.")}
           />
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {OPEN_SOURCE_PROJECTS.map((p) => (
@@ -68,13 +71,13 @@ export default function AiResourcesPage() {
                     {p.repo.replace("https://github.com/", "")}
                   </a>
                 </div>
-                <h3 className="mt-4 font-bold text-foreground">{p.faTitle}</h3>
+                <h3 className="mt-4 font-bold text-foreground">{t(p.faTitle)}</h3>
                 <p className="mt-1 text-xs font-semibold text-primary" dir="ltr">{p.name}</p>
-                <p className="mt-2 flex-1 text-sm leading-7 text-muted">{p.faDesc}</p>
+                <p className="mt-2 flex-1 text-sm leading-7 text-muted">{t(p.faDesc)}</p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {p.tags.map((t) => <Badge key={t}>{t}</Badge>)}
+                  {p.tags.map((tag) => <Badge key={tag}>{tag}</Badge>)}
                 </div>
-                <p className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-xs font-semibold text-foreground-soft">{p.highlight}</p>
+                <p className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-xs font-semibold text-foreground-soft">{t(p.highlight)}</p>
               </Card>
             ))}
           </div>
@@ -85,9 +88,9 @@ export default function AiResourcesPage() {
       <section id="toolbox" className="mt-16 scroll-mt-24">
         <Container>
           <SectionHeading
-            eyebrow="ابزارهای زنده"
-            title="همین حالا استفاده کنید"
-            desc="کاتالوگ را بگردید، صفحه بخوانید، مخزن تحلیل کنید و دروازه را تست کنید."
+            eyebrow={t("ابزارهای زنده")}
+            title={t("همین حالا استفاده کنید")}
+            desc={t("کاتالوگ را بگردید، صفحه بخوانید، مخزن تحلیل کنید و دروازه را تست کنید.")}
           />
           <div className="mt-8 rounded-3xl border border-border bg-surface p-4 shadow-[var(--shadow-card)] sm:p-6">
             <ResourcesTools />
@@ -101,10 +104,11 @@ export default function AiResourcesPage() {
           <div className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4">
             <Icon name="alert" className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
             <p className="text-sm leading-7 text-foreground-soft">
-              کاتالوگ APIهای رایگان از مخزن عمومی awesome-free-llm-apis استخراج شده و ممکن است شرایط هر تأمین‌کننده تغییر کند —
-              پیش از استفاده‌ی تجاری، حتماً شرایط استفاده‌ی خود تأمین‌کننده را بخوانید. ابزارهای این صفحه خروجی اطلاع‌رسانی دارند و
-              جایگزین مشاوره‌ی حقوقی رسمی نیستند؛ برای تصمیم‌های مهم با وکلای تأییدشده‌ی{" "}
-              <Link href="/lawyers" className="font-bold text-primary hover:underline">دادبان</Link> مشورت کنید.
+              {t(
+                "کاتالوگ APIهای رایگان از مخزن عمومی awesome-free-llm-apis استخراج شده و ممکن است شرایط هر تأمین‌کننده تغییر کند — پیش از استفاده‌ی تجاری، حتماً شرایط استفاده‌ی خود تأمین‌کننده را بخوانید. ابزارهای این صفحه خروجی اطلاع‌رسانی دارند و جایگزین مشاوره‌ی حقوقی رسمی نیستند؛ برای تصمیم‌های مهم با وکلای تأییدشده‌ی",
+              )}{" "}
+              <Link href="/lawyers" className="font-bold text-primary hover:underline">دادبان</Link>{" "}
+              {t("مشورت کنید.")}
             </p>
           </div>
         </Container>

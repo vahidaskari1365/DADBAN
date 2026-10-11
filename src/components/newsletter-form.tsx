@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Icon } from "./icons";
+import { useT } from "@/lib/i18n/provider";
 
 /**
  * فرم عضویت در خبرنامهٔ دادبان — کامپوننت کلاینتِ کوچک برای فوتر (سرورکامپوننت).
@@ -10,6 +11,7 @@ import { Icon } from "./icons";
  * هدف لمسی ≥۴۴px، لیبل برای اسکرین‌ریدر، و پیام‌های فارسی.
  */
 export default function NewsletterForm() {
+  const t = useT();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [ok, setOk] = useState<string | null>(null);
@@ -29,13 +31,13 @@ export default function NewsletterForm() {
       });
       const data = (await res.json().catch(() => null)) as { ok?: boolean; message?: string; error?: string } | null;
       if (res.ok && data?.ok) {
-        setOk(data.message ?? "ایمیل شما در خبرنامهٔ دادبان ثبت شد.");
+        setOk(data.message ?? t("ایمیل شما در خبرنامهٔ دادبان ثبت شد."));
         setEmail("");
       } else {
-        setErr(data?.error ?? "ثبت خبرنامه انجام نشد؛ لطفاً دوباره تلاش کنید.");
+        setErr(data?.error ?? t("ثبت خبرنامه انجام نشد؛ لطفاً دوباره تلاش کنید."));
       }
     } catch {
-      setErr("ارتباط برقرار نشد؛ لطفاً اتصال اینترنت را بررسی کنید.");
+      setErr(t("ارتباط برقرار نشد؛ لطفاً اتصال اینترنت را بررسی کنید."));
     } finally {
       setLoading(false);
     }
@@ -45,7 +47,7 @@ export default function NewsletterForm() {
     <div>
       <form onSubmit={onSubmit} className="flex items-stretch gap-2">
         <label htmlFor="newsletter-email" className="sr-only">
-          ایمیل برای عضویت در خبرنامه
+          {t("ایمیل برای عضویت در خبرنامه")}
         </label>
         <input
           id="newsletter-email"
@@ -72,12 +74,12 @@ export default function NewsletterForm() {
           {loading ? (
             <>
               <span aria-hidden className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              در حال ثبت…
+              {t("در حال ثبت…")}
             </>
           ) : (
             <>
               <Icon name="send" className="h-4 w-4" aria-hidden />
-              عضویت
+              {t("عضویت")}
             </>
           )}
         </button>
@@ -86,13 +88,13 @@ export default function NewsletterForm() {
         {ok && (
           <span className="inline-flex items-center gap-1 text-success" data-testid="newsletter-success">
             <Icon name="check" className="h-3.5 w-3.5" aria-hidden />
-            {ok}
+            {t(ok)}
           </span>
         )}
         {err && (
           <span className="inline-flex items-center gap-1 text-danger" role="alert" data-testid="newsletter-error">
             <Icon name="alert" className="h-3.5 w-3.5" aria-hidden />
-            {err}
+            {t(err)}
           </span>
         )}
       </p>
