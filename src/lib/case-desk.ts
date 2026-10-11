@@ -156,8 +156,13 @@ export async function extractCaseDocs(caseId: number): Promise<{ results: { name
 
 /* ────────────── ساخت بافتار پرونده ────────────── */
 
-/** بافتار متنی پرونده برای تحلیل/لایحه — سقف‌دار و شماره‌دار */
-export async function buildCaseContext(caseId: number): Promise<{ caseRow: typeof cases.$inferSelect; context: string; docCount: number }> {
+/** سقف کاراکتر هر پیام context — هماهنگ با normalizeMessages در llm.ts (۸۰۰۰) */
+const CONTEXT_CHUNK_CHARS = 6500;
+
+/** بافتار متنی پرونده به‌صورت چانک‌های ≤۶.۵k — سقف‌دار و شماره‌دار */
+export async function buildCaseContextChunks(
+  caseId: number,
+): Promise<{ caseRow: typeof cases.$inferSelect; chunks: string[]; docCount: number }> {
   const [caseRow] = await db.select().from(cases).where(eq(cases.id, caseId)).limit(1);
   const docs = await db
     .select({ documentId: caseDocTexts.documentId, text: caseDocTexts.text })
@@ -167,24 +172,27 @@ export async function buildCaseContext(caseId: number): Promise<{ caseRow: typeo
   const names = await db.select({ id: caseDocuments.id, name: caseDocuments.name }).from(caseDocuments).where(eq(caseDocuments.caseId, caseId)).limit(60);
   const nameMap = new Map(names.map((n) => [n.id, n.name]));
 
-  const parts: string[] = [
-    `مشخصات پرونده در سامانه:`,
+  const header = [
+    "مشخصات پرونده در سامانه:",
     `- موضوع: ${caseRow?.subject ?? "—"}`,
     `- شهر/استان: ${caseRow?.city ?? "—"} / ${caseRow?.province ?? "—"}`,
     `- مرحله: ${caseRow?.stage ?? "—"}`,
     `- شرح موکل: ${(caseRow?.description ?? "").slice(0, 1200)}`,
-  ];
+  ].join("\n");
+  const parts: string[] = [header];
   if (docs.length === 0) parts.push("هیچ سندی با متن استخراج‌شده برای این پرونده موجود نیست.");
   docs.forEach((d, i) => {
     const name = nameMap.get(d.documentId) ?? `سند ${i + 1}`;
     parts.push(`─── سند ${i + 1}: «${name}» ───\n${d.text.slice(0, MAX_DOC_CHARS)}`);
   });
 
-  return {
-    caseRow,
-    context: parts.join("\n\n").slice(0, 16000),
-    docCount: docs.length,
-  };
+  // چانک‌بندی مرتب — هیچ پیامی از سقف ۸۰۰۰ کاراکتر llm.ts عبور نمی‌کند
+  const joined = parts.join("\n\n");
+  const chunks: string[] = [];
+  for (let i = 0; i < joined.length; i += CONTEXT_CHUNK_CHARS) {
+    chunks.push(joined.slice(i, i + CONTEXT_CHUNK_CHARS));
+  }
+  return { caseRow, chunks: chunks.slice(0, 4), docCount: docs.length };
 }
 
 /* ────────────── پرامپت‌ها ────────────── */
@@ -206,18 +214,18 @@ export function buildAnalysisSystemPrompt(): string {
   ].join("\n");
 }
 
-export function buildAnalysisUserPrompt(context: string): string {
-  return `${context}\n\nحالا تحلیل کامل پرونده را با ساختار ۶ عنوانی بخواه، به فارسیِ حقوقی و مختصر و دقیق.`;
+export function buildAnalysisUserPrompt(): string {
+  return "متن پرونده در پیام‌های قبل آمده است. حالا تحلیل کامل پرونده را با ساختار ۶ عنوانی بنویس، به فارسیِ حقوقی و مختصر و دقیق.";
 }
 
-/** لایحهٔ دفاعیه از دل پرونده — با سبک وکیل (سبک به‌صورت پارامتر تزریق می‌شود) */
-export function buildBriefPrompts(context: string, side: "خواهان" | "خوانده", extra: string, styleBlock: string | null): { system: string; user: string } {
+/** لایحهٔ دفاعیه از دل پرونده — با سبک وکیل (بافتار جداگانه به‌صورت چانک ارسال می‌شود) */
+export function buildBriefPrompts(side: "خواهان" | "خوانده", extra: string, styleBlock: string | null): { system: string; user: string } {
   const system = [
     `تو وکیل دادگستریِ باتجربهٔ ایران هستی و برای ${side === "خواهان" ? "خواهان" : "خوانده"} این پرونده یک «لایحهٔ دفاعیه» تنظیم می‌کنی.`,
     "ساختار الزامی لایحه:",
     "۱) سربرگ: «ریاست محترم دادگاه …» و جای خالی برای شماره/کلاسهٔ پرونده با [تکمیل شود].",
     "۲) «موضوع لایحه» در یک سطر.",
-    "۳) شرح وقایع به‌ترتیب زمانی — فقط بر مبنای اسناد پرونده؛ هرجا اطلاعات لازم است [تکمیل شود].",
+    "۳) شرح وقایع به‌ترتیب زمانی — فقط بر مبنای اسناد پرونده که در پیام‌های قبل آمده؛ هرجا اطلاعات لازم است [تکمیل شود].",
     "۴) استدلال‌های حقوقی شماره‌دار با استناد به مواد (فقط ماده‌های مطمئن؛ هرگز مادهٔ ناموجود نساز).",
     "۵) پاسخ به ادعاها/دفاع‌های طرف مقابل بر اساس همان اسناد.",
     "۶) درخواست نهایی از دادگاه و بند «منضمات».",
@@ -227,7 +235,7 @@ export function buildBriefPrompts(context: string, side: "خواهان" | "خو�
   ]
     .filter(Boolean)
     .join("\n");
-  const user = `${context}\n\n${extra ? `نکات تکمیلی وکیل:\n${extra.slice(0, 1500)}\n` : ""}لایحهٔ دفاعیهٔ کامل را تنظیم کن.`;
+  const user = `${extra ? `نکات تکمیلی وکیل:\n${extra.slice(0, 1500)}\n` : ""}لایحهٔ دفاعیهٔ کامل را بر اساس مشخصات و اسناد پرونده (پیام‌های قبلی) تنظیم کن.`;
   return { system, user };
 }
 

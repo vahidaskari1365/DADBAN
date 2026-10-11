@@ -7,8 +7,8 @@
 
 import { rateLimit, readJson, clientIp } from "@/lib/api-security";
 import { getCurrentUser } from "@/lib/user-auth";
-import { getZai, isAiAvailable } from "@/lib/ai";
-import { loadCaseForDesk, buildCaseContext, buildBriefPrompts } from "@/lib/case-desk";
+import { askLLM } from "@/lib/llm";
+import { loadCaseForDesk, buildCaseContextChunks, buildBriefPrompts } from "@/lib/case-desk";
 import { styleBlockForUser } from "@/lib/lawyer-style";
 import { latestCaseAnalysis } from "@/lib/case-desk";
 
@@ -36,17 +36,17 @@ export async function POST(req: Request) {
       { status: access.reason === "forbidden" ? 403 : 404 },
     );
   }
-  if (!(await isAiAvailable())) {
-    return Response.json({ ok: false, error: "سرویس هوش مصنوعی موقتاً در دسترس نیست. بعداً تلاش کنید." }, { status: 503 });
-  }
-
-  const built = await buildCaseContext(access.case.id);
+  const built = await buildCaseContextChunks(access.case.id);
   const analysis = await latestCaseAnalysis(access.case.id);
   const analysisNote = analysis
     ? `چکیدهٔ تحلیل قبلی پرونده (به‌عنوان راهنمای استدلال):\nنقاط قوت: ${analysis.strengths.slice(0, 500)}\nریسک‌ها: ${analysis.weaknesses.slice(0, 400)}\n`
     : "";
   const styleBlock = await styleBlockForUser(user.id);
-  const { system, user: userPrompt } = buildBriefPrompts(built.context, side, extra, styleBlock);
+  const { system, user: instruction } = buildBriefPrompts(side, extra, styleBlock);
+  const llmMessages = [
+    ...built.chunks.map((c) => ({ role: "user", content: c })),
+    { role: "user", content: `${instruction}\n${analysisNote}` },
+  ];
 
   const encoder = new TextEncoder();
   const send = (controller: ReadableStreamDefaultController, obj: unknown) => {
@@ -71,21 +71,10 @@ export async function POST(req: Request) {
       req.signal.addEventListener("abort", onAbort, { once: true });
 
       try {
-        const zai = await getZai();
-        const completion = (await Promise.race([
-          zai.chat.completions.create({
-            messages: [
-              { role: "system", content: system },
-              { role: "user", content: `${userPrompt}\n${analysisNote}` },
-            ],
-            max_tokens: 4000,
-            temperature: 0.35,
-            thinking: { type: "disabled" },
-          }),
-          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 90_000)),
-        ])) as { choices?: { message?: { content?: string } }[] } | null;
-
-        const full = (completion?.choices?.[0]?.message?.content ?? "").trim();
+        const full = ((await Promise.race([
+          askLLM(llmMessages, 4000, system),
+          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 100_000)),
+        ])) ?? "").trim();
         if (!full) throw new Error("ai-empty");
 
         for (let i = 0; i < full.length; i += 12) {

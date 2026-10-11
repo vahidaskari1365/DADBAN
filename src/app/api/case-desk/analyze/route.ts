@@ -7,12 +7,12 @@
 
 import { rateLimit, readJson, clientIp } from "@/lib/api-security";
 import { getCurrentUser } from "@/lib/user-auth";
-import { getZai, isAiAvailable } from "@/lib/ai";
+import { askLLM } from "@/lib/llm";
 import { db } from "@/db";
 import { caseAnalyses } from "@/db/schema";
 import {
   loadCaseForDesk,
-  buildCaseContext,
+  buildCaseContextChunks,
   buildAnalysisSystemPrompt,
   buildAnalysisUserPrompt,
   parseAnalysisSections,
@@ -40,15 +40,11 @@ export async function POST(req: Request) {
       { status: access.reason === "forbidden" ? 403 : 404 },
     );
   }
-  if (!(await isAiAvailable())) {
-    return Response.json({ ok: false, error: "سرویس هوش مصنوعی موقتاً در دسترس نیست. بعداً تلاش کنید." }, { status: 503 });
-  }
-
-  let context = "";
+  let chunks: string[] = [];
   let docCount = 0;
   try {
-    const built = await buildCaseContext(access.case.id);
-    context = built.context;
+    const built = await buildCaseContextChunks(access.case.id);
+    chunks = built.chunks;
     docCount = built.docCount;
   } catch (err) {
     console.error("[dadban] case-desk analyze: context build failed:", err);
@@ -56,7 +52,9 @@ export async function POST(req: Request) {
   }
 
   const system = buildAnalysisSystemPrompt();
-  const userPrompt = buildAnalysisUserPrompt(context);
+  const userPrompt = buildAnalysisUserPrompt();
+  // بافتار پرونده به‌صورت چانک‌های ≤۶.۵k + پیام نهایی دستور (هماهنگ با normalizeMessages در llm.ts)
+  const llmMessages = [...chunks.map((c) => ({ role: "user", content: c })), { role: "user", content: userPrompt }];
 
   const encoder = new TextEncoder();
   const send = (controller: ReadableStreamDefaultController, obj: unknown) => {
@@ -81,21 +79,10 @@ export async function POST(req: Request) {
       req.signal.addEventListener("abort", onAbort, { once: true });
 
       try {
-        const zai = await getZai();
-        const completion = (await Promise.race([
-          zai.chat.completions.create({
-            messages: [
-              { role: "system", content: system },
-              { role: "user", content: userPrompt },
-            ],
-            max_tokens: 3000,
-            temperature: 0.3,
-            thinking: { type: "disabled" },
-          }),
-          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 90_000)),
-        ])) as { choices?: { message?: { content?: string } }[] } | null;
-
-        const full = (completion?.choices?.[0]?.message?.content ?? "").trim();
+        const full = ((await Promise.race([
+          askLLM(llmMessages, 3000, system),
+          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 100_000)),
+        ])) ?? "").trim();
         if (!full) throw new Error("ai-empty");
 
         // استریم تدریجی (هم‌الگوی دادخواست‌ساز)

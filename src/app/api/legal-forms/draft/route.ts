@@ -1,9 +1,9 @@
-import { getZai, isAiAvailable } from "@/lib/ai";
 import { rateLimit, readJson, clientIp } from "@/lib/api-security";
 import { getDraftDef, missingRequired, buildSystemPrompt, buildUserPrompt } from "@/lib/legal-drafts";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
 import { styleBlockForUser } from "@/lib/lawyer-style";
+import { askLLM } from "@/lib/llm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,10 +52,6 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!(await isAiAvailable())) {
-    return json({ ok: false, error: "سرویس هوش مصنوعی موقتاً در دسترس نیست. بعداً تلاش کنید." }, 503);
-  }
-
   const systemBase = buildSystemPrompt(def);
   const user = buildUserPrompt(def, answers);
 
@@ -95,22 +91,11 @@ export async function POST(req: Request) {
       req.signal.addEventListener("abort", onAbort, { once: true });
 
       try {
-        // یک فراخوانی کامل با سقف ۵۰ ثانیه؛ سپس تکه‌تکه‌سازی به‌صورت SSE
-        const zai = await getZai();
-        const completion = (await Promise.race([
-          zai.chat.completions.create({
-            messages: [
-              { role: "system", content: system },
-              { role: "user", content: user },
-            ],
-            max_tokens: 4000,
-            temperature: 0.3,
-            thinking: { type: "disabled" },
-          }),
-          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 50_000)),
-        ])) as { choices?: { message?: { content?: string } }[] } | null;
-
-        const full = (completion?.choices?.[0]?.message?.content ?? "").trim();
+        // یک فراخوانی کامل با زنجیرهٔ چند-تأمین‌کنندهٔ llm.ts؛ سپس تکه‌تکه‌سازی به‌صورت SSE
+        const full = ((await Promise.race([
+          askLLM([{ role: "user", content: user }], 4000, system),
+          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 100_000)),
+        ])) ?? "").trim();
         if (!full) throw new Error("ai-empty");
 
         // تکه‌تکه‌سازی تدریجی (هم‌الگوی ai-assistant/stream) — با پایش abort

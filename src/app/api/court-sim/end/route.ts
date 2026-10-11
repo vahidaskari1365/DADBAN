@@ -9,7 +9,7 @@ import { courtSessions } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { rateLimit, readJson, clientIp } from "@/lib/api-security";
 import { getCurrentUser } from "@/lib/user-auth";
-import { getZai, isAiAvailable } from "@/lib/ai";
+import { askLLM } from "@/lib/llm";
 import { buildCourtFeedbackPrompt, type CourtSpeaker } from "@/lib/court-sim";
 
 export const runtime = "nodejs";
@@ -62,30 +62,17 @@ export async function POST(req: Request) {
     return Response.json({ ok: true, feedback: "", ended: true, note: "جلسه بسیار کوتاه بود؛ بازخوردی ثبت نشد." });
   }
 
-  if (!(await isAiAvailable())) {
-    return Response.json({ ok: false, error: "سرویس هوش مصنوعی موقتاً در دسترس نیست. بعداً تلاش کنید." }, { status: 503 });
-  }
-
   const labelOf = (s: string) => (s === "lawyer" ? "وکیل (تمرین‌کننده)" : s === "judge" ? "قاضی" : s === "opponent" ? "وکیل خصم" : "سامانه");
   const transcript = stored.map((m) => `${labelOf(String(m.speaker))}: ${m.text}`).join("\n\n");
   const { system, user: userPrompt } = buildCourtFeedbackPrompt(transcript);
 
   try {
-    const zai = await getZai();
-    const completion = (await Promise.race([
-      zai.chat.completions.create({
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: userPrompt },
-        ],
-        max_tokens: 1400,
-        temperature: 0.4,
-        thinking: { type: "disabled" },
-      }),
-      new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 70_000)),
-    ])) as { choices?: { message?: { content?: string } }[] } | null;
-
-    const feedback = (completion?.choices?.[0]?.message?.content ?? "").trim();
+    const feedback = (
+      (await Promise.race([
+        askLLM([{ role: "user", content: userPrompt }], 1400, system),
+        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 80_000)),
+      ])) ?? ""
+    ).trim();
     await db
       .update(courtSessions)
       .set({ feedback: feedback.slice(0, 6000), status: "ended", updatedAt: new Date() })

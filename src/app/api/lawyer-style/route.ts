@@ -12,7 +12,7 @@ import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
 import { rateLimit, readJson, clientIp } from "@/lib/api-security";
-import { isAiAvailable, getZai } from "@/lib/ai";
+import { askLLM } from "@/lib/llm";
 import { normalizeStyleInput, buildExtractTraitsPrompt, getLawyerStyleByUser } from "@/lib/lawyer-style";
 
 export const runtime = "nodejs";
@@ -48,25 +48,14 @@ export async function POST(req: Request) {
     if (norm.samples.length === 0) {
       return json({ ok: false, error: "برای استخراج سبک، دست‌کم یک نمونهٔ نگارش وارد کنید." }, 422);
     }
-    if (!(await isAiAvailable())) {
-      return json({ ok: false, error: "سرویس هوش مصنوعی موقتاً در دسترس نیست. بعداً تلاش کنید." }, 503);
-    }
     try {
       const { system, user: userPrompt } = buildExtractTraitsPrompt(norm.samples);
-      const zai = await getZai();
-      const completion = (await Promise.race([
-        zai.chat.completions.create({
-          messages: [
-            { role: "system", content: system },
-            { role: "user", content: userPrompt },
-          ],
-          max_tokens: 600,
-          temperature: 0.2,
-          thinking: { type: "disabled" },
-        }),
-        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 40_000)),
-      ])) as { choices?: { message?: { content?: string } }[] } | null;
-      const traits = (completion?.choices?.[0]?.message?.content ?? "").trim();
+      const traits = (
+        (await Promise.race([
+          askLLM([{ role: "user", content: userPrompt }], 600, system),
+          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 50_000)),
+        ])) ?? ""
+      ).trim();
       if (!traits) return json({ ok: false, error: "استخراج سبک ناموفق بود. دوباره تلاش کنید." }, 502);
       return json({ ok: true, traits: traits.slice(0, 1200) });
     } catch (err) {

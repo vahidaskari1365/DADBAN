@@ -10,7 +10,7 @@ import { courtSessions } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { rateLimit, readJson, clientIp } from "@/lib/api-security";
 import { getCurrentUser } from "@/lib/user-auth";
-import { getZai, isAiAvailable } from "@/lib/ai";
+import { askLLM } from "@/lib/llm";
 import { parseCourtSpeakers, MAX_COURT_TURNS, type CourtSpeaker } from "@/lib/court-sim";
 
 export const runtime = "nodejs";
@@ -56,9 +56,6 @@ export async function POST(req: Request) {
   if (session.turns >= MAX_COURT_TURNS) {
     return Response.json({ ok: false, error: "سقف نوبت‌های این جلسه پر شده است. جلسه را با بازخورد ببندید یا جلسهٔ جدید بسازید." }, { status: 422 });
   }
-  if (!(await isAiAvailable())) {
-    return Response.json({ ok: false, error: "سرویس هوش مصنوعی موقتاً در دسترس نیست. بعداً تلاش کنید." }, { status: 503 });
-  }
 
   let stored: StoredMessage[] = [];
   try {
@@ -78,21 +75,12 @@ export async function POST(req: Request) {
   });
 
   try {
-    const zai = await getZai();
-    const completion = (await Promise.race([
-      zai.chat.completions.create({
-        messages: [
-          { role: "system", content: session.scenario },
-          ...history.slice(-14),
-        ],
-        max_tokens: 700,
-        temperature: 0.65,
-        thinking: { type: "disabled" },
-      }),
-      new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 60_000)),
-    ])) as { choices?: { message?: { content?: string } }[] } | null;
-
-    const raw = (completion?.choices?.[0]?.message?.content ?? "").trim();
+    const raw = (
+      (await Promise.race([
+        askLLM(history.slice(-14), 700, session.scenario),
+        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 70_000)),
+      ])) ?? ""
+    ).trim();
     if (!raw) return Response.json({ ok: false, error: "پاسخ جلسه دریافت نشد. دوباره تلاش کنید." }, { status: 502 });
 
     const speakerMsgs = parseCourtSpeakers(raw);

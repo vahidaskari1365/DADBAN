@@ -10,8 +10,8 @@ import { db } from "@/db";
 import { courtSessions } from "@/db/schema";
 import { rateLimit, readJson, clientIp } from "@/lib/api-security";
 import { getCurrentUser } from "@/lib/user-auth";
-import { getZai, isAiAvailable } from "@/lib/ai";
-import { loadCaseForDesk, buildCaseContext } from "@/lib/case-desk";
+import { askLLM } from "@/lib/llm";
+import { loadCaseForDesk, buildCaseContextChunks } from "@/lib/case-desk";
 import { buildCourtScenarioPrompt } from "@/lib/court-sim";
 
 export const runtime = "nodejs";
@@ -37,10 +37,6 @@ export async function POST(req: Request) {
     return Response.json({ ok: false, error: "موضوع تمرین را بنویسید یا یک پرونده انتخاب کنید." }, { status: 422 });
   }
 
-  if (!(await isAiAvailable())) {
-    return Response.json({ ok: false, error: "سرویس هوش مصنوعی موقتاً در دسترس نیست. بعداً تلاش کنید." }, { status: 503 });
-  }
-
   let facts = "";
   let title = "";
   let caseId: number | null = null;
@@ -52,8 +48,8 @@ export async function POST(req: Request) {
         { status: access.reason === "forbidden" ? 403 : 404 },
       );
     }
-    const built = await buildCaseContext(access.case.id);
-    facts = built.context.slice(0, 6000);
+    const built = await buildCaseContextChunks(access.case.id);
+    facts = built.chunks.join("\n\n").slice(0, 6000);
     title = `تمرین پروندهٔ ${access.case.caseNumber} — ${access.case.subject}`;
     caseId = access.case.id;
   } else {
@@ -64,21 +60,16 @@ export async function POST(req: Request) {
   const scenario = buildCourtScenarioPrompt(facts, side);
 
   try {
-    const zai = await getZai();
-    const completion = (await Promise.race([
-      zai.chat.completions.create({
-        messages: [
-          { role: "system", content: scenario },
-          { role: "user", content: "جلسه را شروع کن: قاضی با احوال‌پرسی رسمی و اولین سؤال ماهوی باز می‌کند. فقط یک پیام، با برچسب «قاضی:»." },
-        ],
-        max_tokens: 700,
-        temperature: 0.6,
-        thinking: { type: "disabled" },
-      }),
-      new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 60_000)),
-    ])) as { choices?: { message?: { content?: string } }[] } | null;
-
-    const opening = (completion?.choices?.[0]?.message?.content ?? "").trim();
+    const opening = (
+      (await Promise.race([
+        askLLM(
+          [{ role: "user", content: "جلسه را شروع کن: قاضی با احوال‌پرسی رسمی و اولین سؤال ماهوی باز می‌کند. فقط یک پیام، با برچسب «قاضی:»." }],
+          700,
+          scenario,
+        ),
+        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 70_000)),
+      ])) ?? ""
+    ).trim();
     if (!opening) return Response.json({ ok: false, error: "شروع جلسه ناموفق بود. دوباره تلاش کنید." }, { status: 502 });
 
     const [session] = await db
