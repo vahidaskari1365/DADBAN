@@ -147,7 +147,8 @@ export function Logo({ withText = true }: { withText?: boolean }) {
       {withText && (
         <span className="flex flex-col leading-none">
           <span className="text-lg font-extrabold tracking-tight text-foreground">{SITE_NAME}</span>
-          <span className="text-[10px] font-medium text-muted">{SITE_TAGLINE}</span>
+          {/* شعار فقط از sm به بالا — روی موبایل عرض هدر را سرریز می‌کرد */}
+          <span className="hidden text-[10px] font-medium text-muted sm:block">{SITE_TAGLINE}</span>
         </span>
       )}
     </span>

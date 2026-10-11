@@ -8,9 +8,9 @@
    - تصاویر: stale-while-revalidate
    ========================================================================== */
 
-// v1.4.47 — برندسازی کلید کش (sharifmand → dadban) + صفحهٔ notifications واقعی شد
-// (ریدایرکت به پنل) + آماده‌سازی درگاه زرین‌پال.
-const VERSION = "dadban-v1.4.47";
+// v1.4.48 — صفحهٔ اختصاصی هر پروژهٔ بازار (/case-board/[id]) با دکمهٔ ثبت
+// پیشنهاد (توضیحات + قیمت + ارسال به موکل) و حذف مودال جزئیات از برد.
+const VERSION = "dadban-v1.4.48";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;

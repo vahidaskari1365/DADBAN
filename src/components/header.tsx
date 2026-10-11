@@ -227,9 +227,9 @@ export function Header() {
 
         {/* Left actions — مینیمال روی موبایل */}
         <div className="flex items-center gap-2">
-          {/* دکمهٔ بازگشت — همه‌جا جز خانه */}
+          {/* دکمهٔ بازگشت — تبلت/دسکتاپ (روی موبایل جا را تنگ می‌کرد و سرریز افقی می‌ساخت) */}
           {pathname !== "/" && (
-            <div className="lg:block">
+            <div className="hidden md:block">
               <BackButton variant="icon" label={t("بازگشت")} fallback="/" />
             </div>
           )}
