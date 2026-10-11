@@ -52,9 +52,18 @@ interface ConsultationClientProps {
   roomId: string;
   role: "client" | "lawyer";
   name: string;
+  /**
+   * تماس دعوت‌شده از پنل گفتگو: این سمت به‌طور خودکار offer می‌فرستد
+   * (بدون دکمهٔ شروع دستی) — جریان «ورود با کد» بدون این پرچم دست‌نخورده می‌ماند.
+   */
+  autoOffer?: boolean;
+  /** تماس صوتی — فقط صدا درخواست می‌شود (بدون دوربین) */
+  voiceOnly?: boolean;
+  /** وقتی کاربر دکمهٔ قطع داخلی را می‌زند — برای همگام‌سازی پنل گفتگو (ارسال call_end) */
+  onHangup?: () => void;
 }
 
-export function ConsultationClient({ roomId, role, name }: ConsultationClientProps) {
+export function ConsultationClient({ roomId, role, name, autoOffer = false, voiceOnly = false, onHangup }: ConsultationClientProps) {
   const [peerReady, setPeerReady] = useState(false);
   const [remoteName, setRemoteName] = useState<string | null>(null);
   const [inCall, setInCall] = useState(false);
@@ -96,14 +105,14 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
     [roomId, name],
   );
 
-  /** دریافت استریم محلی با کاهش تدریجی: ویدیو+صدا → فقط صدا */
+  /** دریافت استریم محلی با کاهش تدریجی: ویدیو+صدا → فقط صدا (تماس صوتی: فقط صدا) */
   const getLocalStream = useCallback(async (): Promise<MediaStream> => {
     try {
-      return await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      return await navigator.mediaDevices.getUserMedia(voiceOnly ? { audio: true } : { video: true, audio: true });
     } catch {
       return await navigator.mediaDevices.getUserMedia({ audio: true });
     }
-  }, []);
+  }, [voiceOnly]);
 
   /** ساخت اتصال WebRTC و پردازش offer/answer از طرف مقابل */
   const ensurePeerConnection = useCallback((): RTCPeerConnection => {
@@ -310,6 +319,15 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
     }
   };
 
+  // دعوت تماس از پنل گفتگو: offer خودکار بدون کلیک (فقط یک‌بار)
+  const autoOfferStartedRef = useRef(false);
+  useEffect(() => {
+    if (!autoOffer || autoOfferStartedRef.current) return;
+    autoOfferStartedRef.current = true;
+    void startCall();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOffer]);
+
   const endCall = () => {
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
@@ -319,6 +337,7 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
     if (localVideoRef.current) localVideoRef.current.srcObject = null;
     setInCall(false);
     setStatus(remoteName ? "متصل" : "در انتظار طرف مقابل...");
+    onHangup?.();
   };
 
   const toggleMic = () => {
@@ -426,8 +445,8 @@ export function ConsultationClient({ roomId, role, name }: ConsultationClientPro
           )}
         </div>
 
-        {/* دکمه شروع تماس — موکل شروع می‌کند */}
-        {!inCall && peerReady && role === "client" && (
+        {/* دکمه شروع تماس — موکل شروع می‌کند (در جریان دعوت‌شده، offer خودکار است) */}
+        {!inCall && peerReady && role === "client" && !autoOffer && (
           <button
             onClick={startCall}
             className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition-all active:scale-95"

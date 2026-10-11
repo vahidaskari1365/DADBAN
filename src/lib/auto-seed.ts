@@ -440,6 +440,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
     if (existingCount > 0) {
       try {
         await ensureProfileSchema();
+        await ensureExtendedSchema();
         await seedManagedServices();
         await seedDemoOperators();
         await seedPlatformAccounts(); // اکانت‌های وکیل/موکل تحویل — در پروداکشن هم
@@ -463,6 +464,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
   }
   try {
     await ensureProfileSchema();
+    await ensureExtendedSchema();
   } catch {
     /* non-fatal */
   }
@@ -553,4 +555,37 @@ export async function ensureConsultSchema(): Promise<void> {
     }
   }
   consultSchemaReady = true;
+}
+
+/**
+ * جداول «اعتماد و عملیات» — احراز پیامکی (OTP)، صندوق ایمیل، خبرنامه،
+ * خطایابی داخلی، مدارک پرونده، روی‌بوردینگ وکیل و بازبینی حقوقی.
+ * همان الگوی ensure*های بالا: best-effort، بدون مایگریشن دستی در پروداکشن.
+ */
+let extendedSchemaReady = false;
+export async function ensureExtendedSchema(): Promise<void> {
+  if (extendedSchemaReady) return;
+  const stmts = [
+    `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN NOT NULL DEFAULT false`,
+    `CREATE TABLE IF NOT EXISTS otp_codes (id SERIAL PRIMARY KEY, phone TEXT NOT NULL, purpose TEXT NOT NULL, code_hash TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, expires_at TIMESTAMP NOT NULL, consumed_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS otp_codes_phone_purpose_idx ON otp_codes (phone, purpose, created_at)`,
+    `CREATE TABLE IF NOT EXISTS email_outbox (id SERIAL PRIMARY KEY, to_email TEXT NOT NULL, kind TEXT NOT NULL DEFAULT 'broadcast', subject TEXT NOT NULL, body_html TEXT NOT NULL DEFAULT '', body_text TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'logged', provider TEXT NOT NULL DEFAULT 'log', error TEXT, sent_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS email_outbox_created_idx ON email_outbox (created_at DESC)`,
+    `CREATE TABLE IF NOT EXISTS newsletter_subscribers (id SERIAL PRIMARY KEY, email TEXT NOT NULL UNIQUE, active BOOLEAN NOT NULL DEFAULT true, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS app_errors (id SERIAL PRIMARY KEY, level TEXT NOT NULL DEFAULT 'error', source TEXT NOT NULL DEFAULT 'server', message TEXT NOT NULL, stack TEXT, url TEXT, user_id INTEGER, user_agent TEXT, meta JSONB, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS app_errors_created_idx ON app_errors (created_at DESC)`,
+    `CREATE TABLE IF NOT EXISTS case_documents (id SERIAL PRIMARY KEY, case_id INTEGER NOT NULL REFERENCES cases(id) ON DELETE CASCADE, uploaded_by INTEGER REFERENCES app_users(id) ON DELETE SET NULL, uploader_role TEXT NOT NULL DEFAULT 'client', name TEXT NOT NULL, mime TEXT NOT NULL DEFAULT 'application/octet-stream', size INTEGER NOT NULL DEFAULT 0, data BYTEA NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS case_documents_case_idx ON case_documents (case_id)`,
+    `CREATE TABLE IF NOT EXISTS lawyer_onboarding (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL, name TEXT NOT NULL, phone TEXT NOT NULL, email TEXT, license_no TEXT NOT NULL, lawyer_type TEXT NOT NULL DEFAULT 'wakil', city TEXT NOT NULL, province TEXT NOT NULL, experience_years INTEGER NOT NULL DEFAULT 0, specialties TEXT[] NOT NULL DEFAULT '{}', bio TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'pending', admin_note TEXT, agreement_version TEXT, agreement_signed_at TIMESTAMP, reviewed_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS lawyer_onboarding_status_idx ON lawyer_onboarding (status, created_at)`,
+    `CREATE TABLE IF NOT EXISTS legal_reviews (id SERIAL PRIMARY KEY, page_slug TEXT NOT NULL UNIQUE, reviewer_name TEXT NOT NULL, reviewer_title TEXT NOT NULL DEFAULT 'وکیل دادگستری', summary TEXT NOT NULL DEFAULT '', reviewed_at TIMESTAMP NOT NULL DEFAULT now())`,
+  ];
+  for (const stmt of stmts) {
+    try {
+      await db.execute(sql.raw(stmt));
+    } catch {
+      /* non-fatal — هر مسیر مصرف‌کننده خودش در نبود جدول degraded می‌شود */
+    }
+  }
+  extendedSchemaReady = true;
 }

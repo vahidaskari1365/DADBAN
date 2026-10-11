@@ -7,6 +7,7 @@ import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { isRedirectSafeForRole, isLawyerSideRole, panelHomeForRole } from "@/lib/roles";
 import { useT } from "@/lib/i18n/provider";
+import { ForgotPasswordFlow, OtpLoginFlow } from "@/components/auth/otp-flows";
 
 type Tab = "client" | "lawyer";
 type Mode = "login" | "register";
@@ -195,6 +196,9 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
   /* مسیر عضویت وکیل — فقط در تب وکیلِ register استفاده می‌شود */
   const [lawyerTrack, setLawyerTrack] = useState<LawyerTrack>("wakil");
   const [lawyerCity, setLawyerCity] = useState("");
+  /* زیرجریان‌های پیامکی تب موکلِ login — با رمز عبور، یا کد پیامکی، یا بازیابی رمز */
+  const [loginFlow, setLoginFlow] = useState<"password" | "otp">("password");
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   /* تیغه: یک انیمیشن در هر لحظه؛ سوییچ محتوا زیر پوشش کامل آن */
   const [sweep, setSweep] = useState<{ dir: 1 | -1; id: number; mode: Mode; tab: Tab } | null>(null);
@@ -243,6 +247,8 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         setTab(nextTab);
         setError("");
         setNotice("");
+        setLoginFlow("password");
+        setForgotOpen(false);
         try {
           window.history.replaceState(null, "", nextMode === "register" ? "/register" : "/login");
         } catch {}
@@ -410,9 +416,13 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         : lawyerTrack === "karamooz"
           ? { title: "عضویت کارآموز وکالت", sub: "حساب و پروفایل کارآموزی شما فوری ساخته می‌شود." }
           : { title: "عضویت وکلا", sub: "پس از احراز هویت، پنل اختصاصی وکیل برای شما فعال می‌شود." }
-      : mode === "login"
-        ? { title: "ورود به حساب", sub: "به پرونده‌ها، مشاوره‌ها و اسناد خود دسترسی داشته باشید." }
-        : { title: "ساخت حساب موکل", sub: "رایگان ثبت‌نام کنید و پرونده‌تان را همین امروز شروع کنید." };
+      : forgotOpen
+        ? { title: "بازیابی رمز عبور", sub: "کد تأیید بگیرید و رمز جدیدی برای حساب خود بگذارید." }
+        : mode === "login" && loginFlow === "otp"
+          ? { title: "ورود با کد پیامکی", sub: "به‌جای رمز عبور، یک کد ۶ رقمی به موبایل شما می‌فرستیم." }
+          : mode === "login"
+            ? { title: "ورود به حساب", sub: "به پرونده‌ها، مشاوره‌ها و اسناد خود دسترسی داشته باشید." }
+            : { title: "ساخت حساب موکل", sub: "رایگان ثبت‌نام کنید و پرونده‌تان را همین امروز شروع کنید." };
 
   const banner =
     error ? { tone: "danger" as const, text: error }
@@ -484,7 +494,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
               )}
 
               {/* ── فرم‌ها ── */}
-              {tab === "client" && mode === "login" && (
+              {tab === "client" && mode === "login" && !forgotOpen && loginFlow === "password" && (
                 <form onSubmit={submitLogin} className="mt-7 space-y-5" noValidate>
                   <AuthField label={t("موبایل یا ایمیل")} icon="user">
                     <input
@@ -517,15 +527,61 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                       </span>
                       {t("مرا به خاطر بسپار")}
                     </label>
-                    <Link
-                      href="/contact"
+                    <button
+                      type="button"
+                      data-testid="forgot-link"
+                      onClick={() => {
+                        setLoginFlow("password");
+                        setForgotOpen(true);
+                        setError("");
+                        setNotice("");
+                      }}
                       className="text-xs font-extrabold text-[var(--accent-text)] transition-colors hover:text-[var(--auth-gold)]"
                     >
                       {t("فراموشی رمز؟")}
-                    </Link>
+                    </button>
                   </div>
                   <AuthSubmit loading={loading} label={t("ورود به دادبان")} loadingLabel={t("در حال ورود…")} />
+                  {/* ورود جایگزین با کد پیامکی — بدون رمز عبور */}
+                  <button
+                    type="button"
+                    data-testid="otp-login-btn"
+                    onClick={() => {
+                      setForgotOpen(false);
+                      setLoginFlow("otp");
+                      setError("");
+                      setNotice("");
+                    }}
+                    className="btn-press flex h-12 w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-[var(--auth-line)] text-sm font-extrabold text-[var(--auth-ink)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent-text)]"
+                  >
+                    <Icon name="chat" className="h-4 w-4" />
+                    {t("ورود با کد پیامکی")}
+                  </button>
                 </form>
+              )}
+
+              {/* ورود با کد پیامکی — زیرجریان: شماره ← کد ۶ رقمی ← ورود */}
+              {tab === "client" && mode === "login" && !forgotOpen && loginFlow === "otp" && (
+                <OtpLoginFlow
+                  onSuccess={(role) => hardNavigate(destinationFor(role))}
+                  onBack={() => {
+                    setLoginFlow("password");
+                    setError("");
+                    setNotice("");
+                  }}
+                />
+              )}
+
+              {/* فراموشی رمز عبور — زیرجریان دو مسیره: پیامک یا ایمیل */}
+              {tab === "client" && mode === "login" && forgotOpen && (
+                <ForgotPasswordFlow
+                  onBack={() => {
+                    setForgotOpen(false);
+                    setLoginFlow("password");
+                    setError("");
+                    setNotice("");
+                  }}
+                />
               )}
 
               {tab === "client" && mode === "register" && (

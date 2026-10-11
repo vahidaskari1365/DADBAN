@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui";
-import { StatusBadge } from "@/components/dashboard-shell";
+import { StatusBadge } from "@/components/panel-widgets";
 import { WEEK_DAYS, formatJalaliLong, formatTime, labelStatus, toJalali, toFa } from "@/lib/money";
 import type { AppointmentItem } from "./portal-server";
 

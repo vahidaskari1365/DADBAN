@@ -15,6 +15,7 @@ export const dynamic = "force-dynamic";
  * POST {room, clientId, sender, kind, payload} → درج پیام جدید
  *
  * kind: join | offer | answer | ice | chat | typing | leave
+ *       | call_invite | call_accept | call_reject | call_end  (چرخهٔ تماس صوتی/تصویری موکل↔وکیل)
  * پاک‌سازی خودکار: سیگنال‌ها ۱۰ دقیقه، چت‌ها ۲۴ ساعت.
  *
  * fallback درون‌حافظه‌ای برای dev محلی بدون دیتابیس (تک‌پروسسه‌ای) تا تست ممکن باشد.
@@ -39,7 +40,20 @@ function memList(room: string, since: number): MemRow[] {
 }
 
 const ROOM_RE = /^[^\s<>&"'\\\/]{3,64}$/;
-const KINDS = new Set(["join", "offer", "answer", "ice", "chat", "typing", "leave"]);
+const KINDS = new Set([
+  "join",
+  "offer",
+  "answer",
+  "ice",
+  "chat",
+  "typing",
+  "leave",
+  // چرخهٔ تماس (دعوت → زنگ → پذیرش/رد → پایان) — همان جدول و همان پاک‌سازی ۱۰ دقیقه‌ای
+  "call_invite",
+  "call_accept",
+  "call_reject",
+  "call_end",
+]);
 
 async function insertSignal(row: { room: string; clientId: string; sender: string; kind: string; payload: string }): Promise<number> {
   if (!isDbConfigured()) {

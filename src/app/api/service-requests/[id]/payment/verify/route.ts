@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { serviceRequests } from "@/db/schema";
+import { serviceRequests, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isSandboxPayments } from "@/lib/payments";
 import { recordEvent, auditAction, notifyUser, resolveRequestFor } from "@/lib/managed-services";
+import { sendPaymentReceiptEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,6 +37,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     await recordEvent({ requestId: id, type: "payment_required", title: "پرداخت (آزمایشی) تأیید شد", createdBy: user.id, createdByName: user.name, visibleToUser: true });
     await auditAction({ requestId: id, action: "verify_payment_sandbox", actorRole: user.role, actorId: user.id });
     await notifyUser({ userId: reqRow.userId, type: "payment_verified", title: `پرداخت درخواست ${reqRow.requestNumber}`, body: "پرداخت (آزمایشی) تأیید شد و درخواست به کارشناس واگذار شد.", requestId: id });
+    // رسید ایمیلی — best-effort داخل چرخهٔ request؛ هرگز پاسخ پرداخت را نمی‌شکند.
+    try {
+      const [u] = await db.select({ email: users.email }).from(users).where(eq(users.id, reqRow.userId)).limit(1);
+      const amount = typeof reqRow.price === "number" ? reqRow.price : Number(reqRow.price ?? 0);
+      if (u?.email && Number.isFinite(amount) && amount > 0) {
+        await sendPaymentReceiptEmail(u.email, {
+          reference: reqRow.requestNumber,
+          amount,
+          description: reqRow.title || `درخواست خدمات ${reqRow.requestNumber}`,
+        });
+      }
+    } catch {
+      /* خطای ایمیل هرگز مسیر پرداخت را نمی‌شکند */
+    }
     return NextResponse.json({ ok: true, sandbox: true, status: "ASSIGNED", statusLabel: "واگذارشده" });
   }
 

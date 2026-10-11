@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui";
 import { formatJalaliTime } from "@/lib/jalali";
 import { faNum } from "@/lib/data";
 import { trackEvent } from "@/lib/analytics";
+import { ConsultationClient } from "@/components/consultation-client";
 
 /**
  * پنل گفتگوی متنی موکل ↔ وکیل — بدون WebSocket (HTTP polling روی دیتابیس، سازگار با Vercel).
@@ -16,6 +17,11 @@ import { trackEvent } from "@/lib/analytics";
  * - نقش lawyer: وکیل از صندوق پیام‌های پنل خود (/consultation/live) گفتگو را باز می‌کند.
  *
  * تاریخچه و پیام‌های تازه با GET ?roomId&since و ارسال با POST انجام می‌شود.
+ *
+ * تماس صوتی/تصویری (همان پنل، هر دو نقش):
+ *  دعوت (call_invite) روی اتاق مشاوره → زنگ → پذیرش/رد (call_accept/call_reject)
+ *  → WebRTC روی اتاق جداگانهٔ call-xxxx (ConsultationClient) → پایان (call_end روی هر دو اتاق).
+ *  سیگنالینگ از همان /api/consultations/signal است (poll هر ۲ ثانیه) — سازگار با Vercel.
  */
 
 export interface ChatLawyerInfo {
@@ -37,10 +43,58 @@ interface ChatMsg {
 const NAME_KEY = "dadban:consult:name";
 const ROOM_KEY_PREFIX = "dadban:consult:room:";
 const POLL_MS = 2_000;
+const SIGNAL_POLL_MS = 2_000;
+const CALL_TIMEOUT_MS = 60_000; // بی‌پاسخی تماس‌گیرنده
+const RING_AUTO_DISMISS_MS = 60_000; // زنگ بی‌پاسخ سمت گیرنده
+const NOTE_TTL_MS = 8_000;
+
+type CallMode = "voice" | "video";
+type CallPhase = "idle" | "waiting" | "active";
+
+/** بار سیگنال‌های call_* روی اتاق مشاوره */
+interface CallPayload {
+  callRoom: string;
+  mode?: CallMode;
+  from?: "client" | "lawyer";
+  name?: string;
+  duration?: number;
+  reason?: string;
+}
+
+interface SignalRow {
+  id: number;
+  clientId: string;
+  sender: string;
+  kind: string;
+  payload: unknown;
+  at: string;
+}
 
 function newRoomId(slug: string) {
   const rand = Math.random().toString(36).slice(2, 8);
   return `consult-${slug}-${rand}`.slice(0, 60);
+}
+
+/** شناسهٔ اتاق تماس — call- + ۱۲ کاراکتر base36 */
+function newCallRoom() {
+  return `call-${Math.random().toString(36).slice(2, 14)}`;
+}
+
+/** mm:ss با ارقام فارسی */
+function fmtDur(totalSec: number): string {
+  const s = Math.max(0, Math.floor(totalSec));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return faNum(`${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`);
+}
+
+/** آیکن قطع تماس — در مجموعهٔ آیکن‌های برند موجود نیست (همان مسیر گوشیِ رو‌به‌پایین) */
+function HangupIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden focusable="false">
+      <path d="M12 9c-1.6 0-3.15.25-4.6.7v3.42c0 .4-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.956.956 0 0 1-.29-.7c0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 0 0-2.67-1.85.996.996 0 0 1-.56-.9V9.7C15.15 9.25 13.6 9 12 9z" />
+    </svg>
+  );
 }
 
 export function ConsultChatPanel({
@@ -77,6 +131,69 @@ export function ConsultChatPanel({
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+
+  /* ─── تماس صوتی/تصویری ─── */
+  const [callPhase, setCallPhaseState] = useState<CallPhase>("idle");
+  const [callMode, setCallMode] = useState<CallMode>("video");
+  const [callRoom, setCallRoomState] = useState<string | null>(null);
+  const [isCaller, setIsCaller] = useState(false);
+  const [ringing, setRinging] = useState<(CallPayload & { at: string }) | null>(null);
+  const [callNote, setCallNote] = useState<string | null>(null);
+  const [confirmMode, setConfirmMode] = useState<CallMode | null>(null);
+  const [callPeerLabel, setCallPeerLabel] = useState("");
+  const [elapsed, setElapsed] = useState(0);
+
+  const phaseRef = useRef<CallPhase>("idle");
+  const callRoomRef = useRef<string | null>(null);
+  const startedAtRef = useRef(0);
+  const elapsedRef = useRef(0);
+  const lastSignalIdRef = useRef(0);
+  const clientIdRef = useRef("");
+  const myNameRef = useRef(isClient ? name.trim() || "کاربر" : lawyer.name);
+  const roomIdRef = useRef<string | null>(initialRoomId ?? null);
+  const callTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const noteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const myName = isClient ? name.trim() || "کاربر" : lawyer.name;
+  const headerTitle = isClient ? lawyer.name : clientDisplayName ?? "گفتگو با موکل";
+
+  const setPhase = useCallback((p: CallPhase) => {
+    phaseRef.current = p;
+    setCallPhaseState(p);
+  }, []);
+  const setCallRoomBoth = useCallback((r: string | null) => {
+    callRoomRef.current = r;
+    setCallRoomState(r);
+  }, []);
+
+  /* آینه‌های ref برای cleanup و callbackهای پایدار */
+  useEffect(() => {
+    myNameRef.current = myName;
+  }, [myName]);
+  useEffect(() => {
+    roomIdRef.current = roomId;
+  }, [roomId]);
+
+  const showCallNote = useCallback((msg: string) => {
+    setCallNote(msg);
+    if (noteTimerRef.current) clearTimeout(noteTimerRef.current);
+    noteTimerRef.current = setTimeout(() => setCallNote(null), NOTE_TTL_MS);
+  }, []);
+
+  const clearCallTimers = useCallback(() => {
+    for (const t of callTimersRef.current) clearTimeout(t);
+    callTimersRef.current = [];
+  }, []);
+
+  const sendSignal = useCallback((room: string, kind: string, payload: unknown) => {
+    if (!room) return;
+    fetch("/api/consultations/signal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ room, clientId: clientIdRef.current, sender: myNameRef.current, kind, payload }),
+      keepalive: kind === "call_end",
+    }).catch(() => {});
+  }, []);
 
   /* فوکوس‌مدیریتی مودال (الگوی Intopia): فوکوس اولیه + Escape + بازگشت فوکوس */
   useEffect(() => {
@@ -136,6 +253,252 @@ export function ConsultChatPanel({
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length]);
 
+  /* ─── سیگنال‌های تماس روی اتاق مشاوره — poll هر ۲ ثانیه (هر دو نقش) ─── */
+  const handleCallSignal = useCallback(
+    (s: SignalRow) => {
+      if (s.kind !== "call_invite" && s.kind !== "call_accept" && s.kind !== "call_reject" && s.kind !== "call_end") return;
+      const p = (s.payload && typeof s.payload === "object" ? s.payload : null) as CallPayload | null;
+      const from = p?.from === "lawyer" ? "lawyer" : p?.from === "client" ? "client" : null;
+      const pRoom = typeof p?.callRoom === "string" ? p.callRoom : "";
+      const atMs = Date.parse(s.at);
+      const fresh = Number.isFinite(atMs) ? Date.now() - atMs < 70_000 : false;
+
+      if (s.kind === "call_invite") {
+        if (!p || !pRoom || !from || from === role) return; // ناقص یا اکوی خودم
+        if (!fresh) return; // دعوت کهنه هنگام بازگشایی پنل — زنگ نمی‌خورد
+        if (phaseRef.current !== "idle" || callRoomRef.current) {
+          // مشغول — رد خودکار تا طرف مقابل ۶۰ ثانیه منتظر نماند
+          if (pRoom !== callRoomRef.current) {
+            sendSignal(roomId ?? "", "call_reject", { callRoom: pRoom, mode: p.mode ?? "voice", from: role, name: myNameRef.current, reason: "busy" });
+          }
+          return;
+        }
+        setRinging({ callRoom: pRoom, mode: p.mode === "video" ? "video" : "voice", from, name: String(p.name ?? "").slice(0, 60) || "کاربر", at: s.at });
+        return;
+      }
+
+      if (s.kind === "call_accept") {
+        if (phaseRef.current === "waiting" && from !== role && pRoom && pRoom === callRoomRef.current) {
+          clearCallTimers();
+          setRinging(null);
+          setPhase("active");
+          startedAtRef.current = Date.now();
+          elapsedRef.current = 0;
+          setElapsed(0);
+        }
+        return;
+      }
+
+      if (s.kind === "call_reject") {
+        if (phaseRef.current === "waiting" && from !== role && pRoom && pRoom === callRoomRef.current) {
+          clearCallTimers();
+          setPhase("idle");
+          setCallRoomBoth(null);
+          showCallNote("تماس رد شد");
+        }
+        return;
+      }
+
+      /* call_end — پایان/لغو از طرف مقابل (هر فاز) */
+      if (from === role) return;
+      if (pRoom && callRoomRef.current && pRoom !== callRoomRef.current) return; // تماس دیگری است
+      const wasActive = phaseRef.current === "active";
+      const dur = wasActive ? elapsedRef.current : 0;
+      clearCallTimers();
+      setRinging(null);
+      setPhase("idle");
+      setCallRoomBoth(null);
+      if (wasActive) showCallNote(`تماس پایان یافت — مدت: ${fmtDur(dur)}`);
+    },
+    [role, roomId, sendSignal, setPhase, setCallRoomBoth, showCallNote, clearCallTimers],
+  );
+
+  useEffect(() => {
+    if (!roomId) return;
+    if (!clientIdRef.current) {
+      clientIdRef.current =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `pc-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+    let alive = true;
+    const pollSignals = async () => {
+      try {
+        const res = await fetch(`/api/consultations/signal?room=${encodeURIComponent(roomId)}&since=${lastSignalIdRef.current}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const d = (await res.json()) as { ok?: boolean; signals?: SignalRow[] };
+        if (!d.ok || !Array.isArray(d.signals)) return;
+        for (const s of d.signals) {
+          if (s.id > lastSignalIdRef.current) lastSignalIdRef.current = s.id;
+          if (alive) handleCallSignal(s);
+        }
+      } catch {
+        /* خطای شبکه — چرخهٔ بعدی */
+      }
+    };
+    void pollSignals();
+    const t = setInterval(() => void pollSignals(), SIGNAL_POLL_MS);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [roomId, handleCallSignal]);
+
+  /* ─── اقدامات تماس ─── */
+  const doInvite = useCallback(
+    (mode: CallMode) => {
+      if (!roomId) return;
+      const room = newCallRoom();
+      setIsCaller(true);
+      setCallMode(mode);
+      setCallPeerLabel(headerTitle);
+      setCallRoomBoth(room);
+      setPhase("waiting");
+      startedAtRef.current = 0;
+      elapsedRef.current = 0;
+      setElapsed(0);
+      setRinging(null);
+      sendSignal(roomId, "call_invite", { callRoom: room, mode, from: role, name: myNameRef.current });
+      const t = setTimeout(() => {
+        if (phaseRef.current === "waiting" && callRoomRef.current === room) {
+          sendSignal(roomId, "call_end", { callRoom: room, mode, from: role, name: myNameRef.current });
+          sendSignal(room, "call_end", { callRoom: room, mode, from: role, name: myNameRef.current });
+          setPhase("idle");
+          setCallRoomBoth(null);
+          showCallNote("پاسخی نبود");
+        }
+      }, CALL_TIMEOUT_MS);
+      callTimersRef.current.push(t);
+    },
+    [roomId, role, headerTitle, sendSignal, setCallRoomBoth, setPhase, showCallNote],
+  );
+
+  const startCallInvite = useCallback(
+    (mode: CallMode) => {
+      if (!roomId) return;
+      if (phaseRef.current !== "idle" || ringing) {
+        setConfirmMode(mode); // تماس فعلی در جریان است → تأیید
+        return;
+      }
+      doInvite(mode);
+    },
+    [roomId, ringing, doInvite],
+  );
+
+  /** پایان تماس جاری (در صورت وجود) + شروع تماس جدید */
+  const acceptNewCall = useCallback(
+    (mode: CallMode) => {
+      setConfirmMode(null);
+      if (ringing) {
+        // زنگ ورودی را هم رد کن تا تماس‌گیرنده منتظر نماند
+        sendSignal(roomId ?? "", "call_reject", { callRoom: ringing.callRoom, mode: ringing.mode ?? "voice", from: role, name: myNameRef.current, reason: "busy" });
+      }
+      if (phaseRef.current !== "idle" && roomId && callRoomRef.current) {
+        const cr = callRoomRef.current;
+        const dur = phaseRef.current === "active" ? elapsedRef.current : 0;
+        sendSignal(roomId, "call_end", { callRoom: cr, mode: callMode, from: role, name: myNameRef.current, duration: dur });
+        sendSignal(cr, "call_end", { callRoom: cr, mode: callMode, from: role, name: myNameRef.current, duration: dur });
+      }
+      clearCallTimers();
+      setRinging(null);
+      setPhase("idle");
+      setCallRoomBoth(null);
+      doInvite(mode);
+    },
+    [ringing, roomId, callMode, role, sendSignal, clearCallTimers, setPhase, setCallRoomBoth, doInvite],
+  );
+
+  const acceptCall = useCallback(() => {
+    const r = ringing;
+    if (!r) return;
+    setRinging(null);
+    clearCallTimers();
+    setIsCaller(false);
+    setCallMode(r.mode ?? "voice");
+    setCallPeerLabel(r.name || headerTitle);
+    setCallRoomBoth(r.callRoom);
+    setPhase("active");
+    startedAtRef.current = Date.now();
+    elapsedRef.current = 0;
+    setElapsed(0);
+    sendSignal(roomId ?? "", "call_accept", { callRoom: r.callRoom, mode: r.mode ?? "voice", from: role, name: myNameRef.current });
+  }, [ringing, roomId, role, headerTitle, sendSignal, setCallRoomBoth, setPhase, clearCallTimers]);
+
+  const rejectCall = useCallback(() => {
+    const r = ringing;
+    if (!r) return;
+    setRinging(null);
+    sendSignal(roomId ?? "", "call_reject", { callRoom: r.callRoom, mode: r.mode ?? "voice", from: role, name: myNameRef.current, reason: "rejected" });
+  }, [ringing, roomId, role, sendSignal]);
+
+  /** پایان تماس از دکمهٔ خودم (فاز waiting = لغو، فاز active = قطع) */
+  const endActiveCall = useCallback(() => {
+    const wasActive = phaseRef.current === "active";
+    const dur = wasActive ? elapsedRef.current : 0;
+    const cr = callRoomRef.current;
+    clearCallTimers();
+    if (roomId && cr) {
+      sendSignal(roomId, "call_end", { callRoom: cr, mode: callMode, from: role, name: myNameRef.current, duration: dur });
+      sendSignal(cr, "call_end", { callRoom: cr, mode: callMode, from: role, name: myNameRef.current, duration: dur });
+    }
+    setRinging(null);
+    setPhase("idle");
+    setCallRoomBoth(null);
+    showCallNote(wasActive ? `تماس پایان یافت — مدت: ${fmtDur(dur)}` : "تماس لغو شد");
+  }, [roomId, callMode, role, sendSignal, setCallRoomBoth, setPhase, showCallNote, clearCallTimers]);
+
+  /* زنگ بی‌پاسخ — ۶۰ ثانیه بعد خودکار جمع می‌شود (تماس‌گیرنده خودش timeout دارد) */
+  useEffect(() => {
+    if (!ringing) return;
+    const t = setTimeout(() => {
+      setRinging(null);
+      showCallNote("پاسخی داده نشد");
+    }, RING_AUTO_DISMISS_MS);
+    return () => clearTimeout(t);
+  }, [ringing, showCallNote]);
+
+  /* تایمر تماس فعال */
+  useEffect(() => {
+    if (callPhase !== "active") return;
+    const t = setInterval(() => {
+      const sec = startedAtRef.current ? Math.floor((Date.now() - startedAtRef.current) / 1000) : 0;
+      elapsedRef.current = sec;
+      setElapsed(sec);
+    }, 1000);
+    return () => clearInterval(t);
+  }, [callPhase]);
+
+  /* پاک‌سازی هنگام بستن پنل — اگر تماس در جریان بود، به طرف مقابل خبر بده */
+  useEffect(() => {
+    return () => {
+      for (const t of callTimersRef.current) clearTimeout(t);
+      callTimersRef.current = [];
+      if (noteTimerRef.current) clearTimeout(noteTimerRef.current);
+      if (phaseRef.current !== "idle" && roomIdRef.current) {
+        const cr = callRoomRef.current;
+        try {
+          void fetch("/api/consultations/signal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              room: roomIdRef.current,
+              clientId: clientIdRef.current,
+              sender: myNameRef.current,
+              kind: "call_end",
+              payload: { callRoom: cr, from: role, name: myNameRef.current },
+            }),
+            keepalive: true,
+          });
+        } catch {
+          /* best-effort */
+        }
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const startChat = () => {
     const clean = name.trim();
     if (!clean) {
@@ -186,8 +549,6 @@ export function ConsultChatPanel({
     }
   };
 
-  const headerTitle = isClient ? lawyer.name : clientDisplayName ?? "گفتگو با موکل";
-
   return (
     <div
       className="fixed inset-0 z-[90] flex items-end justify-center bg-black/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
@@ -197,7 +558,7 @@ export function ConsultChatPanel({
         role="dialog"
         aria-modal="true"
         aria-label={`گفتگو با ${headerTitle}`}
-        className="flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border bg-surface shadow-2xl sm:h-auto sm:max-h-[80vh] sm:max-w-lg sm:rounded-3xl"
+        className="relative flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border bg-surface shadow-2xl sm:h-auto sm:max-h-[80vh] sm:max-w-lg sm:rounded-3xl"
       >
         {/* هدر */}
         <div className="flex items-center gap-3 border-b border-border bg-surface px-4 py-3">
@@ -231,6 +592,32 @@ export function ConsultChatPanel({
               <span className={`h-2 w-2 rounded-full ${lawyerOnline ? "bg-success" : "bg-border-strong"}`} />
               {lawyerOnline ? "آنلاین" : "آفلاین"}
             </span>
+          )}
+          {roomId && (
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                data-testid="call-voice-btn"
+                onClick={() => startCallInvite("voice")}
+                disabled={!!confirmMode}
+                aria-label="تماس صوتی"
+                title="تماس صوتی"
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-muted transition-colors hover:bg-surface-2 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50"
+              >
+                <Icon name="phone" className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                data-testid="call-video-btn"
+                onClick={() => startCallInvite("video")}
+                disabled={!!confirmMode}
+                aria-label="تماس تصویری"
+                title="تماس تصویری"
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl text-muted transition-colors hover:bg-surface-2 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50"
+              >
+                <Icon name="video" className="h-5 w-5" />
+              </button>
+            </div>
           )}
           <button
             ref={closeRef}
@@ -279,6 +666,73 @@ export function ConsultChatPanel({
               گفتگو مخصوص همین مشاوره است؛ طبق سیاست حریم خصوصی، اطلاعات شما در اختیار هیچ شخص ثالثی قرار نمی‌گیرد.
             </p>
           </div>
+        ) : callPhase !== "idle" ? (
+          /* ─── نمای تماس (انتظار یا فعال) ─── */
+          <div className="flex flex-1 flex-col overflow-hidden">
+            {/* هدر تماس */}
+            <div className="flex items-center justify-between gap-2 border-b border-border bg-surface px-4 py-2.5">
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                    callPhase === "active" ? "bg-success/15 text-success" : "bg-primary-soft text-primary"
+                  }`}
+                >
+                  <Icon name={callMode === "video" ? "video" : "phone"} className="h-4 w-4" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-foreground">{callPeerLabel || headerTitle}</p>
+                  <p className="text-[11px] text-muted">
+                    {callPhase === "waiting" ? "در حال زنگ زدن…" : callMode === "video" ? "تماس تصویری" : "تماس صوتی"}
+                  </p>
+                </div>
+              </div>
+              {callPhase === "active" && (
+                <span
+                  data-testid="call-timer"
+                  dir="ltr"
+                  className="tnum shrink-0 rounded-full bg-surface-2 px-2.5 py-1 text-xs font-bold text-foreground"
+                >
+                  {fmtDur(elapsed)}
+                </span>
+              )}
+              <button
+                type="button"
+                data-testid="call-end"
+                onClick={endActiveCall}
+                aria-label="پایان تماس"
+                className="inline-flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl bg-danger px-3.5 text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger"
+              >
+                <HangupIcon />
+                پایان تماس
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {callPhase === "waiting" ? (
+                <div className="flex h-full min-h-56 flex-col items-center justify-center gap-4 p-6 text-center">
+                  <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary-soft text-primary">
+                    <span className="absolute inset-0 animate-ping rounded-full bg-primary/15" aria-hidden />
+                    <Icon name={callMode === "video" ? "video" : "phone"} className="h-7 w-7" />
+                  </span>
+                  <p className="text-sm font-bold text-foreground">در حال زنگ زدن…</p>
+                  <p className="max-w-64 text-xs leading-6 text-muted">
+                    تا {faNum(60)} ثانیه منتظر پاسخ می‌مانیم؛ اگر پاسخی نبود، تماس خودکار پایان می‌یابد.
+                  </p>
+                </div>
+              ) : callRoom ? (
+                <div className="p-3">
+                  <ConsultationClient
+                    roomId={callRoom}
+                    role={role}
+                    name={myName}
+                    autoOffer={isCaller}
+                    voiceOnly={callMode === "voice"}
+                    onHangup={endActiveCall}
+                  />
+                </div>
+              ) : null}
+            </div>
+          </div>
         ) : (
           <>
             {/* پیام‌ها */}
@@ -316,6 +770,18 @@ export function ConsultChatPanel({
               <div ref={endRef} />
             </div>
 
+            {/* یادداشت تماس — «تماس رد شد» / «پاسخی نبود» / «تماس پایان یافت — مدت: mm:ss» */}
+            {callNote && (
+              <p
+                role="status"
+                data-testid="call-note"
+                className="mx-4 mb-2 flex items-center gap-1.5 rounded-xl border border-border bg-surface-2/60 px-3 py-2 text-xs font-medium text-foreground-soft"
+              >
+                <Icon name="phone" className="h-3.5 w-3.5 shrink-0 text-primary" />
+                {callNote}
+              </p>
+            )}
+
             {/* خطا */}
             {error && (
               <p role="alert" className="mx-4 mb-2 rounded-xl border border-danger/30 bg-danger/5 px-3 py-2 text-xs text-danger">
@@ -347,6 +813,87 @@ export function ConsultChatPanel({
               )}
             </div>
           </>
+        )}
+
+        {/* زنگ تماس ورودی — موبایل: باتم‌شیت، دسکتاپ: مودال مرکزی */}
+        {ringing && (
+          <div className="absolute inset-0 z-20 flex items-end justify-center bg-black/60 backdrop-blur-[2px] sm:items-center sm:p-4">
+            <div
+              data-testid="call-ringing"
+              role="alertdialog"
+              aria-modal="true"
+              aria-label={ringing.mode === "video" ? "تماس تصویری ورودی" : "تماس صوتی ورودی"}
+              className="w-full rounded-t-3xl border border-border bg-surface p-5 shadow-2xl sm:max-w-sm sm:rounded-3xl"
+            >
+              <div className="flex items-center gap-3">
+                <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+                  <span className="absolute inset-0 animate-ping rounded-2xl bg-primary/15" aria-hidden />
+                  <Icon name={ringing.mode === "video" ? "video" : "phone"} className="h-6 w-6" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-foreground">{ringing.name}</p>
+                  <p className="text-xs text-muted">
+                    {ringing.mode === "video" ? "تماس تصویری ورودی…" : "تماس صوتی ورودی…"}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  data-testid="call-accept"
+                  onClick={acceptCall}
+                  aria-label="پذیرش تماس"
+                  className="inline-flex h-12 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-success text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success"
+                >
+                  <Icon name="phone" className="h-4 w-4" />
+                  پذیرش
+                </button>
+                <button
+                  type="button"
+                  data-testid="call-reject"
+                  onClick={rejectCall}
+                  aria-label="رد تماس"
+                  className="inline-flex h-12 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-danger text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger"
+                >
+                  <HangupIcon />
+                  رد
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* تأیید شروع تماس جدید هنگام تماس فعال */}
+        {confirmMode && (
+          <div className="absolute inset-0 z-30 flex items-end justify-center bg-black/60 backdrop-blur-[2px] sm:items-center sm:p-4">
+            <div
+              role="alertdialog"
+              aria-modal="true"
+              aria-label="شروع تماس جدید"
+              className="w-full rounded-t-3xl border border-border bg-surface p-5 shadow-2xl sm:max-w-sm sm:rounded-3xl"
+            >
+              <p className="text-sm font-bold text-foreground">تماس جدیدی شروع می‌کنید؟</p>
+              <p className="mt-1 text-xs leading-6 text-muted">
+                تماس فعلی پایان می‌یابد و {confirmMode === "video" ? "تماس تصویری" : "تماس صوتی"} جدیدی برای طرف مقابل زنگ می‌خورد.
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => acceptNewCall(confirmMode)}
+                  className="h-11 cursor-pointer rounded-xl bg-primary text-sm font-bold text-primary-foreground transition-all hover:opacity-90 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  پایان و تماس جدید
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmMode(null)}
+                  className="h-11 cursor-pointer rounded-xl border border-border bg-surface text-sm font-bold text-foreground transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  انصراف
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

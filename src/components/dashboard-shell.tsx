@@ -17,24 +17,33 @@ import { templateT } from "@/lib/i18n/core";
 export async function DashboardShell({
   role,
   title,
+  subtitle,
   nav,
   children,
   name,
+  userName,
+  userRole: _userRole,
   back,
 }: {
-  role: "موکل" | "وکیل";
+  role: "موکل" | "وکیل" | "کارآموز";
   title: string;
+  /** توضیح یک‌خطی زیر تیتر — اختیاری */
+  subtitle?: string;
   /** href-when-present = real link; otherwise a plain label (لا Buttons مرده) */
   nav: { label: string; icon: IconKey; active?: boolean; badge?: string; href?: string }[];
   children: ReactNode;
   /** نام کاربر برای سلام اختصاصی + آواتار */
   name?: string;
+  /** نام/نقش کاربر — نام‌های متغیر رایج صفحات (هم‌ارز name) */
+  userName?: string;
+  userRole?: string;
   /** دکمهٔ بازگشت — برای زیرصفحه‌ها (fallback مقصدی که اگر تاریخچه نبود می‌رود) */
   back?: { fallback?: string; label?: string };
 }) {
   const t = await getT();
   const tf = templateT(t);
   const isLawyer = role === "وکیل";
+  const who = name ?? userName;
 
   return (
     <Container className="py-6 sm:py-8">
@@ -81,14 +90,15 @@ export async function DashboardShell({
           </div>
 
           <div className="mt-5 flex items-center gap-4">
-            {name && (
+            {who && (
               <span className="rounded-2xl ring-2 ring-white/35" aria-hidden>
-                <Avatar name={name} color={isLawyer ? "#b07d12" : "#3f5f8a"} size="lg" />
+                <Avatar name={who} color={isLawyer ? "#b07d12" : "#3f5f8a"} size="lg" />
               </span>
             )}
             <div className="min-w-0">
-              <p className="text-sm text-white/80">{name ? tf("سلام، {name}", { name }) : t("خوش آمدید")}</p>
+              <p className="text-sm text-white/80">{who ? tf("سلام، {name}", { name: who }) : t("خوش آمدید")}</p>
               <h1 className="mt-0.5 truncate text-xl font-extrabold sm:text-2xl">{title}</h1>
+              {subtitle && <p className="mt-1 text-xs leading-5 text-white/70">{subtitle}</p>}
             </div>
           </div>
         </div>

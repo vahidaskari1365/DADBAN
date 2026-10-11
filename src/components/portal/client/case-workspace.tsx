@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
-import { Progress, StatusBadge } from "@/components/dashboard-shell";
+import { Progress, StatusBadge } from "@/components/panel-widgets";
 import type { IconKey } from "@/lib/data";
 import { formatJalaliLong, formatToman, labelStatus, toFa } from "@/lib/money";
 import { nextActionForCase } from "@/lib/case-facts";

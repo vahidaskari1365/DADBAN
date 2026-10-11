@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
-import { StatusBadge } from "@/components/dashboard-shell";
+import { StatusBadge } from "@/components/panel-widgets";
 import { formatToman, labelStatus, timeAgo, toFa } from "@/lib/money";
 import type { LawyerLite, ProposalItem } from "./types";
 

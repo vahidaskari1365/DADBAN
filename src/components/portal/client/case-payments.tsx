@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/icons";
-import { StatusBadge } from "@/components/dashboard-shell";
+import { StatusBadge } from "@/components/panel-widgets";
 import { formatJalali, formatToman, groupFa, labelStatus, toEn, toFa } from "@/lib/money";
 import type { CreditItem, InstallmentItem } from "./types";
 

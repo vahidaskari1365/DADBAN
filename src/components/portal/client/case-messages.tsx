@@ -6,7 +6,10 @@ import { timeAgo } from "@/lib/money";
 import type { MessageItem } from "./types";
 
 /**
- * پیام‌رسان موکل و وکیل — چت ساده با polling هر ۵ ثانیه.
+ * پیام‌رسان موکل و وکیل — چت ساده.
+ * تحویل زنده با SSE (/api/portal/cases/[id]/events/stream):
+ *  event message → پیام تازه (هر ۲.۵ ثانیه چک سمت سرور)
+ * خطای اتصال → بازگشت شفاف به polling قدیمی (هر ۵ ثانیه).
  * حباب‌های پیام خودِ کاربر سمت راست و پیام‌های طرف مقابل سمت چپ قرار می‌گیرند.
  */
 export default function CaseMessages({
@@ -19,14 +22,26 @@ export default function CaseMessages({
   initialMessages: MessageItem[];
 }) {
   const [messages, setMessages] = useState<MessageItem[]>(initialMessages);
+  const [live, setLive] = useState(false);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const nearBottomRef = useRef(true);
+  const lastIdRef = useRef<number>(initialMessages.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0));
 
   const isOwn = (m: MessageItem) =>
     m.senderRole === viewerRole || (viewerRole !== "client" && m.senderRole !== "client");
+
+  const mergeMessages = useCallback((incoming: MessageItem[]) => {
+    setMessages((prev) => {
+      const seen = new Set(prev.map((m) => m.id));
+      const fresh = incoming.filter((m) => !seen.has(m.id));
+      if (!fresh.length) return prev;
+      lastIdRef.current = fresh.reduce((m, x) => Math.max(m, Number(x.id) || 0), lastIdRef.current);
+      return [...prev, ...fresh].sort((a, b) => Number(a.id) - Number(b.id));
+    });
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -35,17 +50,78 @@ export default function CaseMessages({
       const data = (await res.json()) as { ok?: boolean; messages?: MessageItem[] };
       if (data?.ok && Array.isArray(data.messages)) {
         setMessages(data.messages);
+        lastIdRef.current = data.messages.reduce((m, x) => Math.max(m, Number(x.id) || 0), lastIdRef.current);
       }
     } catch {
       /* بی‌صدا — دادهٔ اولیهٔ سرور روی صفحه می‌ماند */
     }
   }, [caseId]);
 
+  /* SSE زنده + fallback شفاف به polling قدیمی (۵ ثانیه) */
   useEffect(() => {
+    let es: EventSource | null = null;
+    let pollIv: ReturnType<typeof setInterval> | null = null;
+    let retryT: ReturnType<typeof setTimeout> | null = null;
+    let disposed = false;
+
+    const startPolling = () => {
+      if (disposed || pollIv) return;
+      setLive(false);
+      pollIv = setInterval(() => void load(), 5000);
+    };
+    const stopPolling = () => {
+      if (pollIv) {
+        clearInterval(pollIv);
+        pollIv = null;
+      }
+    };
+    const startSse = () => {
+      if (disposed) return;
+      try {
+        es = new EventSource(`/api/portal/cases/${caseId}/events/stream`);
+      } catch {
+        startPolling();
+        return;
+      }
+      es.addEventListener("message", (ev) => {
+        try {
+          const row = JSON.parse((ev as MessageEvent<string>).data) as MessageItem;
+          if (!row || typeof row.id !== "number") return;
+          mergeMessages([row]);
+        } catch {
+          /* ردیف نامعتبر — نادیده */
+        }
+      });
+      es.onopen = () => {
+        if (!disposed) {
+          setLive(true);
+          stopPolling();
+        }
+      };
+      es.onerror = () => {
+        // CLOSED → خطای قطعی (401/429/…) → polling + تلاش مجدد SSE بعداً
+        // CONNECTING → مرورگر خودش reconnect می‌کند؛ دست نمی‌زنیم
+        if (es && es.readyState === EventSource.CLOSED) {
+          es = null;
+          startPolling();
+          retryT = setTimeout(() => {
+            if (disposed) return;
+            stopPolling();
+            startSse();
+          }, 60_000);
+        }
+      };
+    };
+
     queueMicrotask(() => void load());
-    const timer = setInterval(() => void load(), 5000);
-    return () => clearInterval(timer);
-  }, [load]);
+    startSse();
+    return () => {
+      disposed = true;
+      es?.close();
+      stopPolling();
+      if (retryT) clearTimeout(retryT);
+    };
+  }, [caseId, load, mergeMessages]);
 
   /* اسکرول خودکار فقط وقتی کاربر نزدیک پایین است */
   useEffect(() => {
@@ -160,7 +236,17 @@ export default function CaseMessages({
         <span className="flex items-center gap-1">
           <Icon name="lock" className="h-3 w-3 text-success" /> گفتگوی امن؛ فقط طرفین پرونده دسترسی دارند.
         </span>
-        <span>بروزرسانی خودکار هر ۵ ثانیه</span>
+        {live ? (
+          <span data-testid="case-live" className="flex items-center gap-1 font-semibold text-success">
+            <span className="relative flex h-2 w-2" aria-hidden>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+            </span>
+            زنده
+          </span>
+        ) : (
+          <span>بروزرسانی خودکار هر ۵ ثانیه</span>
+        )}
       </p>
     </div>
   );

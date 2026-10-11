@@ -13,6 +13,7 @@ import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
 import { CASE_STATUS_FA, buildCaseTimeline, nextActionForCase } from "@/lib/case-facts";
 import { StatusBadge } from "@/components/managed";
+import CaseDocumentsManager from "@/components/case-documents-manager";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
 import { templateT } from "@/lib/i18n/core";
@@ -206,6 +207,9 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
             <p className="mt-1 text-sm leading-7 text-foreground-soft">{descT}</p>
           </div>
         </Card>
+
+        {/* مدارک پرونده — آپلود واقعی فایل (پس از اطلاعات پرونده) */}
+        <CaseDocumentsManager caseId={row.id} role={user.role} />
 
         {/* مراحل */}
         <Card hover={false}>

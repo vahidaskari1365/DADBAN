@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui";
-import { StatusBadge } from "@/components/dashboard-shell";
+import { StatusBadge } from "@/components/panel-widgets";
 
 export type TeamMemberView = {
   id: number;

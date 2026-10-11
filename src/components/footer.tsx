@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container, Logo } from "./ui";
 import { Icon } from "./icons";
+import NewsletterForm from "./newsletter-form";
 import type { IconKey } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
 
@@ -41,6 +42,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "برای کسب‌وکارها", href: "/business" },
       { label: "پنل موکل", href: "/dashboard/client" },
       { label: "پنل وکیل", href: "/dashboard/lawyer" },
+      { label: "عضویت وکلای جدید", href: "/join-as-lawyer" },
       { label: "پنل مدیریت", href: "/admin" },
       { label: "تماس و پشتیبانی", href: "/support" },
     ],
@@ -90,6 +92,20 @@ export async function Footer() {
                   {t(f.label)}
                 </span>
               ))}
+            </div>
+
+            {/* خبرنامه — فرم کلاینتِ کوچک؛ در سرور فقط سربرگ و توضیح ترجمه می‌شود */}
+            <div className="mt-6 max-w-xs border-t border-border pt-5">
+              <h3 className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+                <Icon name="mail" className="h-4 w-4 text-accent-text" aria-hidden />
+                {t("خبرنامه")}
+              </h3>
+              <p className="mt-2 text-xs leading-6 text-muted">
+                {t("هر دو هفته یک‌بار، تازه‌ترین قوانین و راهنماهای حقوقی در ایمیل شما.")}
+              </p>
+              <div className="mt-3">
+                <NewsletterForm />
+              </div>
             </div>
           </div>
           {COLS.map((col) => (

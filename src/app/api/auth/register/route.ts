@@ -6,8 +6,19 @@ import { eq, or } from "drizzle-orm";
 import { hashPassword, isUserAuthConfigured, signUserSession, userCookieName } from "@/lib/user-auth";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 import { phone, rateLimit, readJson, text, validPhone } from "@/lib/api-security";
+import { sendWelcomeEmail } from "@/lib/email";
 export const runtime = "nodejs";
 const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** خوش‌آمد ایمیلی — best-effort: خطای ایمیل هرگز ثبت‌نام را نمی‌شکند (قرارداد ماژول email). */
+async function welcomeBestEffort(to: string | null, name: string): Promise<void> {
+  if (!to) return;
+  try {
+    await sendWelcomeEmail(to, name);
+  } catch {
+    /* هرگز به مسیر ثبت‌نام نشت نمی‌کند */
+  }
+}
 
 /**
  * ساخت slug یکتا برای پروفایل کارآموز.
@@ -56,9 +67,11 @@ export async function POST(req: Request) {
       // سشن بلافاصله صادر می‌شود — همان الگوی /api/auth/login
       const store = await cookies();
       store.set(userCookieName(), signUserSession(result.user.id, "lawyer"), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 30 });
+      await welcomeBestEffort(email, name);
       return NextResponse.json({ ok: true, user: { id: result.user.id, name: result.user.name, role: "lawyer" }, lawyerSlug: result.lawyerSlug });
     }
     const [created] = await db.insert(users).values({ name, phone: mobile, email, passwordHash: hashPassword(password) }).returning({ id: users.id, name: users.name, role: users.role });
+    await welcomeBestEffort(email, name);
     return NextResponse.json({ ok: true, user: created });
   } catch { return NextResponse.json({ ok: false, error: "خطا در ثبت‌نام" }, { status: 500 }); }
 }

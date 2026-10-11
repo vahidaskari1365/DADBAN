@@ -21,6 +21,7 @@ export async function GET() {
       phone: user.phone,
       email: user.email,
       role: user.role,
+      phoneVerified: Boolean(user.phoneVerified),
       province: user.province ?? null,
       city: user.city ?? null,
       avatarColor: user.avatarColor ?? "#15365d",

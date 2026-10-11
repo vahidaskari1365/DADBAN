@@ -291,6 +291,122 @@ export async function getLawyerAppointments(
   }
 }
 
+/* ------------------------------ پرونده‌های من (مالکیت شخصی وکیل) ------------------------------ */
+
+/**
+ * خلاصهٔ «پرونده‌های من» — پرونده‌هایی که با پذیرش پیشنهاد، به وکیلِ جاری واگذار شده‌اند
+ * (cases.assignedLawyerId = lawyerId) + جمع‌های مالی مربوط به خود او.
+ *
+ * صداقت: هر بخش اگر قابل محاسبه نباشد (خطای کوئری یا نبود داده) null/خالی برمی‌گرداند
+ * نه صفرِ ساختگی — UI بخش‌های null را با حالت degraded شفاف نشان می‌دهد.
+ * feeSum: جمع حق‌الوکالهٔ توافق‌شده (cases.feeAgreed) پرونده‌های واگذارشده — تومان.
+ * settledSum: جمع برداشت‌های واریزشدهٔ همان وکیل (payoutRequests.lawyerId, status=paid) — تومان.
+ */
+export type MyCaseItem = {
+  id: number;
+  caseNumber: string;
+  trackingToken: string;
+  subject: string;
+  city: string;
+  stage: string;
+  progress: number;
+  /** تومان — پرونده‌ای بدون حق‌الوکالهٔ توافق‌شده → null */
+  feeAgreed: number | null;
+  contractStatus: string;
+  createdAt: string;
+};
+
+export type MyCasesTotals = {
+  count: number;
+  /** null = در دسترس نیست (خطای کوئری) — UI حالت degraded نشان می‌دهد */
+  feeSum: number | null;
+  /** null = در دسترس نیست (خطای کوئری) — UI حالت degraded نشان می‌دهد */
+  settledSum: number | null;
+};
+
+export type MyCasesSummary = {
+  cases: MyCaseItem[];
+  totals: MyCasesTotals;
+  /** true = بخشی از داده به‌خاطر خطای دیتابیس degraded شده */
+  degraded: boolean;
+};
+
+export async function computeMyCasesSummary(lawyerId: number): Promise<MyCasesSummary> {
+  const summary: MyCasesSummary = {
+    cases: [],
+    totals: { count: 0, feeSum: null, settledSum: null },
+    degraded: false,
+  };
+  try {
+    const rows = (await db
+      .select({
+        id: cases.id,
+        caseNumber: cases.caseNumber,
+        trackingToken: cases.trackingToken,
+        subject: cases.subject,
+        city: cases.city,
+        stage: cases.stage,
+        progress: cases.progress,
+        feeAgreed: cases.feeAgreed,
+        contractStatus: cases.contractStatus,
+        createdAt: cases.createdAt,
+      })
+      .from(cases)
+      .where(eq(cases.assignedLawyerId, lawyerId))
+      .orderBy(desc(cases.createdAt))
+      .limit(50)) as {
+      id: number;
+      caseNumber: string;
+      trackingToken: string;
+      subject: string;
+      city: string;
+      stage: string;
+      progress: number;
+      feeAgreed: string | null;
+      contractStatus: string;
+      createdAt: Date;
+    }[];
+    const list = Array.isArray(rows) ? rows : [];
+
+    summary.cases = list.map((c) => ({
+      id: c.id,
+      caseNumber: c.caseNumber,
+      trackingToken: c.trackingToken,
+      subject: c.subject,
+      city: c.city,
+      stage: c.stage,
+      progress: Math.max(0, Math.min(100, Number(c.progress ?? 0))),
+      feeAgreed: c.feeAgreed != null && Number.isFinite(Number(c.feeAgreed)) ? Number(c.feeAgreed) : null,
+      contractStatus: String(c.contractStatus ?? "none"),
+      createdAt: (c.createdAt instanceof Date ? c.createdAt : new Date(c.createdAt)).toISOString(),
+    }));
+    summary.totals.count = summary.cases.length;
+    summary.totals.feeSum = summary.cases.reduce((s, c) => s + (c.feeAgreed ?? 0), 0);
+  } catch {
+    summary.degraded = true;
+    summary.totals.feeSum = null;
+    return summary; // بدون جدول cases هیچ جمع بعدی معنا ندارد — صادقانه برمی‌گردیم
+  }
+
+  try {
+    // تسویه‌شدهٔ واقعی: برداشت‌های واریزشدهٔ همین وکیل (payoutRequests.lawyerId → status=paid)
+    const payoutRows = (await db
+      .select({ amount: payoutRequests.amount })
+      .from(payoutRequests)
+      .where(and(eq(payoutRequests.lawyerId, lawyerId), eq(payoutRequests.status, "paid")))
+      .limit(200)) as { amount: string }[];
+    summary.totals.settledSum = (Array.isArray(payoutRows) ? payoutRows : []).reduce(
+      (s, p) => s + (Number(p.amount) || 0),
+      0,
+    );
+  } catch {
+    summary.totals.settledSum = null;
+    summary.degraded = true;
+  }
+
+  return summary;
+}
+
 /* ------------------------------ مالی وکیل ------------------------------ */
 
 export type LedgerItem = {

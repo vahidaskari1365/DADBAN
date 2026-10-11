@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { StatCard, StatusBadge } from "@/components/dashboard-shell";
+import { StatCard, StatusBadge } from "@/components/panel-widgets";
 import { Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { formatToman, shortToman, formatJalali, labelStatus, toFa } from "@/lib/money";

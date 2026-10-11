@@ -11,6 +11,7 @@ import {
   uniqueIndex,
   index,
   jsonb,
+  customType,
 } from "drizzle-orm/pg-core";
 
 export const caseStatus = pgEnum("case_status", [
@@ -458,6 +459,28 @@ export const cases = pgTable("cases", {
   contactPhone: text("contact_phone").notNull(),
   status: caseStatus("status").notNull().default("new"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  /* ── ستون‌های بازار پرونده‌ها — در runtime با marketplace-migrate اضافه می‌شوند ── */
+  /** تخصص موردنیاز پرونده (برای تطبیق وکیل) */
+  specialty: text("specialty").notNull().default("عمومی"),
+  province: text("province").notNull().default(""),
+  /** شماره تماس موکلِ صاحب حساب (بازار پنلی) */
+  clientUserPhone: text("client_user_phone").notNull().default(""),
+  /** وکیل واگذارشده (پس از پذیرش پیشنهاد) */
+  assignedLawyerId: integer("assigned_lawyer_id"),
+  /** درصد پیشرفت ۰..۱۰۰ */
+  progress: integer("progress").notNull().default(5),
+  aiCategory: text("ai_category").notNull().default(""),
+  aiConfidence: integer("ai_confidence").notNull().default(0),
+  aiEstimate: text("ai_estimate").notNull().default(""),
+  /** normal | high | urgent */
+  urgency: text("urgency").notNull().default("normal"),
+  feeAgreed: numeric("fee_agreed", { precision: 14, scale: 0 }),
+  /** none | draft | sent | signed */
+  contractStatus: text("contract_status").notNull().default("none"),
+  contractCode: text("contract_code").notNull().default(""),
+  contractSignedAt: timestamp("contract_signed_at"),
+  /** نمایش عمومی در /case-board */
+  isPublic: boolean("is_public").notNull().default(true),
 });
 
 /* ------------------------------ Consultations ------------------------------ */
@@ -534,6 +557,8 @@ export const users = pgTable("app_users", {
   avatarColor: text("avatar_color").notNull().default("#15365d"),
   /** اتصال حساب به پروفایل عمومی وکیل (فقط برای role=lawyer) */
   lawyerId: integer("lawyer_id").references(() => lawyers.id, { onDelete: "set null" }),
+  /** شمارهٔ موبایل با کد یکبارمصرف تأیید شده است (ورود OTP / تأیید شماره) */
+  phoneVerified: boolean("phone_verified").notNull().default(false),
   /** اعضای تیم وکیل: role="team" — وکیلِ مادر و دسترسی‌های عضو */
   parentLawyerId: integer("parent_lawyer_id").references(() => lawyers.id, { onDelete: "cascade" }),
   /** دسترسی‌های عضو تیم — CSV از: offers,consultations,reminders,services,cases */
@@ -817,3 +842,168 @@ export const lawFacts = pgTable("law_facts", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 export type LawFact = typeof lawFacts.$inferSelect;
+
+/* ============================================================================
+ * Trust & Ops — احراز هویت پیامکی، ایمیل، خطایابی، مدارک پرونده، روی‌بوردینگ
+ * ========================================================================== */
+
+/** bytea — ذخیرهٔ باینری مدرک (سازگار با serverless؛ بدون نیاز به object storage) */
+export const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType() {
+    return "bytea";
+  },
+});
+
+/* ── ۱) کدهای یکبارمصرف (OTP) — ورود، تأیید شماره، بازیابی رمز ── */
+
+export const otpCodes = pgTable(
+  "otp_codes",
+  {
+    id: serial("id").primaryKey(),
+    /** شماره موبایل نرمال‌شدهٔ ۱۱ رقمی */
+    phone: text("phone").notNull(),
+    /** login | verify | reset */
+    purpose: text("purpose").notNull(),
+    /** هش scrypt کد ۶ رقمی — کد خام هرگز ذخیره نمی‌شود */
+    codeHash: text("code_hash").notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    expiresAt: timestamp("expires_at").notNull(),
+    consumedAt: timestamp("consumed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    phonePurposeIdx: index("otp_codes_phone_purpose_idx").on(t.phone, t.purpose, t.createdAt),
+  }),
+);
+export type OtpCode = typeof otpCodes.$inferSelect;
+
+/* ── ۲) صندوق خروجی ایمیل — همهٔ ایمیل‌های سایت (رسید، خوش‌آمد، بازیابی رمز) ──
+ * provider: resend | smtp | log — «log» یعنی بدون کلید، فقط ثبت شد (حالت صادقانهٔ
+ * همان پرداخت دستی: ادمین در پنل می‌بیند چه ایمیلی برای چه کسی می‌رفت).
+ */
+export const emailOutbox = pgTable("email_outbox", {
+  id: serial("id").primaryKey(),
+  toEmail: text("to_email").notNull(),
+  /** receipt | welcome | password_reset | onboarding | broadcast */
+  kind: text("kind").notNull().default("broadcast"),
+  subject: text("subject").notNull(),
+  bodyHtml: text("body_html").notNull().default(""),
+  bodyText: text("body_text").notNull().default(""),
+  /** sent | failed | logged */
+  status: text("status").notNull().default("logged"),
+  provider: text("provider").notNull().default("log"),
+  error: text("error"),
+  sentAt: timestamp("sent_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type EmailOutboxRow = typeof emailOutbox.$inferSelect;
+
+/* ── ۳) خبرنامه ── */
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
+
+/* ── ۴) خطاهای ثبت‌شده — مانیتورینگ داخلی (جایگزین بدون‌کلیدِ Sentry) ──
+ * سرور (onRequestError) و مرورگر (error boundary → /api/errors) هر دو اینجا می‌نویسند؛
+ * ادمین در /admin/errors زنده می‌بیند اگر پروداکشن کرش کند.
+ */
+export const appErrors = pgTable(
+  "app_errors",
+  {
+    id: serial("id").primaryKey(),
+    /** error | warning */
+    level: text("level").notNull().default("error"),
+    /** server | client */
+    source: text("source").notNull().default("server"),
+    message: text("message").notNull(),
+    stack: text("stack"),
+    url: text("url"),
+    userId: integer("user_id"),
+    userAgent: text("user_agent"),
+    meta: jsonb("meta"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    createdIdx: index("app_errors_created_idx").on(t.createdAt),
+  }),
+);
+export type AppErrorRow = typeof appErrors.$inferSelect;
+
+/* ── ۵) مدارک پرونده — آپلود واقعی فایل از جزئیات پرونده (≤۵MB در دیتابیس) ── */
+export const caseDocuments = pgTable(
+  "case_documents",
+  {
+    id: serial("id").primaryKey(),
+    caseId: integer("case_id")
+      .notNull()
+      .references(() => cases.id, { onDelete: "cascade" }),
+    uploadedBy: integer("uploaded_by").references(() => users.id, { onDelete: "set null" }),
+    /** client | lawyer | staff */
+    uploaderRole: text("uploader_role").notNull().default("client"),
+    name: text("name").notNull(),
+    mime: text("mime").notNull().default("application/octet-stream"),
+    size: integer("size").notNull().default(0),
+    data: bytea("data").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    caseIdx: index("case_documents_case_idx").on(t.caseId),
+  }),
+);
+export type CaseDocument = typeof caseDocuments.$inferSelect;
+
+/* ── ۶) روی‌بوردینگ وکیل واقعی — فرم مدارک → صف تأیید ادمین → پروفایل + قرارداد ── */
+export const lawyerOnboarding = pgTable(
+  "lawyer_onboarding",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
+    name: text("name").notNull(),
+    phone: text("phone").notNull(),
+    email: text("email"),
+    licenseNo: text("license_no").notNull(),
+    /** wakil | karamooz */
+    lawyerType: text("lawyer_type").notNull().default("wakil"),
+    city: text("city").notNull(),
+    province: text("province").notNull(),
+    experienceYears: integer("experience_years").notNull().default(0),
+    specialties: text("specialties").array().notNull().default([]),
+    bio: text("bio").notNull().default(""),
+    /** pending | approved | rejected */
+    status: text("status").notNull().default("pending"),
+    adminNote: text("admin_note"),
+    /** پذیرش الکترونیکی قرارداد همکاری — نسخهٔ متن قرارداد + زمان پذیرش */
+    agreementVersion: text("agreement_version"),
+    agreementSignedAt: timestamp("agreement_signed_at"),
+    reviewedAt: timestamp("reviewed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    statusIdx: index("lawyer_onboarding_status_idx").on(t.status, t.createdAt),
+  }),
+);
+export type LawyerOnboardingRow = typeof lawyerOnboarding.$inferSelect;
+
+/* ── ۷) بازبینی حقوقی — نشان «بازبینی‌شده توسط وکیل» روی صفحات قانونی ──
+ * بازبینیِ واقعی کار انسانی وکیل است؛ این جدول فقط نتیجه و مسئول آن را شفاف ثبت می‌کند.
+ */
+export const legalReviews = pgTable(
+  "legal_reviews",
+  {
+    id: serial("id").primaryKey(),
+    /** terms | privacy | legal-<slug> */
+    pageSlug: text("page_slug").notNull().unique(),
+    reviewerName: text("reviewer_name").notNull(),
+    reviewerTitle: text("reviewer_title").notNull().default("وکیل دادگستری"),
+    summary: text("summary").notNull().default(""),
+    reviewedAt: timestamp("reviewed_at").defaultNow().notNull(),
+  },
+);
+export type LegalReviewRow = typeof legalReviews.$inferSelect;
+
+/* جداول بازار پرونده‌ها (دادپیو) — در همین ماژول re-export می‌شوند تا همهٔ کد از "@/db/schema" مصرف کند */
+export * from "@/db/schema-marketplace";

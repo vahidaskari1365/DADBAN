@@ -134,6 +134,9 @@ export default async function AdminPage() {
                 { label: "مدیریت پرونده‌ها", href: "/admin/cases", icon: "folder" as const },
                 { label: "مدیریت مشاوره‌ها", href: "/admin/consultations", icon: "calendar" as const },
                 { label: "مدیریت تیکت‌ها", href: "/admin/tickets", icon: "mail" as const },
+                { label: "روی‌بوردینگ وکلا", href: "/admin/onboarding", icon: "badge" as const },
+                { label: "صندوق ایمیل و خبرنامه", href: "/admin/outbox", icon: "send" as const },
+                { label: "مانیتور خطاها", href: "/admin/errors", icon: "alert" as const },
                 { label: "بازگشت به سایت", href: "/", icon: "home" as const },
               ].map((m) => (
                 <Link key={m.label + m.href} href={m.href}>

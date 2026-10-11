@@ -9,8 +9,8 @@ import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
-import { ensureProfileSchema } from "@/lib/auto-seed";
-import { PersonalInfoForm, PasswordForm } from "@/components/profile/profile-forms";
+import { ensureProfileSchema, ensureExtendedSchema } from "@/lib/auto-seed";
+import { PersonalInfoForm, PasswordForm, PhoneVerificationRow } from "@/components/profile/profile-forms";
 import { FavoritesPanel } from "@/components/profile/favorites-panel";
 import { formatJalaliLong as faDate } from "@/lib/jalali";
 import { getT } from "@/lib/i18n/server";
@@ -29,6 +29,12 @@ export default async function ClientProfilePage() {
   const t = await getT();
   const tf = templateT(t);
   await ensureProfileSchema();
+  // ستون phone_verified + جدول otp_codes — پیش‌نیاز نشان «وضعیت شماره موبایل»
+  try {
+    await ensureExtendedSchema();
+  } catch {
+    /* migration best-effort — در نبود ستون، getCurrentUser به claims برمی‌گردد */
+  }
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (isLawyerSideRole(user.role)) redirect("/dashboard/lawyer");
@@ -119,6 +125,17 @@ export default async function ClientProfilePage() {
           </Card>
         ))}
       </div>
+
+      {/* وضعیت شماره موبایل — تأیید پیامکی */}
+      <Card hover={false}>
+        <h2 className="flex items-center gap-2 font-bold text-foreground">
+          <Icon name="phone" className="h-5 w-5 text-primary" /> {t("وضعیت شماره موبایل")}
+        </h2>
+        <p className="mb-4 mt-1 text-xs text-muted">
+          {t("با تأیید شماره، ورود با کد پیامکی برایتان فعال می‌شود و حساب شما مطمئن‌تر می‌شود.")}
+        </p>
+        <PhoneVerificationRow phone={user.phone} verified={user.phoneVerified === true} />
+      </Card>
 
       {/* اطلاعات شخصی */}
       <Card hover={false}>

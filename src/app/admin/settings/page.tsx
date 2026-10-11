@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { platformSettings } from "@/db/schema-marketplace";
+import { legalReviews } from "@/db/schema";
+import { desc } from "drizzle-orm";
 import { isAdmin } from "@/lib/admin-auth";
+import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { PageHero } from "@/components/page-hero";
 import { Container } from "@/components/ui";
 import SettingsClient from "./settings-client";
@@ -35,6 +38,23 @@ export default async function AdminSettingsPage() {
     /* حالت تنزل‌یافته — مقادیر پیش‌فرض */
   }
 
+  /* بازبینی‌های حقوقی ثبت‌شده برای نشان اعتماد صفحات — try/catch، بدون دیتابیس هم امن */
+  let reviews: { id: number; pageSlug: string; reviewerName: string; reviewerTitle: string; summary: string; reviewedAt: string }[] = [];
+  try {
+    await ensureExtendedSchema();
+    const rows = await db.select().from(legalReviews).orderBy(desc(legalReviews.reviewedAt));
+    reviews = (Array.isArray(rows) ? rows : []).map((r) => ({
+      id: r.id,
+      pageSlug: r.pageSlug,
+      reviewerName: r.reviewerName,
+      reviewerTitle: r.reviewerTitle,
+      summary: r.summary,
+      reviewedAt: (r.reviewedAt instanceof Date ? r.reviewedAt : new Date(r.reviewedAt)).toISOString(),
+    }));
+  } catch {
+    /* حالت تنزل‌یافته — فهرست خالی */
+  }
+
   return (
     <>
       <PageHero
@@ -44,7 +64,7 @@ export default async function AdminSettingsPage() {
         breadcrumb={[{ label: "خانه", href: "/" }, { label: "پنل مدیریت", href: "/admin" }, { label: "تنظیمات" }]}
       />
       <Container className="py-10">
-        <SettingsClient settings={settings} />
+        <SettingsClient settings={settings} legalReviews={reviews} />
       </Container>
     </>
   );

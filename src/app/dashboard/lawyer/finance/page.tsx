@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { DashboardShell, StatCard } from "@/components/dashboard-shell";
+import { DashboardShell } from "@/components/dashboard-shell";
+import { StatCard } from "@/components/panel-widgets";
 import { Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { getCurrentUser } from "@/lib/user-auth";

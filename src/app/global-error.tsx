@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { reportClientError } from "@/lib/report-error";
+
 /**
  * Last-resort error boundary for errors thrown in the root layout itself.
  * Replaces the entire document, so it must render its own <html>/<body>
@@ -12,6 +15,11 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    // ثبت در پایش خطای داخلی (app_errors) — best-effort، هرگز throw نمی‌کند
+    reportClientError(error, { where: "global-error" });
+  }, [error]);
+
   return (
     <html lang="fa" dir="rtl">
       <body style={{ margin: 0, background: "#f5f7fb", color: "#141416", fontFamily: "Vazirmatn, system-ui, Tahoma, sans-serif" }}>

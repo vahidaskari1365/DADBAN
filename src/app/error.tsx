@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { reportClientError } from "@/lib/report-error";
 
 /**
  * Error boundary for page-level runtime errors. Rendered inside the root
@@ -16,6 +17,8 @@ export default function ErrorPage({
   useEffect(() => {
     // Log server-side so runtime errors stay observable in production.
     console.error("[dadban] page error:", error);
+    // ثبت در پایش خطای داخلی (app_errors) — best-effort، هرگز throw نمی‌کند
+    reportClientError(error, { where: "error" });
   }, [error]);
 
   return (

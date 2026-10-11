@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { DashboardShell, StatusBadge } from "@/components/dashboard-shell";
+import { DashboardShell } from "@/components/dashboard-shell";
+import { StatusBadge } from "@/components/panel-widgets";
 import { Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { getCurrentUser } from "@/lib/user-auth";

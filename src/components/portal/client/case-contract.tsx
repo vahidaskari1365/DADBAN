@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/icons";
-import { StatusBadge } from "@/components/dashboard-shell";
+import { StatusBadge } from "@/components/panel-widgets";
 import { formatJalaliLong, formatTime, formatToman, labelStatus } from "@/lib/money";
 import {
   Dialog,

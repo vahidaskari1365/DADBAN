@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { ALL_PROVINCES, LOCATIONS, faNum } from "@/lib/data";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
@@ -266,5 +268,193 @@ export function LawyerLinkBadge({ linked, href }: { linked: boolean; href?: stri
       <Icon name="check" className="h-3.5 w-3.5" /> {t("مشاهده پروفایل عمومی")}
       <Icon name="arrow" className="h-3 w-3 rotate-180" />
     </a>
+  );
+}
+
+/**
+ * ردیف «وضعیت شماره موبایل» — نشان تأییدشده/تأییدنشده + جریان درخطی تأیید با
+ * کد پیامکی (purpose=verify). صداقت: پیام ۵۰۳ سرور (پیامک فعال نیست) عیناً نمایش
+ * داده می‌شود و هیچ موفقیتی ساختگی ادعا نمی‌شود.
+ */
+export function PhoneVerificationRow({ phone, verified }: { phone: string; verified: boolean }) {
+  const t = useT();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [msg, setMsg] = useState<{ tone: "ok" | "warn" | "danger"; text: string } | null>(null);
+
+  /* شمارش معکوس ارسال مجدد — سقف اصلی را سرور اعمال می‌کند */
+  const counting = cooldown > 0;
+  useEffect(() => {
+    if (!counting) return;
+    const id = window.setInterval(() => setCooldown((s) => (s <= 1 ? 0 : s - 1)), 1000);
+    return () => window.clearInterval(id);
+  }, [counting]);
+
+  /** یکسان‌سازی ارقام فارسی/عربی به لاتین */
+  const toEnDigits = (s: string) =>
+    s
+      .replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+      .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+
+  async function requestCode() {
+    if (loading) return;
+    setLoading(true);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/auth/otp/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, purpose: "verify" }),
+      });
+      const data = (await res.json()) as { ok: boolean; error?: string; dev?: boolean; devCode?: string; via?: string };
+      if (res.ok && data.ok) {
+        setOpen(true);
+        setCode("");
+        if (data.dev) {
+          setMsg({
+            tone: "warn",
+            text: `${t("حالت توسعه — پیامک فعال نیست، کد نمایش داده می‌شود")}: ${data.devCode ?? ""}`,
+          });
+        } else {
+          setMsg({
+            tone: "warn",
+            text:
+              data.via === "email"
+                ? t("این حساب ایمیل فعال دارد؛ کد تأیید به ایمیل شما ارسال شد.")
+                : t("کد تأیید پیامک شد؛ لطفاً صندوق پیامک را بررسی کنید."),
+          });
+        }
+        setCooldown(60);
+      } else {
+        setMsg({ tone: "danger", text: data.error ?? t("ارسال کد ناموفق بود.") });
+      }
+    } catch {
+      setMsg({ tone: "danger", text: t("ارتباط با سرور برقرار نشد.") });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function verify() {
+    const c = toEnDigits(code).replace(/\D/g, "");
+    if (c.length !== 6 || loading) return;
+    setLoading(true);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/auth/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, code: c, purpose: "verify" }),
+      });
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (res.ok && data.ok) {
+        setOpen(false);
+        setMsg(null);
+        setCode("");
+        toast.success(t("شماره موبایل شما تأیید شد."));
+        router.refresh(); // رندر مجدد سرورساید برای نشان سبز «تأییدشده»
+      } else {
+        setMsg({ tone: "danger", text: data.error ?? t("تأیید کد ناموفق بود.") });
+      }
+    } catch {
+      setMsg({ tone: "danger", text: t("ارتباط با سرور برقرار نشد.") });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div>
+      {/* ردیف وضعیت */}
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-foreground">
+          <span dir="ltr" className="font-mono">
+            {faNum(phone)}
+          </span>
+        </span>
+        {verified ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[color-mix(in_oklab,var(--success)_30%,transparent)] bg-[color-mix(in_oklab,var(--success)_14%,transparent)] px-3 py-1 text-xs font-semibold text-success">
+            <Icon name="check" className="h-3.5 w-3.5" /> {t("تأییدشده")}
+          </span>
+        ) : (
+          <>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-semibold text-accent-text">
+              <Icon name="alert" className="h-3.5 w-3.5" /> {t("تأییدنشده")}
+            </span>
+            <Button type="button" variant="outline" size="sm" icon="badge" disabled={loading} onClick={() => (open ? setOpen(false) : void requestCode())}>
+              {open ? t("بستن") : t("تأیید شماره")}
+            </Button>
+          </>
+        )}
+      </div>
+
+      {/* پیام وضعیت — صادقانه (۵۰۳ سرور، بنر dev، خطاها) */}
+      {msg && (
+        <p
+          role="alert"
+          className={`mt-3 rounded-xl border p-3 text-xs font-bold leading-6 ${
+            msg.tone === "danger"
+              ? "border-[color-mix(in_oklab,var(--danger)_28%,transparent)] bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] text-danger"
+              : "border-accent/30 bg-accent-soft text-accent-text"
+          }`}
+        >
+          {msg.text}
+        </p>
+      )}
+
+      {/* جریان درخطی تأیید: کد ۶ رقمی */}
+      {open && !verified && (
+        <div className="mt-4 max-h-96 overflow-y-auto rounded-xl border border-border bg-surface-2 p-4">
+          <p className="text-xs leading-6 text-muted">{t("کد ۶ رقمی ارسال‌شده به همین شماره را وارد کنید:")}</p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void verify();
+            }}
+            className="mt-3 space-y-3"
+            noValidate
+          >
+            <div dir="ltr" className="flex justify-center py-1">
+              <InputOTP
+                maxLength={6}
+                pattern={REGEXP_ONLY_DIGITS}
+                inputMode="numeric"
+                value={code}
+                onChange={setCode}
+                data-testid="verify-otp-input"
+                aria-label={t("کد تأیید ۶ رقمی")}
+                containerClassName="justify-center"
+              >
+                <InputOTPGroup>
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <InputOTPSlot
+                      key={i}
+                      index={i}
+                      className="h-11 w-10 rounded-xl border border-border bg-surface text-base font-bold text-foreground shadow-none first:rounded-xl last:rounded-xl data-[active=true]:border-primary data-[active=true]:ring-primary/30"
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button type="submit" size="sm" icon="check" disabled={loading || toEnDigits(code).replace(/\D/g, "").length !== 6}>
+                {loading ? t("در حال بررسی…") : t("تأیید کد")}
+              </Button>
+              <button
+                type="button"
+                onClick={() => void requestCode()}
+                disabled={cooldown > 0 || loading}
+                className="inline-flex min-h-11 items-center rounded-lg px-2 text-xs font-bold text-muted transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {cooldown > 0 ? `${t("ارسال مجدد کد")} (${faNum(cooldown)})` : t("ارسال مجدد کد")}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
   );
 }

@@ -4,6 +4,7 @@ import { cases, consultations, payments } from "@/db/schema";
 import { eq, sql, gte } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { logger } from "@/lib/logger";
+import { computeMyCasesSummary } from "@/components/portal/lawyer/portal-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -89,6 +90,18 @@ export async function GET() {
       settledRevenue,
     });
 
+    /* «پرونده‌های من» — مالکیت شخصی وکیل جاری (cases.assignedLawyerId = user.lawyerId).
+     * بدون اتصال حساب (lawyerId=null) → mine=null صادقانه؛ جمع‌های غیرقابل‌محاسبه null برمی‌گردند. */
+    let mine: Awaited<ReturnType<typeof computeMyCasesSummary>> | null = null;
+    try {
+      if (typeof user.lawyerId === "number" && user.lawyerId > 0) {
+        mine = await computeMyCasesSummary(user.lawyerId);
+      }
+    } catch (mineErr) {
+      log.error("lawyer dashboard: mine summary failed", mineErr);
+      mine = { cases: [], totals: { count: 0, feeSum: null, settledSum: null }, degraded: true };
+    }
+
     return NextResponse.json({
       ok: true,
       stats: {
@@ -100,6 +113,7 @@ export async function GET() {
           total: settledRevenue + pendingRevenue,
         },
       },
+      mine,
     });
   } catch (err) {
     log.error("lawyer dashboard failed", err);

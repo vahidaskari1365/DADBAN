@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fragment } from "react";
 import { Container } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
+import LegalReviewBadge from "@/components/legal-review-badge";
 import { getT } from "@/lib/i18n/server";
 
 /** چندزبانه: تیتر/توضیح با generateMetadata و getT به زبان انتخابی کاربر می‌رود */
@@ -36,6 +37,7 @@ export default async function TermsPage() {
       />
       <Container className="py-12">
         <div className="mx-auto max-w-3xl space-y-5">
+          <LegalReviewBadge slug="terms" />
           {SECTIONS.map(([heading, body]) => (
             <Fragment key={heading}>
               <div className="rounded-2xl border border-border bg-surface p-5">

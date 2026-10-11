@@ -1,4 +1,4 @@
-import { formatJalaliLong as faDate } from "@/lib/jalali";
+import { formatJalaliLong as faDate, formatJalaliDateTime } from "@/lib/jalali";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
@@ -21,6 +21,10 @@ import { ReferralPanel } from "@/components/lawyer/referral-panel";
 import { TeamPanel } from "@/components/lawyer/team-panel";
 import { RemindersPanel } from "@/components/lawyer/reminders-panel";
 import { FeeCard } from "@/components/fee/fee-card";
+import { StatCard, Progress, StatusBadge as PanelStatusBadge } from "@/components/panel-widgets";
+import { shortToman, labelStatus } from "@/lib/money";
+import { computeMyCasesSummary } from "@/components/portal/lawyer/portal-server";
+import type { MyCasesSummary } from "@/components/portal/lawyer/portal-server";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
 import { templateT } from "@/lib/i18n/core";
@@ -101,6 +105,18 @@ export default async function LawyerDashboard() {
   let teamMembersCount = 0;
   let referralPending = 0;
   let unreadNotifs = 0;
+
+  /* «پرونده‌های من» — مالکیت شخصی وکیلِ جاری (cases.assignedLawyerId = user.lawyerId).
+   * فقط برای خودِ وکیل (نه عضو تیم) معنا دارد؛ جمع‌های مالی با null صادقانه degraded می‌شوند. */
+  let mine: MyCasesSummary | null = null;
+  try {
+    if (isBoss && typeof user.lawyerId === "number" && user.lawyerId > 0) {
+      mine = await computeMyCasesSummary(user.lawyerId);
+    }
+  } catch (err) {
+    console.error("[dadban] lawyer dashboard: my-cases summary failed:", err);
+    mine = { cases: [], totals: { count: 0, feeSum: null, settledSum: null }, degraded: true };
+  }
 
   try {
     if (lawyerId) {
@@ -219,6 +235,7 @@ export default async function LawyerDashboard() {
 
   const nav: NavItem[] = [
     { label: t("نمای کلی"), icon: "home", active: true, href: "/dashboard/lawyer" },
+    ...(isBoss ? [{ label: t("پرونده‌های من"), icon: "folder" as const, href: "/dashboard/lawyer#my-cases" }] : []),
     ...(isBoss ? [{ label: t("پروفایل حرفه‌ای من"), icon: "badge" as const, href: "/dashboard/lawyer/profile" }] : []),
     { label: t("اعلان‌ها"), icon: "mail" as const, badge: unreadNotifs ? faNum(unreadNotifs) : undefined, href: "/dashboard/lawyer#notifications" },
     ...(can("offers") ? [{ label: t("پیشنهادهای پرونده"), icon: "mail" as const, href: "/dashboard/lawyer#offers" }] : []),
@@ -291,6 +308,124 @@ export default async function LawyerDashboard() {
           )}
         </div>
       </Card>
+
+      {/* ── پرونده‌های من — مالکیت شخصی وکیل (پرونده‌های واگذارشده + جمع‌های مالی خود او) ── */}
+      {isBoss && (
+        <section id="my-cases" data-testid="my-cases-section" aria-labelledby="my-cases-title" className="scroll-mt-24">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 id="my-cases-title" className="flex items-center gap-2 text-[16px] font-bold text-foreground">
+              <Icon name="folder" className="h-5 w-5 text-primary" /> {t("پرونده‌های من")}
+            </h2>
+            {mine && mine.totals.count > 0 && (
+              <span
+                data-testid="my-cases-count"
+                className="inline-flex items-center gap-1 rounded-full border border-primary/25 bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary"
+              >
+                {faNum(mine.totals.count)} {t("پروندهٔ واگذارشده")}
+              </span>
+            )}
+          </div>
+
+          {!linked ? (
+            /* بدون اتصال حساب به پروفایل وکیل — حالت صادقانه به‌جای دادهٔ ساختگی */
+            <Card hover={false} className="border-accent/30 bg-accent-soft/40">
+              <div className="flex flex-wrap items-center gap-3">
+                <IconChip icon="alert" tone="accent" />
+                <p className="min-w-0 flex-1 text-sm leading-7 text-foreground-soft">
+                  {t("حساب شما به پروفایل وکیل متصل نیست — از پشتیبانی بخواهید اتصال را انجام دهد.")}{" "}
+                  {t("پس از اتصال، پرونده‌های واگذارشده و جمع مالی شخصی شما همین‌جا نمایش داده می‌شود.")}
+                </p>
+                <a
+                  href="/support"
+                  className="inline-flex h-10 shrink-0 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent-hover"
+                >
+                  {t("تماس با پشتیبانی")}
+                </a>
+              </div>
+            </Card>
+          ) : (
+            <>
+              {/* کارت‌های خلاصهٔ شخصی — جمع‌های null صادقانه «در دسترس نیست» نشان داده می‌شوند */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <StatCard
+                  label={t("پرونده‌های واگذارشده به من")}
+                  value={faNum(mine?.totals.count ?? 0)}
+                  hint={t("پرونده‌هایی که پیشنهاد شما پذیرفته شده است")}
+                  icon="folder"
+                  tone="default"
+                />
+                <StatCard
+                  label={t("جمع حق‌الوکالهٔ توافق‌شده")}
+                  value={mine?.totals.feeSum != null ? shortToman(mine.totals.feeSum) : t("در دسترس نیست")}
+                  hint={t("مجموع feeAgreed پرونده‌های واگذارشده — تومان")}
+                  icon="coins"
+                  tone="gold"
+                />
+                <StatCard
+                  label={t("تسویه‌شده (برداشت واریزشده)")}
+                  value={mine?.totals.settledSum != null ? shortToman(mine.totals.settledSum) : t("در دسترس نیست")}
+                  hint={t("برداشت‌های واریزشدهٔ شما در پلتفرم — تومان")}
+                  icon="money"
+                  tone="success"
+                />
+              </div>
+
+              {mine?.degraded && (
+                <p role="status" className="rounded-xl border border-accent/30 bg-accent-soft/30 px-3 py-2 text-[11px] leading-6 text-accent-text">
+                  {t("بخشی از داده‌های مالی موقتاً در دسترس نیست؛ به‌محض رفع مشکل همین‌جا به‌روز می‌شود.")}
+                </p>
+              )}
+
+              {/* فهرست پرونده‌های واگذارشده — نوار پیشرفت + تاریخ شمسی */}
+              <Card hover={false} className="mt-4">
+                <div className="nice-scroll max-h-96 overflow-y-auto">
+                  <div className="space-y-3">
+                    {(mine?.cases ?? []).length > 0 ? (
+                      mine!.cases.map((c) => {
+                        const contract = labelStatus("contract", c.contractStatus);
+                        return (
+                          <Link
+                            key={c.id}
+                            href={`/track-case?code=${encodeURIComponent(c.trackingToken)}`}
+                            aria-label={tf("پروندهٔ {s} — پیشرفت {p} درصد", { s: c.subject, p: faNum(c.progress) })}
+                            className="block rounded-xl border border-border p-3 transition-colors hover:border-primary/40 hover:bg-surface-2/60"
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-bold text-foreground">{c.subject}</p>
+                                <p className="mt-0.5 text-xs text-muted">
+                                  <span className="font-mono" dir="ltr">{c.caseNumber}</span> • {c.city} • {t("مرحله:")} {t(c.stage)} • {formatJalaliDateTime(c.createdAt)}
+                                </p>
+                              </div>
+                              <div className="flex shrink-0 items-center gap-2">
+                                <span className="text-xs font-bold text-foreground-soft tnum">
+                                  {c.feeAgreed != null ? faPrice(c.feeAgreed) : t("حق‌الوکاله: —")}
+                                </span>
+                                <PanelStatusBadge tone={contract.tone}>{contract.label}</PanelStatusBadge>
+                              </div>
+                            </div>
+                            <div className="mt-2.5 flex items-center gap-2.5">
+                              <Progress value={c.progress} />
+                              <span className="shrink-0 text-[11px] font-bold text-muted tnum">{faNum(c.progress)}٪</span>
+                            </div>
+                          </Link>
+                        );
+                      })
+                    ) : (
+                      <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm leading-7 text-muted">
+                        {t("هنوز پرونده‌ای واگذار نشده — از بازار پرونده‌ها پیشنهاد بفرستید.")}{" "}
+                        <Link href="/dashboard/lawyer/market" className="font-bold text-primary hover:underline">
+                          {t("رفتن به بازار پرونده‌ها")}
+                        </Link>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            </>
+          )}
+        </section>
+      )}
 
       {/* اعلان‌ها — پرونده‌های جدید بازار و وضعیت پیشنهادها */}
       <div id="notifications">

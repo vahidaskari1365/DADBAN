@@ -15,6 +15,10 @@ import { templateT } from "@/lib/i18n/core";
  *  • موکل: «پیشنهاد جدیدی برای پروندهٔ شما ثبت شد» → مقایسهٔ پیشنهادها
  *  • وکیل: «موکل پیشنهاد شما را پذیرفت» → کارتابل پیشنهادها
  * عنوان/متن با t() و meta به زبان انتخابی کاربر رندر می‌شود؛ کلیک = خوانده‌شدن + پرش.
+ *
+ * تحویل زنده با SSE (/api/notifications/stream):
+ *  event notification → پیش‌گویی ردیف تازه | event unread → badge دقیق
+ *  خطای اتصال → بازگشت شفاف به polling ۳۰ ثانیه‌ای (و تلاش مجدد SSE پس از ۶۰ ثانیه)
  */
 
 interface NotifItem {
@@ -45,25 +49,104 @@ export function NotificationsPanel() {
   const tf = templateT(t);
   const router = useRouter();
   const [items, setItems] = useState<NotifItem[] | null>(null);
+  const [unreadN, setUnreadN] = useState<number | null>(null);
+  const [live, setLive] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(() => {
     fetch("/api/notifications", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((d) => {
-        if (d?.ok) setItems(d.items as NotifItem[]);
-        else setItems([]);
+        if (d?.ok) {
+          setItems(d.items as NotifItem[]);
+          setUnreadN(Number(d.unread ?? 0));
+        } else {
+          setItems([]);
+        }
       })
       .catch(() => setItems([]));
   }, []);
 
+  /* SSE زنده + fallback شفاف به polling قدیمی (۳۰ ثانیه) */
   useEffect(() => {
     load();
-    const iv = setInterval(load, 30_000);
-    return () => clearInterval(iv);
+    let es: EventSource | null = null;
+    let pollIv: ReturnType<typeof setInterval> | null = null;
+    let retryT: ReturnType<typeof setTimeout> | null = null;
+    let disposed = false;
+
+    const startPolling = () => {
+      if (disposed || pollIv) return;
+      setLive(false);
+      pollIv = setInterval(load, 30_000);
+    };
+    const stopPolling = () => {
+      if (pollIv) {
+        clearInterval(pollIv);
+        pollIv = null;
+      }
+    };
+    const startSse = () => {
+      if (disposed) return;
+      try {
+        es = new EventSource("/api/notifications/stream");
+      } catch {
+        startPolling();
+        return;
+      }
+      es.addEventListener("notification", (ev) => {
+        try {
+          const row = JSON.parse((ev as MessageEvent<string>).data) as NotifItem;
+          if (!row || typeof row.id !== "number") return;
+          setItems((prev) => {
+            const base = prev ?? [];
+            if (base.some((n) => n.id === row.id)) return base;
+            return [row, ...base].slice(0, 20);
+          });
+          if (row.read === false) setUnreadN((n) => (n == null ? null : n + 1));
+        } catch {
+          /* ردیف نامعتبر — نادیده */
+        }
+      });
+      es.addEventListener("unread", (ev) => {
+        try {
+          const d = JSON.parse((ev as MessageEvent<string>).data) as { n?: number };
+          if (typeof d?.n === "number") setUnreadN(d.n);
+        } catch {
+          /* نادیده */
+        }
+      });
+      es.onopen = () => {
+        if (!disposed) {
+          setLive(true);
+          stopPolling();
+        }
+      };
+      es.onerror = () => {
+        // CLOSED → خطای قطعی (مثلاً 401/429) → polling + تلاش مجدد SSE بعداً
+        // CONNECTING → مرورگر خودش reconnect می‌کند؛ دست نمی‌زنیم
+        if (es && es.readyState === EventSource.CLOSED) {
+          es = null;
+          startPolling();
+          retryT = setTimeout(() => {
+            if (disposed) return;
+            stopPolling();
+            startSse();
+          }, 60_000);
+        }
+      };
+    };
+
+    startSse();
+    return () => {
+      disposed = true;
+      es?.close();
+      stopPolling();
+      if (retryT) clearTimeout(retryT);
+    };
   }, [load]);
 
-  const unreadCount = (items ?? []).filter((n) => !n.read).length;
+  const unreadCount = unreadN ?? (items ?? []).filter((n) => !n.read).length;
 
   const markRead = useCallback(
     (ids: number[]) => {
@@ -145,6 +228,19 @@ export function NotificationsPanel() {
           {unreadCount > 0 && (
             <span data-testid="notif-unread-badge" className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-accent-text">
               {faNum(unreadCount)}
+            </span>
+          )}
+          {live && (
+            <span
+              data-testid="notif-live"
+              title={t("اعلان‌ها به‌صورت زنده دریافت می‌شوند")}
+              className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--success)_14%,transparent)] px-2 py-0.5 text-[10px] font-bold text-success"
+            >
+              <span className="relative flex h-2 w-2" aria-hidden>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              </span>
+              {t("زنده")}
             </span>
           )}
         </h2>
