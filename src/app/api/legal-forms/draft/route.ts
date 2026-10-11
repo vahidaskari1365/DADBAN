@@ -95,7 +95,7 @@ export async function POST(req: Request) {
         // یک فراخوانی کامل با زنجیرهٔ چند-تأمین‌کنندهٔ llm.ts؛ سپس تکه‌تکه‌سازی به‌صورت SSE
         const full = ((await Promise.race([
           askLLM([{ role: "user", content: user }], 4000, system),
-          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 100_000)),
+          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("ai-timeout")), 180_000)),
         ])) ?? "").trim();
         if (!full) throw new Error("ai-empty");
 

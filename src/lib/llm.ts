@@ -290,7 +290,7 @@ interface ZaiClient {
   chat: { completions: { create: (opts: unknown) => Promise<{ choices?: { message?: { content?: string } }[] }> } };
 }
 
-async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: number, sanitize = true): Promise<string> {
+async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: number, sanitize = true, timeoutMs?: number): Promise<string> {
   if (p.group === "sdk") return (await viaSdk(messages)) ?? "";
   if (p.id === "pollinations-get") return (await pollinationsGet(messages)) ?? "";
   const bodyObj: Record<string, unknown> =
@@ -305,7 +305,7 @@ async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: numbe
     extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
     extra["X-Title"] = "DADBAN";
   }
-  const text = await postOpenAiCompatible(p.base, body, p.key, p.timeoutMs, extra);
+  const text = await postOpenAiCompatible(p.base, body, p.key, timeoutMs ?? p.timeoutMs, extra);
   return sanitize ? sanitizePersian(text) : text.trim();
 }
 
@@ -332,6 +332,18 @@ function markOk(id: string): void {
 
 /* ─── API عمومی ────────────────────────────────────────────────────────── */
 
+/**
+ * مهلت ارائه‌دهنده — تولیدهای بلند (دادخواست/تحلیل/لایحه ≥۱۲۰۰ توکن خروجی)
+ * در عمل بیش از سقف ثابت ۲۲ ثانیه طول می‌کشند؛ باگ واقعی پروداکشن:
+ * همهٔ ارائه‌دهنده‌ها در ۲۲ ثانیه timeout می‌شدند و چتِ کوتاه کار می‌کرد
+ * ولی تولید بلند (تحلیل پرونده/دادخواست‌ساز) همیشه خالی برمی‌گشت.
+ * برای تولیدهای بلند مهلت هر ارائه‌دهندهٔ keyed ×۳ (حداقل ۶۰ ثانیه) می‌شود.
+ */
+function providerTimeout(p: Provider, maxTokens: number): number {
+  if (p.group !== "keyed" || maxTokens < 1_200) return p.timeoutMs;
+  return Math.min(90_000, Math.max(p.timeoutMs * 3, 60_000));
+}
+
 export async function askLLM(
   messages: LlmMessage[],
   maxTokens = 400,
@@ -349,7 +361,7 @@ export async function askLLM(
   for (const p of ordered) {
     if (p.group === "keyless" && ++keylessTried > 3) break; // بودجه زمانی درخواست
     try {
-      const text = await runProvider(p, all, p.maxTokens ?? maxTokens, sanitize);
+      const text = await runProvider(p, all, p.maxTokens ?? maxTokens, sanitize, providerTimeout(p, p.maxTokens ?? maxTokens));
       if (text && text.trim().length > 1) {
         markOk(p.id);
         return text;
