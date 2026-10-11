@@ -1,5 +1,6 @@
 import { askLLM, SYSTEM_LEGAL } from "@/lib/llm";
 import { rateLimit } from "@/lib/api-security";
+import { getRelevantLawFacts, buildLawFactsPrompt } from "@/lib/law-facts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,9 +24,18 @@ export async function POST(req: Request) {
     });
   }
 
+  // داده‌های قانونی به‌روز (حقایق ثابت + همگام‌سازی روزانه) بر اساس آخرین پیام کاربر
+  const lastUser = [...(messages ?? [])].reverse().find((m) => m.role === "user")?.content || query || "";
+  let factsPrompt = "";
+  try {
+    const facts = lastUser ? await getRelevantLawFacts(lastUser) : [];
+    factsPrompt = buildLawFactsPrompt(facts);
+  } catch { /* بدون facts هم پاسخ می‌دهد */ }
+
+  const systemPrompt = `${SYSTEM_LEGAL}${factsPrompt}`;
   const allMessages = messages?.length
-    ? [{ role: "system", content: SYSTEM_LEGAL }, ...messages]
-    : [{ role: "system", content: SYSTEM_LEGAL }, { role: "user", content: query || "" }];
+    ? [{ role: "system", content: systemPrompt }, ...messages]
+    : [{ role: "system", content: systemPrompt }, { role: "user", content: query || "" }];
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
