@@ -6,6 +6,7 @@ import { cases, consultations, tickets, payments, serviceRequests, managedServic
 import { and, desc, eq, inArray, notInArray, or, sql } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, Badge } from "@/components/ui";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice, CONSULT_TYPE_FA } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
@@ -283,6 +284,25 @@ export default async function LawyerDashboard() {
       nav={nav}
       back={{ fallback: "/" }}
     >
+      {/* سمت چپِ بالای صفحه: دکمهٔ موشن «خرید پلن» (فقط خود وکیل — پلن عضویت وکلاست) */}
+      {isBoss && (
+        <div className="flex justify-end">
+          <ShimmerButton
+            href="/plans"
+            background="#15365d"
+            shimmerColor="#e6b94e"
+            borderRadius="12px"
+            shimmerDuration="3s"
+            className="min-h-11 gap-1.5 px-4 text-xs font-black shadow-[var(--shadow-lift)] sm:px-5 sm:text-sm"
+            data-testid="plan-cta-overview"
+            aria-label={t("خرید پلن")}
+          >
+            <Icon name="sparkles" className="h-[1.15em] w-[1.15em]" />
+            {t("خرید پلن")}
+          </ShimmerButton>
+        </div>
+      )}
+
       {/* خلاصه وضعیت — نوار گرافیکی با داده‌های واقعی */}
       <Card hover={false} className="relative overflow-hidden border-accent/25 bg-gradient-to-l from-accent-soft/60 via-surface to-surface">
         <span aria-hidden className="pointer-events-none absolute -left-10 -top-12 h-32 w-32 rounded-full bg-primary-soft/80 blur-2xl" />
