@@ -9,12 +9,22 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
 
   const isDark = theme === "dark";
 
+  /* برچسب‌های پیش از mount باید سرور و کلاینت یکسان باشند — theme در اولین
+     رندر کلاینت از کلاس boot خوانده می‌شود و ممکن است با سرور فرق داشته باشد
+     (ریشهٔ هشدار قدیمی hydration). تا mount: برچسب خنثای پایدار «تم». */
+  const ariaLabel = mounted
+    ? isDark
+      ? t("تغییر به حالت روشن")
+      : t("تغییر به حالت تاریک")
+    : t("تم");
+  const title = mounted ? (isDark ? t("حالت روشن") : t("حالت تاریک")) : undefined;
+
   return (
     <button
       type="button"
       onClick={toggle}
-      aria-label={isDark ? t("تغییر به حالت روشن") : t("تغییر به حالت تاریک")}
-      title={isDark ? t("حالت روشن") : t("حالت تاریک")}
+      aria-label={ariaLabel}
+      title={title}
       className={
         compact
           ? "inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-foreground-soft transition-colors duration-200 hover:bg-surface-2 hover:text-foreground"

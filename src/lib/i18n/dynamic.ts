@@ -3,6 +3,7 @@ import { contentTranslations } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { askLLM, type LlmMessage } from "@/lib/llm";
 import type { Locale } from "./core";
+import { latinDigits, wantsLatinDigits } from "./digits";
 
 /**
  * ترجمهٔ داینامیک محتوای فارسیِ دیتابیس (مقالات، پروفایل وکلا، شهرها و…)
@@ -110,9 +111,13 @@ export async function tdyn(locale: Locale, faText: string, maxTokens = 1400): Pr
   const text = (faText ?? "").trim();
   if (locale === "fa" || !text) return faText ?? "";
 
+  // لایهٔ ۲ تبدیل خودکار ارقام: خروجی LTR (en/tr/zh) همیشه رقم لاتین دارد —
+  // حتی اگر LLM رعایت نکند یا پاسخ فالبک فارسی برگردد (digits.ts)
+  const latin = wantsLatinDigits(locale);
+
   const key = `${locale}:${await sha1(text)}`;
   const hit = mem.get(key);
-  if (hit !== undefined) return hit;
+  if (hit !== undefined) return latin ? latinDigits(hit) : hit;
 
   const running = inflight.get(key);
   if (running) return running;
@@ -149,7 +154,8 @@ export async function tdyn(locale: Locale, faText: string, maxTokens = 1400): Pr
 
   inflight.set(key, job);
   try {
-    return await job;
+    const res = await job;
+    return latin ? latinDigits(res) : res;
   } finally {
     inflight.delete(key);
   }

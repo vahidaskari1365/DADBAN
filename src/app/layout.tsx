@@ -14,6 +14,7 @@ import { ConsultCompanion } from "@/components/consult-companion";
 import { LiveActivity } from "@/components/amazon/live-activity";
 import { SW_REGISTER_SCRIPT } from "@/components/pwa/sw-register-script";
 import { LocaleProvider } from "@/lib/i18n/provider";
+import { DigitSweeper } from "@/components/digit-sweeper";
 import { dirFor } from "@/lib/i18n";
 import { getServerLocale, getT } from "@/lib/i18n/server";
 import { SITE_NAME, SITE_NAME_EN, SITE_DESCRIPTION } from "@/lib/brand";
@@ -233,6 +234,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         </div>
         <ThemeProvider>
           <LocaleProvider locale={locale}>
+          {/* جاروب خودکار ارقام فارسی→لاتین برای زبان‌های LTR (en/tr/zh) */}
+          <DigitSweeper />
           <MotionProvider>
           <a
             href="#main"

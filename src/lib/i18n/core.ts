@@ -31,13 +31,23 @@ export const isLocale = (v: string | undefined | null): v is Locale =>
 
 export const dirFor = (l: Locale): "rtl" | "ltr" => LOCALE_META[l].dir;
 
-/** سازندهٔ تابع ترجمه — روی کلاینت و سرور یکسان کار می‌کند (تابع پایدار به‌ازای هر زبان) */
+/**
+ * سازندهٔ تابع ترجمه — روی کلاینت و سرور یکسان کار می‌کند (تابع پایدار به‌ازای هر زبان).
+ * زبان‌های LTR (en/tr/zh) ارقام فارسی/عربی باقی‌مانده در هر خروجی (کلید جاافتاده،
+ * مقدار دیکشنری یا پارامتر قالب مثل tf("{n} تومان", { n: shortToman(x) })) را
+ * خودکار به لاتین تبدیل می‌کنند — لایهٔ ۱ تبدیل خودکار ارقام (digits.ts).
+ */
 const T_CACHE = new Map<Locale, TFn>();
 export const makeT =
   (locale: Locale): TFn => {
     let fn = T_CACHE.get(locale);
     if (!fn) {
-      fn = (fa: string) => (locale === "fa" ? fa : (DICTS[locale]?.[fa] ?? fa));
+      const latin = wantsLatinDigits(locale);
+      fn = (fa: string) => {
+        if (locale === "fa") return fa;
+        const out = DICTS[locale]?.[fa] ?? fa;
+        return latin ? latinDigits(out) : out;
+      };
       T_CACHE.set(locale, fn);
     }
     return fn;
@@ -65,3 +75,4 @@ export const templateT =
   };
 
 import { DICTS } from "./dicts";
+import { latinDigits, wantsLatinDigits } from "./digits";

@@ -8,8 +8,8 @@
    - تصاویر: stale-while-revalidate
    ========================================================================== */
 
-// v1.4.50 — تکمیل ترجمه‌ها: لایهٔ EXT_B9 با ۷۲۴ کلید جدید (تولید LLM + اعتبارسنجی) → پوشش دیکشنری ۱۰۰٪ در en/ar/tr/zh
-const VERSION = "dadban-v1.4.51";
+// v1.4.52 — تبدیل خودکار ارقام فارسی/عربی به لاتین در زبان‌های LTR (en/tr/zh): لایه‌های makeT + tdyn + جاروب DOM سمت کلاینت + رفع هشدار hydration ThemeToggle
+const VERSION = "dadban-v1.4.52";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;
