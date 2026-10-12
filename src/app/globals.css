@@ -211,8 +211,11 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(20px) scale(0.985);
   filter: blur(12px);
 }
-/* ورود از سمت راست (ابتدای محور در RTL) */
+/* ورود از سمت راست (ابتدای محور در RTL) — در LTR قرینه می‌شود تا شیفت همیشه
+   به سمت «غیرقابل‌اسکرول» برود؛ وگرنه در موبایل LTR (مثلاً en در ۳۹۰px با
+   padding ۱۶px ظرف) ۲۰px سرریز افقی می‌سازد. */
 .reveal-start { transform: translateX(36px); }
+[dir="ltr"] .reveal-start { transform: translateX(-36px); }
 /* بزرگ‌نمایی ملایم */
 .reveal-zoom { transform: scale(0.93) translateY(12px); }
 /* فقط محو */

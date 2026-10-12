@@ -186,7 +186,7 @@ export function CaseDetailClient({ caseId }: { caseId: number }) {
               </h1>
 
               <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
-                <Badge tone="primary" icon="location">{c.city}</Badge>
+                <Badge tone="primary" icon="location">{t(c.city)}</Badge>
                 <Badge tone="neutral">{c.stage}</Badge>
                 <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2.5 py-1.5 text-muted">
                   <Icon name="clock" className="h-3.5 w-3.5" />

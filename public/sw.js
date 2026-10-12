@@ -8,8 +8,8 @@
    - تصاویر: stale-while-revalidate
    ========================================================================== */
 
-// v1.4.53 — تغییر نام برند دادورزان (دادبان ← دادورزان) در همهٔ رشته‌های UI، متادیتا، دیکشنری‌ها، ایمیل/پیامک و محتوای دیتابیس + تبدیل خودکار ارقام فارسی/عربی به لاتین در زبان‌های LTR (en/tr/zh): لایه‌های makeT + tdyn + جاروب DOM سمت کلاینت + رفع هشدار hydration ThemeToggle
-const VERSION = "dadvarzan-v1.4.53";
+// v1.4.54 — فاز ۴ چندزبانه: ترجمهٔ فیلتر شهر برد بازار (مقادیر DB با دیکشنری GEO)، متادیتای چندزبانهٔ /case-board، فیکس سرریز ۲۰px موبایل LTR (قرینه‌سازی reveal-start)
+const VERSION = "dadvarzan-v1.4.54";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;

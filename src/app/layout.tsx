@@ -34,21 +34,24 @@ const vazirmatn = localFont({
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
+  /* برند آگاه از زبان — در en/tr/zh پسوند لاتین می‌گیرد (fa/ar اسکریپت فارسی می‌مانند) */
+  const locale = await getServerLocale();
+  const brand = locale === "fa" || locale === "ar" ? SITE_NAME : SITE_NAME_EN;
   return {
   // metadataBase باید همیشه با NEXT_PUBLIC_SITE_URL هماهنگ باشد تا
   // canonical/OG با sitemap.xml و llms.txt و JSON-LD یک دامنه را اعلام کنند.
   // با انتقال به دامنه اصلی فقط همین env تغییر می‌کند — بدون تغییر کد.
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} | ${t("پلتفرم هوشمند خدمات حقوقی، وکیل‌یابی و مشاوره آنلاین")}`,
-    template: `%s | ${SITE_NAME}`,
+    default: `${brand} | ${t("پلتفرم هوشمند خدمات حقوقی، وکیل‌یابی و مشاوره آنلاین")}`,
+    template: `%s | ${brand}`,
   },
   description: t(SITE_DESCRIPTION),
   keywords: [
     "وکیل", "مشاوره حقوقی آنلاین", "وکیل خانواده", "وکیل ملکی", "وکیل کیفری",
     "تنظیم قرارداد", "چک برگشتی", "طلاق", "ثبت شرکت", "مشاوره وکیل", "دادورزان",
   ],
-  applicationName: SITE_NAME,
+  applicationName: brand,
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -63,7 +66,7 @@ export async function generateMetadata(): Promise<Metadata> {
   },
   appleWebApp: {
     capable: true,
-    title: SITE_NAME,
+    title: brand,
     statusBarStyle: "black-translucent",
     startupImage: ["/icon-512.png"],
   },
@@ -84,29 +87,29 @@ export async function generateMetadata(): Promise<Metadata> {
     type: "website",
     locale: "fa_IR",
     alternateLocale: ["en_US"],
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} | ${t("پلتفرم هوشمند خدمات حقوقی")}`,
+    siteName: brand,
+    title: `${brand} | ${t("پلتفرم هوشمند خدمات حقوقی")}`,
     description: t("جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در دادورزان."),
     images: [
       {
         url: "/og-default.jpg",
         width: 1200,
         height: 630,
-        alt: `${SITE_NAME} — پلتفرم هوشمند خدمات حقوقی`,
+        alt: `${brand} — ${t("پلتفرم هوشمند خدمات حقوقی")}`,
         type: "image/jpeg",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} | ${t("پلتفرم هوشمند خدمات حقوقی")}`,
+    title: `${brand} | ${t("پلتفرم هوشمند خدمات حقوقی")}`,
     description: t("جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در دادورزان."),
     images: [
       {
         url: "/twitter-card.jpg",
         width: 1024,
         height: 576,
-        alt: SITE_NAME,
+        alt: brand,
       },
     ],
   },
@@ -128,9 +131,9 @@ export async function generateMetadata(): Promise<Metadata> {
       "msvalidate.01": process.env.NEXT_PUBLIC_BING_VERIFICATION || "",
     },
   },
-  authors: [{ name: SITE_NAME }],
-  creator: SITE_NAME,
-  publisher: SITE_NAME,
+  authors: [{ name: brand }],
+  creator: brand,
+  publisher: brand,
   };
 }
 
@@ -151,6 +154,7 @@ const siteJsonLd = websiteSchema;
 export default async function RootLayout({ children }: { children: ReactNode }) {
   /* زبان از کوکی خوانده می‌شود تا بدون تغییر URL (حفظ SEO) کل سایت همان زبان شود */
   const locale = await getServerLocale();
+  const brand = locale === "fa" || locale === "ar" ? SITE_NAME : SITE_NAME_EN;
   const t = await getT();
   return (
     <html lang={locale} dir={dirFor(locale)} suppressHydrationWarning data-scroll-behavior="smooth" className={vazirmatn.variable}>
@@ -165,17 +169,17 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         />
         {/* لینک به llms.txt برای AI Search Engines (ChatGPT, Gemini, Perplexity) */}
         <link rel="llms-txt" href="/llms.txt" />
-        <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} — مقالات حقوقی`} href="/knowledge/feed" />
+        <link rel="alternate" type="application/rss+xml" title={`${brand} — مقالات حقوقی`} href="/knowledge/feed" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content={SITE_NAME} />
-        <meta name="application-name" content={SITE_NAME} />
+        <meta name="apple-mobile-web-app-title" content={brand} />
+        <meta name="application-name" content={brand} />
         <meta name="msapplication-TileColor" content="#15365d" />
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" content="#15365d" />
         {/* AI-friendly meta tags برای citation */}
-        <meta name="ai-content-summary" content={`${SITE_NAME} ${t("پلتفرم خدمات حقوقی ایران: وکیل‌یابی، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی.")}`} />
+        <meta name="ai-content-summary" content={`${brand} ${t("پلتفرم خدمات حقوقی ایران: وکیل‌یابی، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی.")}`} />
         <meta name="geo.region" content="IR" />
         <meta name="geo.placename" content="تهران، ایران" />
         <meta name="language" content="Persian" />

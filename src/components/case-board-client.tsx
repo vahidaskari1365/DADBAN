@@ -142,7 +142,7 @@ export function CaseBoardClient() {
             <select value={city} onChange={(e) => setCity(e.target.value)} className={fieldCls} data-testid="board-city">
               <option value="">{t("همهٔ شهرها")}</option>
               {(data?.cities ?? []).map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>{t(c)}</option>
               ))}
             </select>
           </label>
@@ -210,7 +210,7 @@ export function CaseBoardClient() {
                     {c.description && <p className="mt-2 line-clamp-3 flex-1 text-xs leading-7 text-muted sm:text-sm">{c.description}</p>}
                     <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-muted">
                       <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2.5 py-1.5">
-                        <Icon name="location" className="h-3.5 w-3.5" />{c.city}
+                        <Icon name="location" className="h-3.5 w-3.5" />{t(c.city)}
                       </span>
                       <span className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2.5 py-1.5">
                         <Icon name="clock" className="h-3.5 w-3.5" />{relativeTimeJalali(c.createdAt)}
