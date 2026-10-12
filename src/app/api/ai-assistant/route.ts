@@ -157,7 +157,8 @@ export async function POST(req: Request) {
       if (upload?.analysis) {
         return NextResponse.json({ ok: true, mode: "contract", source: "llm-vision", ...meta, analysis: upload.analysis, findings: local.findings, riskScore: local.riskScore });
       }
-      const llm = await withTimeout(askLLM([{ role: "user", content: `${CONTRACT_PROMPT}${contract}` }], 700), 27_000);
+      // مهلت ۴۰ ثانیه: پاسخ‌های سالم آتریا (موتور اصلی) تا ~۳۰ ثانیه طول می‌کشند؛ ۲۷ ثانیهٔ قبلی پاسخ‌های سالم را می‌کشت
+      const llm = await withTimeout(askLLM([{ role: "user", content: `${CONTRACT_PROMPT}${contract}` }], 700), 40_000);
       if (llm) {
         return NextResponse.json({ ok: true, mode: "contract", source: "llm", ...meta, analysis: llm, findings: local.findings, riskScore: local.riskScore });
       }
@@ -262,7 +263,8 @@ export async function POST(req: Request) {
 
     // چنددوری: تاریخچه + سؤال فعلی — پاسخ کامل‌تر (توکن ۱۰۰۰) و سانیتایزر فقط برای فارسی
     const llmMessages: LlmMessage[] = [...history, { role: "user", content: query }];
-    const llm = await withTimeout(askLLM(llmMessages, 1000, systemPrompt, { sanitize: lang === "fa" }), 27_000);
+    // مهلت ۴۰ ثانیه: پاسخ‌های سالم آتریا (موتور اصلی) تا ~۳۰ ثانیه طول می‌کشند
+    const llm = await withTimeout(askLLM(llmMessages, 1000, systemPrompt, { sanitize: lang === "fa" }), 40_000);
 
     // پیشنهاد وکیل بر اساس مشکل کاربر (۱۰ وکیل هم‌تخصص از دیتابیس واقعی)
     const lawyerMatch = await lawyerMatchPromise;

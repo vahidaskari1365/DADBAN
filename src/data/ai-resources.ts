@@ -155,28 +155,40 @@ export interface GatewayTier {
   provider: string;
   desc: string;
   needsKey: boolean;
+  /** نام Environment Variable کلید همین طبقه — برای تشخیص active در gateway-health */
+  keyEnv?: string;
 }
 
 export const GATEWAY_TIERS: GatewayTier[] = [
   {
     tier: 1,
-    name: "GLM-4.6 (Z.ai)",
-    provider: "api.z.ai",
-    desc: "تأمین‌کننده‌ی اصلی تولید — کلید OpenAI-سازگار از Environment Variable (مناسب استقرار Vercel).",
+    name: "آتریا (Atria-Dawn-Preview)",
+    provider: "api.atria-asi.ai",
+    desc: "موتور اصلی تولید — کیفیت بالای فارسی حقوقی؛ پاسخ‌های کامل در حدود ۱۲ تا ۳۰ ثانیه.",
     needsKey: true,
+    keyEnv: "ATRIA_API_KEY",
   },
   {
     tier: 2,
-    name: "Z.ai SDK سندباکس",
-    provider: "z-ai-web-dev-sdk",
-    desc: "موتور محیط توسعه — بدون نیاز به کلید، با همان مدل GLM.",
-    needsKey: false,
+    name: "GLM-4.5 Flash (Z.ai)",
+    provider: "api.z.ai",
+    desc: "پشتیبان همیشه‌رایگان — سریع ولی نوسانی زیر بار موازی؛ وقتی آتریا در دسترس نباشد جواب می‌دهد.",
+    needsKey: true,
+    keyEnv: "ZAI_API_KEY",
   },
   {
     tier: 3,
-    name: "Pollinations",
-    provider: "text.pollinations.ai",
-    desc: "fallback نهایی بدون‌کلید — تضمین پاسخ‌دهی حتی قطع شدن تأمین‌کننده‌های بالادستی.",
+    name: "OpenRouter Free (Nemotron Ultra 550B)",
+    provider: "openrouter.ai",
+    desc: "آخرین پشتیبان کلیددار — سقف ۵۰ درخواست در روز؛ عمداً برای ایجنت‌های ویژه رزرو شده است.",
+    needsKey: true,
+    keyEnv: "OPENROUTER_API_KEY",
+  },
+  {
+    tier: 4,
+    name: "Z.ai SDK سندباکس",
+    provider: "z-ai-web-dev-sdk",
+    desc: "موتور محیط توسعه — بدون نیاز به کلید، فقط در سندباکس فعال است (روی پروداکشن غیرفعال).",
     needsKey: false,
   },
 ];

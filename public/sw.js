@@ -9,7 +9,7 @@
    ========================================================================== */
 
 // v1.4.54 — فاز ۴ چندزبانه: ترجمهٔ فیلتر شهر برد بازار (مقادیر DB با دیکشنری GEO)، متادیتای چندزبانهٔ /case-board، فیکس سرریز ۲۰px موبایل LTR (قرینه‌سازی reveal-start)
-const VERSION = "dadvarzan-v1.4.54";
+const VERSION = "dadvarzan-v1.4.55";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;

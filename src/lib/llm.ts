@@ -2,15 +2,19 @@
 // دادورزان — موتور هوش مصنوعی چند-تأمین‌کننده با سوییچ خودکار
 // معماری برگرفته از زنجیره LLM پروژه homeino1 (LLM_KEYS_JSON + fallback)
 //
-// ترتیب امتحان (کیفیت فارسیِ حقوقی در اولویت):
-//   1) LLM_KEYS_JSON   — زنجیره کلیدهای مالک؛ آرایه‌ای از ارائه‌دهنده‌ها:
-//        [{"id":"glm","base":"https://api.z.ai/api/paas/v4","key":"...","model":"glm-4.7-flash","maxTokens":2400}]
-//   2) ZAI_API_KEY / LLM_API_KEY + LLM_BASE_URL + LLM_MODEL
-//      (+ self-heal: اگر مدل پولی/ناموجود بود، مدل‌های همیشه‌رایگان glm-4.7-flash و glm-4.5-flash روی همان کلید امتحان می‌شوند)
-//   3) GEMINI_API_KEY  — کیفیت فارسی بالا (v1beta/openai)
-//   4) OPENROUTER_API_KEY / GROQ_API_KEY
-//   5) z-ai-web-dev-sdk (فقط سندباکس توسعه)
-//   6) بدون‌کلید (اضطراری): llm7 → pollinations POST → pollinations GET → hackclub → freellmapi
+// ترتیب امتحان (پس از پاکسازی مدل‌های مرده — ۱۴۰۴):
+//   1) LLM_KEYS_JSON   — زنجیره کلیدهای مالک؛ آرایه‌ای از ارائه‌دهنده‌ها (در صورت تنظیم)
+//   2) آتریا Atria-Dawn-Preview — موتور اصلی چت (کیفیت فارسی حقوقی بالا)
+//      ⚠️ پاسخ‌های سالم آن تا ~۳۰ ثانیه طول می‌کشند؛ timeout عمداً ۳۵ ثانیه است
+//   3) ZAI_API_KEY → glm-4.5-flash — پشتیبان همیشه‌رایگان z.ai (نوسانی زیر بار موازی)
+//   4) OPENROUTER_API_KEY → nvidia/nemotron-3-ultra-550b-a55b:free
+//      (کلید رایگان — سقف ۵۰ درخواست در روز؛ عمداً برای ایجنت‌های ویژه نگه‌داری می‌شود
+//       و در زنجیره فقط آخرین پشتیبان keyed است تا سهمیه مصرف عادی چت را نسوزاند)
+//   5) GEMINI_API_KEY / GROQ_API_KEY (در صورت تنظیم)
+//   6) z-ai-web-dev-sdk (فقط سندباکس توسعه)
+//
+// حذف‌شده‌ها (مرده — هرگز پاسخ نمی‌دادند): glm-4.6 پولی (بدون شارژ z.ai)،
+// llm7 (سهمیه روزانه سراسری تمام) و pollinations (تایم‌اوت دائمی).
 //
 // فیوز خرابی (circuit breaker): هر ارائه‌دهنده‌ی خراب ۵ دقیقه کنار می‌رود و
 // برنده‌ی موفق قبلی در درخواست‌های بعدی اول امتحان می‌شود (sticky).
@@ -86,7 +90,7 @@ type Provider = {
   model: string;
   timeoutMs: number;
   maxTokens?: number;
-  group: "keyed" | "sdk" | "keyless";
+  group: "keyed" | "sdk";
 };
 
 async function postOpenAiCompatible(
@@ -127,7 +131,7 @@ async function postOpenAiCompatible(
       } catch { /* متن عادی بود */ }
     }
   } catch {
-    text = raw; // پاسخ متنی خام (مثل pollinations متن ساده برمی‌گرداند)
+    text = raw; // پاسخ متنی خام — برخی سرویس‌ها متن ساده برمی‌گردانند
   }
   if (!text || !String(text).trim()) throw new Error("llm empty");
   return String(text);
@@ -156,38 +160,38 @@ function parseKeysJsonProviders(): Provider[] {
   }
 }
 
-/** 2-4) کلیدهای env — z.ai / atria / gemini / openrouter / groq */
+/** ۲-۵) کلیدهای env — آتریا (اصلی) / z.ai flash / openrouter / gemini / groq */
 function keyedEnvProviders(): Provider[] {
   const out: Provider[] = [];
-  const key = process.env.ZAI_API_KEY || process.env.LLM_API_KEY;
-  if (key) {
-    const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
-    const model = process.env.LLM_MODEL ?? "glm-4.6";
-    // ۱) مدل همیشه‌رایگان اول — سریع، پایدار و هیچ توکن پولی مصرف نمی‌کند (صرفه‌جویی)
-    out.push({ id: "zai-free", base: `${base}/chat/completions`, key, model: "glm-4.5-flash", timeoutMs: 22_000, group: "keyed" });
-    // ۲) آتریا — پشتیبان اصلی همه چت‌ها؛ وقتی flash محدود شد خودکار جواب می‌دهد
-    //    (مدل Preview برای پاسخ‌های بلند کند است؛ timeout محافظت‌شده)
-    if (process.env.ATRIA_API_KEY) {
-      out.push({
-        id: "atria",
-        base: `${(process.env.ATRIA_BASE_URL ?? "https://api.atria-asi.ai/v1").replace(/\/$/, "")}/chat/completions`,
-        key: process.env.ATRIA_API_KEY,
-        model: process.env.ATRIA_MODEL ?? "Atria-Dawn-Preview",
-        timeoutMs: 18_000,
-        group: "keyed",
-      });
-    }
-    // ۳) مدل پولی — فقط به‌عنوان ارتقا وقتی سهمیه شارژ شده باشد
-    out.push({ id: "zai", base: `${base}/chat/completions`, key, model, timeoutMs: 22_000, group: "keyed" });
-  }
-  if (!key && process.env.ATRIA_API_KEY) {
-    // اگر کلید z.ai نبود، آتریا تأمین‌کننده اصلی است
+  // ۱) آتریا — موتور اصلی همه چت‌ها (کیفیت فارسی حقوقی بالا و پایدار).
+  //    ⚠️ پاسخ‌های سالم آن ۱۲-۳۰ ثانیه طول می‌کشند؛ timeout قبلی ۱۸ ثانیه بود و
+  //    پاسخ‌های سالم را می‌کشت (باگ واقعی سرعت) — اکنون ۳۵ ثانیه.
+  if (process.env.ATRIA_API_KEY) {
     out.push({
       id: "atria",
       base: `${(process.env.ATRIA_BASE_URL ?? "https://api.atria-asi.ai/v1").replace(/\/$/, "")}/chat/completions`,
       key: process.env.ATRIA_API_KEY,
       model: process.env.ATRIA_MODEL ?? "Atria-Dawn-Preview",
-      timeoutMs: 18_000,
+      timeoutMs: 35_000,
+      group: "keyed",
+    });
+  }
+  // ۲) پشتیبان همیشه‌رایگان z.ai — سریع ولی نوسانی زیر بار موازی؛ فقط وقتی آتریا نبود/خراب شد
+  const key = process.env.ZAI_API_KEY || process.env.LLM_API_KEY;
+  if (key) {
+    const base = (process.env.LLM_BASE_URL ?? "https://api.z.ai/api/paas/v4").replace(/\/$/, "");
+    out.push({ id: "zai-free", base: `${base}/chat/completions`, key, model: "glm-4.5-flash", timeoutMs: 22_000, group: "keyed" });
+  }
+  // ۳) OpenRouter رایگان — کلید free-tier (۵۰ درخواست/روز) عمداً برای ایجنت‌های ویژه نگه‌داری
+  //    می‌شود؛ در زنجیره فقط آخرین پشتیبان keyed است. مدل پیش‌فرض nemotron-3-ultra-550b
+  //    (برندهٔ بنچمارک ۱۴۰۴ — مدل‌های قبلی :free حذف شده‌اند).
+  if (process.env.OPENROUTER_API_KEY) {
+    out.push({
+      id: "openrouter",
+      base: "https://openrouter.ai/api/v1/chat/completions",
+      key: process.env.OPENROUTER_API_KEY,
+      model: process.env.OPENROUTER_MODEL ?? "nvidia/nemotron-3-ultra-550b-a55b:free",
+      timeoutMs: 22_000,
       group: "keyed",
     });
   }
@@ -197,16 +201,6 @@ function keyedEnvProviders(): Provider[] {
       base: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
       key: process.env.GEMINI_API_KEY,
       model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash",
-      timeoutMs: 22_000,
-      group: "keyed",
-    });
-  }
-  if (process.env.OPENROUTER_API_KEY) {
-    out.push({
-      id: "openrouter",
-      base: "https://openrouter.ai/api/v1/chat/completions",
-      key: process.env.OPENROUTER_API_KEY,
-      model: process.env.OPENROUTER_MODEL ?? "z-ai/glm-4.5-flash:free",
       timeoutMs: 22_000,
       group: "keyed",
     });
@@ -231,41 +225,12 @@ function keyedEnvProviders(): Provider[] {
   });
 }
 
-/** 6) بدون‌کلید — فقط برای اضطرار؛ در Vercel ممکن است بلاک باشند */
-function keylessProviders(): Provider[] {
-  return [
-    { id: "llm7-glm", base: "https://api.llm7.io/v1/chat/completions", key: "unused", model: "GLM-5.3-Flash", timeoutMs: 12_000, group: "keyless" },
-    { id: "pollinations-post", base: "https://text.pollinations.ai/", model: "openai", timeoutMs: 9_000, group: "keyless" },
-    { id: "pollinations-get", base: "https://text.pollinations.ai/", model: "openai", timeoutMs: 8_000, group: "keyless" },
-  ];
-}
-
 function buildChain(): Provider[] {
   const sdk = process.env.NODE_ENV === "production" && !process.env.ZAI_WEB_SDK_ALLOW ? [] : [{ id: "sdk", base: "", model: "-", timeoutMs: 20_000, group: "sdk" as const }];
-  return [...parseKeysJsonProviders(), ...keyedEnvProviders(), ...sdk, ...keylessProviders()];
+  return [...parseKeysJsonProviders(), ...keyedEnvProviders(), ...sdk];
 }
 
 /* ─── اجرای یک ارائه‌دهنده ─────────────────────────────────────────────── */
-
-async function pollinationsGet(messages: LlmMessage[]): Promise<string | null> {
-  try {
-    const prompt = messages
-      .filter((m) => m.role !== "system")
-      .map((m) => m.content)
-      .join("\n")
-      .slice(-3000);
-    const sys = messages.find((m) => m.role === "system")?.content ?? "";
-    const url =
-      `https://text.pollinations.ai/${encodeURIComponent(prompt)}` +
-      `?model=openai&referrer=dadban${sys ? `&system=${encodeURIComponent(sys.slice(0, 1200))}` : ""}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-    if (!res.ok) return null;
-    const text = await res.text();
-    return text ? text : null;
-  } catch {
-    return null;
-  }
-}
 
 async function viaSdk(messages: LlmMessage[]): Promise<string | null> {
   try {
@@ -292,11 +257,7 @@ interface ZaiClient {
 
 async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: number, sanitize = true, timeoutMs?: number): Promise<string> {
   if (p.group === "sdk") return (await viaSdk(messages)) ?? "";
-  if (p.id === "pollinations-get") return (await pollinationsGet(messages)) ?? "";
-  const bodyObj: Record<string, unknown> =
-    p.id === "pollinations-post"
-      ? { messages, model: "openai", max_tokens: maxTokens, seed: 1, referrer: "dadban" }
-      : { model: p.model, messages, max_tokens: maxTokens, temperature: 0.3 };
+  const bodyObj: Record<string, unknown> = { model: p.model, messages, max_tokens: maxTokens, temperature: 0.3 };
   // مدل‌های GLM-4.5+ و آتریا تفکر زنجیره‌ای دارند؛ غیرفعال‌سازی برای پاسخ مستقیم و جلوگیری از هدررفت توکن
   if (p.base.includes("api.z.ai") || p.base.includes("bigmodel.cn") || p.base.includes("atria-asi.ai")) bodyObj.thinking = { type: "disabled" };
   const body = bodyObj;
@@ -357,9 +318,7 @@ export async function askLLM(
     ...chain.filter((p) => p.id === preferred),
     ...chain.filter((p) => p.id !== preferred && !isDown(p.id)),
   ];
-  let keylessTried = 0;
   for (const p of ordered) {
-    if (p.group === "keyless" && ++keylessTried > 3) break; // بودجه زمانی درخواست
     try {
       const text = await runProvider(p, all, p.maxTokens ?? maxTokens, sanitize, providerTimeout(p, p.maxTokens ?? maxTokens));
       if (text && text.trim().length > 1) {
@@ -454,7 +413,7 @@ async function* streamOpenAiCompatible(
 
 /** اجرای یک ارائه‌دهنده در حالت استریم؛ ارائه‌دهنده‌های غیراستریمی (SDK) یک‌باره تحویل می‌دهند */
 async function* runProviderStream(p: Provider, messages: LlmMessage[], maxTokens: number, sanitize: boolean): AsyncGenerator<string> {
-  if (p.group === "sdk" || p.id === "pollinations-get") {
+  if (p.group === "sdk") {
     const text = await runProvider(p, messages, maxTokens, false);
     const out = sanitize ? sanitizePersian(text) : text.trim();
     if (out) yield out;
@@ -495,9 +454,7 @@ export async function* askLLMStream(
     ...chain.filter((p) => p.id === preferred),
     ...chain.filter((p) => p.id !== preferred && !isDown(p.id)),
   ];
-  let keylessTried = 0;
   for (const p of ordered) {
-    if (p.group === "keyless" && ++keylessTried > 3) break;
     let got = false;
     try {
       for await (const chunk of runProviderStream(p, all, p.maxTokens ?? maxTokens, sanitize)) {
@@ -555,7 +512,7 @@ function visionProviders(): Provider[] {
       id: "openrouter-vision",
       base: "https://openrouter.ai/api/v1/chat/completions",
       key: process.env.OPENROUTER_API_KEY,
-      model: process.env.OPENROUTER_VISION_MODEL ?? "google/gemini-2.0-flash-exp:free",
+      model: process.env.OPENROUTER_VISION_MODEL ?? "google/gemma-4-31b-it:free",
       timeoutMs: 30_000,
       group: "keyed",
     });
@@ -644,7 +601,7 @@ export async function zaiDiagnose(): Promise<{ configured: boolean; combos: { ba
     "https://api.z.ai/api/paas/v4",
     "https://api.z.ai/api/coding/paas/v4",
   ])];
-  const models = [...new Set([process.env.LLM_MODEL ?? "glm-4.6", "glm-4.7-flash", "glm-4.5-flash"])];
+  const models = [...new Set(["glm-4.5-flash", "glm-4.7-flash"])];
   const combos: { base: string; model: string; ok: boolean; ms: number; error?: string }[] = [];
   for (const base of bases) {
     let baseOk = false;

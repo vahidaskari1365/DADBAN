@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       name: t.name,
       provider: t.provider,
       needsKey: t.needsKey,
-      active: t.needsKey ? Boolean(process.env.ZAI_API_KEY || process.env.LLM_API_KEY) : true,
+      active: t.needsKey ? Boolean(t.keyEnv ? process.env[t.keyEnv] : (process.env.ZAI_API_KEY || process.env.LLM_API_KEY)) : true,
     })),
     message: coherent
       ? `دروازه‌ی دادورزان سالم است — پاسخ در ${latencyMs} میلی‌ثانیه دریافت شد.`
