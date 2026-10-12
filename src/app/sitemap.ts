@@ -69,6 +69,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // کسب‌وکار و تعرفه
     { path: "business", priority: 0.7, changeFreq: "monthly" as const, lastMod: NOW },
     { path: "pricing", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
+    // پلن‌های عضویت وکلا
+    { path: "plans", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
     // درباره و تماس
     { path: "about", priority: 0.5, changeFreq: "monthly" as const, lastMod: NOW },
     { path: "contact", priority: 0.5, changeFreq: "monthly" as const, lastMod: NOW },

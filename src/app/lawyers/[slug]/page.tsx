@@ -14,6 +14,7 @@ import { StickyCta } from "@/components/amazon/sticky-cta";
 import { TrustLine } from "@/components/amazon/trust-line";
 import { FavoriteButton } from "@/components/profile/favorites-panel";
 import { getCurrentUser } from "@/lib/user-auth";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { isLawyerSideRole } from "@/lib/roles";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { makeT, templateT } from "@/lib/i18n/core";
@@ -224,7 +225,23 @@ export default async function LawyerProfile({
               <Icon name="chevron" className="h-3 w-3 rotate-180" />
               <span className="text-foreground-soft">{dName}</span>
             </nav>
-            <BackButton variant="bar" label={t("بازگشت به فهرست وکلا")} fallback="/lawyers" />
+            {/* سمت چپِ بالای صفحه: بازگشت + دکمهٔ موشن «خرید پلن» (آخرین آیتم ردیف RTL = منتهی‌الیه چپ) */}
+            <div className="flex items-center gap-2">
+              <BackButton variant="bar" label={t("بازگشت به فهرست وکلا")} fallback="/lawyers" />
+              <ShimmerButton
+                href="/plans"
+                background="#15365d"
+                shimmerColor="#e6b94e"
+                borderRadius="12px"
+                shimmerDuration="3s"
+                className="min-h-11 gap-1.5 px-4 text-xs font-black shadow-[var(--shadow-lift)] sm:px-5 sm:text-sm"
+                data-testid="plan-cta"
+                aria-label={t("خرید پلن")}
+              >
+                <Icon name="sparkles" className="h-[1.15em] w-[1.15em]" />
+                {t("خرید پلن")}
+              </ShimmerButton>
+            </div>
           </div>
 
           <div className="relative mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
