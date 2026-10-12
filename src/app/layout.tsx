@@ -46,7 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
   description: t(SITE_DESCRIPTION),
   keywords: [
     "وکیل", "مشاوره حقوقی آنلاین", "وکیل خانواده", "وکیل ملکی", "وکیل کیفری",
-    "تنظیم قرارداد", "چک برگشتی", "طلاق", "ثبت شرکت", "مشاوره وکیل", "دادبان",
+    "تنظیم قرارداد", "چک برگشتی", "طلاق", "ثبت شرکت", "مشاوره وکیل", "دادورزان",
   ],
   applicationName: SITE_NAME,
   manifest: "/manifest.webmanifest",
@@ -86,7 +86,7 @@ export async function generateMetadata(): Promise<Metadata> {
     alternateLocale: ["en_US"],
     siteName: SITE_NAME,
     title: `${SITE_NAME} | ${t("پلتفرم هوشمند خدمات حقوقی")}`,
-    description: t("جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در دادبان."),
+    description: t("جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در دادورزان."),
     images: [
       {
         url: "/og-default.jpg",
@@ -100,7 +100,7 @@ export async function generateMetadata(): Promise<Metadata> {
   twitter: {
     card: "summary_large_image",
     title: `${SITE_NAME} | ${t("پلتفرم هوشمند خدمات حقوقی")}`,
-    description: t("جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در دادبان."),
+    description: t("جستجوی وکیل متخصص، مشاوره آنلاین، ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی — همه در دادورزان."),
     images: [
       {
         url: "/twitter-card.jpg",

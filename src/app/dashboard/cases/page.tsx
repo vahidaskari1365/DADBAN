@@ -18,8 +18,8 @@ import { tdyn } from "@/lib/i18n/dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("پرونده‌های من — دادبان"),
-    description: t("فهرست واقعی پرونده‌های ثبت‌شده شما در دادبان."),
+    title: t("پرونده‌های من — دادورزان"),
+    description: t("فهرست واقعی پرونده‌های ثبت‌شده شما در دادورزان."),
   };
 }
 
@@ -73,7 +73,7 @@ export default async function MyCasesPage() {
             <EmptyState
               icon="folder"
               title={t("هنوز پرونده‌ای ثبت نکرده‌اید")}
-              desc={t("با ثبت پرونده، کارشناسان دادبان پرونده شما را بررسی و وکیل مناسب را معرفی می‌کنند.")}
+              desc={t("با ثبت پرونده، کارشناسان دادورزان پرونده شما را بررسی و وکیل مناسب را معرفی می‌کنند.")}
             />
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <Button href="/case/new" icon="folder">{t("ثبت اولین پرونده")}</Button>

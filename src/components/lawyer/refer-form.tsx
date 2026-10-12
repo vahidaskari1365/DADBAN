@@ -347,7 +347,7 @@ export function ReferForm({
         <Card hover={false} className="bg-primary-soft/40 p-5">
           <p className="flex items-start gap-2 text-[11px] leading-6 text-foreground-soft">
             <Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-            {t("فرآیند ارجاع در دادبان: درخواست در کارتابل همکار ثبت می‌شود؛ پس از پذیرش، هماهنگی نهایی حق‌الزحمه و مستندات بین شما انجام می‌گیرد و پشتیبانی دادبان ناظر جریان است.")}
+            {t("فرآیند ارجاع در دادورزان: درخواست در کارتابل همکار ثبت می‌شود؛ پس از پذیرش، هماهنگی نهایی حق‌الزحمه و مستندات بین شما انجام می‌گیرد و پشتیبانی دادورزان ناظر جریان است.")}
           </p>
         </Card>
 

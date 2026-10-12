@@ -34,14 +34,14 @@ const BRAND: Record<Mode, { title: string; gold: string; sub: string }> = {
   },
   register: {
     title: "خوش آمدید",
-    gold: "به دادبان.",
+    gold: "به دادورزان.",
     sub: "حساب بسازید؛ وکیل متخصص، پیگیری شفاف پرونده و دستیار هوشمند، همین‌جا است.",
   },
 };
 
 const LAWYER_STEPS = [
   { title: "ارسال مدارک و شماره پروانه", desc: "از طریق پشتیبانی، پروانه وکالت و مدارک هویتی را ارسال کنید." },
-  { title: "بررسی و احراز هویت", desc: "کارشناسان دادبان ظرف ۳ تا ۵ روز کاری راستی‌آزمایی می‌کنند." },
+  { title: "بررسی و احراز هویت", desc: "کارشناسان دادورزان ظرف ۳ تا ۵ روز کاری راستی‌آزمایی می‌کنند." },
   { title: "فعال‌سازی پنل وکیل", desc: "پنل شما فعال می‌شود و درخواست‌های موکلان را دریافت می‌کنید." },
 ];
 
@@ -97,7 +97,7 @@ function BrandPane({ mode, priority = false }: { mode: Mode; priority?: boolean 
           <div className="rounded-2xl bg-white p-2 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.65)] ring-1 ring-white/20">
             <Image
               src="/logo1.png"
-              alt={t("لوگوی دادبان")}
+              alt={t("لوگوی دادورزان")}
               width={96}
               height={96}
               priority={priority}
@@ -106,7 +106,7 @@ function BrandPane({ mode, priority = false }: { mode: Mode; priority?: boolean 
           </div>
         </div>
 
-        <p className="mt-10 text-[11px] font-extrabold tracking-[0.45em] text-[var(--auth-gold)]">دادبان</p>
+        <p className="mt-10 text-[11px] font-extrabold tracking-[0.45em] text-[var(--auth-gold)]">دادورزان</p>
         <h1 className="mt-3 text-[2.6rem] font-black leading-[1.3] text-[var(--auth-onbrand)] xl:text-[2.9rem]">
           {t(b.title)}{" "}
           <span className="text-[var(--auth-gold)]">{t(b.gold)}</span>
@@ -164,9 +164,9 @@ function BrandBand({ mode }: { mode: Mode }) {
       <div className="auth-stagger relative px-6 pb-14 pt-7">
         <div className="flex items-center gap-3">
           <div className="auth-float rounded-xl bg-white p-1.5 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.6)] ring-1 ring-white/20">
-            <Image src="/logo1.png" alt={t("لوگوی دادبان")} width={44} height={44} priority className="h-11 w-11 rounded-lg" />
+            <Image src="/logo1.png" alt={t("لوگوی دادورزان")} width={44} height={44} priority className="h-11 w-11 rounded-lg" />
           </div>
-          <p className="text-[10px] font-extrabold tracking-[0.4em] text-[var(--auth-gold)]">دادبان</p>
+          <p className="text-[10px] font-extrabold tracking-[0.4em] text-[var(--auth-gold)]">دادورزان</p>
         </div>
         <h1 className="mt-5 text-2xl font-black leading-relaxed text-[var(--auth-onbrand)]">
           {t(b.title)}{" "}
@@ -541,7 +541,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                       {t("فراموشی رمز؟")}
                     </button>
                   </div>
-                  <AuthSubmit loading={loading} label={t("ورود به دادبان")} loadingLabel={t("در حال ورود…")} />
+                  <AuthSubmit loading={loading} label={t("ورود به دادورزان")} loadingLabel={t("در حال ورود…")} />
                   {/* ورود جایگزین با کد پیامکی — بدون رمز عبور */}
                   <button
                     type="button"
@@ -652,7 +652,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                   <AuthPwField idPrefix="lawyer" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} />
                   <AuthSubmit loading={loading} label={t("ورود به پنل وکیل")} loadingLabel={t("در حال ورود…")} />
                   <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-center text-xs leading-6 text-[var(--auth-ink-soft)]">
-                    {t("هنوز عضو دادبان نشده‌اید؟")}{" "}
+                    {t("هنوز عضو دادورزان نشده‌اید؟")}{" "}
                     <button type="button" onClick={() => sweepTo("register", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">
                       {t("درخواست عضویت وکیل")}
                     </button>
@@ -789,7 +789,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                 <p className="mt-7 text-center text-xs text-[var(--auth-ink-soft)]">
                   {mode === "login" ? (
                     <>
-                      {t("تازه به دادبان آمده‌اید؟")}{" "}
+                      {t("تازه به دادورزان آمده‌اید؟")}{" "}
                       <button type="button" onClick={() => sweepTo("register", tab)} className="auth-switch">
                         {t("حساب بسازید")}
                       </button>
@@ -814,7 +814,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                 <Link href="/legal/privacy" className="font-bold text-[var(--accent-text)] hover:underline">
                   {t("حریم خصوصی")}
                 </Link>{" "}
-                {t("دادبان را می‌پذیرید.")}
+                {t("دادورزان را می‌پذیرید.")}
               </p>
             </div>
           </div>

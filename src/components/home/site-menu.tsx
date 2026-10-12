@@ -41,7 +41,7 @@ const MENU_GROUPS: MenuGroup[] = [
   {
     title: "خدمات ویژه",
     items: [
-      { label: "خدمات حضوری و اداری", href: "/services", icon: "signature", desc: "نماینده دادبان به‌جای شما" },
+      { label: "خدمات حضوری و اداری", href: "/services", icon: "signature", desc: "نماینده دادورزان به‌جای شما" },
       { label: "وکیل کارمندان", href: "/employee-lawyers", icon: "briefcase", desc: "حقوق کار و تأمین اجتماعی" },
       { label: "تعرفه خدمات", href: "/pricing", icon: "coins", desc: "قیمت شفاف پیش از تصمیم" },
       { label: "برای کسب‌وکارها", href: "/business", icon: "briefcase", desc: "حقوق شرکت‌ها و B2B" },
@@ -101,7 +101,7 @@ export function SiteMenu() {
         ref={fabRef}
         type="button"
         onClick={() => setOpen(true)}
-        aria-label={t("همه خدمات دادبان")}
+        aria-label={t("همه خدمات دادورزان")}
         aria-haspopup="dialog"
         aria-expanded={open}
         initial={{ opacity: 0, scale: 0.6 }}
@@ -130,7 +130,7 @@ export function SiteMenu() {
               transition={{ duration: 0.25 }}
               role="dialog"
               aria-modal="true"
-              aria-label={t("همه خدمات دادبان")}
+              aria-label={t("همه خدمات دادورزان")}
             >
               {/* پس‌زمینه */}
               <motion.div
@@ -156,7 +156,7 @@ export function SiteMenu() {
                       <Icon name="menu" className="h-5 w-5" />
                     </span>
                     <div>
-                      <p className="text-sm font-black text-foreground">{t("همه خدمات دادبان")}</p>
+                      <p className="text-sm font-black text-foreground">{t("همه خدمات دادورزان")}</p>
                       <p className="text-[11px] text-muted">{t("هر بخش سایت، یک‌جا در دسترس")}</p>
                     </div>
                   </div>

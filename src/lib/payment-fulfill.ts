@@ -13,7 +13,7 @@ import type { Payment } from "@/db/schema";
 async function sendReceiptIfPossible(p: Payment): Promise<void> {
   try {
     let email: string | null = null;
-    let description: string = p.orderType || "پرداخت دادبان";
+    let description: string = p.orderType || "پرداخت دادورزان";
     if (p.consultationId) {
       const [c] = await db
         .select({ clientPhone: consultations.clientPhone, subject: consultations.subject })

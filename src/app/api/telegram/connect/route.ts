@@ -80,7 +80,7 @@ export async function POST(req: Request) {
     // پیام آزمایشی واقعی — اگر تلگرام آن را نپذیرد، اتصال ثبت نمی‌شود
     const sent = await sendTelegramMessage(
       chatId,
-      "✅ اتصال دادبان موفق شد\nاز این پس اعلان‌های پروندهٔ شما به همین چت ارسال می‌شود.",
+      "✅ اتصال دادورزان موفق شد\nاز این پس اعلان‌های پروندهٔ شما به همین چت ارسال می‌شود.",
     );
     if (!sent.ok) {
       const detail = sent.error === "not-configured" ? NOT_CONFIGURED : sent.error ?? "خطای نامشخص تلگرام";

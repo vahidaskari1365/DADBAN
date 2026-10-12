@@ -26,7 +26,7 @@ import { SiteMenu } from "@/components/home/site-menu";
 import { getT } from "@/lib/i18n/server";
 
 /**
- * Homepage دادبان — Conversion-focused و خلوت.
+ * Homepage دادورزان — Conversion-focused و خلوت.
  * IA: HERO ← TRUST STRIP ← 3 MAIN PATHS (+بازار پرونده‌ها زیر کارت‌های شروع) ←
  *     SITUATION ROUTER ← LAWYER DISCOVERY ← LEGAL SERVICES ← AI SPOTLIGHT ←
  *     COMMON LEGAL PROBLEMS ← HOW IT WORKS ← LEGAL KNOWLEDGE ← SOCIAL PROOF ← CTA
@@ -55,7 +55,7 @@ export default async function HomePage() {
       <HomeHero />
 
       {/* TRUST STRIP — باریک، فقط ادعاهای واقعی */}
-      <section className="-mt-6" aria-label={t("تضمین‌های دادبان")}>
+      <section className="-mt-6" aria-label={t("تضمین‌های دادورزان")}>
         <Container>
           <TrustStrip />
         </Container>
@@ -99,7 +99,7 @@ export default async function HomePage() {
             <SectionHeading
               eyebrow={t("شروع کنید")}
               title={t("می‌خواهید از کجا شروع کنید؟")}
-              desc={t("دادبان مسئله‌تان را می‌فهمد، مسیر درست را پیدا می‌کند و به وکیل یا خدمت مناسب وصلتان می‌کند.")}
+              desc={t("دادورزان مسئله‌تان را می‌فهمد، مسیر درست را پیدا می‌کند و به وکیل یا خدمت مناسب وصلتان می‌کند.")}
             />
           </Reveal>
           <div className="mt-10">
@@ -118,9 +118,9 @@ export default async function HomePage() {
         <Container>
           <Reveal variant="blur">
             <SectionHeading
-              eyebrow={t("مسیریاب دادبان")}
+              eyebrow={t("مسیریاب دادورزان")}
               title={t("اگر نمی‌دانید از کجا شروع کنید، موضوعتان را انتخاب کنید")}
-              desc={t("دادبان مرحله بعدی را به شما نشان می‌دهد — برای هر موضوع یک مسیر ساده.")}
+              desc={t("دادورزان مرحله بعدی را به شما نشان می‌دهد — برای هر موضوع یک مسیر ساده.")}
             />
           </Reveal>
           <div className="mt-10">
@@ -137,9 +137,9 @@ export default async function HomePage() {
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <SectionHeading
                   align="start"
-                  eyebrow={t("وکلای دادبان")}
+                  eyebrow={t("وکلای دادورزان")}
                   title={t("اگر به وکیل نیاز دارید، از همین‌جا شروع کنید")}
-                  desc={t("وکلای واقعی دادبان با تخصص و شهر مشخص — پروفایل هر وکیل را ببینید.")}
+                  desc={t("وکلای واقعی دادورزان با تخصص و شهر مشخص — پروفایل هر وکیل را ببینید.")}
                 />
                 <Button href="/lawyers" variant="outline" icon="search" className="shrink-0">
                   {t("جستجوی همه وکلا")}
@@ -163,8 +163,8 @@ export default async function HomePage() {
           <Reveal variant="blur">
             <SectionHeading
               eyebrow={t("پلتفرم خدمات حقوقی")}
-              title={t("خدمات حقوقی دادبان")}
-              desc={t("دادبان فقط برای پیدا کردن وکیل نیست — خدمت حقوقی موردنیازتان را همین‌جا دریافت کنید.")}
+              title={t("خدمات حقوقی دادورزان")}
+              desc={t("دادورزان فقط برای پیدا کردن وکیل نیست — خدمت حقوقی موردنیازتان را همین‌جا دریافت کنید.")}
             />
           </Reveal>
           <div className="mt-10">
@@ -202,7 +202,7 @@ export default async function HomePage() {
           <Reveal variant="blur">
             <SectionHeading
               eyebrow={t("چطور کار می‌کند")}
-              title={t("مسیر حقوقی در دادبان ساده است")}
+              title={t("مسیر حقوقی در دادورزان ساده است")}
             />
           </Reveal>
           <div className="mt-12">
@@ -217,7 +217,7 @@ export default async function HomePage() {
           <Container>
             <Reveal variant="blur">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-xl font-black text-foreground">{t("از مجلهٔ حقوقی دادبان")}</h2>
+                <h2 className="text-xl font-black text-foreground">{t("از مجلهٔ حقوقی دادورزان")}</h2>
                 <Link href="/knowledge" className="inline-flex items-center gap-1.5 text-sm font-bold text-primary transition-colors hover:text-primary-hover">
                   {t("مشاهده همه مطالب")}
                   <Icon name="arrow" className="h-4 w-4" />
@@ -271,7 +271,7 @@ export default async function HomePage() {
                   {t(" کنید؟")}
                 </h2>
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-8 text-muted sm:text-base">
-                  {t("مسئله حقوقی‌تان را برای دادبان بنویسید تا مسیر مناسب را پیدا کنید.")}
+                  {t("مسئله حقوقی‌تان را برای دادورزان بنویسید تا مسیر مناسب را پیدا کنید.")}
                 </p>
                 <div className="mt-6 flex flex-wrap justify-center gap-3">
                   <Button href="/ai-assistant" size="lg" icon="arrow" className="shadow-[var(--shadow-lift)]">

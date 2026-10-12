@@ -7,8 +7,8 @@ import { templateT } from "@/lib/i18n/core";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("Keyword Universe — استراتژی سئو دادبان"),
-    description: t("نقشه‌ی جامع کلمات کلیدی پلتفرم حقوقی دادبان: ده‌ها هزار کلمه‌ی long-tail در حوزه‌ی وکالت، مشاوره حقوقی، قرارداد و دعاوی."),
+    title: t("Keyword Universe — استراتژی سئو دادورزان"),
+    description: t("نقشه‌ی جامع کلمات کلیدی پلتفرم حقوقی دادورزان: ده‌ها هزار کلمه‌ی long-tail در حوزه‌ی وکالت، مشاوره حقوقی، قرارداد و دعاوی."),
     alternates: { canonical: "/keywords" },
     robots: { index: false, follow: false }, // صفحه‌ی داخلی
   };
@@ -42,7 +42,7 @@ export default async function KeywordsPage({
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Keyword Universe</h1>
         <p className="mt-2 text-sm text-muted">
-          {tt("نقشه‌ی جامع کلمات کلیدی پلتفرم حقوقی دادبان — {count} کلمه‌ی long-tail.", { count: all.length.toLocaleString("fa-IR") })}
+          {tt("نقشه‌ی جامع کلمات کلیدی پلتفرم حقوقی دادورزان — {count} کلمه‌ی long-tail.", { count: all.length.toLocaleString("fa-IR") })}
         </p>
       </header>
 

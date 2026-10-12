@@ -24,7 +24,7 @@ export async function generateMetadata({
   const t = await getT();
   const tf = templateT(t);
   return {
-    title: tf("جزئیات پروژه شماره {n} | بازار پروژه‌های دادبان", { n: id }),
+    title: tf("جزئیات پروژه شماره {n} | بازار پروژه‌های دادورزان", { n: id }),
     description:
       t("اطلاعات کامل پروژهٔ حقوقی و ثبت پیشنهاد قیمت توسط وکلای متخصص — موکل آزادانه بهترین پیشنهاد را انتخاب می‌کند."),
     robots: { index: false, follow: false },

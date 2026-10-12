@@ -8,8 +8,8 @@ import { faNum } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
-  title: "نقشه‌ی دیتابیس (ERD) — معماری دادبان",
-  description: "ERD کامل دیتابیس دادبان: جداول، ستون‌ها، کلیدها، ایندکس‌ها، Enum و روابط 1:N و N:M در ۱۳ دامنه.",
+  title: "نقشه‌ی دیتابیس (ERD) — معماری دادورزان",
+  description: "ERD کامل دیتابیس دادورزان: جداول، ستون‌ها، کلیدها، ایندکس‌ها، Enum و روابط 1:N و N:M در ۱۳ دامنه.",
   alternates: { canonical: "/developer" },
 };
 
@@ -22,7 +22,7 @@ export default async function DeveloperPage() {
         image="/images/hero-developer.png"
         badge="Developer · Data Model"
         title={t("نقشه‌ی دیتابیس (ERD)")}
-        desc={t("معماری ماژولار دیتابیس دادبان در ۱۳ دامنه‌ی مستقل — طرح‌نامه‌ی واقعی PostgreSQL با کلیدها، ایندکس‌ها و روابط. مبنای توسعه‌ی NestJS + Prisma/Drizzle.")}
+        desc={t("معماری ماژولار دیتابیس دادورزان در ۱۳ دامنه‌ی مستقل — طرح‌نامه‌ی واقعی PostgreSQL با کلیدها، ایندکس‌ها و روابط. مبنای توسعه‌ی NestJS + Prisma/Drizzle.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("نقشه‌ی دیتابیس") }]}
       >
         <div className="flex flex-wrap gap-2">

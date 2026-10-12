@@ -132,7 +132,7 @@ export default function RequestForm({
       <h2 className="text-lg font-bold text-foreground">{tt("فرم درخواست — {title}", { title: service.title })}</h2>
       {service.requiresLawyer && (
         <div className="mt-3 rounded-xl border border-accent/30 bg-accent-soft p-3 text-sm text-foreground-soft">
-          <Icon name="scale" className="inline h-4 w-4 text-accent-text" /> {t("این خدمت پس از بررسی به وکیل واجد صلاحیت یا مجموعه حقوقی ارجاع می‌شود و با نظارت حرفه‌ای انجام می‌گیرد. دادبان خود را جایگزین وکیل شما معرفی نمی‌کند.")}
+          <Icon name="scale" className="inline h-4 w-4 text-accent-text" /> {t("این خدمت پس از بررسی به وکیل واجد صلاحیت یا مجموعه حقوقی ارجاع می‌شود و با نظارت حرفه‌ای انجام می‌گیرد. دادورزان خود را جایگزین وکیل شما معرفی نمی‌کند.")}
         </div>
       )}
 

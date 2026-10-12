@@ -174,7 +174,7 @@ export default async function CourtSimPage({
             </div>
             {!isLawyerSide && (
               <p className="mt-3 text-[11px] leading-6 text-foreground-soft">
-                {t("این ابزار برای وکلای دادبان طراحی شده اما موکلان هم می‌توانند با پروندهٔ خودشان تمرین کنند.")}
+                {t("این ابزار برای وکلای دادورزان طراحی شده اما موکلان هم می‌توانند با پروندهٔ خودشان تمرین کنند.")}
               </p>
             )}
           </Card>

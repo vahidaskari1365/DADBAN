@@ -39,7 +39,7 @@ type LawyerPublicRow = Pick<
   | "topRated" | "specialties" | "avatarColor" | "photoUrl"
 >;
 
-/** نگاشت موضوع حقوقی → تخصص‌های وکلای دادبان (مطابق specialties در دیتابیس). */
+/** نگاشت موضوع حقوقی → تخصص‌های وکلای دادورزان (مطابق specialties در دیتابیس). */
 export const TOPIC_SPECIALTIES: Record<string, string[]> = {
   "طلاق": ["خانواده", "طلاق"],
   "مهریه": ["خانواده", "طلاق"],

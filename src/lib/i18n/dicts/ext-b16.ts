@@ -9,7 +9,7 @@ const D: Record<string, Row> = {
   /* ── ask-form ── */
   "لطفاً ابتدا سؤال خود را بنویسید.": ["Please write your question first.", "يرجى كتابة سؤالك أولًا.", "Lütfen önce sorunuzu yazın.", "请先写下您的问题。"],
   "سؤال شما ثبت شد!": ["Your question has been submitted!", "تم تسجيل سؤالك!", "Sorunuz kaydedildi!", "您的问题已提交！"],
-  "پس از بررسی توسط وکلای دادبان، پاسخ منتشر خواهد شد.": ["After review by Dadban's lawyers, the answer will be published.", "بعد المراجعة من قبل محامي دادبان، سيتم نشر الإجابة.", "Dadban avukatlarınca incelendikten sonra yanıt yayınlanacaktır.", "经 Dadban 律师审核后，答案将会发布。"],
+  "پس از بررسی توسط وکلای دادورزان، پاسخ منتشر خواهد شد.": ["After review by Dadvarzan's lawyers, the answer will be published.", "بعد المراجعة من قبل محامي دادورزان، سيتم نشر الإجابة.", "Dadvarzan avukatlarınca incelendikten sonra yanıt yayınlanacaktır.", "经 Dadvarzan 律师审核后，答案将会发布。"],
   "پرسیدن سؤال دیگر": ["Ask another question", "طرح سؤال آخر", "Başka bir soru sor", "再问一个问题"],
   "سؤال حقوقی خود را بپرسید": ["Ask your legal question", "اطرح سؤالك القانوني", "Hukuki sorunuzu sorun", "提出您的法律问题"],
   "سؤال شما توسط وکلای متخصص بررسی و پاسخ داده می‌شود.": ["Your question is reviewed and answered by specialized lawyers.", "يتم مراجعة سؤالك والإجابة عليه من قبل محامين متخصصين.", "Sorunuz uzman avukatlar tarafından incelenir ve yanıtlanır.", "您的问题将由专业律师审核并解答。"],
@@ -18,7 +18,7 @@ const D: Record<string, Row> = {
   "ارسال سؤال": ["Submit question", "إرسال السؤال", "Soruyu gönder", "提交问题"],
 
   /* ── newsletter-form (+ /api/newsletter) ── */
-  "ایمیل شما در خبرنامهٔ دادبان ثبت شد.": ["Your email has been added to the Dadban newsletter.", "تم تسجيل بريدك في النشرة البريدية لـ دادبان.", "E-postanız Dadban bültenine kaydedildi.", "您的邮箱已订阅 Dadban 通讯。"],
+  "ایمیل شما در خبرنامهٔ دادورزان ثبت شد.": ["Your email has been added to the Dadvarzan newsletter.", "تم تسجيل بريدك في النشرة البريدية لـ دادورزان.", "E-postanız Dadvarzan bültenine kaydedildi.", "您的邮箱已订阅 Dadvarzan 通讯。"],
   "ثبت خبرنامه انجام نشد؛ لطفاً دوباره تلاش کنید.": ["Newsletter signup failed; please try again.", "تعذّر تسجيل النشرة البريدية؛ يرجى المحاولة مجددًا.", "Bülten kaydı başarısız oldu; lütfen tekrar deneyin.", "订阅失败；请重试。"],
   "ارتباط برقرار نشد؛ لطفاً اتصال اینترنت را بررسی کنید.": ["Connection failed; please check your internet.", "تعذّر الاتصال؛ يرجى التحقق من اتصالك بالإنترنت.", "Bağlantı kurulamadı; lütfen internet bağlantınızı kontrol edin.", "连接失败；请检查您的网络。"],
   "ایمیل برای عضویت در خبرنامه": ["Email for newsletter subscription", "البريد الإلكتروني للاشتراك في النشرة", "Bültene abonelik için e-posta", "用于订阅通讯的邮箱"],
@@ -72,10 +72,10 @@ const D: Record<string, Row> = {
   "دربارهٔ من": ["About me", "نبذة عني", "Hakkımda", "关于我"],
   "({n}/{m} نویسه)": ["({n}/{m} characters)", "({n}/{m} حرفًا)", "({n}/{m} karakter)", "（{n}/{m} 字符）"],
   "معرفی کوتاه حرفه‌ای: حوزه‌های تمرکز، سوابق برجسته، زبان‌ها و…": ["Short professional intro: focus areas, notable track record, languages and…", "تعريف مهني موجز: مجالات التركيز، السجل المميز، اللغات و…", "Kısa profesyonel tanıtım: odak alanları, öne çıkan geçmiş, diller ve…", "简短职业介绍：专注领域、突出业绩、语言等…"],
-  "قرارداد همکاری با دادبان": ["Collaboration agreement with Dadban", "اتفاقية التعاون مع دادبان", "Dadban iş birliği sözleşmesi", "与 Dadban 的合作协议"],
+  "قرارداد همکاری با دادورزان": ["Collaboration agreement with Dadvarzan", "اتفاقية التعاون مع دادورزان", "Dadvarzan iş birliği sözleşmesi", "与 Dadvarzan 的合作协议"],
   "شرایط فوق را می‌پذیرم و امضای الکترونیکی می‌نمایم *": ["I accept the above terms and provide my electronic signature *", "أوافق على الشروط المذكورة أعلاه وأقدّم توقيعي الإلكتروني *", "Yukarıdaki koşulları kabul ediyor ve elektronik imzamı atıyorum *", "我接受上述条款并进行电子签名 *"],
   "ثبت درخواست همکاری": ["Submit collaboration request", "إرسال طلب التعاون", "İş birliği başvurusunu gönder", "提交合作申请"],
-  "انصراف و مشاهدهٔ وکلای دادبان": ["Cancel and browse Dadban lawyers", "إلغاء واستعراض محامي دادبان", "Vazgeç ve Dadban avukatlarını gör", "取消并浏览 Dadban 律师"],
+  "انصراف و مشاهدهٔ وکلای دادورزان": ["Cancel and browse Dadvarzan lawyers", "إلغاء واستعراض محامي دادورزان", "Vazgeç ve Dadvarzan avukatlarını gör", "取消并浏览 Dadvarzan 律师"],
 
   /* ── refer-form ── */
   "ارجاع کامل پرونده": ["Full case referral", "إحالة كاملة للقضية", "Tam dava yönlendirmesi", "案件全程转介"],
@@ -104,24 +104,24 @@ const D: Record<string, Row> = {
   "چرا این پرونده به تخصص ایشان مرتبط است؟ پیشنهاد شما برای تقسیم کار و حق‌الزحمه چیست؟": ["Why is this case relevant to their expertise? What is your proposal for dividing the work and the fee?", "لماذا ترتبط هذه القضية بتخصصهم؟ ما مقترحك لتقسيم العمل والأتعاب؟", "Bu dava neden uzmanlığıyla ilgili? İş bölümü ve ücret için öneriniz nedir?", "为什么该案件与其专业相关？您对分工和费用的建议是什么？"],
   "ارسال درخواست همکاری": ["Send collaboration request", "إرسال طلب التعاون", "İş birliği başvurusu gönder", "发送合作申请"],
   "انصراف و بازگشت به پروفایل": ["Cancel and return to profile", "إلغاء والعودة إلى الملف", "Vazgeç ve profile dön", "取消并返回档案"],
-  "فرآیند ارجاع در دادبان: درخواست در کارتابل همکار ثبت می‌شود؛ پس از پذیرش، هماهنگی نهایی حق‌الزحمه و مستندات بین شما انجام می‌گیرد و پشتیبانی دادبان ناظر جریان است.": ["Referral process at Dadban: the request lands in your colleague's inbox; after acceptance, the final fee and documents are coordinated between you, with Dadban support overseeing the flow.", "عملية الإحالة في دادبان: يُسجل الطلب في صندوق زميلك؛ وبعد القبول يتم بينكما التنسيق النهائي للأتعاب والمستندات، مع إشراف دعم دادبان على العملية.", "Dadban'da yönlendirme süreci: talep meslektaşınızın gelen kutusuna düşer; kabul sonrası nihai ücret ve belgeler sizin arasında koordine edilir, Dadban desteği süreci denetler.", "Dadban 转介流程：申请将进入同行的工作台；对方接受后，由双方协调最终费用与文件，Dadban 客服全程监督。"],
+  "فرآیند ارجاع در دادورزان: درخواست در کارتابل همکار ثبت می‌شود؛ پس از پذیرش، هماهنگی نهایی حق‌الزحمه و مستندات بین شما انجام می‌گیرد و پشتیبانی دادورزان ناظر جریان است.": ["Referral process at Dadvarzan: the request lands in your colleague's inbox; after acceptance, the final fee and documents are coordinated between you, with Dadvarzan support overseeing the flow.", "عملية الإحالة في دادورزان: يُسجل الطلب في صندوق زميلك؛ وبعد القبول يتم بينكما التنسيق النهائي للأتعاب والمستندات، مع إشراف دعم دادورزان على العملية.", "Dadvarzan'da yönlendirme süreci: talep meslektaşınızın gelen kutusuna düşer; kabul sonrası nihai ücret ve belgeler sizin arasında koordine edilir, Dadvarzan desteği süreci denetler.", "Dadvarzan 转介流程：申请将进入同行的工作台；对方接受后，由双方协调最终费用与文件，Dadvarzan 客服全程监督。"],
   "فرستنده": ["Sender", "المرسل", "Gönderen", "发送人"],
   "نوع همکاری انتخابی: ": ["Selected collaboration type: ", "نوع التعاون المحدد: ", "Seçilen iş birliği türü: ", "所选合作类型："],
 
   /* ── ai-assistant/layout (metadata) ── */
-  "دستیار حقوقی هوش مصنوعی | وکیل AI دادبان": ["AI Legal Assistant | Dadban AI Lawyer", "المساعد القانوني الذكي | محامي دادبان الذكي", "Yapay Zekâ Hukuk Asistanı | Dadban AI Avukatı", "AI 法律助手 | Dadban AI 律师"],
-  "دستیار حقوقی هوش مصنوعی دادبان: پاسخ فوری به سوالات حقوقی شما با استناد به قوانین ایران. تحلیل قرارداد، راهنمایی حقوقی وارجاع به وکیل متخصص. رایگان و آنلاین.": ["Dadban's AI legal assistant: instant answers to your legal questions based on Iranian law. Contract analysis, legal guidance and referral to specialized lawyers. Free and online.", "المساعد القانوني الذكي من دادبان: إجابات فورية لأسئلتك القانونية استنادًا إلى قوانين إيران. تحليل العقود والإرشاد القانوني والإحالة إلى محامٍ متخصص. مجاني وعبر الإنترنت.", "Dadban yapay zekâ hukuk asistanı: İran yasalarına dayanarak hukuki sorularınıza anında yanıt. Sözleşme analizi, hukuki rehberlik ve uzman avukata yönlendirme. Ücretsiz ve çevrimiçi.", "Dadban AI 法律助手：依据伊朗法律即时解答您的法律问题。合同分析、法律指引并转介专业律师。免费在线。"],
+  "دستیار حقوقی هوش مصنوعی | وکیل AI دادورزان": ["AI Legal Assistant | Dadvarzan AI Lawyer", "المساعد القانوني الذكي | محامي دادورزان الذكي", "Yapay Zekâ Hukuk Asistanı | Dadvarzan AI Avukatı", "AI 法律助手 | Dadvarzan AI 律师"],
+  "دستیار حقوقی هوش مصنوعی دادورزان: پاسخ فوری به سوالات حقوقی شما با استناد به قوانین ایران. تحلیل قرارداد، راهنمایی حقوقی وارجاع به وکیل متخصص. رایگان و آنلاین.": ["Dadvarzan's AI legal assistant: instant answers to your legal questions based on Iranian law. Contract analysis, legal guidance and referral to specialized lawyers. Free and online.", "المساعد القانوني الذكي من دادورزان: إجابات فورية لأسئلتك القانونية استنادًا إلى قوانين إيران. تحليل العقود والإرشاد القانوني والإحالة إلى محامٍ متخصص. مجاني وعبر الإنترنت.", "Dadvarzan yapay zekâ hukuk asistanı: İran yasalarına dayanarak hukuki sorularınıza anında yanıt. Sözleşme analizi, hukuki rehberlik ve uzman avukata yönlendirme. Ücretsiz ve çevrimiçi.", "Dadvarzan AI 法律助手：依据伊朗法律即时解答您的法律问题。合同分析、法律指引并转介专业律师。免费在线。"],
   "دستیار حقوقی هوش مصنوعی": ["AI legal assistant", "المساعد القانوني الذكي", "Yapay zekâ hukuk asistanı", "AI 法律助手"],
   "وکیل هوش مصنوعی": ["AI lawyer", "محامي ذكاء اصطناعي", "Yapay zekâ avukatı", "AI 律师"],
   "پرسش حقوقی AI": ["AI legal Q&A", "سؤال قانوني بالذكاء الاصطناعي", "Yapay zekâ hukuk sorusu", "AI 法律问答"],
   "مشاور حقوقی AI": ["AI legal advisor", "مستشار قانوني بالذكاء الاصطناعي", "Yapay zekâ hukuk danışmanı", "AI 法律顾问"],
   "وکیل AI": ["AI lawyer", "محامي AI", "AI avukat", "AI 律师"],
-  "دستیار حقوقی هوش مصنوعی | دادبان": ["AI Legal Assistant | Dadban", "المساعد القانوني الذكي | دادبان", "Yapay Zekâ Hukuk Asistanı | Dadban", "AI 法律助手 | Dadban"],
+  "دستیار حقوقی هوش مصنوعی | دادورزان": ["AI Legal Assistant | Dadvarzan", "المساعد القانوني الذكي | دادورزان", "Yapay Zekâ Hukuk Asistanı | Dadvarzan", "AI 法律助手 | Dadvarzan"],
   "پاسخ فوری به سوالات حقوقی شما با هوش مصنوعی و استناد به قوانین ایران.": ["Instant AI answers to your legal questions, based on Iranian law.", "إجابات فورية بالذكاء الاصطناعي لأسئلتك القانونية استنادًا إلى قوانين إيران.", "Hukuki sorularınıza yapay zekâ ile, İran yasalarına dayanarak anında yanıt.", "基于伊朗法律，AI 即时解答您的法律问题。"],
   "پاسخ فوری به سوالات حقوقی با هوش مصنوعی.": ["Instant AI answers to legal questions.", "إجابات فورية بالذكاء الاصطناعي للأسئلة القانونية.", "Hukuki sorulara yapay zekâ ile anında yanıt.", "AI 即时解答法律问题。"],
 
   /* ── case-board/[id]/page (metadata) ── */
-  "جزئیات پروژه شماره {n} | بازار پروژه‌های دادبان": ["Project #{n} details | Dadban project board", "تفاصيل المشروع رقم {n} | سوق مشاريع دادبان", "#{n} numaralı proje detayları | Dadban proje pazarı", "项目 {n} 详情 | Dadban 项目市场"],
+  "جزئیات پروژه شماره {n} | بازار پروژه‌های دادورزان": ["Project #{n} details | Dadvarzan project board", "تفاصيل المشروع رقم {n} | سوق مشاريع دادورزان", "#{n} numaralı proje detayları | Dadvarzan proje pazarı", "项目 {n} 详情 | Dadvarzan 项目市场"],
   "اطلاعات کامل پروژهٔ حقوقی و ثبت پیشنهاد قیمت توسط وکلای متخصص — موکل آزادانه بهترین پیشنهاد را انتخاب می‌کند.": ["Full legal project details and fee proposals by specialized lawyers — the client freely picks the best offer.", "تفاصيل كاملة للمشروع القانوني وتسجيل عروض الأسعار من محامين متخصصين — يختار الموكل بحرية أفضل عرض.", "Tam hukuki proje detayları ve uzman avukatlardan ücret teklifleri — müşteri en iyi teklifi özgürce seçer.", "法律项目完整信息与专业律师报价——客户自由选择最优方案。"],
 
   /* ── برداشت از api/auth/** ── */
@@ -148,7 +148,7 @@ const D: Record<string, Row> = {
   "کد پیگیری معتبر نیست؛ کد محرمانهٔ طولانی که پس از ثبت پرونده دریافت کردید را وارد کنید (شماره پرونده نیست).": ["Invalid tracking code; enter the long confidential code you received after submitting the case (not the case number).", "رمز التتبع غير صالح؛ أدخل الرمز السري الطويل الذي استلمته بعد تسجيل القضية (وليس رقم القضية).", "Takip kodu geçersiz; davayı kaydettikten sonra aldığınız uzun gizli kodu girin (dava numarası değil).", "跟踪码无效；请输入提交案件后收到的长保密码（不是案件编号）。"],
   "پرونده‌ای یافت نشد.": ["No case found.", "لم يتم العثور على قضية.", "Dava bulunamadı.", "未找到案件。"],
   "درخواست نامعتبر": ["Invalid request", "طلب غير صالح", "Geçersiz istek", "请求无效"],
-  "انتخاب شما ثبت شد. کارشناسان دادبان برای هماهنگی پرداخت با شما تماس می‌گیرند.": ["Your choice has been recorded. Dadban experts will contact you to arrange payment.", "تم تسجيل اختيارك. سيتواصل معك خبراء دادبان لتنسيق الدفع.", "Seçiminiz kaydedildi. Dadban uzmanları ödemeyi düzenlemek için sizinle iletişime geçecek.", "您的选择已记录。Dadban 专家将与您联系安排付款。"],
+  "انتخاب شما ثبت شد. کارشناسان دادورزان برای هماهنگی پرداخت با شما تماس می‌گیرند.": ["Your choice has been recorded. Dadvarzan experts will contact you to arrange payment.", "تم تسجيل اختيارك. سيتواصل معك خبراء دادورزان لتنسيق الدفع.", "Seçiminiz kaydedildi. Dadvarzan uzmanları ödemeyi düzenlemek için sizinle iletişime geçecek.", "您的选择已记录。Dadvarzan 专家将与您联系安排付款。"],
   "درگاه «{g}» انتخاب شد. پس از تعیین هزینه نهایی توسط کارشناسان، لینک پرداخت از همین درگاه برای شما پیامک می‌شود.": ["The “{g}” gateway was selected. Once experts set the final fee, the payment link will be texted to you from the same gateway.", "تم اختيار بوابة «{g}». وبعد تحديد الخبراء للرسوم النهائية، ستُرسل لك رابط الدفع عبر رسالة نصية من البوابة نفسها.", "“{g}” ödeme kanalı seçildi. Uzmanlar nihai ücreti belirledikten sonra ödeme bağlantısı aynı kanaldan size SMS ile gönderilecek.", "已选择「{g}」支付通道。待专家确定最终费用后，将通过同一通道向您发送支付链接短信。"],
 };
 

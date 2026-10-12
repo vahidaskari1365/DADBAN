@@ -59,7 +59,7 @@ const manualProvider: PaymentProvider = {
     return {
       reference: req.reference,
       status: "manual_review",
-      message: "درخواست شما ثبت شد. کارشناسان دادبان برای هماهنگی نهایی پرداخت با شما تماس می‌گیرند.",
+      message: "درخواست شما ثبت شد. کارشناسان دادورزان برای هماهنگی نهایی پرداخت با شما تماس می‌گیرند.",
     };
   },
   async verifyPayment(reference) {
@@ -185,7 +185,7 @@ const zarinpalProvider: PaymentProvider = {
       merchant_id: ZARINPAL_MERCHANT,
       amount: toRials(req.amount),
       callback_url: `${siteUrl}/api/payments/zarinpal/callback?ref=${encodeURIComponent(req.reference)}`,
-      description: (req.description || "پرداخت دادبان").slice(0, 180),
+      description: (req.description || "پرداخت دادورزان").slice(0, 180),
     });
     const code = res?.data?.code;
     const authority = res?.data?.authority;
@@ -241,7 +241,7 @@ const zarinpalProvider: PaymentProvider = {
     return {
       reference,
       status: "manual_review",
-      message: "درخواست بازگشت وجه ثبت شد و توسط پشتیبانی دادبان از طریق درگاه پیگیری می‌شود.",
+      message: "درخواست بازگشت وجه ثبت شد و توسط پشتیبانی دادورزان از طریق درگاه پیگیری می‌شود.",
     };
   },
 };

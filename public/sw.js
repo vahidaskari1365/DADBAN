@@ -1,5 +1,5 @@
 /* ============================================================================
-   دادبان — Service Worker (PWA offline + caching)
+   دادورزان — Service Worker (PWA offline + caching)
    ----------------------------------------------------------------------------
    استراتژی‌ها:
    - Static assets (_next/static, fonts, icons): cache-first (همیشه سریع)
@@ -8,8 +8,8 @@
    - تصاویر: stale-while-revalidate
    ========================================================================== */
 
-// v1.4.52 — تبدیل خودکار ارقام فارسی/عربی به لاتین در زبان‌های LTR (en/tr/zh): لایه‌های makeT + tdyn + جاروب DOM سمت کلاینت + رفع هشدار hydration ThemeToggle
-const VERSION = "dadban-v1.4.52";
+// v1.4.53 — تغییر نام برند دادورزان (دادبان ← دادورزان) در همهٔ رشته‌های UI، متادیتا، دیکشنری‌ها، ایمیل/پیامک و محتوای دیتابیس + تبدیل خودکار ارقام فارسی/عربی به لاتین در زبان‌های LTR (en/tr/zh): لایه‌های makeT + tdyn + جاروب DOM سمت کلاینت + رفع هشدار hydration ThemeToggle
+const VERSION = "dadvarzan-v1.4.53";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const IMG_CACHE = `${VERSION}-img`;

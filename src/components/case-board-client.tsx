@@ -10,7 +10,7 @@ import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 
 /**
- * برد زندهٔ «بازار پرونده‌های دادبان» — سمت کلاینت:
+ * برد زندهٔ «بازار پرونده‌های دادورزان» — سمت کلاینت:
  * آمار کلان، فیلتر و جستجو و کارت پرونده‌های باز. با کلیک روی هر کارت،
  * صفحهٔ اختصاصی پروژه (/case-board/[id]) باز می‌شود که اطلاعات کامل پروژه +
  * دکمهٔ «ثبت پیشنهاد روی پروژه» (توضیحات + قیمت + ارسال به موکل) دارد.
@@ -102,7 +102,7 @@ export function CaseBoardClient() {
           {[
             { icon: "folder" as const, label: t("پروندهٔ باز در بازار"), value: data ? faNum(data.stats.openCases) : "…" },
             { icon: "money" as const, label: t("پیشنهاد قیمت ثبت‌شده"), value: data ? faNum(data.stats.totalOffers) : "…" },
-            { icon: "gavel" as const, label: t("وکلای متخصص دادبان"), value: data ? faNum(data.stats.lawyers) : "…" },
+            { icon: "gavel" as const, label: t("وکلای متخصص دادورزان"), value: data ? faNum(data.stats.lawyers) : "…" },
           ].map((s) => (
             <Card key={s.label} hover={false} className="flex items-center gap-3 p-4">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
@@ -184,7 +184,7 @@ export function CaseBoardClient() {
               </p>
               <p className="mx-auto mt-1 max-w-md text-xs leading-6 text-muted">
                 {data.cases.length === 0
-                  ? t("اولین پرونده را ثبت کنید — وکلای متخصص دادبان به‌محض ثبت، پروندهٔ شما را می‌بینند و پیشنهاد قیمت می‌دهند.")
+                  ? t("اولین پرونده را ثبت کنید — وکلای متخصص دادورزان به‌محض ثبت، پروندهٔ شما را می‌بینند و پیشنهاد قیمت می‌دهند.")
                   : t("فیلتر شهر یا عبارت جستجو را تغییر دهید.")}
               </p>
               {data.cases.length === 0 && (

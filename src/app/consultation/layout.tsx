@@ -25,19 +25,19 @@ export async function generateMetadata(): Promise<Metadata> {
       languages: { "fa-IR": "/consultation", "x-default": "/consultation" },
     },
     openGraph: {
-      title: t("مشاوره حقوقی آنلاین | دادبان"),
+      title: t("مشاوره حقوقی آنلاین | دادورزان"),
       description: t(
         "مشاوره حقوقی آنلاین با وکیل متخصص: متنی، صوتی و تصویری. رزرو نوبت با بهترین وکلای ایران.",
       ),
       url: "/consultation",
-      siteName: "دادبان",
+      siteName: "دادورزان",
       locale: "fa_IR",
       type: "website",
       images: [{ url: "/og-default.jpg", width: 1200, height: 630, alt: t("مشاوره حقوقی آنلاین") }],
     },
     twitter: {
       card: "summary_large_image",
-      title: t("مشاوره حقوقی آنلاین | دادبان"),
+      title: t("مشاوره حقوقی آنلاین | دادورزان"),
       description: t("مشاوره حقوقی آنلاین با وکیل متخصص: متنی، صوتی و تصویری."),
       images: ["/twitter-card.jpg"],
     },

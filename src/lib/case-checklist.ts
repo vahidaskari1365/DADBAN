@@ -197,6 +197,6 @@ export function checklistToText(kind: CaseKind, checked: Record<string, boolean>
     lines.push(`${mark} ${item.label}${item.required ? " (لازم)" : ""}${item.hint ? ` — ${item.hint}` : ""}`);
   }
   const done = items.filter((i) => checked[i.key]).length;
-  lines.push("", `پیشرفت: ${done} از ${items.length} — دادبان (dadban)`);
+  lines.push("", `پیشرفت: ${done} از ${items.length} — دادورزان (dadban)`);
   return lines.join("\n");
 }

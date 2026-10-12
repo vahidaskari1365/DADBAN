@@ -209,7 +209,7 @@ export function LawyerPicksFlow({
             </span>
             <div>
               <p className="text-sm font-extrabold text-foreground">{t("۳ وکیل برتر برای مشکل تو")}</p>
-              <p className="text-[11px] text-muted">{t("بر اساس امتیاز و نظرات واقعی کاربران دادبان")}</p>
+              <p className="text-[11px] text-muted">{t("بر اساس امتیاز و نظرات واقعی کاربران دادورزان")}</p>
             </div>
           </div>
 

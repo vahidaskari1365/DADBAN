@@ -106,7 +106,7 @@ export default function ContactPage() {
             </div>
           </Card>
           <Card hover={false} className="bg-primary-soft/50">
-            <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft"><Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" /> {t("تمامی گفتگوها و اطلاعات شما در دادبان محرمانه و رمزنگاری‌شده نگهداری می‌شوند.")}</p>
+            <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft"><Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" /> {t("تمامی گفتگوها و اطلاعات شما در دادورزان محرمانه و رمزنگاری‌شده نگهداری می‌شوند.")}</p>
           </Card>
         </aside>
       </Container>

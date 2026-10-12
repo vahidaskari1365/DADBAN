@@ -32,7 +32,7 @@ const TARGET_LANG: Record<Exclude<Locale, "fa">, string> = {
 
 const TRANSLATOR_SYSTEM = (locale: Exclude<Locale, "fa">): string =>
   [
-    `You are a professional Persian→${TARGET_LANG[locale]} legal translator for DADBAN, an Iranian legal-services platform.`,
+    `You are a professional Persian→${TARGET_LANG[locale]} legal translator for DADVARZAN, an Iranian legal-services platform.`,
     `Translate the user's Persian text into ${TARGET_LANG[locale]} with these rules:`,
     `1) Keep Iran's legal terminology accurate: وکیل=${locale === "ar" ? "محامٍ" : locale === "tr" ? "avukat" : locale === "zh" ? "律师" : "lawyer"}, حق‌الوکاله=${locale === "ar" ? "أتعاب المحاماة" : locale === "tr" ? "vekalet ücreti" : locale === "zh" ? "律师费" : "attorney fee"}, دادخواست=${locale === "ar" ? "لائحة دعوى" : locale === "tr" ? "dava dilekçesi" : locale === "zh" ? "起诉状" : "petition"}, دادگاه=${locale === "ar" ? "المحكمة" : locale === "tr" ? "mahkeme" : locale === "zh" ? "法院" : "court"}.`,
     `2) Preserve Markdown structure exactly: headings (##), bold (**), lists (-, ۱.), line breaks (\\n\\n).`,

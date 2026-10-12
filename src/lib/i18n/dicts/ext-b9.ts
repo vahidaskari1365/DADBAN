@@ -74,11 +74,11 @@ const D: Record<string, Row> = {
     "× 4/3 (Yasak Ay)",
     "× 4/3（禁月）",
   ],
-  "۱) در ربات دادبان دکمهٔ Start را بزنید تا شناسهٔ چت شما ارسال شود.": [
-    "1) In the DADBAN bot, press the Start button to send your chat ID.",
-    "١) في روبوت دادبان، اضغط على زر Start لإرسال معرّف الدردشة الخاص بك.",
-    "1) DADBAN botunda, sohbet kimliğinizi göndermek için Start düğmesine basın.",
-    "1) 在DADBAN机器人中，按Start按钮发送您的聊天ID。",
+  "۱) در ربات دادورزان دکمهٔ Start را بزنید تا شناسهٔ چت شما ارسال شود.": [
+    "1) In the DADVARZAN bot, press the Start button to send your chat ID.",
+    "١) في روبوت دادورزان، اضغط على زر Start لإرسال معرّف الدردشة الخاص بك.",
+    "1) DADVARZAN botunda, sohbet kimliğinizi göndermek için Start düğmesine basın.",
+    "1) 在DADVARZAN机器人中，按Start按钮发送您的聊天ID。",
   ],
   "۲) شناسه را اینجا وارد کنید.": [
     "2) Enter the ID here.",
@@ -146,11 +146,11 @@ const D: Record<string, Row> = {
     "Yapay zeka destekli belge oluşturma araçları + avukat doğrulaması",
     "AI驱动的文档生成工具+律师验证",
   ],
-  "ابزارهای هوشمند دادبان یاورِ کار وکیل‌اند: خروجی‌ها «پیش‌نویس» هستند و راستی‌آزمایی نهایی با وکیل؛ هیچ تضمینی برای نتیجهٔ دادگاه وجود ندارد.": [
-    "DADBAN's smart tools are lawyers' assistants: outputs are \\\"drafts\\\" and final verification is by the lawyer; no guarantee for court outcome.",
-    "أدوات الذكاء الاصطناعي في دادبان مساعدات المحامين: المخرجات هي \\\"مسودات\\\" والتحقق النهائي من قبل المحامي؛ لا يوجد ضمان للنتيجة القضائية.",
-    "DADBAN'ın akıllı araçları avukatların asistanlarıdır: çıktılar \\\"taslak\\\"tır ve nihai doğrulama avukat tarafından yapılır; mahkeme kararı için garanti yok.",
-    "DADBAN的智能工具是律师的助手：输出是\"草稿\"，最终验证由律师进行；不保证法庭结果。",
+  "ابزارهای هوشمند دادورزان یاورِ کار وکیل‌اند: خروجی‌ها «پیش‌نویس» هستند و راستی‌آزمایی نهایی با وکیل؛ هیچ تضمینی برای نتیجهٔ دادگاه وجود ندارد.": [
+    "DADVARZAN's smart tools are lawyers' assistants: outputs are \\\"drafts\\\" and final verification is by the lawyer; no guarantee for court outcome.",
+    "أدوات الذكاء الاصطناعي في دادورزان مساعدات المحامين: المخرجات هي \\\"مسودات\\\" والتحقق النهائي من قبل المحامي؛ لا يوجد ضمان للنتيجة القضائية.",
+    "DADVARZAN'ın akıllı araçları avukatların asistanlarıdır: çıktılar \\\"taslak\\\"tır ve nihai doğrulama avukat tarafından yapılır; mahkeme kararı için garanti yok.",
+    "DADVARZAN的智能工具是律师的助手：输出是\"草稿\"，最终验证由律师进行；不保证法庭结果。",
   ],
   "اتصال اینترنت را بررسی کنید و صفحه را دوباره باز کنید.": [
     "Check your internet connection and reopen the page.",
@@ -398,11 +398,11 @@ const D: Record<string, Row> = {
     "İşlemler",
     "操作",
   ],
-  "اگر پرداخت حق‌الوکاله برایتان دشوار است، دیگر نگران نباشید؛ در دادبان با توافق وکیل می‌توانید حق‌الوکاله را یکجا، قسطی (۲ تا ۴ قسط) یا مرحله‌ای بپردازید — با شرایط شفاف، ثبت در قرارداد و پیگیری آنلاین.": [
-    "If paying the attorney fee is difficult for you, don't worry anymore; in DADBAN, with your lawyer's agreement, you can pay the attorney fee in one installment, in installments (2 to 4 installments), or in stages — with transparent terms, recorded in the contract and tracked online.",
-    "إذا كان دفع الأتعاب المحاماة صعباً بالنسبة لك، لا تقلق أكثر؛ في دادبان، باتفاق المحامي، يمكنك دفع الأتعاب دفعة واحدة، أو بالتقسيط (٢ إلى ٤ أقساط)، أو على مراحل — مع شروط شفافة، مسجلة في العقد ومتابعة عبر الإنترنت.",
-    "Vekalet ücretini ödemeniz sizin için zor ise endişelenmeyin; DADBAN'da avukatınızla anlaşarak vekalet ücretini tek seferde, taksitli (2 ila 4 taksit) veya aşamalı olarak ödeyebilirsiniz — şeffaf şartlarla, sözleşmede kaydedilerek ve online takip edilerek.",
-    "如果支付律师费对您来说有困难，请不必担心；在DADBAN，您可以与律师协议，一次性、分期（2至4期）或分期支付律师费 — 条件透明，记录在合同中，并在线跟踪。",
+  "اگر پرداخت حق‌الوکاله برایتان دشوار است، دیگر نگران نباشید؛ در دادورزان با توافق وکیل می‌توانید حق‌الوکاله را یکجا، قسطی (۲ تا ۴ قسط) یا مرحله‌ای بپردازید — با شرایط شفاف، ثبت در قرارداد و پیگیری آنلاین.": [
+    "If paying the attorney fee is difficult for you, don't worry anymore; in DADVARZAN, with your lawyer's agreement, you can pay the attorney fee in one installment, in installments (2 to 4 installments), or in stages — with transparent terms, recorded in the contract and tracked online.",
+    "إذا كان دفع الأتعاب المحاماة صعباً بالنسبة لك، لا تقلق أكثر؛ في دادورزان، باتفاق المحامي، يمكنك دفع الأتعاب دفعة واحدة، أو بالتقسيط (٢ إلى ٤ أقساط)، أو على مراحل — مع شروط شفافة، مسجلة في العقد ومتابعة عبر الإنترنت.",
+    "Vekalet ücretini ödemeniz sizin için zor ise endişelenmeyin; DADVARZAN'da avukatınızla anlaşarak vekalet ücretini tek seferde, taksitli (2 ila 4 taksit) veya aşamalı olarak ödeyebilirsiniz — şeffaf şartlarla, sözleşmede kaydedilerek ve online takip edilerek.",
+    "如果支付律师费对您来说有困难，请不必担心；在DADVARZAN，您可以与律师协议，一次性、分期（2至4期）或分期支付律师费 — 条件透明，记录在合同中，并在线跟踪。",
   ],
   "امتیاز {n} از ۵": [
     "Rating {n} of 5",
@@ -482,11 +482,11 @@ const D: Record<string, Row> = {
     "Bu hesap etkin bir e-postaya sahip; kurtarma kodu e-postanıza gönderildi.",
     "此帐户有活跃的电子邮件；恢复代码已发送到您的电子邮件。",
   ],
-  "این ابزار برای وکلای دادبان طراحی شده اما موکلان هم می‌توانند با پروندهٔ خودشان تمرین کنند.": [
-    "This tool is designed for DADBAN lawyers, but clients can also practice with their own cases.",
-    "تم تصميم هذه الأداة للمحامين في دادبان، لكن الموكلين يمكنهم أيضاً التدرب على قضاياهم الخاصة.",
-    "Bu araç DADBAN avukatları için tasarlanmıştır ancak müvekkiller de kendi davalarıyla çalışabilir.",
-    "此工具专为DADBAN律师设计，但客户也可以用自己的案件进行练习。",
+  "این ابزار برای وکلای دادورزان طراحی شده اما موکلان هم می‌توانند با پروندهٔ خودشان تمرین کنند.": [
+    "This tool is designed for DADVARZAN lawyers, but clients can also practice with their own cases.",
+    "تم تصميم هذه الأداة للمحامين في دادورزان، لكن الموكلين يمكنهم أيضاً التدرب على قضاياهم الخاصة.",
+    "Bu araç DADVARZAN avukatları için tasarlanmıştır ancak müvekkiller de kendi davalarıyla çalışabilir.",
+    "此工具专为DADVARZAN律师设计，但客户也可以用自己的案件进行练习。",
   ],
   "این پروژه در استان شما ({city}) ثبت نشده است؛ پیشنهاد فقط برای پروژه‌های استان خودتان پذیرفته می‌شود.": [
     "This project is not registered in your province ({city",
@@ -524,11 +524,11 @@ const D: Record<string, Row> = {
     "Bu taslak yapay zeka tarafından oluşturulmuştur ve hukuki tavsiye değildir; yargı makamlarına sunmadan önce mutlaka bir avukat tarafından gözden geçirilmelidir.",
     "此草稿由人工智能生成，不构成法律建议；在向司法机构提交前，必须由律师审查。",
   ],
-  "این پیش‌نویس با هوش مصنوعی دادبان تولید شده و پیش از ثبت در مرجع قضایی باید توسط وکیل بازبینی شود.": [
-    "This draft was generated by DADBAN AI and must be reviewed by a lawyer before filing with the judicial authority.",
-    "هذه المسودة تم إنشاؤها بواسطة الذكاء الاصطناعي لدادبان ويجب مراجعتها من قبل محامٍ قبل التسجيل في السلطة القضائية.",
-    "Bu taslak DADBAN yapay zeka tarafından oluşturulmuştur ve yargı makamlarına sunmadan önce mutlaka bir avukat tarafından gözden geçirilmelidir.",
-    "此草稿由DADBAN人工智能生成，在向司法机构提交前，必须由律师审查。",
+  "این پیش‌نویس با هوش مصنوعی دادورزان تولید شده و پیش از ثبت در مرجع قضایی باید توسط وکیل بازبینی شود.": [
+    "This draft was generated by DADVARZAN AI and must be reviewed by a lawyer before filing with the judicial authority.",
+    "هذه المسودة تم إنشاؤها بواسطة الذكاء الاصطناعي لدادورزان ويجب مراجعتها من قبل محامٍ قبل التسجيل في السلطة القضائية.",
+    "Bu taslak DADVARZAN yapay zeka tarafından oluşturulmuştur ve yargı makamlarına sunmadan önce mutlaka bir avukat tarafından gözden geçirilmelidir.",
+    "此草稿由DADVARZAN人工智能生成，在向司法机构提交前，必须由律师审查。",
   ],
   "این چک‌لیست راهنمای عمومی است؛ تکمیل خودکار به‌ازای نوع دعوا انجام می‌شود و تیک‌ها فقط در مرورگر شما ذخیره می‌گردند. تشخیص نهایی مدارک لازم با وکیل پرونده است.": [
     "This is a general checklist; automatic completion is based on lawsuit type, and checkboxes are only saved in your browser. The final determination of required documents is with the case lawyer.",
@@ -554,11 +554,11 @@ const D: Record<string, Row> = {
     "Bu hesap etkin bir e-postaya sahip; giriş kodu e-postanıza gönderildi.",
     "此帐户有活跃的电子邮件；登录代码已发送到您的电子邮件。",
   ],
-  "این خدمت پس از بررسی به وکیل واجد صلاحیت یا مجموعه حقوقی ارجاع می‌شود و با نظارت حرفه‌ای انجام می‌گیرد. دادبان خود را جایگزین وکیل شما معرفی نمی‌کند.": [
-    "This service is referred to a qualified lawyer or law firm under professional supervision and performed accordingly. DADBAN does not replace your lawyer.",
-    "تُحال هذه الخدمة إلى محامٍ مؤهل أو مكتب قانوني تحت إشراف احترافي وتُنفذ وفقًا لذلك. لا يستبدل دادبان محاميك.",
-    "Bu hizmet, profesyonel denetim altında nitelikli bir avukata veya hukuk firmasına yönlendirilir ve buna göre uygulanır. DADBAN avukatınızın yerini almaz.",
-    "此项服务将在专业监督下转介给合格的律师或律师事务所并执行。DADBAN不会取代您的律师。",
+  "این خدمت پس از بررسی به وکیل واجد صلاحیت یا مجموعه حقوقی ارجاع می‌شود و با نظارت حرفه‌ای انجام می‌گیرد. دادورزان خود را جایگزین وکیل شما معرفی نمی‌کند.": [
+    "This service is referred to a qualified lawyer or law firm under professional supervision and performed accordingly. DADVARZAN does not replace your lawyer.",
+    "تُحال هذه الخدمة إلى محامٍ مؤهل أو مكتب قانوني تحت إشراف احترافي وتُنفذ وفقًا لذلك. لا يستبدل دادورزان محاميك.",
+    "Bu hizmet, profesyonel denetim altında nitelikli bir avukata veya hukuk firmasına yönlendirilir ve buna göre uygulanır. DADVARZAN avukatınızın yerini almaz.",
+    "此项服务将在专业监督下转介给合格的律师或律师事务所并执行。DADVARZAN不会取代您的律师。",
   ],
   "این درخواست منتظر تأیید پرداخت است (مبلغ {n} تومان).": [
     "This request is awaiting payment confirmation (amount {n} Toman).",
@@ -806,11 +806,11 @@ const D: Record<string, Row> = {
     "Evet",
     "是",
   ],
-  "به شبکهٔ وکلای دادبان بپیوندید": [
-    "Join DADBAN's Lawyer Network",
-    "انضم إلى شبكة محامي دادبان",
-    "DADBAN Avukat Ağı'na Katılın",
-    "加入DADBAN的律师网络",
+  "به شبکهٔ وکلای دادورزان بپیوندید": [
+    "Join DADVARZAN's Lawyer Network",
+    "انضم إلى شبكة محامي دادورزان",
+    "DADVARZAN Avukat Ağı'na Katılın",
+    "加入DADVARZAN的律师网络",
   ],
   "به‌روزرسانی": [
     "Update",
@@ -956,11 +956,11 @@ const D: Record<string, Row> = {
     "Stil profilinizi oluşturun, böylece oluşturulan belgeler sizin gibi yazılsın.",
     "创建您的风格档案，使生成的文档像您自己写的一样。",
   ],
-  "پروفایل سبک نگارش خود را بسازید تا اسناد تولیدی دادبان مثل خودتان نوشته شود.": [
-    "Create your writing style profile so that DADBAN-generated documents are written like you.",
-    "أنشئ ملفك الشخصي للأسلوب الكتابي ليتم كتابة مستندات دادبان بنفس أسلوبك.",
-    "Yazım stilinizi oluşturun, böylece DADBAN tarafından oluşturulan belgeler sizin gibi yazılsın.",
-    "创建您的写作风格档案，使DADBAN生成的文档像您自己写的一样。",
+  "پروفایل سبک نگارش خود را بسازید تا اسناد تولیدی دادورزان مثل خودتان نوشته شود.": [
+    "Create your writing style profile so that DADVARZAN-generated documents are written like you.",
+    "أنشئ ملفك الشخصي للأسلوب الكتابي ليتم كتابة مستندات دادورزان بنفس أسلوبك.",
+    "Yazım stilinizi oluşturun, böylece DADVARZAN tarafından oluşturulan belgeler sizin gibi yazılsın.",
+    "创建您的写作风格档案，使DADVARZAN生成的文档像您自己写的一样。",
   ],
   "پروفایل فعال": [
     "Active profile",
@@ -1610,11 +1610,11 @@ const D: Record<string, Row> = {
     "Avukatın araç kutusu",
     "律师工具箱",
   ],
-  "جعبه‌ابزار وکیل — فضای کاری دادبان": [
-    "Lawyer's toolbox — DADBAN workspace",
-    "صندوق أدوات المحاماة — مساحة عمل دادبان",
-    "Avukatın araç kutusu — DADBAN çalışma alanı",
-    "律师工具箱 — DADBAN工作空间",
+  "جعبه‌ابزار وکیل — فضای کاری دادورزان": [
+    "Lawyer's toolbox — DADVARZAN workspace",
+    "صندوق أدوات المحاماة — مساحة عمل دادورزان",
+    "Avukatın araç kutusu — DADVARZAN çalışma alanı",
+    "律师工具箱 — DADVARZAN工作空间",
   ],
   "جلسات تمرین قبلی": [
     "Previous practice sessions",
@@ -1724,11 +1724,11 @@ const D: Record<string, Row> = {
     "Hesabınız bir avukat profiline bağlı değil — bağlantıyı kurmak için destek ekibine başvurun.",
     "您的帐户未连接到律师档案 - 请请求支持进行连接。",
   ],
-  "حق‌الوکاله بر اساس تعرفهٔ سالانهٔ ابلاغی رؤسای قوهٔ قضاییه است: در دعاوی مالی پلکانی بر مبنای خواسته و در امور غیرمالی نرخ ثابت هر درجه. محاسبه‌گر دادبان هر دو حالت را پوشش می‌دهد.": [
-    "Attorney fees are based on the annual schedule announced by the Head of the Judiciary: for financial claims it's a tiered system based on the claim amount, and for non-financial matters it's a fixed rate per degree. The DADBAN calculator covers both cases.",
-    "تُحسب أتعاب المحاماة بناءً على الجدول السنوي الذي يصدره رؤساء القضاء: في الدعاوى المالية نظام متدرج بناءً على مبلغ المطالبة، وفي الأمور غير المالية معدل ثابت لكل درجة. تغطي حاسبة دادبان الحالتين.",
-    "Avukatlık ücretleri, Yargıtay Başkanının ilan ettiği yıllık tarife temelindedir: mali davalar için talep tutarına göre basamaklı sistem ve mali olmayan işler için derece başına sabit oran. DADBAN hesap makinesi her iki durumu da kapsar.",
-    "律师费基于司法主管宣布的年度费率：财务索赔是基于索赔金额的分级制度，非财务事务是每级的固定费率。DADBAN计算器涵盖这两种情况。",
+  "حق‌الوکاله بر اساس تعرفهٔ سالانهٔ ابلاغی رؤسای قوهٔ قضاییه است: در دعاوی مالی پلکانی بر مبنای خواسته و در امور غیرمالی نرخ ثابت هر درجه. محاسبه‌گر دادورزان هر دو حالت را پوشش می‌دهد.": [
+    "Attorney fees are based on the annual schedule announced by the Head of the Judiciary: for financial claims it's a tiered system based on the claim amount, and for non-financial matters it's a fixed rate per degree. The DADVARZAN calculator covers both cases.",
+    "تُحسب أتعاب المحاماة بناءً على الجدول السنوي الذي يصدره رؤساء القضاء: في الدعاوى المالية نظام متدرج بناءً على مبلغ المطالبة، وفي الأمور غير المالية معدل ثابت لكل درجة. تغطي حاسبة دادورزان الحالتين.",
+    "Avukatlık ücretleri, Yargıtay Başkanının ilan ettiği yıllık tarife temelindedir: mali davalar için talep tutarına göre basamaklı sistem ve mali olmayan işler için derece başına sabit oran. DADVARZAN hesap makinesi her iki durumu da kapsar.",
+    "律师费基于司法主管宣布的年度费率：财务索赔是基于索赔金额的分级制度，非财务事务是每级的固定费率。DADVARZAN计算器涵盖这两种情况。",
   ],
   "حق‌الوکاله بر چه مبنایی محاسبه می‌شود؟": [
     "On what basis is the attorney fee calculated?",
@@ -1742,11 +1742,11 @@ const D: Record<string, Row> = {
     "Vekalet Ücreti",
     "律师费",
   ],
-  "حق‌الوکاله، بدون دغدغهٔ پرداخت | دادبان": [
-    "Attorney fee, without payment worries | DADBAN",
-    "الأتعاب المحاماة، بدون قلق الدفع | دادبان",
-    "Vekalet ücreti, ödeme endişesi olmadan | DADBAN",
-    "律师费，无支付之忧 | DADBAN",
+  "حق‌الوکاله، بدون دغدغهٔ پرداخت | دادورزان": [
+    "Attorney fee, without payment worries | DADVARZAN",
+    "الأتعاب المحاماة، بدون قلق الدفع | دادورزان",
+    "Vekalet ücreti, ödeme endişesi olmadan | DADVARZAN",
+    "律师费，无支付之忧 | DADVARZAN",
   ],
   "حق‌الوکاله: —": [
     "Attorney fee: —",
@@ -1862,11 +1862,11 @@ const D: Record<string, Row> = {
     "Hayır",
     "否",
   ],
-  "دادبان، پلتفرم هوشمند خدمات حقوقی؛ از پیدا کردن وکیل متخصص و رزرو مشاوره تا مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی — همه در یک‌جا.": [
-    "DADBAN, the smart legal services platform; from finding a specialized lawyer and booking consultations to case management, document drafting, and AI legal assistant — all in one place.",
-    "دادبان، منصة الخدمات القانونية الذكية؛ من البحث عن محامٍ متخصص وحجز الاستشارات إلى إدارة القضايا، وصياغة المستندات، ومساعد قانوني بالذكاء الاصطناعي — كل شيء في مكان واحد.",
-    "DADBAN, akıllı hukuk hizmetleri platformu; uzman avukat bulma ve danışmanlık randevusu ayarlama davaların yönetilmesine, belge taslaklarına ve yapay zeka hukuk asistanına kadar her şey tek bir yerde.",
-    "DADBAN，智能法律服务平台；从寻找专业律师和预约咨询到案件管理、文件起草和AI法律助手——一切尽在掌握。",
+  "دادورزان، پلتفرم هوشمند خدمات حقوقی؛ از پیدا کردن وکیل متخصص و رزرو مشاوره تا مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی — همه در یک‌جا.": [
+    "DADVARZAN, the smart legal services platform; from finding a specialized lawyer and booking consultations to case management, document drafting, and AI legal assistant — all in one place.",
+    "دادورزان، منصة الخدمات القانونية الذكية؛ من البحث عن محامٍ متخصص وحجز الاستشارات إلى إدارة القضايا، وصياغة المستندات، ومساعد قانوني بالذكاء الاصطناعي — كل شيء في مكان واحد.",
+    "DADVARZAN, akıllı hukuk hizmetleri platformu; uzman avukat bulma ve danışmanlık randevusu ayarlama davaların yönetilmesine, belge taslaklarına ve yapay zeka hukuk asistanına kadar her şey tek bir yerde.",
+    "DADVARZAN，智能法律服务平台；从寻找专业律师和预约咨询到案件管理、文件起草和AI法律助手——一切尽在掌握。",
   ],
   "دادخواست‌ساز": [
     "Petition Generator",
@@ -2078,17 +2078,17 @@ const D: Record<string, Row> = {
     "Mevcut değil",
     "不可用",
   ],
-  "در مطالبهٔ مهریهٔ حال، مبلغ مهریه بر اساس شاخص بهای کالا و خدمات بانک مرکزی (سال پایهٔ ۱۳۹۵) از تاریخ عقد تا زمان مطالبه تعدیل می‌شود؛ محاسبه‌گر دادبان همین ضریب را با امکان ویرایش نرخ محاسبه می‌کند.": [
-    "In claiming current mahriyeh, the amount is adjusted based on the Central Bank's goods and services price index (base year 1395) from the marriage date to the claim date; the DADBAN calculator calculates this coefficient with an editable rate option.",
-    "في المطالبة بمهريه حال، يتم تعديل المبلغ بناءً على مؤشر أسعار البضائع والخدمات للبنك المركزي (الساس ۱۳۹۵) من تاريخ العقد إلى تاريخ المطالبة؛ حاسبة دادبان تحسب هذا المعامل مع خيار معدل قابل للتعديل.",
-    "Mevcut mahriyeh talebinde, tutar, evlilik tarihinden talep tarihine kadar Merkez Bankası'nın mal ve hizmet fiyat endeksine (temel yıl 1395) göre ayarlanır; DADBAN hesap makinesi, düzenlenebilir oran seçeneğiyle bu katsayıyı hesaplar.",
-    "在主张即时嫁妆时，金额根据中央银行商品和服务价格指数（基准年1395年）从结婚日期到主张日期进行调整；DADBAN计算器以可编辑费率选项计算此系数。",
+  "در مطالبهٔ مهریهٔ حال، مبلغ مهریه بر اساس شاخص بهای کالا و خدمات بانک مرکزی (سال پایهٔ ۱۳۹۵) از تاریخ عقد تا زمان مطالبه تعدیل می‌شود؛ محاسبه‌گر دادورزان همین ضریب را با امکان ویرایش نرخ محاسبه می‌کند.": [
+    "In claiming current mahriyeh, the amount is adjusted based on the Central Bank's goods and services price index (base year 1395) from the marriage date to the claim date; the DADVARZAN calculator calculates this coefficient with an editable rate option.",
+    "في المطالبة بمهريه حال، يتم تعديل المبلغ بناءً على مؤشر أسعار البضائع والخدمات للبنك المركزي (الساس ۱۳۹۵) من تاريخ العقد إلى تاريخ المطالبة؛ حاسبة دادورزان تحسب هذا المعامل مع خيار معدل قابل للتعديل.",
+    "Mevcut mahriyeh talebinde, tutar, evlilik tarihinden talep tarihine kadar Merkez Bankası'nın mal ve hizmet fiyat endeksine (temel yıl 1395) göre ayarlanır; DADVARZAN hesap makinesi, düzenlenebilir oran seçeneğiyle bu katsayıyı hesaplar.",
+    "在主张即时嫁妆时，金额根据中央银行商品和服务价格指数（基准年1395年）从结婚日期到主张日期进行调整；DADVARZAN计算器以可编辑费率选项计算此系数。",
   ],
-  "درخواست پذیرفته شد — هماهنگی نهایی حق‌الزحمه و مستندات مستقیماً با همکار انجام شود؛ پشتیبانی دادبان ناظر جریان است.": [
-    "Request accepted — Final coordination of attorney fee and documents to be done directly with team member; DADBAN support will monitor the process.",
-    "تم قبول الطلب — التنسيق النهائي لأتعاب المحاماة والمستندات يتم مباشرة مع عضو الفريق؛ دعم دادبان مراقب للعملية.",
-    "Talep kabul edildi — Vekalet ücreti ve belgelerin nihai koordinasyonu doğrudan takım üyesiyle yapılacak; DADBAN desteği süreci denetleyecek.",
-    "请求已接受 — 律师费和文件的最终协调需直接与团队成员进行；DADBAN 支持将监督流程。",
+  "درخواست پذیرفته شد — هماهنگی نهایی حق‌الزحمه و مستندات مستقیماً با همکار انجام شود؛ پشتیبانی دادورزان ناظر جریان است.": [
+    "Request accepted — Final coordination of attorney fee and documents to be done directly with team member; DADVARZAN support will monitor the process.",
+    "تم قبول الطلب — التنسيق النهائي لأتعاب المحاماة والمستندات يتم مباشرة مع عضو الفريق؛ دعم دادورزان مراقب للعملية.",
+    "Talep kabul edildi — Vekalet ücreti ve belgelerin nihai koordinasyonu doğrudan takım üyesiyle yapılacak; DADVARZAN desteği süreci denetleyecek.",
+    "请求已接受 — 律师费和文件的最终协调需直接与团队成员进行；DADVARZAN 支持将监督流程。",
   ],
   "درخواست ثبت شد": [
     "Request submitted",
@@ -2222,11 +2222,11 @@ const D: Record<string, Row> = {
     "Asistan yanıt yazıyor…",
     "助手正在回复中…",
   ],
-  "دستیار هوشمند دادبان سؤال شما را می‌فهمد، مادهٔ قانونی مرتبط را پیدا می‌کند و مسیر اقدام بعدی را به زبان ساده توضیح می‌دهد — قبل از اینکه هزینه‌ای بدهید.": [
-    "DADBAN's smart assistant understands your question, finds the relevant legal article, and explains the next steps in simple terms — before you pay anything.",
-    "يدمس مساعد دادبان الذكي سؤالك، ويجد المادة القانونية ذات الصلة، ويشرح الخطوات التالية بلغة بسيطة — قبل أن تدفأ أي شيء.",
-    "DADBAN'ın akıllı asistanı sorunuuzu anlar, ilgili hukuki maddeleri bulur ve sonraki adımları basit bir dille açıklar — herhangi bir ödeme yapmadan önce.",
-    "DADBAN智能助手理解您的问题，找到相关的法律条文，并用简单的语言解释下一步——在您付费之前。",
+  "دستیار هوشمند دادورزان سؤال شما را می‌فهمد، مادهٔ قانونی مرتبط را پیدا می‌کند و مسیر اقدام بعدی را به زبان ساده توضیح می‌دهد — قبل از اینکه هزینه‌ای بدهید.": [
+    "DADVARZAN's smart assistant understands your question, finds the relevant legal article, and explains the next steps in simple terms — before you pay anything.",
+    "يدمس مساعد دادورزان الذكي سؤالك، ويجد المادة القانونية ذات الصلة، ويشرح الخطوات التالية بلغة بسيطة — قبل أن تدفأ أي شيء.",
+    "DADVARZAN'ın akıllı asistanı sorunuuzu anlar, ilgili hukuki maddeleri bulur ve sonraki adımları basit bir dille açıklar — herhangi bir ödeme yapmadan önce.",
+    "DADVARZAN智能助手理解您的问题，找到相关的法律条文，并用简单的语言解释下一步——在您付费之前。",
   ],
   "دعوای غیرمالی": [
     "Non-monetary lawsuit",
@@ -2540,17 +2540,17 @@ const D: Record<string, Row> = {
     "Merhaba, {name",
     "你好，{name",
   ],
-  "سلام! 👋 من «مشاور همراه دادبان» هستم.\\n\\nهر سوال حقوقی داری بپرس، یا اگه می‌خوای کاری انجام بدی (وکیل پیدا کن، قرارداد بسازی، مشاوره بگیری) راهنماییت می‌کنم.\\n\\nچطور می‌تونم کمکت کنم؟": [
-    "Hello! 👋 I'm 'DADBAN Legal Assistant'.\\\\n\\\\nAsk any legal question, or if you want to get something done (find a lawyer, create a contract, get advice), I'll guide you.\\\\n\\\\nHow can I help you?",
-    "مرحباً! 👋 أنا 'مساعد دادبان القانوني'.\\\\n\\\\nاسأل أي سؤال قانوني، أو إذا كنت تريد القيام بشيء ما (إيجاد محامٍ، صياغة عقد، استشارة)، سأرشدك.\\\\n\\\\nكيف يمكنني مساعدتك؟",
-    "Merhaba! 👋 Ben 'DADBAN Hukuk Asistanı'yım.\\\\n\\\\nHerhangi bir hukuki soru sorun veya bir şey yapmanız gerekiyorsa (avukat bulmak, sözleşme oluşturmak, danışmanlık almak) size rehberlik edeceğim.\\\\n\\\\nNasıl yardımcı olabilirim?",
+  "سلام! 👋 من «مشاور همراه دادورزان» هستم.\\n\\nهر سوال حقوقی داری بپرس، یا اگه می‌خوای کاری انجام بدی (وکیل پیدا کن، قرارداد بسازی، مشاوره بگیری) راهنماییت می‌کنم.\\n\\nچطور می‌تونم کمکت کنم؟": [
+    "Hello! 👋 I'm 'DADVARZAN Legal Assistant'.\\\\n\\\\nAsk any legal question, or if you want to get something done (find a lawyer, create a contract, get advice), I'll guide you.\\\\n\\\\nHow can I help you?",
+    "مرحباً! 👋 أنا 'مساعد دادورزان القانوني'.\\\\n\\\\nاسأل أي سؤال قانوني، أو إذا كنت تريد القيام بشيء ما (إيجاد محامٍ، صياغة عقد، استشارة)، سأرشدك.\\\\n\\\\nكيف يمكنني مساعدتك؟",
+    "Merhaba! 👋 Ben 'DADVARZAN Hukuk Asistanı'yım.\\\\n\\\\nHerhangi bir hukuki soru sorun veya bir şey yapmanız gerekiyorsa (avukat bulmak, sözleşme oluşturmak, danışmanlık almak) size rehberlik edeceğim.\\\\n\\\\nNasıl yardımcı olabilirim?",
     "你好！👋 我是\"达德班法律助手\"。\\\\n\\\\n请随时提出任何法律问题，或者如果您需要完成某项工作（寻找律师、起草合同、获得咨询），我会为您指导。\\\\n\\\\n我该如何帮助您？",
   ],
-  "سلام! من دستیار حقوقی دادبان هستم": [
-    "Hello! I'm DADBAN's legal assistant",
-    "مرحبا! أنا مساعد دادبان القانوني",
-    "Merhaba! Ben DADBAN'ın hukuki asistanıyım",
-    "你好！我是DADBAN的法律助手",
+  "سلام! من دستیار حقوقی دادورزان هستم": [
+    "Hello! I'm DADVARZAN's legal assistant",
+    "مرحبا! أنا مساعد دادورزان القانوني",
+    "Merhaba! Ben DADVARZAN'ın hukuki asistanıyım",
+    "你好！我是DADVARZAN的法律助手",
   ],
   "سناریوی تمرین": [
     "Practice Scenario",
@@ -2906,11 +2906,11 @@ const D: Record<string, Row> = {
     "Formül: Başlık Miktarı × (Ödeme Yılı İndeksi ÷ Evlilik Yılı İndeksi)",
     "公式：聘礼金额 × (付款年份指数 ÷ 结婚年份指数)",
   ],
-  "فضای کاری واحد وکیلِ عضو دادبان: از تنظیم دادخواست و لایحه تا تحلیل پرونده، تمرین دادگاه و پژوهش حقوقی — همهٔ ابزارها یک‌جا.": [
-    "DADBAN's unified lawyer workspace: from drafting petitions and legal briefs to case analysis, court practice, and legal research — all tools in one place.",
-    "مساحة عمل المحامي الموحدة في دادبان: من صياغة اللائحات الدعوى والمذكرات إلى تحليل القضايا وممارسة المحكمة والبحث القانوني — جميع الأدوات في مكان واحد.",
-    "DADBAN'ın birleşmiş avukat çalışma alanı: dava dilekçeleri ve tebligat taslaklarından, dava analizi, mahkeme pratiği ve hukuki araştırmaya kadar — tüm araçlar tek bir yerde.",
-    "DADBAN统一的律师工作空间：从起草诉状和法律文件到案件分析、法庭实践和法律研究—所有工具都在一处。",
+  "فضای کاری واحد وکیلِ عضو دادورزان: از تنظیم دادخواست و لایحه تا تحلیل پرونده، تمرین دادگاه و پژوهش حقوقی — همهٔ ابزارها یک‌جا.": [
+    "DADVARZAN's unified lawyer workspace: from drafting petitions and legal briefs to case analysis, court practice, and legal research — all tools in one place.",
+    "مساحة عمل المحامي الموحدة في دادورزان: من صياغة اللائحات الدعوى والمذكرات إلى تحليل القضايا وممارسة المحكمة والبحث القانوني — جميع الأدوات في مكان واحد.",
+    "DADVARZAN'ın birleşmiş avukat çalışma alanı: dava dilekçeleri ve tebligat taslaklarından, dava analizi, mahkeme pratiği ve hukuki araştırmaya kadar — tüm araçlar tek bir yerde.",
+    "DADVARZAN统一的律师工作空间：从起草诉状和法律文件到案件分析、法庭实践和法律研究—所有工具都在一处。",
   ],
   "فوریت": [
     "Urgency",
@@ -3524,17 +3524,17 @@ const D: Record<string, Row> = {
     "Hesap Makineleri",
     "法律计算器",
   ],
-  "محاسبه‌گرهای حقوقی دادبان": [
-    "DADBAN Legal Calculators",
-    "حاسبات قانونية دادبان",
-    "DADBAN Hesap Makineleri",
-    "DADBAN法律计算器",
+  "محاسبه‌گرهای حقوقی دادورزان": [
+    "DADVARZAN Legal Calculators",
+    "حاسبات قانونية دادورزان",
+    "DADVARZAN Hesap Makineleri",
+    "DADVARZAN法律计算器",
   ],
-  "محاسبه‌گرهای حقوقی دادبان: مهریهٔ روز، دیه و درصدهای آن، خسارت تأخیر تأدیهٔ دیه، هزینهٔ دادرسی و حق‌الوکالهٔ دعاوی مالی — سریع، شفاف و با نرخ‌های قابل ویرایش.": [
-    "DADBAN Legal Calculators: daily mahriyeh, diyeh and its percentages, diyeh payment delay damages, court costs, and attorney fees for financial claims — fast, transparent, with editable rates.",
-    "حاسبات قانونية دادبان: مهریهٔ روزانه، دیه ونسبته، خسارت تأخیر تأدیهٔ دیه، تكاليف المحكمة، وأتعاب المحاماة للدعاوى المالية — سريعة، شفافة، مع معدلات قابلة للتعديل.",
-    "DADBAN Hesap Makineleri: günlük mahriyeh, diyeh ve yüzdelikleri, diyeh ödeme gecikme tazminatı, mahkeme masrafları ve mali davalar için avukatlık ücretleri — hızlı, şeffaf, düzenlenebilir oranlarla.",
-    "DADBAN法律计算器：每日嫁妆、血金及其百分比、血金支付延迟损害、诉讼费和财务索赔的律师费—快速、透明，费率可编辑。",
+  "محاسبه‌گرهای حقوقی دادورزان: مهریهٔ روز، دیه و درصدهای آن، خسارت تأخیر تأدیهٔ دیه، هزینهٔ دادرسی و حق‌الوکالهٔ دعاوی مالی — سریع، شفاف و با نرخ‌های قابل ویرایش.": [
+    "DADVARZAN Legal Calculators: daily mahriyeh, diyeh and its percentages, diyeh payment delay damages, court costs, and attorney fees for financial claims — fast, transparent, with editable rates.",
+    "حاسبات قانونية دادورزان: مهریهٔ روزانه، دیه ونسبته، خسارت تأخیر تأدیهٔ دیه، تكاليف المحكمة، وأتعاب المحاماة للدعاوى المالية — سريعة، شفافة، مع معدلات قابلة للتعديل.",
+    "DADVARZAN Hesap Makineleri: günlük mahriyeh, diyeh ve yüzdelikleri, diyeh ödeme gecikme tazminatı, mahkeme masrafları ve mali davalar için avukatlık ücretleri — hızlı, şeffaf, düzenlenebilir oranlarla.",
+    "DADVARZAN法律计算器：每日嫁妆、血金及其百分比、血金支付延迟损害、诉讼费和财务索赔的律师费—快速、透明，费率可编辑。",
   ],
   "مدارک": [
     "Documents",
@@ -4154,11 +4154,11 @@ const D: Record<string, Row> = {
     "Yargı masrafı",
     "诉讼费用",
   ],
-  "هزینهٔ دادرسی دعاوی مالی بر مبنای خواسته و ضریب سالانهٔ ابلاغی رؤسای قوهٔ قضاییه محاسبه می‌شود؛ محاسبه‌گر دادبان مبلغ خواسته را به هزینهٔ دادرسی دقیق تبدیل می‌کند.": [
-    "Court costs for financial claims are calculated based on the claim amount and the annual coefficient announced by the Head of the Judiciary; the DADBAN calculator converts the claim amount to exact court costs.",
-    "تُحسب تكاليف المحكمة للدعاوى المالية بناءً على مبلغ المطالبة ومعامل السنوي الذي يصدره رؤساء القضاء؛ تحوّل حاسبة دادبان مبلغ المطالبة إلى تكاليف محكمة دقيقة.",
-    "Mali davalar için mahkeme masrafları, talep tutarı ve Yargıtay Başkanının ilan ettiği yıllık katsayıya göre hesaplanır; DADBAN hesap makinesi talep tutarını tam mahkeme masrafına dönüştürür.",
-    "财务索赔的诉讼费根据索赔金额和司法主管宣布的年度系数计算；DADBAN计算器将索赔金额转换为精确的诉讼费。",
+  "هزینهٔ دادرسی دعاوی مالی بر مبنای خواسته و ضریب سالانهٔ ابلاغی رؤسای قوهٔ قضاییه محاسبه می‌شود؛ محاسبه‌گر دادورزان مبلغ خواسته را به هزینهٔ دادرسی دقیق تبدیل می‌کند.": [
+    "Court costs for financial claims are calculated based on the claim amount and the annual coefficient announced by the Head of the Judiciary; the DADVARZAN calculator converts the claim amount to exact court costs.",
+    "تُحسب تكاليف المحكمة للدعاوى المالية بناءً على مبلغ المطالبة ومعامل السنوي الذي يصدره رؤساء القضاء؛ تحوّل حاسبة دادورزان مبلغ المطالبة إلى تكاليف محكمة دقيقة.",
+    "Mali davalar için mahkeme masrafları, talep tutarı ve Yargıtay Başkanının ilan ettiği yıllık katsayıya göre hesaplanır; DADVARZAN hesap makinesi talep tutarını tam mahkeme masrafına dönüştürür.",
+    "财务索赔的诉讼费根据索赔金额和司法主管宣布的年度系数计算；DADVARZAN计算器将索赔金额转换为精确的诉讼费。",
   ],
   "هزینهٔ دادرسی دعاوی مالی و غیرمالی در مراحل مختلف": [
     "Litigation costs for monetary and non-monetary lawsuits in various stages",
@@ -4184,17 +4184,17 @@ const D: Record<string, Row> = {
     "Hedef — Profil",
     "目标 — 个人资料",
   ],
-  "همکاری با دادبان": [
-    "Partner with DADBAN",
-    "التعاون مع دادبان",
-    "DADBAN ile İş Birliği",
-    "与DADBAN合作",
+  "همکاری با دادورزان": [
+    "Partner with DADVARZAN",
+    "التعاون مع دادورزان",
+    "DADVARZAN ile İş Birliği",
+    "与DADVARZAN合作",
   ],
-  "همکاری با دادبان — ثبت‌نام وکلای واقعی": [
-    "Partner with DADBAN — Real Lawyer Registration",
-    "التعاون مع دادبان — تسجيل المحامين الحقيقيين",
-    "DADBAN ile İş Birliği — Gerçek Avukat Kaydı",
-    "与DADBAN合作 — 真实律师注册",
+  "همکاری با دادورزان — ثبت‌نام وکلای واقعی": [
+    "Partner with DADVARZAN — Real Lawyer Registration",
+    "التعاون مع دادورزان — تسجيل المحامين الحقيقيين",
+    "DADVARZAN ile İş Birliği — Gerçek Avukat Kaydı",
+    "与DADVARZAN合作 — 真实律师注册",
   ],
   "همکاری و ارجاع پرونده": [
     "Case collaboration and referral",
@@ -4340,11 +4340,11 @@ const D: Record<string, Row> = {
     "İç not…",
     "内部备注…",
   ],
-  "یک تا سه نمونه از لایحه‌ها و اسناد قبلی خودتان را وارد کنید. دادبان ویژگی‌های سبک شما را استخراج می‌کند و از آن پس، دادخواست‌ساز و میز پرونده اسناد را با ادبیات و جمله‌بندی شما تولید می‌کنند. محتوای نمونه‌ها هرگز کپی نمی‌شود؛ فقط لحن و ساختار آن‌ها الگو می‌شود.": [
-    "Enter one to three samples of your previous petitions and documents. DADBAN extracts your style characteristics and from now on, the Petition Generator and Case Desk will produce documents with your language and phrasing. Sample content is never copied; only their tone and structure are used as a template.",
-    "أدخل واحدًا إلى ثلاثة نماذج من لائحاتك المستندات السابقة. يستخرج دادبان خصائص أسلوبك ومن الآن فصاعدًا، سيقوم مولد اللائحة ومكتب القضية بإنتاج المستندات بلغتك وصياغتك. لا يتم نسخ محتوى النماذج أبدًا؛ يتم استخدام نبرة وهيكلها فقط كقالب.",
-    "Önceki dilekçeleriniz ve belgelerinizden bir ila üç örnek girin. DADBAN stil özelliklerinizi çıkarır ve bundan sonra, Davacı Oluşturucu ve Dosya Masası, belgeleri diliniz ve cümle yapınızla üretecektir. Örnek içerik asla kopyalanmaz; sadece tonları ve yapıları şablon olarak kullanılır.",
-    "输入您之前的一份至三份起诉状和文档样本。DADBAN会提取您的风格特征，从现在开始，起诉状生成器和案件桌面将用您的语言和措辞生成文档。样本内容永远不会被复制；只有它们的语气和结构被用作模板。",
+  "یک تا سه نمونه از لایحه‌ها و اسناد قبلی خودتان را وارد کنید. دادورزان ویژگی‌های سبک شما را استخراج می‌کند و از آن پس، دادخواست‌ساز و میز پرونده اسناد را با ادبیات و جمله‌بندی شما تولید می‌کنند. محتوای نمونه‌ها هرگز کپی نمی‌شود؛ فقط لحن و ساختار آن‌ها الگو می‌شود.": [
+    "Enter one to three samples of your previous petitions and documents. DADVARZAN extracts your style characteristics and from now on, the Petition Generator and Case Desk will produce documents with your language and phrasing. Sample content is never copied; only their tone and structure are used as a template.",
+    "أدخل واحدًا إلى ثلاثة نماذج من لائحاتك المستندات السابقة. يستخرج دادورزان خصائص أسلوبك ومن الآن فصاعدًا، سيقوم مولد اللائحة ومكتب القضية بإنتاج المستندات بلغتك وصياغتك. لا يتم نسخ محتوى النماذج أبدًا؛ يتم استخدام نبرة وهيكلها فقط كقالب.",
+    "Önceki dilekçeleriniz ve belgelerinizden bir ila üç örnek girin. DADVARZAN stil özelliklerinizi çıkarır ve bundan sonra, Davacı Oluşturucu ve Dosya Masası, belgeleri diliniz ve cümle yapınızla üretecektir. Örnek içerik asla kopyalanmaz; sadece tonları ve yapıları şablon olarak kullanılır.",
+    "输入您之前的一份至三份起诉状和文档样本。DADVARZAN会提取您的风格特征，从现在开始，起诉状生成器和案件桌面将用您的语言和措辞生成文档。样本内容永远不会被复制；只有它们的语气和结构被用作模板。",
   ],
   "یک درخواست را از سمت راست انتخاب کنید.": [
     "Select a request from the right.",

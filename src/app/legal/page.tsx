@@ -9,7 +9,7 @@ import { getT } from "@/lib/i18n/server";
 export const metadata: Metadata = {
   title: "قوانین، حریم خصوصی و شفافیت",
   description:
-    "قوانین استفاده، حریم خصوصی، سیاست بازگشت وجه، قوانین وکلا، امنیت و شفافیت پلتفرم دادبان.",
+    "قوانین استفاده، حریم خصوصی، سیاست بازگشت وجه، قوانین وکلا، امنیت و شفافیت پلتفرم دادورزان.",
   alternates: { canonical: "/legal" },
 };
 
@@ -22,7 +22,7 @@ export default async function LegalIndexPage() {
         image="/images/hero-legal.png"
         badge={t("قوانین")}
         title={t("قوانین، حریم خصوصی و شفافیت")}
-        desc={t("همه‌ی قوانین و سیاست‌های دادبان در یک نگاه — شفاف، خوانا و قابل استناد.")}
+        desc={t("همه‌ی قوانین و سیاست‌های دادورزان در یک نگاه — شفاف، خوانا و قابل استناد.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قوانین") }]}
       />
       <Container className="py-12">

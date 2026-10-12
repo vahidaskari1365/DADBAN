@@ -35,7 +35,7 @@ export default function AIFunnel() {
           <h2 className="mt-4 text-2xl font-bold leading-snug sm:text-3xl">{t("دستیار حقوقی هوشمند، ۲۴ ساعته راهنمای شماست")}</h2>
           <p className="mt-3 max-w-xl text-sm leading-7 text-white/85">
             {t(
-              "موضوع خود را بنویسید؛ دستیار دادبان بهترین اقدام بعدی را پیشنهاد می‌دهد و در موضوعات تخصصی، شما را به وکیل متخصص وصل می‌کند — جایگزین وکیل نیست.",
+              "موضوع خود را بنویسید؛ دستیار دادورزان بهترین اقدام بعدی را پیشنهاد می‌دهد و در موضوعات تخصصی، شما را به وکیل متخصص وصل می‌کند — جایگزین وکیل نیست.",
             )}
           </p>
           <form
@@ -73,7 +73,7 @@ export default function AIFunnel() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
               <Icon name="sparkles" className="h-4 w-4" />
             </span>
-            <span className="text-sm font-semibold">{t("دستیار دادبان")}</span>
+            <span className="text-sm font-semibold">{t("دستیار دادورزان")}</span>
           </div>
           <div className="mt-3 space-y-2 text-xs">
             <p className="rounded-xl rounded-tr-sm bg-white/15 px-3 py-2">{t("مستأجر من سه ماه اجاره نداده، چه کنم؟")}</p>

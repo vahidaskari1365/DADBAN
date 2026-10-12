@@ -8,7 +8,7 @@ type Row = [string, string, string, string];
 const D: Record<string, Row> = {
   // ── پیشخوان ادمین (admin/page.tsx) ──
   "Admin · پنل مدیریت": ["Admin · Control Panel", "Admin · لوحة الإدارة", "Admin · Yönetim Paneli", "Admin · 管理面板"],
-  "داشبورد مدیریت دادبان": ["DADBAN Admin Dashboard", "لوحة تحكم دادبان", "DADBAN Yönetim Panosu", "DADBAN 管理控制台"],
+  "داشبورد مدیریت دادورزان": ["DADVARZAN Admin Dashboard", "لوحة تحكم دادورزان", "DADVARZAN Yönetim Panosu", "DADVARZAN 管理控制台"],
   "مدیریت محتوا، داده‌های سایت و آمار بازدید — با ورود امن مدیر.": [
     "Manage content, site data and traffic stats — with secure admin sign-in.",
     "إدارة المحتوى وبيانات الموقع وإحصاءات الزيارات — مع دخول آمن للمشرف.",
@@ -279,11 +279,11 @@ const D: Record<string, Row> = {
   "وکیل تعیین‌شده": ["Lawyer assigned", "تم تعيين محامٍ", "Avukat atandı", "已指派律师"],
 
   // ── روی‌بوردینگ وکلا (admin/onboarding) ──
-  "صف روی‌بوردینگ وکلا — پنل مدیریت دادبان": [
-    "Lawyer Onboarding Queue — Dadban Admin Panel",
-    "قائمة تهيئة المحامين — لوحة إدارة دادبان",
-    "Avukat Onboarding Kuyruğu — Dadban Yönetim Paneli",
-    "律师入驻审核队列 — Dadban 管理面板",
+  "صف روی‌بوردینگ وکلا — پنل مدیریت دادورزان": [
+    "Lawyer Onboarding Queue — Dadvarzan Admin Panel",
+    "قائمة تهيئة المحامين — لوحة إدارة دادورزان",
+    "Avukat Onboarding Kuyruğu — Dadvarzan Yönetim Paneli",
+    "律师入驻审核队列 — Dadvarzan 管理面板",
   ],
   "بررسی و تأیید درخواست‌های همکاری وکلای واقعی: مدارک، پروانه، تخصص‌ها و قرارداد همکاری.": [
     "Review and approve real-lawyer collaboration requests: documents, license, specialties and cooperation agreement.",
@@ -352,17 +352,17 @@ const D: Record<string, Row> = {
   "ثبت رد درخواست": ["Submit Rejection", "تسجيل الرفض", "Reddi Kaydet", "提交拒绝"],
   "تأیید — ساخت پروفایل و اتصال حساب": ["Approve — build profile & link account", "اعتماد — إنشاء الملف وربط الحساب", "Onayla — profil oluştur ve hesabı bağla", "批准 — 创建资料并关联账户"],
   // ── صندوق ایمیل (admin/outbox) ──
-  "صندوق خروجی ایمیل — پنل مدیریت دادبان": [
-    "Email Outbox — Dadban Admin Panel",
-    "صندوق البريد الصادر — لوحة إدارة دادبان",
-    "E-posta Giden Kutusu — Dadban Yönetim Paneli",
-    "邮件发件箱 — Dadban 管理面板",
+  "صندوق خروجی ایمیل — پنل مدیریت دادورزان": [
+    "Email Outbox — Dadvarzan Admin Panel",
+    "صندوق البريد الصادر — لوحة إدارة دادورزان",
+    "E-posta Giden Kutusu — Dadvarzan Yönetim Paneli",
+    "邮件发件箱 — Dadvarzan 管理面板",
   ],
-  "آرشیو صادقانهٔ ایمیل‌های سامانه (رسید، خوش‌آمد، …) و اعضای خبرنامهٔ دادبان.": [
-    "Honest archive of system emails (receipts, welcomes, …) and Dadban newsletter members.",
-    "أرشيف صادق لرسائل النظام البريدية (الإيصالات والترحيب وغيرها) وأعضاء نشرة دادبان.",
-    "Sistem e-postalarının dürüst arşivi (makbuzlar, karşılama, …) ve Dadban bülten üyeleri.",
-    "系统邮件（回执、欢迎信等）与 Dadban 订阅用户的真实存档。",
+  "آرشیو صادقانهٔ ایمیل‌های سامانه (رسید، خوش‌آمد، …) و اعضای خبرنامهٔ دادورزان.": [
+    "Honest archive of system emails (receipts, welcomes, …) and Dadvarzan newsletter members.",
+    "أرشيف صادق لرسائل النظام البريدية (الإيصالات والترحيب وغيرها) وأعضاء نشرة دادورزان.",
+    "Sistem e-postalarının dürüst arşivi (makbuzlar, karşılama, …) ve Dadvarzan bülten üyeleri.",
+    "系统邮件（回执、欢迎信等）与 Dadvarzan 订阅用户的真实存档。",
   ],
   "رسید پرداخت": ["Payment Receipt", "إيصال الدفع", "Ödeme Makbuzu", "付款回执"],
   "خوش‌آمد": ["Welcome", "ترحيب", "Karşılama", "欢迎"],

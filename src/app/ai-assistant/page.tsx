@@ -809,9 +809,9 @@ function AIAssistantContent() {
       <PageHero
         variant="market"
         image="/images/hero-ai.png"
-        badge={t("دستیار هوش مصنوعی حقوقی دادبان")}
+        badge={t("دستیار هوش مصنوعی حقوقی دادورزان")}
         title={t("سؤال حقوقی‌تان را بپرسید یا قراردادتان را تحلیل کنید")}
-        desc={t("دستیار دادبان موضوع را تشخیص می‌دهد، مراحل و مدارک را توضیح می‌دهد و با استناد به مواد و تبصره‌های قانونی مرتبط، شما را به وکیل متخصص وصل می‌کند. هوشمند، سریع و محرمانه.")}
+        desc={t("دستیار دادورزان موضوع را تشخیص می‌دهد، مراحل و مدارک را توضیح می‌دهد و با استناد به مواد و تبصره‌های قانونی مرتبط، شما را به وکیل متخصص وصل می‌کند. هوشمند، سریع و محرمانه.")}
       />
 
       <Container className="py-10">
@@ -917,7 +917,7 @@ function AIAssistantContent() {
                   <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-accent-text">
                     <Icon name="sparkles" className="h-6 w-6" />
                   </span>
-                  <p className="mt-3 text-sm font-bold text-foreground">{t("سلام! من دستیار حقوقی دادبان هستم")}</p>
+                  <p className="mt-3 text-sm font-bold text-foreground">{t("سلام! من دستیار حقوقی دادورزان هستم")}</p>
                   <p className="mx-auto mt-1.5 max-w-md text-xs leading-6 text-muted">
                     {t("هر سؤال حقوقی دارید بپرسید — گفتگو ادامه دارد، دستیار پاسخ‌های قبلی را به‌خاطر می‌سپارد و تاریخچهٔ همهٔ گفتگوهایتان همین‌جا ذخیره می‌ماند.")}
                   </p>

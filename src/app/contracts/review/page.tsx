@@ -224,7 +224,7 @@ export default function ContractReviewPage() {
                     <div>
                       <p className="text-sm font-bold text-foreground">{t("تحلیل هوش مصنوعی با استناد به مواد قانونی")}</p>
                       <p className="text-xs text-muted">
-                        {sourceName ? tt("فایل «{name}» بررسی شد — ", { name: sourceName }) : ""}{t("دستیار دادبان بندهای قرارداد را با مستند قانونی بررسی کرد")}
+                        {sourceName ? tt("فایل «{name}» بررسی شد — ", { name: sourceName }) : ""}{t("دستیار دادورزان بندهای قرارداد را با مستند قانونی بررسی کرد")}
                       </p>
                     </div>
                   </div>

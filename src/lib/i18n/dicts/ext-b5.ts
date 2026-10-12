@@ -1,7 +1,7 @@
 import type { Locale } from "../core";
 
 /**
- * پوشش i18n حوزهٔ «بازار پرونده‌های دادبان» (case-board + بخش صفحهٔ اول +
+ * پوشش i18n حوزهٔ «بازار پرونده‌های دادورزان» (case-board + بخش صفحهٔ اول +
  * پیوندهای پنل وکیل و ثبت پرونده) — کلیدها = رشتهٔ فارسی منبع (عیناً با نیم‌فاصله).
  * هر ردیف: [en, ar, tr, zh]
  */
@@ -10,7 +10,7 @@ type Row = [string, string, string, string];
 const D: Record<string, Row> = {
   "مثل بازار کار، ولی برای پرونده‌های حقوقی": ["Like a freelance marketplace — but for legal cases", "مثل سوق العمل الحر، لكن للقضايا القانونية", "Serbest çalışma pazarı gibi — ama hukuk davaları için", "像自由职业市场，但专为法律案件"],
   "پرونده‌تان را ثبت کنید؛ وکلا قیمت بدهند، شما بهترین را انتخاب کنید": ["File your case; lawyers quote prices, you pick the best", "سجّل قضيتك؛ يقدّم المحامون عروض الأسعار وأنت تختار الأفضل", "Davanızı kaydedin; avukatlar fiyat versin, siz en iyisini seçin", "提交您的案件；律师报价，您选最优"],
-  "در بازار پرونده‌های دادبان، موکل پروندهٔ خود را ثبت می‌کند، وکلای متخصص همان استان نظر و پیشنهاد قیمت خود را اعلام می‌کنند و موکل آزادانه بهترین پیشنهاد را انتخاب می‌کند. رقابت شفاف بین وکلا یعنی قیمت واقعی برای شما.": ["In the DADBAN case marketplace, the client files their case, specialist lawyers of the same province submit their opinions and price quotes, and the client freely picks the best offer. Transparent competition among lawyers means a fair price for you.", "في سوق قضايا دادبان، يسجّل الموكّل قضيته، ويعلن المحامون المتخصصون في المحافظة نفسها رأيهم وعرض سعرهم، ويختار الموكّل أفضل عرض بحرية. المنافسة الشفافة بين المحامين تعني سعرًا عادلًا لك.", "DADBAN dava pazarında müvekkil davasını kaydeder, aynı ildeki uzman avukatlar görüş ve fiyat tekliflerini bildirir, müvekkil en iyi teklifi özgürce seçer. Avukatlar arası şeffaf rekabet sizin için gerçek fiyat demektir.", "在 DADBAN 案件市场，当事人提交案件，同省专业律师发表意见并报价，当事人自由选择最优报价。律师之间的透明竞争意味着公正的价格。"],
+  "در بازار پرونده‌های دادورزان، موکل پروندهٔ خود را ثبت می‌کند، وکلای متخصص همان استان نظر و پیشنهاد قیمت خود را اعلام می‌کنند و موکل آزادانه بهترین پیشنهاد را انتخاب می‌کند. رقابت شفاف بین وکلا یعنی قیمت واقعی برای شما.": ["In the DADVARZAN case marketplace, the client files their case, specialist lawyers of the same province submit their opinions and price quotes, and the client freely picks the best offer. Transparent competition among lawyers means a fair price for you.", "في سوق قضايا دادورزان، يسجّل الموكّل قضيته، ويعلن المحامون المتخصصون في المحافظة نفسها رأيهم وعرض سعرهم، ويختار الموكّل أفضل عرض بحرية. المنافسة الشفافة بين المحامين تعني سعرًا عادلًا لك.", "DADVARZAN dava pazarında müvekkil davasını kaydeder, aynı ildeki uzman avukatlar görüş ve fiyat tekliflerini bildirir, müvekkil en iyi teklifi özgürce seçer. Avukatlar arası şeffaf rekabet sizin için gerçek fiyat demektir.", "在 DADVARZAN 案件市场，当事人提交案件，同省专业律师发表意见并报价，当事人自由选择最优报价。律师之间的透明竞争意味着公正的价格。"],
   "ثبت پروندهٔ جدید (رایگان)": ["File a new case (free)", "سجّل قضية جديدة (مجانًا)", "Yeni dava kaydı (ücretsiz)", "提交新案件（免费）"],
   "جستجوی مستقیم وکیل": ["Search lawyers directly", "ابحث عن محامٍ مباشرة", "Doğrudan avukat ara", "直接搜索律师"],
   "روند کار": ["How it works", "كيف يعمل", "Nasıl çalışır", "流程"],
@@ -54,7 +54,7 @@ const D: Record<string, Row> = {
   "پیگیری پروندهٔ ثبت‌شده": ["Track a filed case", "تتبّع قضية مسجّلة", "Kayıtlı davayı takip et", "跟踪已提交的案件"],
   "پروندهٔ باز در بازار": ["Open cases in the market", "قضايا مفتوحة في السوق", "Pazardaki açık davalar", "市场中的开放案件"],
   "پیشنهاد قیمت ثبت‌شده": ["Price offers submitted", "عروض أسعار مسجّلة", "Kayıtlı fiyat teklifleri", "已提交的报价"],
-  "وکلای متخصص دادبان": ["DADBAN specialist lawyers", "محامو دادبان المتخصصون", "DADBAN uzman avukatları", "DADBAN 专业律师"],
+  "وکلای متخصص دادورزان": ["DADVARZAN specialist lawyers", "محامو دادورزان المتخصصون", "DADVARZAN uzman avukatları", "DADVARZAN 专业律师"],
   "{name} عزیز، به بازار پرونده‌ها خوش آمدید": ["Dear {name}, welcome to the case marketplace", "{name} العزيز، مرحبًا بك في سوق القضايا", "{name}, dava pazarına hoş geldiniz", "尊敬的{name}，欢迎来到案件市场"],
   "همکار گرامی": ["Dear colleague", "زميلنا العزيز", "Değerli meslektaşımız", "亲爱的同行"],
   " — پرونده‌های استان «{city}» با نشان «استان شما» مشخص شده‌اند": [" — cases in the “{city}” province are marked with “Your province”", " — القضايا في محافظة «{city}» مميّزة بعلامة «محافظتك»", " — “{city}” ilindeki davalar «İliniz» etiketiyle işaretlidir", " — 「{city}」省的案件会标注「您所在省份」"],
@@ -67,7 +67,7 @@ const D: Record<string, Row> = {
   "دریافت بازار پرونده‌ها ناموفق بود؛ اتصال اینترنت را بررسی کنید.": ["Couldn't load the case marketplace; check your internet connection.", "تعذّر تحميل سوق القضايا؛ تحقق من اتصالك بالإنترنت.", "Dava pazarı yüklenemedi; internet bağlantınızı kontrol edin.", "案件市场加载失败；请检查网络连接。"],
   "هنوز پروندهٔ بازی در بازار نیست": ["No open cases in the market yet", "لا توجد قضايا مفتوحة في السوق بعد", "Pazarda henüz açık dava yok", "市场中还没有开放案件"],
   "پرونده‌ای با این فیلترها پیدا نشد": ["No case matches these filters", "لا توجد قضية مطابقة لهذه المرشحات", "Bu filtrelerle dava bulunamadı", "没有符合筛选条件的案件"],
-  "اولین پرونده را ثبت کنید — وکلای متخصص دادبان به‌محض ثبت، پروندهٔ شما را می‌بینند و پیشنهاد قیمت می‌دهند.": ["File the first case — DADBAN specialist lawyers will see it right away and send price offers.", "سجّل القضية الأولى — سيرى محامو دادبان المتخصصون قضيتك فور تسجيلها ويقدمون عروض الأسعار.", "İlk davayı kaydedin — DADBAN uzman avukatları kaydınızla birlikte davayı görecek ve fiyat teklifi verecek.", "提交第一个案件——DADBAN 专业律师会立即看到并报价。"],
+  "اولین پرونده را ثبت کنید — وکلای متخصص دادورزان به‌محض ثبت، پروندهٔ شما را می‌بینند و پیشنهاد قیمت می‌دهند.": ["File the first case — DADVARZAN specialist lawyers will see it right away and send price offers.", "سجّل القضية الأولى — سيرى محامو دادورزان المتخصصون قضيتك فور تسجيلها ويقدمون عروض الأسعار.", "İlk davayı kaydedin — DADVARZAN uzman avukatları kaydınızla birlikte davayı görecek ve fiyat teklifi verecek.", "提交第一个案件——DADVARZAN 专业律师会立即看到并报价。"],
   "فیلتر شهر یا عبارت جستجو را تغییر دهید.": ["Change the city filter or search term.", "غيّر مرشح المدينة أو عبارة البحث.", "Şehir filtresini veya arama terimini değiştirin.", "请更改城市筛选或搜索词。"],
   "ثبت پیشنهاد قیمت": ["Submit price offer", "قدّم عرض السعر", "Fiyat teklifi ver", "提交报价"],
   "به‌روزرسانی پیشنهاد": ["Update offer", "تحديث العرض", "Teklifi güncelle", "更新报价"],

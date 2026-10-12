@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 /**
  * Magic UI — ShimmerButton
  * دکمهٔ درخشان با جرقهٔ چرخان conic-gradient (فقط CSS).
- * تطبیق دادبان: پشتیبانی از href (رندر next/link) برای استفاده در صفحات سرور.
+ * تطبیق دادورزان: پشتیبانی از href (رندر next/link) برای استفاده در صفحات سرور.
  */
 export interface ShimmerButtonProps
   extends ComponentPropsWithoutRef<"button"> {

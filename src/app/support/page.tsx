@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
     title: t("پشتیبانی و مرکز راهنما"),
-    description: t("مرکز راهنما، سؤالات متداول و ثبت تیکت پشتیبانی دادبان."),
+    description: t("مرکز راهنما، سؤالات متداول و ثبت تیکت پشتیبانی دادورزان."),
     alternates: { canonical: "/support" },
   };
 }
@@ -36,7 +36,7 @@ export default async function SupportPage() {
         image="/images/hero-support.png"
         badge={t("پشتیبانی")}
         title={t("چگونه می‌توانیم کمکتان کنیم؟")}
-        desc={t("مرکز راهنما، سؤالات متداول و ثبت تیکت؛ تیم پشتیبانی دادبان ۲۴ ساعته در خدمت شماست.")}
+        desc={t("مرکز راهنما، سؤالات متداول و ثبت تیکت؛ تیم پشتیبانی دادورزان ۲۴ ساعته در خدمت شماست.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پشتیبانی") }]}
       >
         <div className="flex flex-wrap gap-2">

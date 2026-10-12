@@ -1,5 +1,5 @@
 // ============================================================
-// دادبان — کتابخانه‌ی مرکزی قابلیت‌های هوش مصنوعی (فقط سمت سرور)
+// دادورزان — کتابخانه‌ی مرکزی قابلیت‌های هوش مصنوعی (فقط سمت سرور)
 // قابلیت‌ها: بینایی ماشین (VLM)، گفتار به متن (ASR)، متن به گفتار (TTS)،
 // جستجوی وب (web_search) — همه از طریق z-ai-web-dev-sdk
 // ============================================================
@@ -224,7 +224,7 @@ async function gnewsFetch(query: string, num: number): Promise<WebSearchResult[]
   try {
     const res = await fetch(
       `https://news.google.com/rss/search?q=${encodeURIComponent(query.slice(0, 250))}&hl=fa&gl=IR&ceid=IR:fa`,
-      { headers: { "User-Agent": "Mozilla/5.0 (compatible; DadbanBot/1.0)" }, signal: AbortSignal.timeout(6_000) },
+      { headers: { "User-Agent": "Mozilla/5.0 (compatible; DadvarzanBot/1.0)" }, signal: AbortSignal.timeout(6_000) },
     );
     if (!res.ok) return [];
     const xml = await res.text();
@@ -260,7 +260,7 @@ async function wikiFetch(query: string, num: number): Promise<WebSearchResult[]>
   try {
     const res = await fetch(
       `https://fa.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(bingKeywords(query).slice(0, 200))}&srlimit=${num}&format=json&origin=*`,
-      { headers: { "User-Agent": "DadbanBot/1.0 (dadban.ir)" }, signal: AbortSignal.timeout(6_000) },
+      { headers: { "User-Agent": "DadvarzanBot/1.0 (dadban.ir)" }, signal: AbortSignal.timeout(6_000) },
     );
     if (!res.ok) return [];
     const data = (await res.json()) as { query?: { search?: { title: string; snippet: string }[] } };

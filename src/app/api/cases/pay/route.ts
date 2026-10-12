@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     await db.update(cases).set({ paymentGateway: gateway }).where(eq(cases.caseNumber, caseNumber));
     const message =
       gateway === "manual"
-        ? "انتخاب شما ثبت شد. کارشناسان دادبان برای هماهنگی پرداخت با شما تماس می‌گیرند."
+        ? "انتخاب شما ثبت شد. کارشناسان دادورزان برای هماهنگی پرداخت با شما تماس می‌گیرند."
         : `درگاه «${GATEWAYS[gateway]}» انتخاب شد. پس از تعیین هزینه نهایی توسط کارشناسان، لینک پرداخت از همین درگاه برای شما پیامک می‌شود.`;
     return NextResponse.json({ ok: true, gateway, message });
   } catch {

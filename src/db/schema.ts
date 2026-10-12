@@ -421,7 +421,7 @@ export const articles = pgTable("articles", {
   imageUrl: text("image_url"),
   imageAlt: text("image_alt"),
   readTime: integer("read_time").notNull().default(5),
-  author: text("author").notNull().default("تیم تحریریه دادبان"),
+  author: text("author").notNull().default("تیم تحریریه دادورزان"),
   authorRole: text("author_role").notNull().default("پژوهشگر حقوق"),
   views: integer("views").notNull().default(0),
   publishedAt: timestamp("published_at").defaultNow().notNull(),
@@ -1038,7 +1038,7 @@ export const vaultDocuments = pgTable(
 );
 export type VaultDocument = typeof vaultDocuments.$inferSelect;
 
-/* ── ۹) تلگرام — اتصال حساب به ربات دادبان برای اطلاع‌رسانی زندهٔ پرونده ──
+/* ── ۹) تلگرام — اتصال حساب به ربات دادورزان برای اطلاع‌رسانی زندهٔ پرونده ──
  * کاربر در ربات /start می‌زند و chat_id را در پنل پروفایل ثبت می‌کند؛
  * اعلان‌های درون‌برنامه‌ای (موتور notify) به‌صورت best-effort تلگرامی هم می‌روند.
  */

@@ -4,7 +4,7 @@ import type { IconKey } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
 
 /**
- * «خدمات حقوقی دادبان» — نشان می‌دهد دادبان یک Legal Services Platform است،
+ * «خدمات حقوقی دادورزان» — نشان می‌دهد دادورزان یک Legal Services Platform است،
  * نه فقط دایرکتوری وکیل. شش دستهٔ واقعی با مسیرهای واقعی سایت.
  */
 
@@ -14,7 +14,7 @@ const SERVICES: { title: string; desc: string; href: string; icon: IconKey }[] =
   { title: "دادخواست و شکواییه", desc: "تنظیم تخصصی اسناد قانونی توسط وکیل", href: "/legal-forms", icon: "gavel" },
   { title: "خدمات ثبتی", desc: "ثبت شرکت، برند و علامت تجاری", href: "/pricing", icon: "stamp" },
   { title: "خدمات حقوقی کسب‌وکار", desc: "قراردادهای تجاری و مشاورهٔ B2B", href: "/business", icon: "building" },
-  { title: "امور اداری و حضوری", desc: "نمایندهٔ دادبان با وکالت‌نامهٔ رسمی", href: "/services", icon: "signature" },
+  { title: "امور اداری و حضوری", desc: "نمایندهٔ دادورزان با وکالت‌نامهٔ رسمی", href: "/services", icon: "signature" },
 ];
 
 export async function LegalServices() {

@@ -28,9 +28,9 @@ const STAGES = [
 ];
 
 const GATEWAYS: { key: string; title: string; desc: string; badge?: string }[] = [
-  { key: "zarinpal", title: "زرین‌پال", desc: "درگاه بانکی پرکاربرد — پرداخت با همه کارت‌های عضو شتاب", badge: "پیشنهاد دادبان" },
+  { key: "zarinpal", title: "زرین‌پال", desc: "درگاه بانکی پرکاربرد — پرداخت با همه کارت‌های عضو شتاب", badge: "پیشنهاد دادورزان" },
   { key: "idpay", title: "آیدی‌پی", desc: "درگاه بانکی، پرداخت سریع با تأیید دو مرحله‌ای" },
-  { key: "manual", title: "هماهنگی با کارشناس", desc: "کارشناسان دادبان هزینه نهایی را تعیین و راهنمایی پرداخت می‌کنند" },
+  { key: "manual", title: "هماهنگی با کارشناس", desc: "کارشناسان دادورزان هزینه نهایی را تعیین و راهنمایی پرداخت می‌کنند" },
 ];
 
 interface PayCtx {
@@ -206,7 +206,7 @@ function PayContent() {
           )}
 
           <p className="mt-6 text-center text-xs text-muted">
-            {t("سوالی دارید؟")} <Link href="/contact" className="font-medium text-primary hover:underline">{t("با پشتیبانی دادبان")}</Link> {t("در تماس باشید.")}
+            {t("سوالی دارید؟")} <Link href="/contact" className="font-medium text-primary hover:underline">{t("با پشتیبانی دادورزان")}</Link> {t("در تماس باشید.")}
           </p>
         </div>
       </Container>

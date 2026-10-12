@@ -66,14 +66,14 @@ export function AISpotlight() {
       viewport={{ once: true, margin: "0px 0px -80px 0px" }}
       transition={{ type: "spring", stiffness: 160, damping: 26 }}
       className="relative isolate overflow-hidden rounded-[2rem] border border-accent/30 bg-primary shadow-[var(--shadow-lift)]"
-      aria-label={t("دستیار هوش مصنوعی حقوقی دادبان")}
+      aria-label={t("دستیار هوش مصنوعی حقوقی دادورزان")}
     >
       {/* پس‌زمینه تصویری با ken-burns */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 animate-[kenburns_26s_ease-in-out_infinite_alternate]">
           <Image
             src="/images/ai-spotlight.png"
-            alt={t("ترازوی طلایی عدالت در فضای سرمه‌ای — نماد هوش مصنوعی حقوقی دادبان")}
+            alt={t("ترازوی طلایی عدالت در فضای سرمه‌ای — نماد هوش مصنوعی حقوقی دادورزان")}
             fill
             sizes="(max-width: 1024px) 100vw, 1200px"
             className="object-cover opacity-45"
@@ -124,7 +124,7 @@ export function AISpotlight() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
-            {t("هوش مصنوعی حقوقی دادبان")}
+            {t("هوش مصنوعی حقوقی دادورزان")}
           </motion.span>
 
           <motion.h2
@@ -148,7 +148,7 @@ export function AISpotlight() {
             className="mt-4 max-w-lg text-sm leading-8 text-primary-foreground/75 sm:text-base"
           >
             {t(
-              "دستیار هوشمند دادبان سؤال شما را می‌فهمد، مادهٔ قانونی مرتبط را پیدا می‌کند و مسیر اقدام بعدی را به زبان ساده توضیح می‌دهد — قبل از اینکه هزینه‌ای بدهید.",
+              "دستیار هوشمند دادورزان سؤال شما را می‌فهمد، مادهٔ قانونی مرتبط را پیدا می‌کند و مسیر اقدام بعدی را به زبان ساده توضیح می‌دهد — قبل از اینکه هزینه‌ای بدهید.",
             )}
           </motion.p>
 

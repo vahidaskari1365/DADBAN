@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * POST /api/newsletter — عضویت در خبرنامهٔ دادبان.
+ * POST /api/newsletter — عضویت در خبرنامهٔ دادورزان.
  * صداقت: عضویت تکراری هم «موفق» است (idempotent) — پیام یکسان، بدون افشای وضعیت قبلی.
  * بدون دیتابیس (noop) → 503 صادقانه، نه موفقیت ساختگی.
  */
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       .values({ email })
       .onConflictDoNothing({ target: newsletterSubscribers.email });
     // insert یا از قبل موجود — در هر دو حالت عضو خبرنامه است؛ پیام یکسان و صادقانه.
-    return NextResponse.json({ ok: true, message: "ایمیل شما در خبرنامهٔ دادبان ثبت شد." });
+    return NextResponse.json({ ok: true, message: "ایمیل شما در خبرنامهٔ دادورزان ثبت شد." });
   } catch {
     return NextResponse.json({ ok: false, error: "ثبت خبرنامه موقتاً در دسترس نیست." }, { status: 503 });
   }

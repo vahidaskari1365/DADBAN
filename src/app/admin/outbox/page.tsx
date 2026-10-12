@@ -16,8 +16,8 @@ import { templateT } from "@/lib/i18n/core";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("صندوق خروجی ایمیل — پنل مدیریت دادبان"),
-    description: t("آرشیو صادقانهٔ ایمیل‌های سامانه (رسید، خوش‌آمد، …) و اعضای خبرنامهٔ دادبان."),
+    title: t("صندوق خروجی ایمیل — پنل مدیریت دادورزان"),
+    description: t("آرشیو صادقانهٔ ایمیل‌های سامانه (رسید، خوش‌آمد، …) و اعضای خبرنامهٔ دادورزان."),
   };
 }
 export const dynamic = "force-dynamic";

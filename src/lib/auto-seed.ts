@@ -114,7 +114,7 @@ const DDL = [
   `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS lawyer_type TEXT NOT NULL DEFAULT 'wakil'`,
   `CREATE TABLE IF NOT EXISTS reviews (id SERIAL PRIMARY KEY, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, client_name TEXT NOT NULL, rating INTEGER NOT NULL, comment TEXT NOT NULL, service TEXT, created_at TIMESTAMP NOT NULL DEFAULT now())`,
   `CREATE TABLE IF NOT EXISTS contracts (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, category TEXT NOT NULL, icon TEXT NOT NULL DEFAULT 'file', description TEXT NOT NULL, use_case TEXT NOT NULL, risks TEXT[] NOT NULL DEFAULT '{}', key_clauses TEXT[] NOT NULL DEFAULT '{}', sample_price INTEGER NOT NULL DEFAULT 0, custom_price INTEGER NOT NULL DEFAULT 0, popular BOOLEAN NOT NULL DEFAULT false, steps TEXT[] NOT NULL DEFAULT '{}')`,
-  `CREATE TABLE IF NOT EXISTS articles (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, category TEXT NOT NULL, excerpt TEXT NOT NULL, content TEXT NOT NULL, quick_answer TEXT NOT NULL DEFAULT '', faq TEXT NOT NULL DEFAULT '[]', image_url TEXT, image_alt TEXT, read_time INTEGER NOT NULL DEFAULT 5, author TEXT NOT NULL DEFAULT 'تیم تحریریه دادبان', author_role TEXT NOT NULL DEFAULT 'پژوهشگر حقوق', views INTEGER NOT NULL DEFAULT 0, published_at TIMESTAMP NOT NULL DEFAULT now())`,
+  `CREATE TABLE IF NOT EXISTS articles (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, category TEXT NOT NULL, excerpt TEXT NOT NULL, content TEXT NOT NULL, quick_answer TEXT NOT NULL DEFAULT '', faq TEXT NOT NULL DEFAULT '[]', image_url TEXT, image_alt TEXT, read_time INTEGER NOT NULL DEFAULT 5, author TEXT NOT NULL DEFAULT 'تیم تحریریه دادورزان', author_role TEXT NOT NULL DEFAULT 'پژوهشگر حقوق', views INTEGER NOT NULL DEFAULT 0, published_at TIMESTAMP NOT NULL DEFAULT now())`,
   `ALTER TABLE articles ADD COLUMN IF NOT EXISTS quick_answer TEXT NOT NULL DEFAULT ''`,
   `ALTER TABLE articles ADD COLUMN IF NOT EXISTS faq TEXT NOT NULL DEFAULT '[]'`,
   `ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_url TEXT`,
@@ -215,9 +215,9 @@ export async function seedManagedServices(): Promise<void> {
 export async function seedDemoOperators(): Promise<void> {
   if (process.env.NODE_ENV === "production") return;
   const demo = [
-    { phone: "09000000001", name: "کارشناس عملیات دادبان", role: "staff" },
+    { phone: "09000000001", name: "کارشناس عملیات دادورزان", role: "staff" },
     { phone: "09000000002", name: "دکتر ناظر حقوقی", role: "lawyer" },
-    { phone: "09000000003", name: "ناظر ارشد دادبان", role: "supervisor" },
+    { phone: "09000000003", name: "ناظر ارشد دادورزان", role: "supervisor" },
   ];
   for (const d of demo) {
     try {
@@ -255,9 +255,9 @@ export async function seedDemoOperators(): Promise<void> {
  */
 export async function seedPlatformAccounts(): Promise<void> {
   const rows = [
-    { phone: "09120000001", name: "وکیل آزمایشی دادبان", email: "lawyer.demo@dadban.ir", role: "lawyer" },
-    { phone: "09120000002", name: "موکل آزمایشی دادبان", email: "client.demo@dadban.ir", role: "client" },
-    { phone: "09120000003", name: "وکیل آزمایشی دوم دادبان", email: "lawyer2.demo@dadban.ir", role: "lawyer" },
+    { phone: "09120000001", name: "وکیل آزمایشی دادورزان", email: "lawyer.demo@dadban.ir", role: "lawyer" },
+    { phone: "09120000002", name: "موکل آزمایشی دادورزان", email: "client.demo@dadban.ir", role: "client" },
+    { phone: "09120000003", name: "وکیل آزمایشی دوم دادورزان", email: "lawyer2.demo@dadban.ir", role: "lawyer" },
   ];
   for (const d of rows) {
     try {

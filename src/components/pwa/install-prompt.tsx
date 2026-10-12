@@ -85,7 +85,7 @@ export function InstallPrompt() {
   return (
     <div
       role="dialog"
-      aria-label={t("نصب اپلیکیشن دادبان")}
+      aria-label={t("نصب اپلیکیشن دادورزان")}
       className="fixed inset-x-3 bottom-3 z-[80] mx-auto max-w-md animate-fade-up rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-lift)] sm:bottom-4 sm:left-4 sm:right-4 sm:m-0"
       style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
     >
@@ -94,7 +94,7 @@ export function InstallPrompt() {
           <Icon name="sparkles" className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-bold text-foreground">{t("نصب اپلیکیشن دادبان")}</h3>
+          <h3 className="text-sm font-bold text-foreground">{t("نصب اپلیکیشن دادورزان")}</h3>
           <p className="mt-0.5 text-xs leading-5 text-muted">
             {t("روی صفحه اصلی نصب کنید تا مثل یک اپ سریع‌تر و بدون مرورگر اجرا شود.")}
           </p>

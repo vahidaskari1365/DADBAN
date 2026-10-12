@@ -74,7 +74,7 @@ export default async function AdminPage() {
         variant="market"
         image="/images/hero-admin.png"
         badge={t("Admin · پنل مدیریت")}
-        title={t("داشبورد مدیریت دادبان")}
+        title={t("داشبورد مدیریت دادورزان")}
         desc={t("مدیریت محتوا، داده‌های سایت و آمار بازدید — با ورود امن مدیر.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت") }]}
       >

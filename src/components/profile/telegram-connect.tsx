@@ -144,7 +144,7 @@ export function TelegramConnect() {
         <Icon name="send" className="h-5 w-5 text-primary" /> {t("اتصال تلگرام")}
       </h2>
       <p className="mb-4 mt-1 text-xs leading-6 text-muted">
-        {t("۱) در ربات دادبان دکمهٔ Start را بزنید تا شناسهٔ چت شما ارسال شود.")}{" "}
+        {t("۱) در ربات دادورزان دکمهٔ Start را بزنید تا شناسهٔ چت شما ارسال شود.")}{" "}
         {t("۲) شناسه را اینجا وارد کنید.")}
         {BOT_USER ? " " : ""}
         {BOT_USER && (

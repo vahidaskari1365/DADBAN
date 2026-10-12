@@ -15,9 +15,9 @@ import Link from "next/link";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("درباره دادبان"),
+    title: t("درباره دادورزان"),
     description: t(
-      "دادبان پلتفرم هوشمند خدمات حقوقی برای اتصال موکلان به وکلای متخصص، با مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی.",
+      "دادورزان پلتفرم هوشمند خدمات حقوقی برای اتصال موکلان به وکلای متخصص، با مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی.",
     ),
     alternates: { canonical: "/about" },
   };
@@ -57,7 +57,7 @@ export default async function AboutPage() {
         image="/images/hero-about.png"
         badge={t("درباره ما")}
         title={t("عدالت، در دسترس همه")}
-        desc={t("دادبان با هدف دموکراتیزه‌کردن دسترسی به خدمات حقوقی ساخته شده است؛ پلتفرمی که وکیل‌یابی، مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی را در یک‌جا گرد می‌آورد.")}
+        desc={t("دادورزان با هدف دموکراتیزه‌کردن دسترسی به خدمات حقوقی ساخته شده است؛ پلتفرمی که وکیل‌یابی، مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی را در یک‌جا گرد می‌آورد.")}
       />
 
       <Container className="py-12">
@@ -72,7 +72,7 @@ export default async function AboutPage() {
           <div>
             <h2 className="text-2xl font-bold text-foreground">{t("مأموریت ما")}</h2>
             <p className="mt-3 text-sm leading-8 text-muted">
-              {t("معتقدیم دسترسی به مشاوره حقوقی نباید پیچیده، گران یا کند باشد. دادبان با ترکیب تخصص وکلای دادگستری و فناوری روز، تجربه‌ای ساده، شفاف و قابل اعتماد برای حل مسائل حقوقی شما فراهم می‌کند.")}
+              {t("معتقدیم دسترسی به مشاوره حقوقی نباید پیچیده، گران یا کند باشد. دادورزان با ترکیب تخصص وکلای دادگستری و فناوری روز، تجربه‌ای ساده، شفاف و قابل اعتماد برای حل مسائل حقوقی شما فراهم می‌کند.")}
             </p>
             <ul className="mt-5 space-y-2.5">
               {["احراز هویت و راستی‌آزمایی همه وکلا", "مشاوره متنی، صوتی و تصویری آنلاین", "مدیریت یکپارچه پرونده و اسناد", "دستیار هوش مصنوعی حقوقی ۲۴ ساعته"].map((item) => (
@@ -83,14 +83,14 @@ export default async function AboutPage() {
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary-hover p-8 text-primary-foreground">
             <Icon name="balance" className="absolute -bottom-6 -left-6 h-48 w-48 opacity-10" />
             <p className="relative text-lg font-bold leading-8">{t("«هدف ما این است که هر ایرانی، فارغ از شهر و توان مالی، به مشاوره حقوقی باکیفیت دسترسی داشته باشد.»")}</p>
-            <p className="relative mt-4 text-sm text-white/80">{t("— تیم بنیان‌گذار دادبان")}</p>
+            <p className="relative mt-4 text-sm text-white/80">{t("— تیم بنیان‌گذار دادورزان")}</p>
           </div>
         </div>
       </Container>
 
       {/* Layers */}
       <Container className="py-12">
-        <h2 className="text-center text-2xl font-bold text-foreground">{t("معماری پنج‌لایه دادبان")}</h2>
+        <h2 className="text-center text-2xl font-bold text-foreground">{t("معماری پنج‌لایه دادورزان")}</h2>
         <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted">{t("از جذب کاربر تا اکوسیستم کامل حقوقی، یک سفر یکپارچه.")}</p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {LAYERS.map((l, i) => (
@@ -121,7 +121,7 @@ export default async function AboutPage() {
       <Container className="py-12">
         <div className="rounded-3xl border border-border bg-surface p-8 text-center card-shadow">
           <h2 className="text-xl font-bold text-foreground">{t("آماده‌اید به ما بپیوندید؟")}</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">{t("چه به دنبال وکیل باشید چه عضو تیم وکلای دادبان، خوشحال می‌شویم همراهتان باشیم.")}</p>
+          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">{t("چه به دنبال وکیل باشید چه عضو تیم وکلای دادورزان، خوشحال می‌شویم همراهتان باشیم.")}</p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Link href="/lawyers" className="inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover"><Icon name="search" className="h-4 w-4" /> {t("پیدا کردن وکیل")}</Link>
             <Link href="/contact" className="inline-flex h-11 items-center gap-2 rounded-xl border border-border-strong bg-surface px-5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-2"><Icon name="mail" className="h-4 w-4" /> {t("تماس با ما")}</Link>

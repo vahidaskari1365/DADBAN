@@ -10,7 +10,7 @@ import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 
 /**
- * فرم «همکاری با دادبان» — روی‌بوردینگ وکلای واقعی (/join-as-lawyer).
+ * فرم «همکاری با دادورزان» — روی‌بوردینگ وکلای واقعی (/join-as-lawyer).
  * ثبت درخواست + امضای الکترونیکی قرارداد همکاری؛ نتیجه پس از بررسی کارشناس در
  * پنل کاربری/پشتیبانی اعلام می‌شود (بدون وعدهٔ SMS/ایمیل — صداقت).
  */
@@ -462,7 +462,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
           <div className="rounded-2xl border border-border-strong bg-surface-2/40 p-4" data-testid="join-agreement">
             <p className="flex items-center gap-2 text-sm font-bold text-foreground">
               <Icon name="signature" className="h-4.5 w-4.5 text-accent-text" />
-              {t("قرارداد همکاری با دادبان")}
+              {t("قرارداد همکاری با دادورزان")}
               <Badge tone="accent">{t(AGREEMENT_VERSION_LABEL)}</Badge>
             </p>
             <ul className="mt-3 space-y-2">
@@ -494,7 +494,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
               {sending ? t("در حال ارسال…") : t("ثبت درخواست همکاری")}
             </Button>
             <Link href="/lawyers" className="text-xs font-bold text-muted transition-colors hover:text-primary">
-              {t("انصراف و مشاهدهٔ وکلای دادبان")}
+              {t("انصراف و مشاهدهٔ وکلای دادورزان")}
             </Link>
           </div>
         </form>

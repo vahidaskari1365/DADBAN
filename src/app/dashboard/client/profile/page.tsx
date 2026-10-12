@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
     title: t("پروفایل من — پنل موکل"),
-    description: t("مشخصات حساب، استان و شهر، رمز عبور و وکلای نشان‌شده شما در دادبان."),
+    description: t("مشخصات حساب، استان و شهر، رمز عبور و وکلای نشان‌شده شما در دادورزان."),
   };
 }
 export const dynamic = "force-dynamic";
@@ -138,7 +138,7 @@ export default async function ClientProfilePage() {
         <PhoneVerificationRow phone={user.phone} verified={user.phoneVerified === true} />
       </Card>
 
-      {/* اتصال تلگرام — اطلاع‌رسانی زندهٔ پرونده (ربات دادبان) */}
+      {/* اتصال تلگرام — اطلاع‌رسانی زندهٔ پرونده (ربات دادورزان) */}
       <TelegramConnect />
 
       {/* اطلاعات شخصی */}

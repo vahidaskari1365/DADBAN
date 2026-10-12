@@ -6,9 +6,9 @@ import { getT } from "@/lib/i18n/server";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("ورود به حساب کاربری | دادبان"),
+    title: t("ورود به حساب کاربری | دادورزان"),
     description: t(
-      "ورود امن به پنل موکل یا پنل وکیل دادبان — پیگیری پرونده، مشاوره‌ها و اسناد حقوقی در یک نگاه.",
+      "ورود امن به پنل موکل یا پنل وکیل دادورزان — پیگیری پرونده، مشاوره‌ها و اسناد حقوقی در یک نگاه.",
     ),
     alternates: { canonical: "/login" },
   };

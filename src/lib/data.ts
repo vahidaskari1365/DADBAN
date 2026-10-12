@@ -1,4 +1,4 @@
-// Central static data for the Dadban legal platform.
+// Central static data for the Dadvarzan legal platform.
 // (Persian content, RTL)
 
 export type IconKey =
@@ -163,7 +163,7 @@ export const CONSULT_STATUS_FA: Record<string, string> = {
    Only claims the platform can actually honour today. Nothing here may
    promise something there is no backend for (no fake ratings / guarantees). */
 export const TRUST_BADGES: { title: string; desc: string; icon: IconKey }[] = [
-  { title: "احراز هویت و تأیید پروانه", desc: "هویت و پروانه همه وکلا توسط کارشناسان دادبان راستی‌آزمایی می‌شود.", icon: "badge" },
+  { title: "احراز هویت و تأیید پروانه", desc: "هویت و پروانه همه وکلا توسط کارشناسان دادورزان راستی‌آزمایی می‌شود.", icon: "badge" },
   { title: "محرمانگی اطلاعات", desc: "اطلاعات شما محرمانه نگه‌داری می‌شود و طبق سیاست حریم خصوصی در اختیار غیر قرار نمی‌گیرد.", icon: "lock" },
   { title: "بازگشت وجه طبق سیاست شفاف", desc: "اگر خدمتی ارائه نشود، وجه شما طبق سیاست بازگشت وجه عودت داده می‌شود.", icon: "shield" },
   { title: "حل اختلاف شفاف", desc: "تیم پشتیبانی در صورت بروز اختلاف، رسیدگی بی‌طرفانه انجام می‌دهد.", icon: "balance" },

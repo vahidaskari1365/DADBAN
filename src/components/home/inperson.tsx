@@ -10,7 +10,7 @@ import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 
 /**
- * «کارهای حضوری، با نمایندهٔ دادبان» — معرفی ۸ خدمت حضوری/اداری با قیمت.
+ * «کارهای حضوری، با نمایندهٔ دادورزان» — معرفی ۸ خدمت حضوری/اداری با قیمت.
  * تصویر بنر + کارت‌های اسکرول-اسنپ افقی (موبایل) و گرید (دسکتاپ).
  * داده از CATALOG_SERVICES (فیلتر ADMINISTRATIVE) به‌صورت اسلیم از سرور می‌آید.
  */
@@ -44,7 +44,7 @@ export function InPersonServices({ services, totalCount }: { services: InPersonS
         <div className="absolute inset-0 animate-[kenburns_30s_ease-in-out_infinite_alternate]">
           <Image
             src="/images/inperson-services.png"
-            alt={t("نماینده حقوقی دادبان با پرونده در راهرو دادگستری")}
+            alt={t("نماینده حقوقی دادورزان با پرونده در راهرو دادگستری")}
             fill
             sizes="(max-width: 1024px) 100vw, 480px"
             className="object-cover"
@@ -62,7 +62,7 @@ export function InPersonServices({ services, totalCount }: { services: InPersonS
             {t("کارتان با شما.")}
           </p>
           <p className="mt-1.5 text-xs leading-6 text-primary-foreground/70">
-            {t("نمایندهٔ دادبان به‌جای شما حاضر می‌شود و هر گام در پنل‌تان گزارش می‌شود.")}
+            {t("نمایندهٔ دادورزان به‌جای شما حاضر می‌شود و هر گام در پنل‌تان گزارش می‌شود.")}
           </p>
         </div>
       </motion.div>
@@ -116,7 +116,7 @@ export function InPersonServices({ services, totalCount }: { services: InPersonS
                 <Icon name="plus" className="h-5 w-5" />
               </span>
               <p className="text-sm font-black text-foreground">
-                {tf("همهٔ {n} خدمت دادبان", { n: faNum(totalCount) })}
+                {tf("همهٔ {n} خدمت دادورزان", { n: faNum(totalCount) })}
               </p>
               <p className="text-[11px] text-muted">{t("مشاهدهٔ فهرست کامل خدمات")}</p>
             </Link>

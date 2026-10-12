@@ -9,7 +9,7 @@ import { detectSpecialtiesFromMessage, detectProvinceFromMessage, hasLawyerInten
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SYSTEM_PROMPT = `تو «مشاور همراه دادبان» هستی — یک دستیار حقوقی هوشمند و دوست‌داشتنی که هم به سوالات حقوقی پاسخ می‌ده و هم در استفاده از سایت به کاربر کمک می‌کند.
+const SYSTEM_PROMPT = `تو «مشاور همراه دادورزان» هستی — یک دستیار حقوقی هوشمند و دوست‌داشتنی که هم به سوالات حقوقی پاسخ می‌ده و هم در استفاده از سایت به کاربر کمک می‌کند.
 
 ویژگی‌های شخصیت تو:
 - لحن دوستانه، گرم و حرفه‌ای — مثل یک دوست وکیل

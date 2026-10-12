@@ -59,7 +59,7 @@ export async function ReviewsSpotlight() {
       <Container>
         <SectionHeading
           eyebrow={t("تجربه واقعی کاربران")}
-          title={t("نظر کسانی که از دادبان استفاده کردند")}
+          title={t("نظر کسانی که از دادورزان استفاده کردند")}
           desc={tf("میانگین امتیاز {n} از ۵ — فقط نظرات تأییدشده کاربران پلتفرم", { n: faNum(avg.toFixed(1)) })}
         />
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

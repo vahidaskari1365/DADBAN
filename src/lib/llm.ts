@@ -1,5 +1,5 @@
 // ============================================================
-// دادبان — موتور هوش مصنوعی چند-تأمین‌کننده با سوییچ خودکار
+// دادورزان — موتور هوش مصنوعی چند-تأمین‌کننده با سوییچ خودکار
 // معماری برگرفته از زنجیره LLM پروژه homeino1 (LLM_KEYS_JSON + fallback)
 //
 // ترتیب امتحان (کیفیت فارسیِ حقوقی در اولویت):
@@ -17,11 +17,11 @@
 // هرگز کلید واقعی در کد ذخیره نمی‌شود؛ همه از Environment Variable می‌آید.
 // ============================================================
 
-const SYSTEM_LEGAL_CORE = `تو دستیار حقوقی دادبان هستی — دستیار هوشمند حقوقی (نه وکیل رسمی).
+const SYSTEM_LEGAL_CORE = `تو دستیار حقوقی دادورزان هستی — دستیار هوشمند حقوقی (نه وکیل رسمی).
 پاسخ‌ها کوتاه، هدفمند و کاربردی باشد (حداکثر ۸-۱۰ خط) و دقیقاً این ساختار را داشته باشد:
 ۱) پاسخ مستقیم به پرسش در یک تا دو جمله.
 ۲) «مستند قانونی»: استناد به ماده/تبصره مرتبط با قالب «ماده X قانون Y» یا «تبصره X ماده Y».
-۳) یک توصیه عملی کوتاه. اگر کاربر نیاز به اقدام عملی دارد، او را به بخش مناسب دادبان (رزرو مشاوره، ثبت پرونده، تنظیم قرارداد) هدایت کن.
+۳) یک توصیه عملی کوتاه. اگر کاربر نیاز به اقدام عملی دارد، او را به بخش مناسب دادورزان (رزرو مشاوره، ثبت پرونده، تنظیم قرارداد) هدایت کن.
 
 قواعد استناد:
 - فقط به موادی که از وجود و شماره‌ی آن‌ها مطمئن هستی استناد کن؛ هرگز ماده، تبصره یا متن قانونی‌ای که وجود ندارد نساز.
@@ -303,7 +303,7 @@ async function runProvider(p: Provider, messages: LlmMessage[], maxTokens: numbe
   const extra: Record<string, string> = {};
   if (p.id === "openrouter") {
     extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
-    extra["X-Title"] = "DADBAN";
+    extra["X-Title"] = "DADVARZAN";
   }
   const text = await postOpenAiCompatible(p.base, body, p.key, timeoutMs ?? p.timeoutMs, extra);
   return sanitize ? sanitizePersian(text) : text.trim();
@@ -471,7 +471,7 @@ async function* runProviderStream(p: Provider, messages: LlmMessage[], maxTokens
   const extra: Record<string, string> = {};
   if (p.id === "openrouter") {
     extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
-    extra["X-Title"] = "DADBAN";
+    extra["X-Title"] = "DADVARZAN";
   }
   for await (const chunk of streamOpenAiCompatible(p.base, bodyObj, p.key, p.timeoutMs, extra)) {
     yield sanitize ? sanitizePersianChunk(chunk) : chunk;
@@ -589,7 +589,7 @@ export async function askVisionLLM(prompt: string, imageData: string, maxTokens 
     const extra: Record<string, string> = {};
     if (p.id === "openrouter-vision") {
       extra["HTTP-Referer"] = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dadban-brown.vercel.app";
-      extra["X-Title"] = "DADBAN";
+      extra["X-Title"] = "DADVARZAN";
     }
     try {
       const text = await postOpenAiCompatible(p.base, body, p.key, p.timeoutMs, extra);

@@ -42,7 +42,7 @@ export default async function BusinessPage() {
         image="/images/hero-business.png"
         badge={t("برای کسب‌وکارها")}
         title={t("واحد حقوقی کسب‌وکارتان را دیجیتال کنید")}
-        desc={t("از قرارداد و پرونده تا اسناد و مشاوره؛ دادبان زیرساخت حقوقی آماده‌ی کسب‌وکار شما را فراهم می‌کند.")}
+        desc={t("از قرارداد و پرونده تا اسناد و مشاوره؛ دادورزان زیرساخت حقوقی آماده‌ی کسب‌وکار شما را فراهم می‌کند.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("برای کسب‌وکارها") }]}
       >
         <div className="flex flex-wrap gap-2">
@@ -91,7 +91,7 @@ export default async function BusinessPage() {
           <Card hover={false} className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-right">
             <div>
               <h2 className="text-xl font-bold text-foreground">{t("آماده‌اید تیم حقوقی اختصاصی داشته باشید؟")}</h2>
-              <p className="mt-1 text-sm text-muted">{t("کارشناسان فروش دادبان بهترین پلن را برای کسب‌وکار شما پیشنهاد می‌دهند.")}</p>
+              <p className="mt-1 text-sm text-muted">{t("کارشناسان فروش دادورزان بهترین پلن را برای کسب‌وکار شما پیشنهاد می‌دهند.")}</p>
             </div>
             <div className="flex shrink-0 flex-wrap justify-center gap-2">
               <Badge tone="success" icon="shield">{t("قرارداد سازمانی")}</Badge>

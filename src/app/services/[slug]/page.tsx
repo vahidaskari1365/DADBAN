@@ -20,8 +20,8 @@ export const dynamic = "force-dynamic";
 /** مسیر پیش‌رفت کارهای حضوری — برای همه خدمات دارای راهنما یکسان است. */
 const GUIDE_STEPS = [
   { title: "ثبت درخواست", desc: "جزئیات کار و مدارک موجود را در فرم همین صفحه ثبت می‌کنید." },
-  { title: "بررسی و اعلام هزینه", desc: "کارشناس دادبان موضوع را بررسی و هزینه نهایی را اعلام می‌کند." },
-  { title: "وکالت‌نامه رسمی", desc: "برای کارهایی که حضور لازم دارد، یک بار در دفترخانه به نماینده دادبان وکالت می‌دهید." },
+  { title: "بررسی و اعلام هزینه", desc: "کارشناس دادورزان موضوع را بررسی و هزینه نهایی را اعلام می‌کند." },
+  { title: "وکالت‌نامه رسمی", desc: "برای کارهایی که حضور لازم دارد، یک بار در دفترخانه به نماینده دادورزان وکالت می‌دهید." },
   { title: "انجام و گزارش مرحله‌ای", desc: "نماینده به‌جای شما به اداره می‌رود و پیشرفت کار در پنل شما ثبت می‌شود." },
 ];
 
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const locale = await getServerLocale();
   const title = await tdyn(locale, svc.title, 300);
   return {
-    title: `${title} — ${t("دادبان")}`,
+    title: `${title} — ${t("دادورزان")}`,
     description: svc.shortDescription ? await tdyn(locale, svc.shortDescription, 400) : undefined,
   };
 }
@@ -159,7 +159,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
                   {svc.requiresLawyer ? (
                     <li>• {t("در صورت نیاز، ارجاع به وکیل واجد صلاحیت و نظارت حرفه‌ای")}</li>
                   ) : (
-                    <li>• {t("انجام توسط کارشناس عملیات دادبان")}</li>
+                    <li>• {t("انجام توسط کارشناس عملیات دادورزان")}</li>
                   )}
                 </ul>
               </Card>
@@ -181,7 +181,7 @@ export default async function ServiceDetail({ params }: { params: Promise<{ slug
             {svc.requiresLawyer && (
               <div className="mt-4 rounded-xl border border-accent/30 bg-accent-soft p-4 text-sm text-foreground-soft">
                 <Icon name="scale" className="inline h-4 w-4 text-accent-text" /> {" "}
-                {t("این موضوع نیازمند اقدام حرفه‌ای حقوقی است؛ پس از بررسی اولیه به وکیل دارای صلاحیت ارجاع داده می‌شود. دادبان خود را جایگزین وکیل شما معرفی نمی‌کند.")}
+                {t("این موضوع نیازمند اقدام حرفه‌ای حقوقی است؛ پس از بررسی اولیه به وکیل دارای صلاحیت ارجاع داده می‌شود. دادورزان خود را جایگزین وکیل شما معرفی نمی‌کند.")}
               </div>
             )}
           </div>

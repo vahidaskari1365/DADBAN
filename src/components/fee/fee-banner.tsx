@@ -52,14 +52,14 @@ export async function FeeBanner() {
           <div className="min-w-0 flex-1">
             <p className="fee-cine-in fee-cine-d1 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold text-primary-foreground ring-1 ring-white/25 sm:text-[11px]">
               <Icon name="balance" className="h-3.5 w-3.5" />
-              {t("ویژهٔ موکلان دادبان")}
+              {t("ویژهٔ موکلان دادورزان")}
             </p>
             <h2 className="fee-cine-in fee-cine-d2 mt-2 text-balance text-lg font-black leading-7 text-primary-foreground sm:text-2xl sm:leading-9">
               {t("نگران هزینهٔ حق‌الوکاله نباشید")}
             </h2>
             <p className="fee-cine-in fee-cine-d3 mt-2 max-w-2xl text-pretty text-[13px] leading-6 text-primary-foreground/85 sm:text-sm sm:leading-7">
               {t(
-                "اگر پرداخت حق‌الوکاله برایتان دشوار است، دیگر نگران نباشید — دادبان پرداخت قسطی و مرحله‌ای را ممکن کرده است تا پرونده‌تان همین امروز شروع شود.",
+                "اگر پرداخت حق‌الوکاله برایتان دشوار است، دیگر نگران نباشید — دادورزان پرداخت قسطی و مرحله‌ای را ممکن کرده است تا پرونده‌تان همین امروز شروع شود.",
               )}
             </p>
           </div>

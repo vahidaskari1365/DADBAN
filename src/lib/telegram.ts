@@ -5,7 +5,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 
 /**
- * ماژول ربات تلگرام دادبان — اطلاع‌رسانی زندهٔ پرونده بدون نیاز به کلید SMS.
+ * ماژول ربات تلگرام دادورزان — اطلاع‌رسانی زندهٔ پرونده بدون نیاز به کلید SMS.
  *
  * صادقانه مثل بقیهٔ ماژول‌ها: بدون TELEGRAM_BOT_TOKEN هیچ «موفقیت ساختگی»ای
  * وجود ندارد؛ sendTelegramMessage {ok:false, error:"not-configured"} برمی‌گرداند

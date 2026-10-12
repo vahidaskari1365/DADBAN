@@ -21,7 +21,7 @@ export function TrustLine({ compact = false, className = "" }: { compact?: boole
   return (
     <ul
       className={`flex flex-wrap items-center justify-center gap-x-4 gap-y-2 ${className}`}
-      aria-label={t("تعهدات دادبان")}
+      aria-label={t("تعهدات دادورزان")}
     >
       {ITEMS.map((it) => (
         <li

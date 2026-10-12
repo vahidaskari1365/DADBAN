@@ -159,7 +159,7 @@ function QuickStartInner() {
           {rec === null ? (
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-accent-text">
-                {t("مسیر سریع دادبان")}
+                {t("مسیر سریع دادورزان")}
               </p>
               <h4 className="mt-2 text-xl font-bold text-foreground">{t(STEP_TITLES[step])}</h4>
 

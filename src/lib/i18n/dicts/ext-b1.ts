@@ -23,7 +23,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "آقا": "Mr.",
     "آنلاین هستید — در فهرست وکلای صفحه مشاوره سبز دیده می‌شوید":
       "You are online — you appear green in the lawyers list on the consultation page.",
-    "آیا وکلای دادبان احراز هویت شده‌اند؟": "Are DADBAN lawyers verified?",
+    "آیا وکلای دادورزان احراز هویت شده‌اند؟": "Are DADVARZAN lawyers verified?",
     "احراز هویت‌شده": "Verified",
     "احراز هویت‌شده، با امتیاز کاربران و رزرو آنلاین مشاوره.":
       "Verified, rated by users, with online consultation booking.",
@@ -35,10 +35,10 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "ارسال فایل": "File sharing",
     "از {price} • پرداخت امن • ضمانت بازگشت وجه":
       "From {price} • Secure payment • Money-back guarantee",
-    "از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل {sp} مناسب پیدا و مشاوره رزرو کنید.":
-      "Using DADBAN's lawyer search page with specialty and city filters, you can find a suitable lawyer for {sp} and book a consultation.",
-    "از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل مناسب پیدا و مشاوره رزرو کنید.":
-      "Using DADBAN's lawyer search page with specialty and city filters, you can find a suitable lawyer and book a consultation.",
+    "از صفحه جستجوی وکیل دادورزان با فیلتر تخصص و شهر می‌توانید وکیل {sp} مناسب پیدا و مشاوره رزرو کنید.":
+      "Using DADVARZAN's lawyer search page with specialty and city filters, you can find a suitable lawyer for {sp} and book a consultation.",
+    "از صفحه جستجوی وکیل دادورزان با فیلتر تخصص و شهر می‌توانید وکیل مناسب پیدا و مشاوره رزرو کنید.":
+      "Using DADVARZAN's lawyer search page with specialty and city filters, you can find a suitable lawyer and book a consultation.",
     "از میان وکلای پایه یک دادگستری، تأییدشده و متخصص انتخاب کنید؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
       "Choose from verified and specialized Grade-One attorneys; filter by specialty, city, experience and rating.",
     "استان {city}": "{city} Province",
@@ -49,8 +49,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "انتخاب پروفایل…": "Select a profile…",
     "انتخاب نقش": "Choose your role",
     "ایران": "Iran",
-    "با پشتیبانی دادبان تماس بگیرید یا پرونده‌های ارجاعی استان خود را در کارتابل پیشنهادها پیگیری کنید.":
-      "Contact DADBAN support or follow referred cases in your province from the offers workdesk.",
+    "با پشتیبانی دادورزان تماس بگیرید یا پرونده‌های ارجاعی استان خود را در کارتابل پیشنهادها پیگیری کنید.":
+      "Contact DADVARZAN support or follow referred cases in your province from the offers workdesk.",
     "با توافق وکیل، حق‌الوکاله را می‌توانید یکجا، قسطی یا مرحله‌ای بپردازید؛ شرایط نهایی در قرارداد ثبت می‌شود.":
       "By agreement with the lawyer, the attorney fee can be paid in full, in installments, or in stages; final terms are recorded in the contract.",
     "با ورود، وضعیت شما در صفحه مشاوره «آنلاین» نمایش داده می‌شود و گفتگوهای موکل‌ها در صندوق شما می‌آید.":
@@ -61,8 +61,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "بدون درخواست": "No requests",
     "بدون گفتگو": "No chats",
     "برای گفتگوی متنی با وکیل، از": "For a text consultation with a lawyer, from",
-    "بله، هویت و پروانه همه وکلا توسط کارشناسان دادبان راستی‌آزمایی می‌شود.":
-      "Yes, the identity and license of all lawyers are verified by DADBAN experts.",
+    "بله، هویت و پروانه همه وکلا توسط کارشناسان دادورزان راستی‌آزمایی می‌شود.":
+      "Yes, the identity and license of all lawyers are verified by DADVARZAN experts.",
     "بیشترین پرونده": "Most cases",
     "بیشترین سابقه": "Most experience",
     "بیشترین نظرات": "Most reviews",
@@ -121,7 +121,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "رزرو آنلاین": "Online booking",
     "رزرو مشاوره": "Book a consultation",
     "رزرو مشاوره با {name}": "Book a consultation with {name}",
-    "رزرو مشاوره با وکیل | دادبان": "Book a consultation with a lawyer | DADBAN",
+    "رزرو مشاوره با وکیل | دادورزان": "Book a consultation with a lawyer | DADVARZAN",
     "رزرو مشاوره حقوقی آنلاین": "Book an online legal consultation",
     "زمان پاسخ": "Response time",
     "زمان: هماهنگی توسط کارشناسان": "Time: coordinated by our experts",
@@ -135,8 +135,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "صفحه مشاوره": "the consultation page",
     "صندوق گفتگوهای موکل‌ها": "Client chat inbox",
     "عکس": "Photo",
-    "فهرست وکلای احراز هویت‌شدهٔ دادبان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
-      "DADBAN's directory of verified lawyers for colleagues — search for a colleague to refer a case, collaborate on a specialty, or check rates; filter by specialty, city, experience and rating.",
+    "فهرست وکلای احراز هویت‌شدهٔ دادورزان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
+      "DADVARZAN's directory of verified lawyers for colleagues — search for a colleague to refer a case, collaborate on a specialty, or check rates; filter by specialty, city, experience and rating.",
     "فیلتر": "Filter",
     "فیلترها را تغییر دهید یا همه وکلا را مشاهده کنید.":
       "Change the filters or view all lawyers.",
@@ -158,7 +158,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "مشاوره تصویری و متنی زنده": "Live video & chat consultation",
     "مشاوره حقوقی": "Legal consultation",
     "مشاوره حقوقی آنلاین": "Online legal consultation",
-    "مشاوره حقوقی آنلاین | دادبان": "Online Legal Consultation | DADBAN",
+    "مشاوره حقوقی آنلاین | دادورزان": "Online Legal Consultation | DADVARZAN",
     "مشاوره حقوقی آنلاین | متنی، صوتی و تصویری با وکیل":
       "Online Legal Consultation | Chat, Voice & Video with a Lawyer",
     "مشاوره حقوقی آنلاین با وکیل متخصص: متنی، صوتی و تصویری.":
@@ -222,8 +222,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "هنوز گفتگویی ندارید. با آنلاین بودن، گفتگوهای شروع‌شده از صفحه مشاوره همین‌جا نمایش داده می‌شود.":
       "You have no chats yet. Once online, chats started from the consultation page appear here.",
     "هنوز نظری ثبت نشده است": "No reviews yet",
-    "هویت و پروانه این وکیل توسط کارشناسان دادبان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.":
-      "This lawyer's identity and license have been verified by DADBAN experts. The final amount is clear before payment and refunds follow a transparent policy.",
+    "هویت و پروانه این وکیل توسط کارشناسان دادورزان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.":
+      "This lawyer's identity and license have been verified by DADVARZAN experts. The final amount is clear before payment and refunds follow a transparent policy.",
     /* ── کلیدهای پویا (REQ_STATUS / TYPE_LABEL / TYPE_CHIPS) ── */
     "وکیل رسمی": "Licensed lawyer",
     "کارآموز": "Trainee",
@@ -253,7 +253,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "آقا": "السيد",
     "آنلاین هستید — در فهرست وکلای صفحه مشاوره سبز دیده می‌شوید":
       "أنت متصل الآن — ستظهر بعلامة خضراء في قائمة المحامين في صفحة الاستشارة.",
-    "آیا وکلای دادبان احراز هویت شده‌اند؟": "هل تم توثيق محامي دادبان؟",
+    "آیا وکلای دادورزان احراز هویت شده‌اند؟": "هل تم توثيق محامي دادورزان؟",
     "احراز هویت‌شده": "موثّق",
     "احراز هویت‌شده، با امتیاز کاربران و رزرو آنلاین مشاوره.":
       "موثّق، بتقييمات المستخدمين ومع حجز الاستشارة عبر الإنترنت.",
@@ -265,10 +265,10 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "ارسال فایل": "إرسال الملفات",
     "از {price} • پرداخت امن • ضمانت بازگشت وجه":
       "من {price} • دفع آمن • ضمان استرداد المبلغ",
-    "از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل {sp} مناسب پیدا و مشاوره رزرو کنید.":
-      "عبر صفحة البحث عن المحامين في دادبان مع فلتر التخصص والمدينة، يمكنك العثور على محامٍ مناسب لمجال {sp} وحجز استشارة.",
-    "از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل مناسب پیدا و مشاوره رزرو کنید.":
-      "عبر صفحة البحث عن المحامين في دادبان مع فلتر التخصص والمدينة، يمكنك العثور على محامٍ مناسب وحجز استشارة.",
+    "از صفحه جستجوی وکیل دادورزان با فیلتر تخصص و شهر می‌توانید وکیل {sp} مناسب پیدا و مشاوره رزرو کنید.":
+      "عبر صفحة البحث عن المحامين في دادورزان مع فلتر التخصص والمدينة، يمكنك العثور على محامٍ مناسب لمجال {sp} وحجز استشارة.",
+    "از صفحه جستجوی وکیل دادورزان با فیلتر تخصص و شهر می‌توانید وکیل مناسب پیدا و مشاوره رزرو کنید.":
+      "عبر صفحة البحث عن المحامين في دادورزان مع فلتر التخصص والمدينة، يمكنك العثور على محامٍ مناسب وحجز استشارة.",
     "از میان وکلای پایه یک دادگستری، تأییدشده و متخصص انتخاب کنید؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
       "اختر من بين محامٍ معتمدين من الدرجة الأولى ومتخصصين؛ مع فلتر التخصص والمدينة والخبرة والتقييم.",
     "استان {city}": "محافظة {city}",
@@ -279,8 +279,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "انتخاب پروفایل…": "اختر ملفًا شخصيًا…",
     "انتخاب نقش": "اختيار الدور",
     "ایران": "إيران",
-    "با پشتیبانی دادبان تماس بگیرید یا پرونده‌های ارجاعی استان خود را در کارتابل پیشنهادها پیگیری کنید.":
-      "تواصل مع دعم دادبان أو تابع ملفات القضايا المحالة لمحافظتك في صندوق العروض.",
+    "با پشتیبانی دادورزان تماس بگیرید یا پرونده‌های ارجاعی استان خود را در کارتابل پیشنهادها پیگیری کنید.":
+      "تواصل مع دعم دادورزان أو تابع ملفات القضايا المحالة لمحافظتك في صندوق العروض.",
     "با توافق وکیل، حق‌الوکاله را می‌توانید یکجا، قسطی یا مرحله‌ای بپردازید؛ شرایط نهایی در قرارداد ثبت می‌شود.":
       "باتفاق مع المحامي، يمكن سداد أتعاب المحاماة دفعة واحدة أو بالتقسيط أو على مراحل؛ تُسجَّل الشروط النهائية في العقد.",
     "با ورود، وضعیت شما در صفحه مشاوره «آنلاین» نمایش داده می‌شود و گفتگوهای موکل‌ها در صندوق شما می‌آید.":
@@ -291,8 +291,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "بدون درخواست": "لا طلبات",
     "بدون گفتگو": "لا محادثات",
     "برای گفتگوی متنی با وکیل، از": "للمحادثة النصية مع محامٍ، من",
-    "بله، هویت و پروانه همه وکلا توسط کارشناسان دادبان راستی‌آزمایی می‌شود.":
-      "نعم، تتم التحقق من هوية ورخصة جميع المحامين من قبل خبراء دادبان.",
+    "بله، هویت و پروانه همه وکلا توسط کارشناسان دادورزان راستی‌آزمایی می‌شود.":
+      "نعم، تتم التحقق من هوية ورخصة جميع المحامين من قبل خبراء دادورزان.",
     "بیشترین پرونده": "الأكثر ملفات",
     "بیشترین سابقه": "الأكثر خبرة",
     "بیشترین نظرات": "الأكثر تقييمات",
@@ -351,7 +351,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "رزرو آنلاین": "حجز عبر الإنترنت",
     "رزرو مشاوره": "احجز استشارة",
     "رزرو مشاوره با {name}": "احجز استشارة مع {name}",
-    "رزرو مشاوره با وکیل | دادبان": "احجز استشارة مع محامٍ | دادبان",
+    "رزرو مشاوره با وکیل | دادورزان": "احجز استشارة مع محامٍ | دادورزان",
     "رزرو مشاوره حقوقی آنلاین": "احجز استشارة قانونية عبر الإنترنت",
     "زمان پاسخ": "زمن الرد",
     "زمان: هماهنگی توسط کارشناسان": "الموعد: بالتنسيق مع الخبراء",
@@ -365,8 +365,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "صفحه مشاوره": "صفحة الاستشارة",
     "صندوق گفتگوهای موکل‌ها": "صندوق محادثات الموكلين",
     "عکس": "صورة",
-    "فهرست وکلای احراز هویت‌شدهٔ دادبان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
-      "دليل دادبان للمحامين الموثّقين للزملاء — ابحث عن زميل لإحالة قضية أو تعاون متخصص أو للاطلاع على الأتعاب؛ مع فلتر التخصص والمدينة والخبرة والتقييم.",
+    "فهرست وکلای احراز هویت‌شدهٔ دادورزان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
+      "دليل دادورزان للمحامين الموثّقين للزملاء — ابحث عن زميل لإحالة قضية أو تعاون متخصص أو للاطلاع على الأتعاب؛ مع فلتر التخصص والمدينة والخبرة والتقييم.",
     "فیلتر": "تصفية",
     "فیلترها را تغییر دهید یا همه وکلا را مشاهده کنید.":
       "غيِّر عوامل التصفية أو اطّلع على جميع المحامين.",
@@ -388,7 +388,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "مشاوره تصویری و متنی زنده": "استشارة مرئية ونصية مباشرة",
     "مشاوره حقوقی": "استشارة قانونية",
     "مشاوره حقوقی آنلاین": "استشارة قانونية عبر الإنترنت",
-    "مشاوره حقوقی آنلاین | دادبان": "استشارة قانونية عبر الإنترنت | دادبان",
+    "مشاوره حقوقی آنلاین | دادورزان": "استشارة قانونية عبر الإنترنت | دادورزان",
     "مشاوره حقوقی آنلاین | متنی، صوتی و تصویری با وکیل":
       "استشارة قانونية عبر الإنترنت | نصية وصوتية ومرئية مع محامٍ",
     "مشاوره حقوقی آنلاین با وکیل متخصص: متنی، صوتی و تصویری.":
@@ -452,8 +452,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "هنوز گفتگویی ندارید. با آنلاین بودن، گفتگوهای شروع‌شده از صفحه مشاوره همین‌جا نمایش داده می‌شود.":
       "لا تملك محادثات بعد. عند الاتصال، تظهر هنا المحادثات التي تبدأ من صفحة الاستشارة.",
     "هنوز نظری ثبت نشده است": "لا توجد تعليقات بعد",
-    "هویت و پروانه این وکیل توسط کارشناسان دادبان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.":
-      "تم التحقق من هوية ورخصة هذا المحامي من قبل خبراء دادبان. المبلغ النهائي واضح قبل الدفع ويتم استرداد المبلغ وفق سياسة شفافة.",
+    "هویت و پروانه این وکیل توسط کارشناسان دادورزان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.":
+      "تم التحقق من هوية ورخصة هذا المحامي من قبل خبراء دادورزان. المبلغ النهائي واضح قبل الدفع ويتم استرداد المبلغ وفق سياسة شفافة.",
     /* ── کلیدهای پویا (REQ_STATUS / TYPE_LABEL / TYPE_CHIPS) ── */
     "وکیل رسمی": "محامٍ رسمي",
     "کارآموز": "متدرب",
@@ -483,7 +483,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "آقا": "Bay",
     "آنلاین هستید — در فهرست وکلای صفحه مشاوره سبز دیده می‌شوید":
       "Çevrimiçisiniz — danışman sayfasındaki avukat listesinde yeşil görünürsünüz.",
-    "آیا وکلای دادبان احراز هویت شده‌اند؟": "DADBAN avukatları kimlik doğrulamalı mı?",
+    "آیا وکلای دادورزان احراز هویت شده‌اند؟": "DADVARZAN avukatları kimlik doğrulamalı mı?",
     "احراز هویت‌شده": "Doğrulanmış",
     "احراز هویت‌شده، با امتیاز کاربران و رزرو آنلاین مشاوره.":
       "Doğrulanmış, kullanıcı puanlamalı ve çevrimiçi danışmanlık rezervasyonlu.",
@@ -495,10 +495,10 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "ارسال فایل": "Dosya gönderimi",
     "از {price} • پرداخت امن • ضمانت بازگشت وجه":
       "{price} itibaren • Güvenli ödeme • Para iade garantisi",
-    "از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل {sp} مناسب پیدا و مشاوره رزرو کنید.":
-      "DADBAN'ın avukat arama sayfasında uzmanlık ve şehir filtreleriyle {sp} alanında uygun bir avukat bulup danışmanlık rezervasyonu yapabilirsiniz.",
-    "از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل مناسب پیدا و مشاوره رزرو کنید.":
-      "DADBAN'ın avukat arama sayfasında uzmanlık ve şehir filtreleriyle uygun bir avukat bulup danışmanlık rezervasyonu yapabilirsiniz.",
+    "از صفحه جستجوی وکیل دادورزان با فیلتر تخصص و شهر می‌توانید وکیل {sp} مناسب پیدا و مشاوره رزرو کنید.":
+      "DADVARZAN'ın avukat arama sayfasında uzmanlık ve şehir filtreleriyle {sp} alanında uygun bir avukat bulup danışmanlık rezervasyonu yapabilirsiniz.",
+    "از صفحه جستجوی وکیل دادورزان با فیلتر تخصص و شهر می‌توانید وکیل مناسب پیدا و مشاوره رزرو کنید.":
+      "DADVARZAN'ın avukat arama sayfasında uzmanlık ve şehir filtreleriyle uygun bir avukat bulup danışmanlık rezervasyonu yapabilirsiniz.",
     "از میان وکلای پایه یک دادگستری، تأییدشده و متخصص انتخاب کنید؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
       "Onaylı ve uzman Birinci Sınıf avukatlar arasından seçim yapın; uzmanlık, şehir, deneyim ve puana göre filtreleyin.",
     "استان {city}": "{city} ili",
@@ -509,8 +509,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "انتخاب پروفایل…": "Profil seçin…",
     "انتخاب نقش": "Rol seçimi",
     "ایران": "İran",
-    "با پشتیبانی دادبان تماس بگیرید یا پرونده‌های ارجاعی استان خود را در کارتابل پیشنهادها پیگیری کنید.":
-      "DADBAN desteğiyle iletişime geçin veya ilinize yönlendirilen dosyaları teklif panosundan takip edin.",
+    "با پشتیبانی دادورزان تماس بگیرید یا پرونده‌های ارجاعی استان خود را در کارتابل پیشنهادها پیگیری کنید.":
+      "DADVARZAN desteğiyle iletişime geçin veya ilinize yönlendirilen dosyaları teklif panosundan takip edin.",
     "با توافق وکیل، حق‌الوکاله را می‌توانید یکجا، قسطی یا مرحله‌ای بپردازید؛ شرایط نهایی در قرارداد ثبت می‌شود.":
       "Avukatla anlaşmayla vekalet ücretini tek seferde, taksitlerle veya aşamalı olarak ödeyebilirsiniz; nihai koşullar sözleşmede kayıt altına alınır.",
     "با ورود، وضعیت شما در صفحه مشاوره «آنلاین» نمایش داده می‌شود و گفتگوهای موکل‌ها در صندوق شما می‌آید.":
@@ -521,8 +521,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "بدون درخواست": "Talep yok",
     "بدون گفتگو": "Sohbet yok",
     "برای گفتگوی متنی با وکیل، از": "Bir avukatla yazılı görüşmek için,",
-    "بله، هویت و پروانه همه وکلا توسط کارشناسان دادبان راستی‌آزمایی می‌شود.":
-      "Evet, tüm avukatların kimliği ve ruhsatı DADBAN uzmanları tarafından doğrulanır.",
+    "بله، هویت و پروانه همه وکلا توسط کارشناسان دادورزان راستی‌آزمایی می‌شود.":
+      "Evet, tüm avukatların kimliği ve ruhsatı DADVARZAN uzmanları tarafından doğrulanır.",
     "بیشترین پرونده": "En çok dosya",
     "بیشترین سابقه": "En çok deneyim",
     "بیشترین نظرات": "En çok yorum",
@@ -581,7 +581,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "رزرو آنلاین": "Çevrimiçi rezervasyon",
     "رزرو مشاوره": "Danışmanlık rezervasyonu",
     "رزرو مشاوره با {name}": "{name} ile danışmanlık rezervasyonu",
-    "رزرو مشاوره با وکیل | دادبان": "Avukatla danışmanlık rezervasyonu | DADBAN",
+    "رزرو مشاوره با وکیل | دادورزان": "Avukatla danışmanlık rezervasyonu | DADVARZAN",
     "رزرو مشاوره حقوقی آنلاین": "Çevrimiçi hukuki danışmanlık rezervasyonu",
     "زمان پاسخ": "Yanıt süresi",
     "زمان: هماهنگی توسط کارشناسان": "Zaman: uzmanlar tarafından eşgüdümlenir",
@@ -595,8 +595,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "صفحه مشاوره": "danışman sayfasından",
     "صندوق گفتگوهای موکل‌ها": "Müvekkil sohbet gelen kutusu",
     "عکس": "Fotoğraf",
-    "فهرست وکلای احراز هویت‌شدهٔ دادبان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
-      "DADBAN'ın meslektaşlar için doğrulanmış avukat dizini — dosya devri, uzmanlık iş birliği veya ücret bilgisi için meslektaş arayın; uzmanlık, şehir, deneyim ve puana göre filtreleyin.",
+    "فهرست وکلای احراز هویت‌شدهٔ دادورزان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
+      "DADVARZAN'ın meslektaşlar için doğrulanmış avukat dizini — dosya devri, uzmanlık iş birliği veya ücret bilgisi için meslektaş arayın; uzmanlık, şehir, deneyim ve puana göre filtreleyin.",
     "فیلتر": "Filtre",
     "فیلترها را تغییر دهید یا همه وکلا را مشاهده کنید.":
       "Filtreleri değiştirin veya tüm avukatları görüntüleyin.",
@@ -618,7 +618,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "مشاوره تصویری و متنی زنده": "Canlı görüntülü ve yazılı danışmanlık",
     "مشاوره حقوقی": "Hukuki danışmanlık",
     "مشاوره حقوقی آنلاین": "Çevrimiçi hukuki danışmanlık",
-    "مشاوره حقوقی آنلاین | دادبان": "Çevrimiçi Hukuki Danışmanlık | DADBAN",
+    "مشاوره حقوقی آنلاین | دادورزان": "Çevrimiçi Hukuki Danışmanlık | DADVARZAN",
     "مشاوره حقوقی آنلاین | متنی، صوتی و تصویری با وکیل":
       "Çevrimiçi Hukuki Danışmanlık | Avukatla Yazılı, Sesli ve Görüntülü",
     "مشاوره حقوقی آنلاین با وکیل متخصص: متنی، صوتی و تصویری.":
@@ -682,8 +682,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "هنوز گفتگویی ندارید. با آنلاین بودن، گفتگوهای شروع‌شده از صفحه مشاوره همین‌جا نمایش داده می‌شود.":
       "Henüz sohbetiniz yok. Çevrimiçi olduğunuzda danışman sayfasından başlatılan sohbetler burada görünür.",
     "هنوز نظری ثبت نشده است": "Henüz yorum yok",
-    "هویت و پروانه این وکیل توسط کارشناسان دادبان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.":
-      "Bu avukatın kimliği ve ruhsatı DADBAN uzmanlarınca doğrulanmıştır. Nihai tutar ödemeden önce nettir ve iadeler şeffaf bir politikaya göre yapılır.",
+    "هویت و پروانه این وکیل توسط کارشناسان دادورزان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.":
+      "Bu avukatın kimliği ve ruhsatı DADVARZAN uzmanlarınca doğrulanmıştır. Nihai tutar ödemeden önce nettir ve iadeler şeffaf bir politikaya göre yapılır.",
     /* ── کلیدهای پویا (REQ_STATUS / TYPE_LABEL / TYPE_CHIPS) ── */
     "وکیل رسمی": "Ruhsatlı avukat",
     "کارآموز": "Stajyer",
@@ -713,7 +713,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "آقا": "先生",
     "آنلاین هستید — در فهرست وکلای صفحه مشاوره سبز دیده می‌شوید":
       "您已在线 — 您将在咨询页面的律师列表中显示为绿色。",
-    "آیا وکلای دادبان احراز هویت شده‌اند؟": "DADBAN的律师是否已认证？",
+    "آیا وکلای دادورزان احراز هویت شده‌اند؟": "DADVARZAN的律师是否已认证？",
     "احراز هویت‌شده": "已认证",
     "احراز هویت‌شده، با امتیاز کاربران و رزرو آنلاین مشاوره.":
       "已认证，拥有用户评分，支持在线预约咨询。",
@@ -725,10 +725,10 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "ارسال فایل": "发送文件",
     "از {price} • پرداخت امن • ضمانت بازگشت وجه":
       "{price} 起 • 安全支付 • 退款保障",
-    "از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل {sp} مناسب پیدا و مشاوره رزرو کنید.":
-      "通过 DADBAN 的律师搜索页面，使用专业和城市筛选，您可以找到合适的{sp}律师并预约咨询。",
-    "از صفحه جستجوی وکیل دادبان با فیلتر تخصص و شهر می‌توانید وکیل مناسب پیدا و مشاوره رزرو کنید.":
-      "通过 DADBAN 的律师搜索页面，使用专业和城市筛选，您可以找到合适的律师并预约咨询。",
+    "از صفحه جستجوی وکیل دادورزان با فیلتر تخصص و شهر می‌توانید وکیل {sp} مناسب پیدا و مشاوره رزرو کنید.":
+      "通过 DADVARZAN 的律师搜索页面，使用专业和城市筛选，您可以找到合适的{sp}律师并预约咨询。",
+    "از صفحه جستجوی وکیل دادورزان با فیلتر تخصص و شهر می‌توانید وکیل مناسب پیدا و مشاوره رزرو کنید.":
+      "通过 DADVARZAN 的律师搜索页面，使用专业和城市筛选，您可以找到合适的律师并预约咨询。",
     "از میان وکلای پایه یک دادگستری، تأییدشده و متخصص انتخاب کنید؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
       "从已认证的专业一级律师中选择；支持按专业、城市、经验和评分筛选。",
     "استان {city}": "{city}省",
@@ -739,8 +739,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "انتخاب پروفایل…": "选择档案…",
     "انتخاب نقش": "选择角色",
     "ایران": "伊朗",
-    "با پشتیبانی دادبان تماس بگیرید یا پرونده‌های ارجاعی استان خود را در کارتابل پیشنهادها پیگیری کنید.":
-      "联系 DADBAN 客服，或在提案工作台中跟进您省份的转介案件。",
+    "با پشتیبانی دادورزان تماس بگیرید یا پرونده‌های ارجاعی استان خود را در کارتابل پیشنهادها پیگیری کنید.":
+      "联系 DADVARZAN 客服，或在提案工作台中跟进您省份的转介案件。",
     "با توافق وکیل، حق‌الوکاله را می‌توانید یکجا، قسطی یا مرحله‌ای بپردازید؛ شرایط نهایی در قرارداد ثبت می‌شود.":
       "经与律师协商，律师费可一次性、分期或分阶段支付；最终条款以合同为准。",
     "با ورود، وضعیت شما در صفحه مشاوره «آنلاین» نمایش داده می‌شود و گفتگوهای موکل‌ها در صندوق شما می‌آید.":
@@ -751,8 +751,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "بدون درخواست": "暂无请求",
     "بدون گفتگو": "暂无对话",
     "برای گفتگوی متنی با وکیل، از": "要与律师进行文字咨询，请从",
-    "بله، هویت و پروانه همه وکلا توسط کارشناسان دادبان راستی‌آزمایی می‌شود.":
-      "是的，所有律师的身份和执照均由 DADBAN 专家核实。",
+    "بله، هویت و پروانه همه وکلا توسط کارشناسان دادورزان راستی‌آزمایی می‌شود.":
+      "是的，所有律师的身份和执照均由 DADVARZAN 专家核实。",
     "بیشترین پرونده": "最多案件",
     "بیشترین سابقه": "经验最多",
     "بیشترین نظرات": "评论最多",
@@ -811,7 +811,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "رزرو آنلاین": "在线预约",
     "رزرو مشاوره": "预约咨询",
     "رزرو مشاوره با {name}": "预约{name}的咨询",
-    "رزرو مشاوره با وکیل | دادبان": "预约律师咨询 | DADBAN",
+    "رزرو مشاوره با وکیل | دادورزان": "预约律师咨询 | DADVARZAN",
     "رزرو مشاوره حقوقی آنلاین": "在线预约法律咨询",
     "زمان پاسخ": "响应时间",
     "زمان: هماهنگی توسط کارشناسان": "时间：由专员协调安排",
@@ -825,8 +825,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "صفحه مشاوره": "咨询页面",
     "صندوق گفتگوهای موکل‌ها": "客户对话收件箱",
     "عکس": "照片",
-    "فهرست وکلای احراز هویت‌شدهٔ دادبان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
-      "DADBAN 面向同行的已认证律师名录 — 搜索同行以转介案件、开展专业合作或了解收费；支持按专业、城市、经验和评分筛选。",
+    "فهرست وکلای احراز هویت‌شدهٔ دادورزان برای همکاران — جستجوی همکار برای ارجاع پرونده، همکاری تخصصی یا اطلاع از تعرفه‌ها؛ با فیلتر تخصص، شهر، سابقه و امتیاز.":
+      "DADVARZAN 面向同行的已认证律师名录 — 搜索同行以转介案件、开展专业合作或了解收费；支持按专业、城市、经验和评分筛选。",
     "فیلتر": "筛选",
     "فیلترها را تغییر دهید یا همه وکلا را مشاهده کنید.":
       "请更改筛选条件或查看全部律师。",
@@ -848,7 +848,7 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "مشاوره تصویری و متنی زنده": "视频与文字实时咨询",
     "مشاوره حقوقی": "法律咨询",
     "مشاوره حقوقی آنلاین": "在线法律咨询",
-    "مشاوره حقوقی آنلاین | دادبان": "在线法律咨询 | DADBAN",
+    "مشاوره حقوقی آنلاین | دادورزان": "在线法律咨询 | DADVARZAN",
     "مشاوره حقوقی آنلاین | متنی، صوتی و تصویری با وکیل":
       "在线法律咨询 | 与律师进行文字、语音和视频咨询",
     "مشاوره حقوقی آنلاین با وکیل متخصص: متنی، صوتی و تصویری.":
@@ -912,8 +912,8 @@ export const EXT_B1: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "هنوز گفتگویی ندارید. با آنلاین بودن، گفتگوهای شروع‌شده از صفحه مشاوره همین‌جا نمایش داده می‌شود.":
       "您还没有对话。上线后，从咨询页面发起的对话将显示在这里。",
     "هنوز نظری ثبت نشده است": "暂无评价",
-    "هویت و پروانه این وکیل توسط کارشناسان دادبان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.":
-      "该律师的身份和执照已经 DADBAN 专家核实。支付前金额明确，退款依照透明政策执行。",
+    "هویت و پروانه این وکیل توسط کارشناسان دادورزان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.":
+      "该律师的身份和执照已经 DADVARZAN 专家核实。支付前金额明确，退款依照透明政策执行。",
     /* ── کلیدهای پویا (REQ_STATUS / TYPE_LABEL / TYPE_CHIPS) ── */
     "وکیل رسمی": "执业律师",
     "کارآموز": "实习",

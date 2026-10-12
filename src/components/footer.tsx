@@ -40,7 +40,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "پلتفرم",
     links: [
-      { label: "درباره دادبان", href: "/about" },
+      { label: "درباره دادورزان", href: "/about" },
       { label: "برای کسب‌وکارها", href: "/business" },
       { label: "پنل موکل", href: "/dashboard/client" },
       { label: "پنل وکیل", href: "/dashboard/lawyer" },
@@ -77,14 +77,14 @@ export async function Footer() {
           <div>
             <Link
               href="/"
-              aria-label={t("دادبان — صفحه اصلی")}
+              aria-label={t("دادورزان — صفحه اصلی")}
               className="inline-block transition-opacity hover:opacity-85"
             >
               <Logo tagline={t(SITE_TAGLINE)} />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-7 text-muted">
               {t(
-                "دادبان، پلتفرم هوشمند خدمات حقوقی؛ از پیدا کردن وکیل متخصص و رزرو مشاوره تا مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی — همه در یک‌جا.",
+                "دادورزان، پلتفرم هوشمند خدمات حقوقی؛ از پیدا کردن وکیل متخصص و رزرو مشاوره تا مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی — همه در یک‌جا.",
               )}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-2">
@@ -131,7 +131,7 @@ export async function Footer() {
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
           <p className="text-xs text-muted">
-            © {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(new Date().getFullYear())} {t("دادبان — تمامی حقوق محفوظ است.")}
+            © {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(new Date().getFullYear())} {t("دادورزان — تمامی حقوق محفوظ است.")}
           </p>
           <p className="text-xs text-muted">
             {t("محتوای این پلتفرم صرفاً جنبه راهنمایی دارد و جایگزین مشاوره تخصصی وکیل نیست.")}

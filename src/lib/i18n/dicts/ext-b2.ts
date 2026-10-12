@@ -53,8 +53,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "خلاصه‌ی رأی": "Summary of the ruling",
     "دانش حقوقی": "Legal knowledge",
     "در این زمینه مشاوره می‌خواهید؟": "Need advice on this?",
-    "در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادبان بپرسید.":
-      "In the meantime, you can ask your legal question to DADBAN's AI assistant.",
+    "در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادورزان بپرسید.":
+      "In the meantime, you can ask your legal question to DADVARZAN's AI assistant.",
     "دقیقه": "min read",
     "دقیقه مطالعه": "min read",
     "دیدن وکلای متخصص": "See specialized lawyers",
@@ -68,7 +68,7 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "شرح پرسش": "Question details",
     "فرم‌های حقوقی": "Legal forms",
     "قانون یافت نشد": "Law not found",
-    "قراردادساز دادبان": "DADBAN contract builder",
+    "قراردادساز دادورزان": "DADVARZAN contract builder",
     "قوانین": "Laws",
     "قوانین و مفاهیم مرتبط": "Related laws & concepts",
     "قوانین و مقررات، در دسترس شما": "Laws and regulations, at your fingertips",
@@ -85,8 +85,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "مشاوره با وکیل": "Consult a lawyer",
     "مطالعه مقاله": "Read article",
     "مفید": "found this helpful",
-    "مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادبان.":
-      "Specialized articles and step-by-step guides to know your rights — written by DADBAN's specialized lawyers.",
+    "مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادورزان.":
+      "Specialized articles and step-by-step guides to know your rights — written by DADVARZAN's specialized lawyers.",
     "مقالات مرتبط": "Related articles",
     "مقاله": "articles",
     "مقاله مرتبط یافت نشد.": "No related articles found.",
@@ -113,8 +113,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "پاسخ جنبه اطلاع‌رسانی دارد و جایگزین مشاوره حقوقی رسمی نیست.":
       "This answer is informational and does not replace formal legal advice.",
     "پاسخ فوری می‌خواهید؟": "Need an instant answer?",
-    "پاسخ وکلای متخصص دادبان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.":
-      "DADBAN's specialized lawyers answer common questions — categorized and searchable. Ask yours too.",
+    "پاسخ وکلای متخصص دادورزان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.":
+      "DADVARZAN's specialized lawyers answer common questions — categorized and searchable. Ask yours too.",
     "پاسخ وکیل": "Lawyer's answer",
     "پاسخ کوتاه": "Quick answer",
     "پاک کردن جستجو": "Clear search",
@@ -176,8 +176,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "خلاصه‌ی رأی": "ملخص الحكم",
     "دانش حقوقی": "المعرفة القانونية",
     "در این زمینه مشاوره می‌خواهید؟": "هل تريد استشارة في هذا المجال؟",
-    "در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادبان بپرسید.":
-      "في هذه الأثناء، يمكنك طرح سؤالك القانوني على المساعد الذكي لدادبان.",
+    "در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادورزان بپرسید.":
+      "في هذه الأثناء، يمكنك طرح سؤالك القانوني على المساعد الذكي لدادورزان.",
     "دقیقه": "دقيقة قراءة",
     "دقیقه مطالعه": "دقيقة قراءة",
     "دیدن وکلای متخصص": "اطّلع على المحامين المختصين",
@@ -191,7 +191,7 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "شرح پرسش": "نص السؤال",
     "فرم‌های حقوقی": "النماذج القانونية",
     "قانون یافت نشد": "لم يتم العثور على القانون",
-    "قراردادساز دادبان": "منشئ العقود من دادبان",
+    "قراردادساز دادورزان": "منشئ العقود من دادورزان",
     "قوانین": "القوانين",
     "قوانین و مفاهیم مرتبط": "قوانين ومفاهيم ذات صلة",
     "قوانین و مقررات، در دسترس شما": "القوانين واللوائح بين يديك",
@@ -208,8 +208,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "مشاوره با وکیل": "استشر محامياً",
     "مطالعه مقاله": "اقرأ المقالة",
     "مفید": "شخص وجدها مفيدة",
-    "مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادبان.":
-      "مقالات متخصصة وأدلة خطوة بخطوة للتعرف على حقوقك؛ بقلم المحامين المتخصصين في دادبان.",
+    "مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادورزان.":
+      "مقالات متخصصة وأدلة خطوة بخطوة للتعرف على حقوقك؛ بقلم المحامين المتخصصين في دادورزان.",
     "مقالات مرتبط": "مقالات ذات صلة",
     "مقاله": "مقالة",
     "مقاله مرتبط یافت نشد.": "لم يتم العثور على مقالات ذات صلة.",
@@ -236,8 +236,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "پاسخ جنبه اطلاع‌رسانی دارد و جایگزین مشاوره حقوقی رسمی نیست.":
       "هذه الإجابة للإطلاع فقط ولا تُغني عن الاستشارة القانونية الرسمية.",
     "پاسخ فوری می‌خواهید؟": "تريد إجابة فورية؟",
-    "پاسخ وکلای متخصص دادبان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.":
-      "إجابات المحامين المتخصصين في دادبان على الأسئلة الشائعة؛ مصنّفة وقابلة للبحث. اطرح سؤالك أيضاً.",
+    "پاسخ وکلای متخصص دادورزان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.":
+      "إجابات المحامين المتخصصين في دادورزان على الأسئلة الشائعة؛ مصنّفة وقابلة للبحث. اطرح سؤالك أيضاً.",
     "پاسخ وکیل": "إجابة المحامي",
     "پاسخ کوتاه": "إجابة موجزة",
     "پاک کردن جستجو": "مسح البحث",
@@ -299,8 +299,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "خلاصه‌ی رأی": "Karar özeti",
     "دانش حقوقی": "Hukuk bilgisi",
     "در این زمینه مشاوره می‌خواهید؟": "Bu konuda danışmanlık ister misiniz?",
-    "در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادبان بپرسید.":
-      "Bu arada hukuki sorinizi DADBAN yapay zekâ asistanına sorabilirsiniz.",
+    "در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادورزان بپرسید.":
+      "Bu arada hukuki sorinizi DADVARZAN yapay zekâ asistanına sorabilirsiniz.",
     "دقیقه": "dk okuma",
     "دقیقه مطالعه": "dk okuma",
     "دیدن وکلای متخصص": "Uzman avukatları gör",
@@ -314,7 +314,7 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "شرح پرسش": "Sorunun açıklaması",
     "فرم‌های حقوقی": "Hukuki formlar",
     "قانون یافت نشد": "Kanun bulunamadı",
-    "قراردادساز دادبان": "DADBAN sözleşme oluşturucu",
+    "قراردادساز دادورزان": "DADVARZAN sözleşme oluşturucu",
     "قوانین": "Yasalar",
     "قوانین و مفاهیم مرتبط": "İlgili yasalar ve kavramlar",
     "قوانین و مقررات، در دسترس شما": "Yasa ve yönetmelikler, emrinizde",
@@ -331,8 +331,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "مشاوره با وکیل": "Avukata danışın",
     "مطالعه مقاله": "Makaleyi oku",
     "مفید": "kişi faydalı buldu",
-    "مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادبان.":
-      "Haklarınızı bilmek için uzman makaleler ve adım adım rehberler — DADBAN uzman avukatlarının kaleminden.",
+    "مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادورزان.":
+      "Haklarınızı bilmek için uzman makaleler ve adım adım rehberler — DADVARZAN uzman avukatlarının kaleminden.",
     "مقالات مرتبط": "İlgili makaleler",
     "مقاله": "makale",
     "مقاله مرتبط یافت نشد.": "İlgili makale bulunamadı.",
@@ -359,8 +359,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "پاسخ جنبه اطلاع‌رسانی دارد و جایگزین مشاوره حقوقی رسمی نیست.":
       "Bu yanıt bilgilendirme amaçlıdır ve resmî hukuki danışmanlığın yerini tutmaz.",
     "پاسخ فوری می‌خواهید؟": "Anında yanıt mı istiyorsunuz?",
-    "پاسخ وکلای متخصص دادبان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.":
-      "DADBAN uzman avukatlarının yaygın sorulara yanıtları; kategorilere ayrılmış ve aranabilir. Sorunuzu siz de sorun.",
+    "پاسخ وکلای متخصص دادورزان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.":
+      "DADVARZAN uzman avukatlarının yaygın sorulara yanıtları; kategorilere ayrılmış ve aranabilir. Sorunuzu siz de sorun.",
     "پاسخ وکیل": "Avukat yanıtı",
     "پاسخ کوتاه": "Kısa yanıt",
     "پاک کردن جستجو": "Aramayı temizle",
@@ -422,8 +422,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "خلاصه‌ی رأی": "判决摘要",
     "دانش حقوقی": "法律知识",
     "در این زمینه مشاوره می‌خواهید؟": "需要这方面的咨询吗？",
-    "در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادبان بپرسید.":
-      "在此期间，您可以向 DADBAN 智能助手提出您的法律问题。",
+    "در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادورزان بپرسید.":
+      "在此期间，您可以向 DADVARZAN 智能助手提出您的法律问题。",
     "دقیقه": "分钟阅读",
     "دقیقه مطالعه": "分钟阅读",
     "دیدن وکلای متخصص": "查看专业律师",
@@ -437,7 +437,7 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "شرح پرسش": "问题详情",
     "فرم‌های حقوقی": "法律文书模板",
     "قانون یافت نشد": "未找到法律",
-    "قراردادساز دادبان": "DADBAN 合同生成器",
+    "قراردادساز دادورزان": "DADVARZAN 合同生成器",
     "قوانین": "法律法规",
     "قوانین و مفاهیم مرتبط": "相关法规与概念",
     "قوانین و مقررات، در دسترس شما": "法律法规，触手可及",
@@ -454,8 +454,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "مشاوره با وکیل": "咨询律师",
     "مطالعه مقاله": "阅读文章",
     "مفید": "人觉得有用",
-    "مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادبان.":
-      "由 DADBAN 专业律师撰写的专业文章与分步指南，帮您了解自身权利。",
+    "مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادورزان.":
+      "由 DADVARZAN 专业律师撰写的专业文章与分步指南，帮您了解自身权利。",
     "مقالات مرتبط": "相关文章",
     "مقاله": "篇文章",
     "مقاله مرتبط یافت نشد.": "未找到相关文章。",
@@ -482,8 +482,8 @@ export const EXT_B2: Record<Exclude<Locale, "fa">, Record<string, string>> = {
     "پاسخ جنبه اطلاع‌رسانی دارد و جایگزین مشاوره حقوقی رسمی نیست.":
       "本回答仅供参考，不能替代正式法律意见。",
     "پاسخ فوری می‌خواهید؟": "需要即时解答？",
-    "پاسخ وکلای متخصص دادبان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.":
-      "DADBAN 专业律师解答常见法律问题，分类清晰、可搜索。也欢迎提出您的问题。",
+    "پاسخ وکلای متخصص دادورزان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.":
+      "DADVARZAN 专业律师解答常见法律问题，分类清晰、可搜索。也欢迎提出您的问题。",
     "پاسخ وکیل": "律师解答",
     "پاسخ کوتاه": "简答",
     "پاک کردن جستجو": "清除搜索",

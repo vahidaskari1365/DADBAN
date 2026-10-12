@@ -26,7 +26,7 @@ type ActionItem = {
 
 const ACTIONS: ActionItem[] = [
   { title: "دستیار هوش مصنوعی", desc: "پاسخ فوری سؤال حقوقی با استناد به قانون — رایگان و ۲۴ ساعته", icon: "sparkles", href: "/ai-assistant", featured: true },
-  { title: "خدمات حضوری و اداری", desc: "نماینده دادبان با وکالت‌نامه رسمی به‌جای شما به اداره‌ها می‌رود", icon: "signature", href: "/services", wide: true },
+  { title: "خدمات حضوری و اداری", desc: "نماینده دادورزان با وکالت‌نامه رسمی به‌جای شما به اداره‌ها می‌رود", icon: "signature", href: "/services", wide: true },
   { title: "وکیل‌یابی", desc: "جست‌وجوی وکیل متخصص بر اساس تخصص و شهر", icon: "search", href: "/lawyers" },
   { title: "رزرو مشاوره", desc: "متنی، صوتی یا تصویری با وکیل", icon: "calendar", href: "/consultation" },
   { title: "ثبت پرونده", desc: "ارزیابی اولیه و معرفی وکیل", icon: "folder", href: "/case/new" },
@@ -80,7 +80,7 @@ export function ActionHub() {
                 {featured && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2.5 py-1 text-[10px] font-black text-accent-text ring-1 ring-accent/40">
                     <Icon name="sparkles" className="h-3 w-3" />
-                    {t("پیشنهاد دادبان")}
+                    {t("پیشنهاد دادورزان")}
                   </span>
                 )}
               </div>

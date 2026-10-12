@@ -148,7 +148,7 @@ export default async function ArticlePage({
       inLanguage: LANG_TAG[locale] ?? "fa-IR",
       wordCount,
       author: { "@type": "Person", name: a.author, jobTitle: a.authorRole },
-      publisher: { "@type": "Organization", name: "دادبان", url: SEO_BASE },
+      publisher: { "@type": "Organization", name: "دادورزان", url: SEO_BASE },
       datePublished: original.publishedAt,
       dateModified: original.publishedAt,
       mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
@@ -291,7 +291,7 @@ export default async function ArticlePage({
               <h2 className="text-sm font-bold text-foreground">{t("لینک‌های مفید")}</h2>
               <div className="mt-3 flex flex-col gap-1.5 text-sm">
                 <Link href="/lawyers" className="text-foreground-soft transition-colors hover:text-primary">{t("یافتن وکیل متخصص")}</Link>
-                <Link href="/contracts/builder" className="text-foreground-soft transition-colors hover:text-primary">{t("قراردادساز دادبان")}</Link>
+                <Link href="/contracts/builder" className="text-foreground-soft transition-colors hover:text-primary">{t("قراردادساز دادورزان")}</Link>
                 <Link href="/legal-forms" className="text-foreground-soft transition-colors hover:text-primary">{t("فرم‌های حقوقی")}</Link>
                 <Link href="/qa" className="text-foreground-soft transition-colors hover:text-primary">{t("پرسش و پاسخ حقوقی")}</Link>
                 <Link href="/laws" className="text-foreground-soft transition-colors hover:text-primary">{t("مرکز قوانین")}</Link>

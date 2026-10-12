@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 /**
  * Magic UI — Meteors
  * بارش شهاب — فقط CSS (keyframes meteor در globals.css).
- * تطبیق دادبان:
+ * تطبیق دادورزان:
  * - پشتیبانی از رنگ دلخواه با ‎--meteor-color (پیش‌فرض muted).
  * - به‌جای Math.random در رندر، پراکندگیِ deterministic از شاخص ساخته می‌شود
  *   (قانون purity ری‌اکت + hydration-safe + رندر سرور).

@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * POST /api/telegram/webhook — دریافت آپدیت‌های ربات تلگرام دادبان
+ * POST /api/telegram/webhook — دریافت آپدیت‌های ربات تلگرام دادورزان
  *
  * تنظیم در تلگرام (یک بار، پس از فعال‌سازی ربات):
  *   setWebhook?url=<SITE>/api/telegram/webhook&secret_token=<TELEGRAM_WEBHOOK_SECRET>
@@ -57,9 +57,9 @@ export async function POST(req: Request) {
     const lower = textMsg.toLowerCase();
     if (lower.startsWith("/start") || lower.startsWith("/id") || lower.startsWith("/chatid") || textMsg.startsWith("شروع")) {
       const welcome =
-        "👋 به ربات دادبان خوش آمدید\n\n" +
+        "👋 به ربات دادورزان خوش آمدید\n\n" +
         `شناسهٔ چت شما:\n${chatId}\n\n` +
-        "این عدد را در سایت دادبان → پنل کاربری → پروفایل → بخش «اتصال تلگرام» وارد کنید " +
+        "این عدد را در سایت دادورزان → پنل کاربری → پروفایل → بخش «اتصال تلگرام» وارد کنید " +
         "تا اعلان‌های پرونده (پیشنهاد جدید، پذیرش، پیام‌ها) به همین چت ارسال شود.";
       const res = await sendTelegramMessage(chatId, welcome);
       if (!res.ok) console.error("[telegram-webhook] welcome send failed:", res.error);

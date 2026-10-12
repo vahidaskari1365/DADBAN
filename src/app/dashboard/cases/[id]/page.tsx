@@ -21,7 +21,7 @@ import { templateT } from "@/lib/i18n/core";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("پرونده من — دادبان"),
+    title: t("پرونده من — دادورزان"),
     description: t("جزئیات واقعی پرونده، مراحل، مدارک و پرداخت‌های شما."),
   };
 }
@@ -271,7 +271,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
             </div>
           ) : (
             <p className="mt-3 rounded-xl bg-surface-2 p-4 text-sm leading-7 text-muted">
-              {t("برای این پرونده درخواست خدمتی (پیگیری، ابلاغ‌ها، اجرای حکم و…) ثبت نشده است. اگر کاری را می‌خواهید کارشناسان دادبان برایتان انجام دهند، از")}{" "}
+              {t("برای این پرونده درخواست خدمتی (پیگیری، ابلاغ‌ها، اجرای حکم و…) ثبت نشده است. اگر کاری را می‌خواهید کارشناسان دادورزان برایتان انجام دهند، از")}{" "}
               <Link href="/services" className="font-bold text-primary hover:underline">{t("خدمات پیگیری و انجام امور")}</Link>{" "}
               {t("با ذکر شماره همین پرونده ثبت کنید.")}
             </p>

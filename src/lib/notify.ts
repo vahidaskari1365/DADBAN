@@ -6,7 +6,7 @@ import { after } from "next/server";
 import { notifyTelegramByUserIds } from "@/lib/telegram";
 
 /**
- * موتور اعلان‌های درون‌برنامه‌ای دادبان — فرآیند بازار پرونده‌ها:
+ * موتور اعلان‌های درون‌برنامه‌ای دادورزان — فرآیند بازار پرونده‌ها:
  *
  *  ۱) موکل پرونده‌ای ثبت می‌کند  → اعلان برای وکلای همان استان (پنل وکیل)
  *  ۲) وکیل پیشنهاد قیمت ثبت می‌کند → اعلان برای موکل (پنل موکل + لینک مقایسهٔ پیشنهادها)
@@ -50,7 +50,7 @@ async function insertFor(userIds: number[], n: NotifyInput): Promise<void> {
   /* اطلاع‌رسانی تلگرامی موازی — بعد از پاسخ اجرا می‌شود، best-effort، هرگز نمی‌شکند */
   try {
     const text = [
-      "🔔 دادبان",
+      "🔔 دادورزان",
       n.title,
       n.body
         ? n.body.replace(/\{(\w+)\}/g, (_m, k: string) => {

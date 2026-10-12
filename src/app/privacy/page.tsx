@@ -9,8 +9,8 @@ import { getT } from "@/lib/i18n/server";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("حریم خصوصی — دادبان"),
-    description: t("سیاست حفظ حریم خصوصی کاربران پلتفرم حقوقی دادبان."),
+    title: t("حریم خصوصی — دادورزان"),
+    description: t("سیاست حفظ حریم خصوصی کاربران پلتفرم حقوقی دادورزان."),
   };
 }
 

@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "درخواست همکاری / ارجاع پرونده",
-  description: "ثبت درخواست همکاری تخصصی یا ارجاع پرونده به همکار در دایرکتوری وکلای دادبان.",
+  description: "ثبت درخواست همکاری تخصصی یا ارجاع پرونده به همکار در دایرکتوری وکلای دادورزان.",
   robots: { index: false },
 };
 

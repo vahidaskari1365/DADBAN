@@ -173,7 +173,7 @@ export default async function ContractDetail({
           <Card hover={false} className="bg-primary-soft/50">
             <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft">
               <Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-              {t("همه قراردادهای دادبان توسط وکلای عضو کانون تنظیم و بازبینی می‌شوند و مطابق قوانین روز هستند.")}
+              {t("همه قراردادهای دادورزان توسط وکلای عضو کانون تنظیم و بازبینی می‌شوند و مطابق قوانین روز هستند.")}
             </p>
           </Card>
         </aside>

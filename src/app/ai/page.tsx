@@ -10,11 +10,11 @@ import { getT } from "@/lib/i18n/server";
 export const metadata: Metadata = {
   title: "مرکز هوش مصنوعی حقوقی",
   description:
-    "ابزارهای هوش مصنوعی دادبان: دستیار حقوقی هوشمند، تحلیل اسناد و قرارداد با عکس، جستجوی وب حقوقی و استودیوی صدا (متن به گفتار و گفتار به متن).",
+    "ابزارهای هوش مصنوعی دادورزان: دستیار حقوقی هوشمند، تحلیل اسناد و قرارداد با عکس، جستجوی وب حقوقی و استودیوی صدا (متن به گفتار و گفتار به متن).",
   alternates: { canonical: "/ai" },
   openGraph: {
     title: `مرکز هوش مصنوعی حقوقی | ${SITE_NAME}`,
-    description: "تحلیل سند با عکس، جستجوی وب حقوقی، دستیار هوشمند و ابزارهای صوتی — همه در دادبان.",
+    description: "تحلیل سند با عکس، جستجوی وب حقوقی، دستیار هوشمند و ابزارهای صوتی — همه در دادورزان.",
   },
 };
 
@@ -55,11 +55,11 @@ export default async function AiHubPage() {
             <div>
               <Badge tone="accent" icon="sparkles">{t("هوش مصنوعی حقوقی نسل جدید")}</Badge>
               <h1 className="mt-4 text-3xl font-black leading-[1.25] text-foreground sm:text-4xl lg:text-5xl">
-                {t("مرکز هوش مصنوعی")} <span className="text-primary">دادبان</span>
+                {t("مرکز هوش مصنوعی")} <span className="text-primary">دادورزان</span>
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-8 text-muted sm:text-lg sm:leading-9">
                 {t(
-                  "سند حقوقی‌تان را عکس بگیرید و بفرستید، سؤال خود را بپرسید یا با صدا صحبت کنید — هوش مصنوعی دادبان با استناد به مواد قانونی، شما را راهنمایی می‌کند.",
+                  "سند حقوقی‌تان را عکس بگیرید و بفرستید، سؤال خود را بپرسید یا با صدا صحبت کنید — هوش مصنوعی دادورزان با استناد به مواد قانونی، شما را راهنمایی می‌کند.",
                 )}
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
@@ -71,7 +71,7 @@ export default async function AiHubPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/ai-hero.jpg"
-                alt={t("ترازوی عدالت در هم‌آمیخته با هوش مصنوعی — نماد مرکز هوش مصنوعی دادبان")}
+                alt={t("ترازوی عدالت در هم‌آمیخته با هوش مصنوعی — نماد مرکز هوش مصنوعی دادورزان")}
                 className="w-full rounded-3xl border border-border shadow-[var(--shadow-lift)]"
                 loading="eager"
               />
@@ -135,7 +135,7 @@ export default async function AiHubPage() {
                 </h3>
                 <p className="mt-1.5 max-w-2xl text-sm leading-7 text-muted">
                   {t(
-                    "کاتالوگ زنده‌ی ۱۱۸ مدل رایگان از ۱۶ تأمین‌کننده، خواندن صفحه وب و تحلیل مخزن گیت‌هاب، ۳۱ مهارت عامل، آکادمی مهندسی AI و تست سلامت دروازه‌ی مسیریابی دادبان.",
+                    "کاتالوگ زنده‌ی ۱۱۸ مدل رایگان از ۱۶ تأمین‌کننده، خواندن صفحه وب و تحلیل مخزن گیت‌هاب، ۳۱ مهارت عامل، آکادمی مهندسی AI و تست سلامت دروازه‌ی مسیریابی دادورزان.",
                   )}
                 </p>
               </div>
@@ -168,9 +168,9 @@ export default async function AiHubPage() {
             <Icon name="alert" className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
             <p className="text-sm leading-7 text-foreground-soft">
               {t(
-                "خروجی ابزارهای هوش مصنوعی دادبان جنبه اطلاع‌رسانی و راهنمایی اولیه دارد و جایگزین مشاوره، وکالت یا نظر قطعی وکیل رسمی نیست. برای تصمیم‌های مهم حقوقی، با وکلای تأییدشده‌ی",
+                "خروجی ابزارهای هوش مصنوعی دادورزان جنبه اطلاع‌رسانی و راهنمایی اولیه دارد و جایگزین مشاوره، وکالت یا نظر قطعی وکیل رسمی نیست. برای تصمیم‌های مهم حقوقی، با وکلای تأییدشده‌ی",
                 )}{" "}
-              <Link href="/lawyers" className="font-bold text-primary hover:underline">دادبان</Link>{" "}
+              <Link href="/lawyers" className="font-bold text-primary hover:underline">دادورزان</Link>{" "}
               {t("مشورت کنید.")}
             </p>
           </div>

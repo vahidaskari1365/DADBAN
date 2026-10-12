@@ -67,7 +67,7 @@ export default async function KnowledgePage() {
         variant="market"
         image="/images/hero-knowledge.png"
         title={t("بانک دانش و آموزش حقوقی")}
-        desc={t("مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادبان.")}
+        desc={t("مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادورزان.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("بانک دانش حقوقی") }]}
       />
 
@@ -81,7 +81,7 @@ export default async function KnowledgePage() {
           <EmptyState
             title={t("مقاله‌ای موجود نیست")}
             icon="book"
-            desc={t("در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادبان بپرسید.")}
+            desc={t("در این میان می‌توانید سؤال حقوقی‌تان را از دستیار هوشمند دادورزان بپرسید.")}
             action={{ href: "/ai-assistant", label: t("پرسیدن از دستیار هوشمند") }}
           />
         </Container>

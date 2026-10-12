@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("همکاری با دادبان — ثبت‌نام وکلای واقعی"),
+    title: t("همکاری با دادورزان — ثبت‌نام وکلای واقعی"),
     description: t(
       "درخواست همکاری بدهید؛ پس از احراز و بررسی پروانه، پروفایل عمومی وکیل شما ساخته و حساب کاربری‌تان به آن متصل می‌شود.",
     ),
@@ -33,7 +33,7 @@ const STEPS: { icon: "send" | "fingerprint" | "badge"; title: string; desc: stri
   {
     icon: "fingerprint",
     title: "احراز و بررسی کارشناس",
-    desc: "کارشناسان دادبان پروانه و اطلاعات شما را راستی‌آزمایی می‌کنند (۳ تا ۵ روز کاری).",
+    desc: "کارشناسان دادورزان پروانه و اطلاعات شما را راستی‌آزمایی می‌کنند (۳ تا ۵ روز کاری).",
   },
   {
     icon: "badge",
@@ -100,14 +100,14 @@ export default async function JoinAsLawyerPage() {
         variant="market"
         image="/images/hero-lawyers.png"
         badge={t("روی‌بوردینگ وکلای واقعی")}
-        title={t("به شبکهٔ وکلای دادبان بپیوندید")}
+        title={t("به شبکهٔ وکلای دادورزان بپیوندید")}
         desc={t(
           "وکیل رسمی یا کارآموز وکالت هستید؟ مشخصات و پروانهٔ خود را ثبت کنید؛ پس از احراز هویت و تأیید کارشناس، پروفایل عمومی شما در دایرکتوری ساخته می‌شود، حساب کاربری‌تان به آن متصل می‌شود و پرونده‌های موکلان را دریافت می‌کنید.",
         )}
         breadcrumb={[
           { label: t("خانه"), href: "/" },
-          { label: t("وکلای دادبان"), href: "/lawyers" },
-          { label: t("همکاری با دادبان") },
+          { label: t("وکلای دادورزان"), href: "/lawyers" },
+          { label: t("همکاری با دادورزان") },
         ]}
       />
 

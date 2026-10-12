@@ -31,7 +31,7 @@ export default async function PaymentResultPage({
       tone: "success" as const,
       emoji: "✅",
       title: "پرداخت با موفقیت انجام شد",
-      desc: "رسید برای شما ثبت شد. در صورت نیاز تیم دادبان با شما در تماس خواهد بود.",
+      desc: "رسید برای شما ثبت شد. در صورت نیاز تیم دادورزان با شما در تماس خواهد بود.",
     },
     cancelled: {
       tone: "neutral" as const,

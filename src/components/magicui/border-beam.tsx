@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Magic UI — BorderBeam (نسخهٔ CSS خالص دادبان)
+ * Magic UI — BorderBeam (نسخهٔ CSS خالص دادورزان)
  * پرتو نوری که با offset-path دور قاب کارت می‌چرخد.
  *
  * نکتهٔ فنی مهم: نسخهٔ رسمی Magic UI این افکت را با framer-motion و

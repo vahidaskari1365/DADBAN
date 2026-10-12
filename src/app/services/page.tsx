@@ -15,8 +15,8 @@ import { tdyn } from "@/lib/i18n/dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("خدمات پیگیری و انجام امور — دادبان"),
-    description: t("پیگیری پرونده‌ها، امور اداری، ثبتی، مالیاتی و اجرای احکام را به کارشناسان دادبان بسپارید."),
+    title: t("خدمات پیگیری و انجام امور — دادورزان"),
+    description: t("پیگیری پرونده‌ها، امور اداری، ثبتی، مالیاتی و اجرای احکام را به کارشناسان دادورزان بسپارید."),
   };
 }
 export const dynamic = "force-dynamic";
@@ -80,7 +80,7 @@ export default async function ServicesCatalog() {
         image="/images/hero-services.png"
         badge={t("خدمات پیگیری و انجام امور")}
         title={t("کارهای زمان‌بر حقوقی و اداری را به ما بسپارید")}
-        desc={t("کارهایی که باید حضوری در اجرای احکام، اداره ثبت، دارایی، شهرداری و تأمین اجتماعی انجام شود — با یک وکالت‌نامه رسمی، نماینده دادبان به‌جای شما صف می‌ایستد و پیش می‌برد.")}
+        desc={t("کارهایی که باید حضوری در اجرای احکام، اداره ثبت، دارایی، شهرداری و تأمین اجتماعی انجام شود — با یک وکالت‌نامه رسمی، نماینده دادورزان به‌جای شما صف می‌ایستد و پیش می‌برد.")}
       >
         <div className="flex flex-wrap gap-3">
           <Button href="/services#catalog" variant="accent" size="lg" icon="briefcase">
@@ -95,7 +95,7 @@ export default async function ServicesCatalog() {
 
       <div id="catalog" className="mt-12">
         <Container>
-        <SectionHeading eyebrow={t("فهرست خدمات")} title={t("خدمات عملیاتی دادبان")} desc={t("هر خدمت توسط کارشناس عملیات انجام می‌شود و در صورت نیاز با نظارت وکیل همراه است.")} />
+        <SectionHeading eyebrow={t("فهرست خدمات")} title={t("خدمات عملیاتی دادورزان")} desc={t("هر خدمت توسط کارشناس عملیات انجام می‌شود و در صورت نیاز با نظارت وکیل همراه است.")} />
         <div className="mt-10 space-y-12">
           {grouped.map((g) => (
             <div key={g.slug}>
@@ -138,7 +138,7 @@ export default async function ServicesCatalog() {
             <div>
               <h3 className="text-lg font-bold">{t("نمی‌دانید کدام خدمت مناسب شماست؟")}</h3>
               <p className="mt-1 text-sm text-primary-foreground/80">
-                {t("از دستیار هوشمند دادبان بپرسید؛ بهترین مسیر و اقدام بعدی را به شما نشان می‌دهد.")}
+                {t("از دستیار هوشمند دادورزان بپرسید؛ بهترین مسیر و اقدام بعدی را به شما نشان می‌دهد.")}
               </p>
             </div>
             <Button href="/ai-assistant" variant="accent" icon="sparkles">

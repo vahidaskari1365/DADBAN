@@ -11,7 +11,7 @@ import BookingForm from "@/components/consultation/booking-form";
 export async function generateMetadata(): Promise<Metadata> {
   const t = makeT(await getServerLocale());
   return {
-    title: t("رزرو مشاوره با وکیل | دادبان"),
+    title: t("رزرو مشاوره با وکیل | دادورزان"),
     description: t(
       "تکمیل رزرو مشاوره حقوقی: انتخاب نوع مشاوره (متنی، صوتی، تصویری)، مدت و زمان واقعی از برنامه وکیل. ثبت در کمتر از ۲ دقیقه؛ هیچ مبلغی پیش از تأیید کسر نمی‌شود.",
     ),

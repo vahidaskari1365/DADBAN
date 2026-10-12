@@ -4,7 +4,7 @@ import { Container, Button } from "@/components/ui";
 import { getT } from "@/lib/i18n/server";
 
 /**
- * صفحه‌ی ۴۰۴ سفارشی — فارسی RTL با طراحی دادبان.
+ * صفحه‌ی ۴۰۴ سفارشی — فارسی RTL با طراحی دادورزان.
  */
 export default async function NotFound() {
   const t = await getT();

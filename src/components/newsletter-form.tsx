@@ -6,7 +6,7 @@ import { Icon } from "./icons";
 import { useT } from "@/lib/i18n/provider";
 
 /**
- * فرم عضویت در خبرنامهٔ دادبان — کامپوننت کلاینتِ کوچک برای فوتر (سرورکامپوننت).
+ * فرم عضویت در خبرنامهٔ دادورزان — کامپوننت کلاینتِ کوچک برای فوتر (سرورکامپوننت).
  * صداقت: پیام موفقیت فقط از پاسخ سرور می‌آید؛ خطا (۴۲۲/۴۲۹/۵۰۳/شبکه) قرمز و شفاف است.
  * هدف لمسی ≥۴۴px، لیبل برای اسکرین‌ریدر، و پیام‌های فارسی.
  */
@@ -31,7 +31,7 @@ export default function NewsletterForm() {
       });
       const data = (await res.json().catch(() => null)) as { ok?: boolean; message?: string; error?: string } | null;
       if (res.ok && data?.ok) {
-        setOk(data.message ?? t("ایمیل شما در خبرنامهٔ دادبان ثبت شد."));
+        setOk(data.message ?? t("ایمیل شما در خبرنامهٔ دادورزان ثبت شد."));
         setEmail("");
       } else {
         setErr(data?.error ?? t("ثبت خبرنامه انجام نشد؛ لطفاً دوباره تلاش کنید."));

@@ -42,7 +42,7 @@ export function AskForm() {
           <Icon name="check" className="h-6 w-6" />
         </span>
         <p className="mt-3 text-sm font-bold text-foreground">{t("سؤال شما ثبت شد!")}</p>
-        <p className="mt-1 text-xs text-muted">{t("پس از بررسی توسط وکلای دادبان، پاسخ منتشر خواهد شد.")}</p>
+        <p className="mt-1 text-xs text-muted">{t("پس از بررسی توسط وکلای دادورزان، پاسخ منتشر خواهد شد.")}</p>
         <button onClick={() => setSent(false)} className="mt-3 text-xs font-medium text-primary hover:text-primary-hover">
           {t("پرسیدن سؤال دیگر")}
         </button>

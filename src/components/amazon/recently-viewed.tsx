@@ -202,7 +202,7 @@ export function LawyerDiscovery({
 
       {topList.length > 0 && (
         <Rail
-          title={personalized ? t("پیشنهاد برای شما") : t("انتخاب کاربران دادبان")}
+          title={personalized ? t("پیشنهاد برای شما") : t("انتخاب کاربران دادورزان")}
           icon="sparkles"
           desc={
             personalized

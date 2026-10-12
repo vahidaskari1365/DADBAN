@@ -10,11 +10,11 @@ import { getT } from "@/lib/i18n/server";
 export const metadata: Metadata = {
   title: "جعبه‌ابزار منبع‌باز هوش مصنوعی",
   description:
-    "یکپارچه‌سازی شش پروژه‌ی منبع‌باز هوش مصنوعی در دادبان: کاتالوگ APIهای رایگان LLM، ابزارهای وب برای عامل‌ها، کتابخانه مهارت‌ها، آکادمی مهندسی AI، مسیریابی چندتأمین‌کننده و چک‌لیست امنیت عامل.",
+    "یکپارچه‌سازی شش پروژه‌ی منبع‌باز هوش مصنوعی در دادورزان: کاتالوگ APIهای رایگان LLM، ابزارهای وب برای عامل‌ها، کتابخانه مهارت‌ها، آکادمی مهندسی AI، مسیریابی چندتأمین‌کننده و چک‌لیست امنیت عامل.",
   alternates: { canonical: "/ai/resources" },
   openGraph: {
     title: `جعبه‌ابزار منبع‌باز هوش مصنوعی | ${SITE_NAME}`,
-    description: "کاتالوگ زنده‌ی APIهای رایگان، ابزارهای وب عامل، مهارت‌ها، آکادمی AI و امنیت عامل — همه در دادبان.",
+    description: "کاتالوگ زنده‌ی APIهای رایگان، ابزارهای وب عامل، مهارت‌ها، آکادمی AI و امنیت عامل — همه در دادورزان.",
   },
 };
 
@@ -30,7 +30,7 @@ export default async function AiResourcesPage() {
           <div className="py-12 sm:py-16 lg:py-20">
             <Badge tone="accent" icon="sparkles">{t("شش پروژه‌ی منبع‌باز، یک جعبه‌ابزار")}</Badge>
             <h1 className="mt-4 max-w-3xl text-3xl font-black leading-[1.25] text-foreground sm:text-4xl lg:text-5xl">
-              {t("جعبه‌ابزار")} <span className="text-primary">{t("منبع‌باز")}</span> {t("هوش مصنوعی دادبان")}
+              {t("جعبه‌ابزار")} <span className="text-primary">{t("منبع‌باز")}</span> {t("هوش مصنوعی دادورزان")}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-muted sm:text-lg sm:leading-9">
               {t(
@@ -50,7 +50,7 @@ export default async function AiResourcesPage() {
         <Container>
           <SectionHeading
             eyebrow={t("منبع‌های همکار")}
-            title={t("شش مخزن منبع‌باز، یکپارچه در دادبان")}
+            title={t("شش مخزن منبع‌باز، یکپارچه در دادورزان")}
             desc={t("هر مخزن یک لایه از پشته‌ی هوش مصنوعی را پوشش می‌دهد؛ همگی به‌صورت زنده و فارسی در همین صفحه قابل استفاده‌اند.")}
           />
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -107,7 +107,7 @@ export default async function AiResourcesPage() {
               {t(
                 "کاتالوگ APIهای رایگان از مخزن عمومی awesome-free-llm-apis استخراج شده و ممکن است شرایط هر تأمین‌کننده تغییر کند — پیش از استفاده‌ی تجاری، حتماً شرایط استفاده‌ی خود تأمین‌کننده را بخوانید. ابزارهای این صفحه خروجی اطلاع‌رسانی دارند و جایگزین مشاوره‌ی حقوقی رسمی نیستند؛ برای تصمیم‌های مهم با وکلای تأییدشده‌ی",
               )}{" "}
-              <Link href="/lawyers" className="font-bold text-primary hover:underline">دادبان</Link>{" "}
+              <Link href="/lawyers" className="font-bold text-primary hover:underline">دادورزان</Link>{" "}
               {t("مشورت کنید.")}
             </p>
           </div>

@@ -459,7 +459,7 @@ export default async function LawyerProfile({
           <Card hover={false} className="bg-primary-soft/50">
             <p className="flex items-start gap-2 text-xs leading-6 text-foreground-soft">
               <Icon name="shield" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-              {t("هویت و پروانه این وکیل توسط کارشناسان دادبان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.")}
+              {t("هویت و پروانه این وکیل توسط کارشناسان دادورزان راستی‌آزمایی شده است. مبلغ نهایی پیش از پرداخت مشخص است و بازگشت وجه طبق سیاست شفاف انجام می‌شود.")}
             </p>
           </Card>
         </aside>

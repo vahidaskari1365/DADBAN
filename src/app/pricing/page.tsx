@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
     title: t("تعرفه خدمات و فروشگاه خدمات حقوقی"),
-    description: t("فروشگاه خدمات حقوقی دادبان: مشاوره، تنظیم قرارداد، بررسی قرارداد، تنظیم دادخواست و شکواییه، ثبت شرکت و خدمات ثبتی. پلن‌های اشتراکی کسب‌وکار."),
+    description: t("فروشگاه خدمات حقوقی دادورزان: مشاوره، تنظیم قرارداد، بررسی قرارداد، تنظیم دادخواست و شکواییه، ثبت شرکت و خدمات ثبتی. پلن‌های اشتراکی کسب‌وکار."),
     alternates: { canonical: "/pricing" },
   };
 }
@@ -158,7 +158,7 @@ export default async function PricingPage() {
       <Container className="py-12">
         <div className="rounded-3xl border border-border bg-surface p-8 text-center card-shadow">
           <h2 className="text-xl font-bold text-foreground">{t("سؤال درباره تعرفه‌ها دارید؟")}</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">{t("کارشناسان فروش دادبان برای مشاوره انتخاب پلن مناسب در خدمت شما هستند.")}</p>
+          <p className="mx-auto mt-2 max-w-lg text-sm text-muted">{t("کارشناسان فروش دادورزان برای مشاوره انتخاب پلن مناسب در خدمت شما هستند.")}</p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Button href="/contact" icon="phone">{t("تماس با فروش")}</Button>
             <Button href="/consultation" variant="outline" icon="chat">{t("مشاوره آنلاین")}</Button>

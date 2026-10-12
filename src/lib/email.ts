@@ -42,7 +42,7 @@ export function isEmailConfigured(): boolean {
 }
 
 export function emailFrom(): string {
-  return process.env.EMAIL_FROM || "دادبان <noreply@dadban.ir>";
+  return process.env.EMAIL_FROM || "دادورزان <noreply@dadban.ir>";
 }
 
 /* ─── ارسال با Resend (HTTP API) ─────────────────────────────────────────── */
@@ -139,7 +139,7 @@ function shell(title: string, bodyHtml: string, footerNote?: string): { html: st
 <html lang="fa" dir="rtl"><body style="margin:0;padding:0;background:#f4f6f9;font-family:Tahoma,'Segoe UI',sans-serif;">
 <div style="max-width:560px;margin:0 auto;padding:24px 16px;">
   <div style="background:#102a4a;border-radius:16px 16px 0 0;padding:20px 24px;text-align:center;">
-    <span style="color:#f0b429;font-size:22px;font-weight:bold;letter-spacing:.5px;">دادبان</span>
+    <span style="color:#f0b429;font-size:22px;font-weight:bold;letter-spacing:.5px;">دادورزان</span>
     <span style="color:#dbe6f5;font-size:12px;margin-inline-start:8px;">همراه حقوقی شما</span>
   </div>
   <div style="background:#ffffff;border-radius:0 0 16px 16px;padding:28px 24px;color:#1c2b3a;line-height:2;font-size:14px;">
@@ -147,7 +147,7 @@ function shell(title: string, bodyHtml: string, footerNote?: string): { html: st
     ${bodyHtml}
   </div>
   <p style="text-align:center;color:#8a97a8;font-size:11px;line-height:1.8;margin-top:16px;">
-    ${footerNote ?? "این ایمیل به‌درخواست سامانهٔ دادبان ارسال شده است."}<br/>
+    ${footerNote ?? "این ایمیل به‌درخواست سامانهٔ دادورزان ارسال شده است."}<br/>
     <a href="https://dadban-brown.vercel.app" style="color:#15365d;">dadban-brown.vercel.app</a>
   </p>
 </div>
@@ -175,7 +175,7 @@ export async function sendPaymentReceiptEmail(to: string, p: { reference: string
 export async function sendWelcomeEmail(to: string, name: string): Promise<EmailResult> {
   const { html, text } = shell(
     `خوش آمدید ${name} عزیز`,
-    `<p>حساب شما در دادبان ساخته شد. از این پس می‌توانید:</p>
+    `<p>حساب شما در دادورزان ساخته شد. از این پس می‌توانید:</p>
      <ul style="padding-inline-start:20px;margin:8px 0;">
        <li>پرونده‌تان را به رقابت بگذارید و بهترین پیشنهاد را انتخاب کنید</li>
        <li>از دستیار هوشمند حقوقی پرسش‌هایتان را بپرسید</li>
@@ -183,7 +183,7 @@ export async function sendWelcomeEmail(to: string, name: string): Promise<EmailR
      </ul>
      <p><a href="https://dadban-brown.vercel.app/dashboard/client" style="display:inline-block;background:#f0b429;color:#102a4a;font-weight:bold;text-decoration:none;padding:10px 22px;border-radius:10px;">ورود به پنل کاربری</a></p>`,
   );
-  return sendEmail({ to, subject: "به دادبان خوش آمدید", html, text, kind: "welcome" });
+  return sendEmail({ to, subject: "به دادورزان خوش آمدید", html, text, kind: "welcome" });
 }
 
 /** کد بازیابی رمز عبور */
@@ -194,7 +194,7 @@ export async function sendPasswordResetEmail(to: string, code: string): Promise<
      <p style="text-align:center;font-size:30px;font-weight:bold;letter-spacing:8px;color:#102a4a;direction:ltr;">${code}</p>
      <p style="color:#5b6b7e;font-size:12px;">این کد ۱۰ دقیقه اعتبار دارد. اگر شما درخواست نداده‌اید، این ایمیل را نادیده بگیرید.</p>`,
   );
-  return sendEmail({ to, subject: "کد بازیابی رمز عبور — دادبان", html, text, kind: "password_reset" });
+  return sendEmail({ to, subject: "کد بازیابی رمز عبور — دادورزان", html, text, kind: "password_reset" });
 }
 
 /** نتیجهٔ روی‌بوردینگ وکیل (تأیید/رد) */
@@ -202,10 +202,10 @@ export async function sendOnboardingResultEmail(to: string, name: string, approv
   const { html, text } = shell(
     approved ? "درخواست همکاری شما تأیید شد" : "نتیجهٔ بررسی درخواست همکاری",
     approved
-      ? `<p>تبریک! مدارک شما تأیید شد و پروفایل وکیل شما در دادبان فعال گردید.</p>
+      ? `<p>تبریک! مدارک شما تأیید شد و پروفایل وکیل شما در دادورزان فعال گردید.</p>
          <p><a href="https://dadban-brown.vercel.app/dashboard/lawyer" style="display:inline-block;background:#f0b429;color:#102a4a;font-weight:bold;text-decoration:none;padding:10px 22px;border-radius:10px;">ورود به پنل وکیل</a></p>`
       : `<p>متأسفانه درخواست همکاری شما در این مرحله تأیید نشد.</p>${note ? `<p style="color:#5b6b7e;">توضیح کارشناس: ${note}</p>` : ""}
          <p style="color:#5b6b7e;font-size:12px;">در صورت نیاز به پیگیری با پشتیبانی در تماس باشید.</p>`,
   );
-  return sendEmail({ to, subject: approved ? "تأیید همکاری — دادبان" : "نتیجهٔ بررسی درخواست همکاری — دادبان", html, text, kind: "onboarding" });
+  return sendEmail({ to, subject: approved ? "تأیید همکاری — دادورزان" : "نتیجهٔ بررسی درخواست همکاری — دادورزان", html, text, kind: "onboarding" });
 }
