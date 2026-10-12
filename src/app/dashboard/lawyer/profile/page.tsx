@@ -11,6 +11,7 @@ import { faNum, faPrice } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 import { LawyerProfileForm } from "@/components/profile/lawyer-profile-form";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
 
@@ -66,6 +67,23 @@ export default async function LawyerProfileEditorPage() {
         { label: t("پشتیبانی"), icon: "shield", href: "/support" },
       ]}
     >
+      {/* سمت چپِ بالای صفحه: دکمهٔ موشن «خرید پلن» (انتهای ردیف RTL = منتهی‌الیه چپ) */}
+      <div className="flex justify-end">
+        <ShimmerButton
+          href="/plans"
+          background="#15365d"
+          shimmerColor="#e6b94e"
+          borderRadius="12px"
+          shimmerDuration="3s"
+          className="min-h-11 gap-1.5 px-4 text-xs font-black shadow-[var(--shadow-lift)] sm:px-5 sm:text-sm"
+          data-testid="plan-cta-dashboard"
+          aria-label={t("خرید پلن")}
+        >
+          <Icon name="sparkles" className="h-[1.15em] w-[1.15em]" />
+          {t("خرید پلن")}
+        </ShimmerButton>
+      </div>
+
       {!linked || !l ? (
         /* حساب متصل نیست — حالت صادقانه با توضیح مسیر */
         <>
