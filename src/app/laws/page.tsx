@@ -6,7 +6,9 @@ import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
-import { LAWS } from "@/lib/content";
+import { getLaws } from "@/lib/content-store";
+
+export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -21,9 +23,9 @@ export default async function LawsPage() {
   const t = await getT();
   const locale = await getServerLocale();
 
-  // ترجمهٔ عنوان/توضیح قوانین برای زبان غیرفارسی (موازی، با کش) — متن مواد رسمی و verbatim می‌ماند
+  // منبع: دیتابیس (ویرایش ادمین) با fallback تحریریه؛ متن مواد رسمی و verbatim می‌ماند
   const laws = await Promise.all(
-    LAWS.map(async (l) => {
+    (await getLaws()).map(async (l) => {
       if (locale === "fa") return l;
       const [name, summary, authority, ...subjects] = await Promise.all([
         tdyn(locale, l.name, 300),

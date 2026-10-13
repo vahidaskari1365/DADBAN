@@ -5,14 +5,14 @@ import { Container, Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
-import { JUDGMENTS } from "@/lib/content";
+import { getJudgmentEntry, getJudgments } from "@/lib/content-store";
 
-export const revalidate = 300;
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const t = await getT();
-  const judgment = JUDGMENTS.find((x) => x.slug === slug);
+  const judgment = await getJudgmentEntry(slug);
   if (!judgment) return { title: t("رأی یافت نشد") };
   const locale = await getServerLocale();
   const [title, summary] = await Promise.all([
@@ -26,7 +26,7 @@ export default async function JudgmentPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   const t = await getT();
   const locale = await getServerLocale();
-  const judgment = JUDGMENTS.find((x) => x.slug === slug);
+  const judgment = await getJudgmentEntry(slug);
   if (!judgment) notFound();
 
   // ترجمهٔ عنوان/خلاصهٔ رأی — متن کامل رأی verbatim می‌ماند
@@ -42,7 +42,7 @@ export default async function JudgmentPage({ params }: { params: Promise<{ slug:
   }
 
   // آرای مرتبط — فقط عنوان و مرجع برای نمایش ترجمه می‌شود
-  const relatedOriginal = JUDGMENTS.filter((x) => x.slug !== slug).slice(0, 3);
+  const relatedOriginal = (await getJudgments()).filter((x) => x.slug !== slug).slice(0, 3);
   const related = await Promise.all(
     relatedOriginal.map(async (r) => {
       if (locale === "fa") return r;

@@ -4,17 +4,17 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { LEGAL_FORMS } from "@/lib/content";
+import { getLegalFormEntry } from "@/lib/content-store";
 import { faNum } from "@/lib/data";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
 import { templateT } from "@/lib/i18n/core";
 
-export const revalidate = 300;
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const f = LEGAL_FORMS.find((x) => x.slug === slug);
+  const f = await getLegalFormEntry(slug);
   const t = await getT();
   if (!f) return { title: t("فرم یافت نشد") };
   const locale = await getServerLocale();
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function LegalFormPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const f = LEGAL_FORMS.find((x) => x.slug === slug);
+  const f = await getLegalFormEntry(slug);
   if (!f) notFound();
 
   const t = await getT();

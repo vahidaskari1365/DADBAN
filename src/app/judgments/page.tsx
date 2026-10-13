@@ -6,7 +6,9 @@ import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
-import { JUDGMENTS } from "@/lib/content";
+import { getJudgments } from "@/lib/content-store";
+
+export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -21,9 +23,9 @@ export default async function JudgmentsPage() {
   const t = await getT();
   const locale = await getServerLocale();
 
-  // ترجمهٔ عنوان/خلاصهٔ رأی برای زبان غیرفارسی (موازی، با کش) — متن کامل رأی verbatim می‌ماند
+  // منبع: دیتابیس (ویرایش ادمین) با fallback تحریریه — متن کامل رأی verbatim می‌ماند
   const judgments = await Promise.all(
-    JUDGMENTS.map(async (j) => {
+    (await getJudgments()).map(async (j) => {
       if (locale === "fa") return j;
       const [title, summary, court, subject] = await Promise.all([
         tdyn(locale, j.title, 400),

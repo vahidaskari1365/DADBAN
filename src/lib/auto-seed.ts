@@ -13,7 +13,14 @@ import {
   serviceCategories,
   managedServices,
   users,
+  glossaryTerms,
+  laws,
+  judgments,
+  legalForms,
+  membershipPlans,
 } from "@/db/schema";
+import { GLOSSARY, LAWS, JUDGMENTS, LEGAL_FORMS } from "@/lib/content";
+import { PLANS_CATALOG } from "@/lib/plans-catalog";
 import { sql } from "drizzle-orm";
 import { hashPassword } from "@/lib/user-auth";
 import { CATALOG_CATEGORIES, CATALOG_SERVICES } from "@/lib/managed-catalog";
@@ -178,6 +185,12 @@ const DDL = [
   `CREATE INDEX IF NOT EXISTS service_quotes_request_idx ON service_quotes (request_id)`,
   `CREATE INDEX IF NOT EXISTS service_notifications_user_idx ON service_notifications (user_id, read)`,
   `CREATE INDEX IF NOT EXISTS service_audit_logs_request_idx ON service_audit_logs (request_id)`,
+  /* --- بخش‌های محتوایی وردپرس‌مانند (سینک با پنل ادمین) --- */
+  `CREATE TABLE IF NOT EXISTS glossary_terms (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, term TEXT NOT NULL, simple TEXT NOT NULL DEFAULT '', pro TEXT NOT NULL DEFAULT '', example TEXT NOT NULL DEFAULT '', related TEXT NOT NULL DEFAULT '', sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+  `CREATE TABLE IF NOT EXISTS laws (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL, year TEXT NOT NULL DEFAULT '', authority TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'معتبر', subjects TEXT NOT NULL DEFAULT '', summary TEXT NOT NULL DEFAULT '', sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+  `CREATE TABLE IF NOT EXISTS judgments (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, court TEXT NOT NULL DEFAULT '', date TEXT NOT NULL DEFAULT '', subject TEXT NOT NULL DEFAULT '', summary TEXT NOT NULL DEFAULT '', sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+  `CREATE TABLE IF NOT EXISTS legal_forms (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', docs TEXT NOT NULL DEFAULT '', steps TEXT NOT NULL DEFAULT '', icon TEXT NOT NULL DEFAULT 'file', sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+  `CREATE TABLE IF NOT EXISTS membership_plans (id SERIAL PRIMARY KEY, key TEXT NOT NULL UNIQUE, name TEXT NOT NULL, icon TEXT NOT NULL DEFAULT 'user', price INTEGER NOT NULL DEFAULT 0, "desc" TEXT NOT NULL DEFAULT '', features TEXT NOT NULL DEFAULT '', cta TEXT NOT NULL DEFAULT 'فعال‌سازی', href TEXT NOT NULL DEFAULT '/contact', highlight BOOLEAN NOT NULL DEFAULT false, active BOOLEAN NOT NULL DEFAULT true, sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
 ];
 
 export interface SeedCounts {
@@ -186,6 +199,124 @@ export interface SeedCounts {
   contracts: number;
   articles: number;
   qa: number;
+}
+
+/**
+ * بخش‌های محتوایی وردپرس‌مانند — واژه‌نامه/قوانین/آرا/فرم‌ها/پلن‌ها.
+ * فقط وقتی جدول خالی است از محتوای تحریریهٔ فعلی پر می‌شود؛ ویرایش‌های بعدی
+ * ادمین روی دیتابیس می‌ماند و هرگز بازنویسی نمی‌شود (idempotent).
+ */
+export async function seedContentSections(): Promise<void> {
+  try {
+    const g = await db.select({ id: glossaryTerms.id }).from(glossaryTerms).limit(1);
+    if (!g.length) {
+      await db
+        .insert(glossaryTerms)
+        .values(
+          GLOSSARY.map((x, i) => ({
+            slug: x.slug,
+            term: x.term,
+            simple: x.simple,
+            pro: x.pro,
+            example: x.example ?? "",
+            related: (x.related ?? []).join("،"),
+            sortOrder: i,
+          })),
+        )
+        .onConflictDoNothing();
+    }
+  } catch {
+    /* non-fatal */
+  }
+  try {
+    const l = await db.select({ id: laws.id }).from(laws).limit(1);
+    if (!l.length) {
+      await db
+        .insert(laws)
+        .values(
+          LAWS.map((x, i) => ({
+            slug: x.slug,
+            name: x.name,
+            year: x.year,
+            authority: x.authority,
+            status: x.status,
+            subjects: x.subjects.join("،"),
+            summary: x.summary,
+            sortOrder: i,
+          })),
+        )
+        .onConflictDoNothing();
+    }
+  } catch {
+    /* non-fatal */
+  }
+  try {
+    const j = await db.select({ id: judgments.id }).from(judgments).limit(1);
+    if (!j.length) {
+      await db
+        .insert(judgments)
+        .values(
+          JUDGMENTS.map((x, i) => ({
+            slug: x.slug,
+            title: x.title,
+            court: x.court,
+            date: x.date,
+            subject: x.subject,
+            summary: x.summary,
+            sortOrder: i,
+          })),
+        )
+        .onConflictDoNothing();
+    }
+  } catch {
+    /* non-fatal */
+  }
+  try {
+    const f = await db.select({ id: legalForms.id }).from(legalForms).limit(1);
+    if (!f.length) {
+      await db
+        .insert(legalForms)
+        .values(
+          LEGAL_FORMS.map((x, i) => ({
+            slug: x.slug,
+            name: x.name,
+            description: x.desc,
+            docs: x.docs.join("،"),
+            steps: x.steps.join("،"),
+            icon: x.icon,
+            sortOrder: i,
+          })),
+        )
+        .onConflictDoNothing();
+    }
+  } catch {
+    /* non-fatal */
+  }
+  try {
+    const p = await db.select({ id: membershipPlans.id }).from(membershipPlans).limit(1);
+    if (!p.length) {
+      await db
+        .insert(membershipPlans)
+        .values(
+          PLANS_CATALOG.map((x, i) => ({
+            key: x.key,
+            name: x.name,
+            icon: x.icon,
+            price: x.price,
+            desc: x.desc,
+            features: x.features.join("،"),
+            cta: x.cta,
+            href: x.href,
+            highlight: !!x.highlight,
+            active: true,
+            sortOrder: i,
+          })),
+        )
+        .onConflictDoNothing();
+    }
+  } catch {
+    /* non-fatal */
+  }
 }
 
 /** Seed categories + services once (idempotent). */
@@ -443,6 +574,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
         await ensureProfileSchema();
         await ensureExtendedSchema();
         await seedManagedServices();
+        await seedContentSections();
         await seedDemoOperators();
         await seedPlatformAccounts(); // اکانت‌های وکیل/موکل تحویل — در پروداکشن هم
         await ensureLawyerPhotos();
@@ -472,6 +604,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
   // Managed Services catalog + (non-prod) demo operations accounts.
   try {
     await seedManagedServices();
+    await seedContentSections();
     await seedDemoOperators();
     await seedPlatformAccounts(); // اکانت‌های وکیل/موکل تحویل — در پروداکشن هم
   } catch {
@@ -568,6 +701,12 @@ export async function ensureExtendedSchema(): Promise<void> {
   if (extendedSchemaReady) return;
   const stmts = [
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN NOT NULL DEFAULT false`,
+    /* --- بخش‌های محتوایی وردپرس‌مانند (در هر دو مسیر بوت ساخته می‌شوند) --- */
+    `CREATE TABLE IF NOT EXISTS glossary_terms (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, term TEXT NOT NULL, simple TEXT NOT NULL DEFAULT '', pro TEXT NOT NULL DEFAULT '', example TEXT NOT NULL DEFAULT '', related TEXT NOT NULL DEFAULT '', sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS laws (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL, year TEXT NOT NULL DEFAULT '', authority TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'معتبر', subjects TEXT NOT NULL DEFAULT '', summary TEXT NOT NULL DEFAULT '', sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS judgments (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, court TEXT NOT NULL DEFAULT '', date TEXT NOT NULL DEFAULT '', subject TEXT NOT NULL DEFAULT '', summary TEXT NOT NULL DEFAULT '', sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS legal_forms (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', docs TEXT NOT NULL DEFAULT '', steps TEXT NOT NULL DEFAULT '', icon TEXT NOT NULL DEFAULT 'file', sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS membership_plans (id SERIAL PRIMARY KEY, key TEXT NOT NULL UNIQUE, name TEXT NOT NULL, icon TEXT NOT NULL DEFAULT 'user', price INTEGER NOT NULL DEFAULT 0, "desc" TEXT NOT NULL DEFAULT '', features TEXT NOT NULL DEFAULT '', cta TEXT NOT NULL DEFAULT 'فعال‌سازی', href TEXT NOT NULL DEFAULT '/contact', highlight BOOLEAN NOT NULL DEFAULT false, active BOOLEAN NOT NULL DEFAULT true, sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE TABLE IF NOT EXISTS otp_codes (id SERIAL PRIMARY KEY, phone TEXT NOT NULL, purpose TEXT NOT NULL, code_hash TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, expires_at TIMESTAMP NOT NULL, consumed_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE INDEX IF NOT EXISTS otp_codes_phone_purpose_idx ON otp_codes (phone, purpose, created_at)`,
     `CREATE TABLE IF NOT EXISTS email_outbox (id SERIAL PRIMARY KEY, to_email TEXT NOT NULL, kind TEXT NOT NULL DEFAULT 'broadcast', subject TEXT NOT NULL, body_html TEXT NOT NULL DEFAULT '', body_text TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'logged', provider TEXT NOT NULL DEFAULT 'log', error TEXT, sent_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,

@@ -6,7 +6,9 @@ import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
-import { GLOSSARY } from "@/lib/content";
+import { getGlossary } from "@/lib/content-store";
+
+export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -21,9 +23,10 @@ export default async function GlossaryPage() {
   const t = await getT();
   const locale = await getServerLocale();
 
-  // ترجمهٔ اصطلاح/تعریف ساده برای زبان غیرفارسی (موازی، با کش)
+  // منبع: دیتابیس (ویرایش ادمین) با fallback تحریریه — سپس ترجمه برای زبان غیرفارسی
+  const glossary = await getGlossary();
   const translated = await Promise.all(
-    GLOSSARY.map(async (g) => {
+    glossary.map(async (g) => {
       if (locale === "fa") return g;
       const [term, simple] = await Promise.all([
         tdyn(locale, g.term, 200),

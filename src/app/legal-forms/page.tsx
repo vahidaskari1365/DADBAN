@@ -4,9 +4,11 @@ import { PageHero } from "@/components/page-hero";
 import { Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
-import { LEGAL_FORMS } from "@/lib/content";
+import { getLegalForms } from "@/lib/content-store";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
+
+export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -20,9 +22,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LegalFormsPage() {
   const t = await getT();
   const locale = await getServerLocale();
-  // ترجمهٔ عنوان/توضیح هر فرم (محتوای تحریریه‌ای، در لایهٔ صفحه)
+  // منبع: دیتابیس (ویرایش ادمین) با fallback تحریریه؛ سپس ترجمهٔ عنوان/توضیح هر فرم
   const formsT = await Promise.all(
-    LEGAL_FORMS.map(async (f) => ({ ...f, name: await tdyn(locale, f.name, 150), desc: await tdyn(locale, f.desc, 300) })),
+    (await getLegalForms()).map(async (f) => ({ ...f, name: await tdyn(locale, f.name, 150), desc: await tdyn(locale, f.desc, 300) })),
   );
 
   return (

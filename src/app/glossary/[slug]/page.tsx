@@ -5,10 +5,10 @@ import { Container, Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
-import { GLOSSARY } from "@/lib/content";
+import { getGlossary, getGlossaryEntry } from "@/lib/content-store";
 import { safeJsonLd } from "@/lib/jsonld";
 
-export const revalidate = 300;
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,
@@ -17,7 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const t = await getT();
-  const entry = GLOSSARY.find((x) => x.slug === slug);
+  const entry = await getGlossaryEntry(slug);
   if (!entry) return { title: t("واژه یافت نشد") };
   const locale = await getServerLocale();
   const [term, simple] = await Promise.all([
@@ -39,7 +39,7 @@ export default async function GlossaryTermPage({
   const { slug } = await params;
   const t = await getT();
   const locale = await getServerLocale();
-  const entry = GLOSSARY.find((x) => x.slug === slug);
+  const entry = await getGlossaryEntry(slug);
   if (!entry) notFound();
 
   // ترجمهٔ اصطلاح/تعریف‌ها/مثال/مرتبط‌ها برای زبان غیرفارسی (موازی، با کش)
@@ -63,7 +63,7 @@ export default async function GlossaryTermPage({
   };
 
   // واژه‌های مرتبط — فقط اصطلاح برای نمایش ترجمه می‌شود
-  const relatedOriginal = GLOSSARY.filter((x) => x.slug !== slug).slice(0, 4);
+  const relatedOriginal = (await getGlossary()).filter((x) => x.slug !== slug).slice(0, 4);
   const related = await Promise.all(
     relatedOriginal.map(async (r) => {
       if (locale === "fa") return r;

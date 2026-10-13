@@ -6,7 +6,11 @@ import { Reveal } from "@/components/reveal";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { faPrice } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
+import { getMembershipPlans } from "@/lib/content-store";
+import type { PlanCatalogItem } from "@/lib/plans-catalog";
 import { safeJsonLd } from "@/lib/jsonld";
+
+export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -18,70 +22,6 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: { canonical: "/plans" },
   };
 }
-
-type PlanIcon = "user" | "bolt" | "badge";
-
-const PLANS: {
-  key: "basic" | "pro" | "gold";
-  name: string;
-  icon: PlanIcon;
-  /** ۰ = رایگان */
-  price: number;
-  desc: string;
-  features: string[];
-  cta: string;
-  href: string;
-  highlight?: boolean;
-}[] = [
-  {
-    key: "basic",
-    name: "پایه",
-    icon: "user",
-    price: 0,
-    desc: "شروع حضور حرفه‌ای در دادورزان",
-    features: [
-      "پروفایل عمومی کامل با عکس و تخصص‌ها",
-      "دریافت درخواست مشاوره و پرونده",
-      "نمایش در فهرست وکلای استان",
-      "ساعت کاری و زمان‌های آزاد",
-    ],
-    cta: "شروع رایگان",
-    href: "/join-as-lawyer",
-  },
-  {
-    key: "pro",
-    name: "حرفه‌ای",
-    icon: "bolt",
-    price: 490000,
-    desc: "برای وکلایی که می‌خواهند بیشتر دیده شوند",
-    features: [
-      "اولویت نمایش در نتایج جستجو",
-      "نشان «حرفه‌ای» روی پروفایل",
-      "آمار کامل بازدید و عملکرد پروفایل",
-      "معرفی در خبرنامه و شبکه‌های اجتماعی",
-      "پشتیبانی اولویت‌دار",
-    ],
-    cta: "فعال‌سازی پلن حرفه‌ای",
-    href: "/contact",
-    highlight: true,
-  },
-  {
-    key: "gold",
-    name: "طلایی",
-    icon: "badge",
-    price: 990000,
-    desc: "حداکثر دیده‌شدن برای پروفایل شما",
-    features: [
-      "صدر فهرست وکلا و نتایج جستجو",
-      "نشان طلایی تأیید ویژه",
-      "کارت معرفی اختصاصی در صفحهٔ اصلی",
-      "کمپین معرفی ماهانه در فضای مجازی",
-      "مدیر پروفایل اختصاصی",
-    ],
-    cta: "فعال‌سازی پلن طلایی",
-    href: "/contact",
-  },
-];
 
 const FAQ: { q: string; a: string }[] = [
   {
@@ -100,6 +40,9 @@ const FAQ: { q: string; a: string }[] = [
 
 export default async function PlansPage() {
   const t = await getT();
+
+  // منبع: دیتابیس (مدیریت پلن‌ها در پنل ادمین) با fallback کاتالوگ تحریریه
+  const plans = await getMembershipPlans();
 
   /* دادهٔ ساخت‌یافتهٔ FAQ برای موتورهای جستجو و دستیارهای هوشمند */
   const faqJsonLd = {
@@ -148,7 +91,7 @@ export default async function PlansPage() {
         </Reveal>
 
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
-          {PLANS.map((p, i) => (
+          {plans.map((p, i) => (
             <Reveal key={p.key} delay={i * 120} className={`h-full ${p.highlight ? "lg:-translate-y-3" : ""}`}>
               <div
                 className={`relative flex h-full flex-col overflow-hidden rounded-3xl border p-6 card-shadow transition-transform duration-300 hover:-translate-y-1 ${

@@ -1156,5 +1156,87 @@ export const courtSessions = pgTable(
 );
 export type CourtSession = typeof courtSessions.$inferSelect;
 
+/* ============================================================================
+ * بخش‌های محتوایی وردپرس‌مانند — قابل ویرایش کامل از پنل ادمین و سینک با سایت.
+ * فیلدهای فهرستی (related/subjects/docs/steps/features) با جداکنندهٔ «،» ذخیره
+ * می‌شوند تا ویرایش در ادمین به سادگی یک input باشد.
+ * ============================================================================ */
+
+/** واژه‌نامه حقوقی (/glossary) */
+export const glossaryTerms = pgTable("glossary_terms", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  term: text("term").notNull(),
+  simple: text("simple").notNull().default(""),
+  pro: text("pro").notNull().default(""),
+  example: text("example").notNull().default(""),
+  related: text("related").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type GlossaryTermRow = typeof glossaryTerms.$inferSelect;
+
+/** قوانین (/laws) */
+export const laws = pgTable("laws", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  year: text("year").notNull().default(""),
+  authority: text("authority").notNull().default(""),
+  status: text("status").notNull().default("معتبر"),
+  subjects: text("subjects").notNull().default(""),
+  summary: text("summary").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type LawRow = typeof laws.$inferSelect;
+
+/** آرای قضایی (/judgments) */
+export const judgments = pgTable("judgments", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  court: text("court").notNull().default(""),
+  date: text("date").notNull().default(""),
+  subject: text("subject").notNull().default(""),
+  summary: text("summary").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type JudgmentRow = typeof judgments.$inferSelect;
+
+/** فرم‌های حقوقی (/legal-forms) */
+export const legalForms = pgTable("legal_forms", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  docs: text("docs").notNull().default(""),
+  steps: text("steps").notNull().default(""),
+  icon: text("icon").notNull().default("file"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type LegalFormRow = typeof legalForms.$inferSelect;
+
+/** پلن‌های عضویت وکلا (/plans) */
+export const membershipPlans = pgTable("membership_plans", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  name: text("name").notNull(),
+  icon: text("icon").notNull().default("user"),
+  /** ۰ = رایگان (تومان) */
+  price: integer("price").notNull().default(0),
+  desc: text("desc").notNull().default(""),
+  features: text("features").notNull().default(""),
+  cta: text("cta").notNull().default("فعال‌سازی"),
+  href: text("href").notNull().default("/contact"),
+  highlight: boolean("highlight").notNull().default(false),
+  active: boolean("active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type MembershipPlanRow = typeof membershipPlans.$inferSelect;
+
 /* جداول بازار پرونده‌ها (دادپیو) — در همین ماژول re-export می‌شوند تا همهٔ کد از "@/db/schema" مصرف کند */
 export * from "@/db/schema-marketplace";

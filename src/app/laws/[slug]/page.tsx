@@ -5,14 +5,14 @@ import { Container, Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
-import { LAWS } from "@/lib/content";
+import { getLawEntry } from "@/lib/content-store";
 
-export const revalidate = 300;
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const t = await getT();
-  const law = LAWS.find((x) => x.slug === slug);
+  const law = await getLawEntry(slug);
   if (!law) return { title: t("قانون یافت نشد") };
   const locale = await getServerLocale();
   const [name, summary] = await Promise.all([
@@ -26,7 +26,7 @@ export default async function LawPage({ params }: { params: Promise<{ slug: stri
   const { slug } = await params;
   const t = await getT();
   const locale = await getServerLocale();
-  const law = LAWS.find((x) => x.slug === slug);
+  const law = await getLawEntry(slug);
   if (!law) notFound();
 
   // ترجمهٔ عنوان/توضیح/مرجع/موضوعات — متن مواد قانونی رسمی است و هرگز ترجمه نمی‌شود

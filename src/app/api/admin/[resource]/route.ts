@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { lawyers, contracts, qaQuestions, cases, consultations, tickets, articles, qaSubmissions, payments, lawyerAvailability, managedServices, serviceCategories } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { lawyers, contracts, qaQuestions, cases, consultations, tickets, articles, qaSubmissions, payments, lawyerAvailability, managedServices, serviceCategories, glossaryTerms, laws, judgments, legalForms, membershipPlans } from "@/db/schema";
+import { desc, eq, asc } from "drizzle-orm";
 import { isAdmin } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
@@ -19,6 +19,12 @@ const TABLES: Record<string, { table: any; orderBy: any; searchCol?: any }> = {
   availability: { table: lawyerAvailability, orderBy: null, searchCol: undefined },
   "service-categories": { table: serviceCategories, orderBy: desc(serviceCategories.sortOrder), searchCol: serviceCategories.name },
   "managed-services": { table: managedServices, orderBy: desc(managedServices.sortOrder), searchCol: managedServices.title },
+  /* --- بخش‌های محتوایی وردپرس‌مانند --- */
+  glossary: { table: glossaryTerms, orderBy: asc(glossaryTerms.sortOrder), searchCol: glossaryTerms.term },
+  laws: { table: laws, orderBy: asc(laws.sortOrder), searchCol: laws.name },
+  judgments: { table: judgments, orderBy: asc(judgments.sortOrder), searchCol: judgments.title },
+  "legal-forms": { table: legalForms, orderBy: asc(legalForms.sortOrder), searchCol: legalForms.name },
+  plans: { table: membershipPlans, orderBy: asc(membershipPlans.sortOrder), searchCol: membershipPlans.name },
 };
 
 export async function GET(req: Request, { params }: { params: Promise<{ resource: string }> }) {
