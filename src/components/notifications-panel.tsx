@@ -27,7 +27,7 @@ interface NotifItem {
   title: string;
   body: string;
   link: string | null;
-  meta: { subject?: string; city?: string; lawyer?: string; price?: number; caseNumber?: string } | null;
+  meta: { subject?: string; city?: string; lawyer?: string; price?: number; caseNumber?: string; approved?: boolean; note?: string } | null;
   read: boolean;
   createdAt: string;
 }
@@ -198,6 +198,17 @@ export function NotificationsPanel() {
       return {
         title: t("موکل پیشنهاد شما را پذیرفت"),
         sub: tf("پروندهٔ «{subject}» به شما واگذار شد — گفتگوی رایگان فعال است", { subject: m.subject ?? "" }),
+      };
+    }
+    if (n.type === "verification") {
+      const approved = m.approved !== false;
+      return {
+        title: approved ? t("احراز هویت شما تأیید شد") : t("درخواست احراز هویت شما بررسی شد"),
+        sub: approved
+          ? t("پروفایل شما تأیید و در فهرست وکلای دادورزان نمایش داده شد")
+          : m.note
+            ? tf("تأیید نشد — {note}", { note: String(m.note) })
+            : t("تأیید نشد؛ می‌توانید مدارک را اصلاح و مجدد ارسال کنید"),
       };
     }
     return { title: n.title, sub: n.body };

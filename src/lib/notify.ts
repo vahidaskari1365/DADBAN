@@ -138,13 +138,14 @@ export async function notifyVerificationResult(userId: number | null, approved: 
           title: "احراز هویت شما تأیید شد",
           body: "پروفایل شما تأیید و در فهرست وکلای دادورزان نمایش داده شد",
           link: "/dashboard/lawyer/verification",
+          meta: { approved: true },
         }
       : {
           type: "verification",
           title: "درخواست احراز هویت شما بررسی شد",
           body: adminNote ? "تأیید نشد — {note}" : "تأیید نشد؛ می‌توانید مدارک را اصلاح و مجدد ارسال کنید",
           link: "/dashboard/lawyer/verification",
-          meta: adminNote ? { note: adminNote } : undefined,
+          meta: { approved: false, ...(adminNote ? { note: adminNote } : {}) },
         });
   } catch {
     /* non-fatal */
