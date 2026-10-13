@@ -90,9 +90,14 @@ export default async function PlansPage() {
           </span>
         </Reveal>
 
-        <div className="mt-10 grid gap-5 lg:grid-cols-3">
+        {/* چیدمان تطبیقی — با هر تعداد پلن (۱، ۲، ۳، ۴ و…) مرکزچین و مرتب می‌ماند */}
+        <div className="mt-10 flex flex-wrap items-stretch justify-center gap-5">
           {plans.map((p, i) => (
-            <Reveal key={p.key} delay={i * 120} className={`h-full ${p.highlight ? "lg:-translate-y-3" : ""}`}>
+            <Reveal
+              key={p.key}
+              delay={i * 120}
+              className={`w-full max-w-[440px] sm:w-[340px] sm:max-w-none ${p.highlight ? "lg:-translate-y-3" : ""}`}
+            >
               <div
                 className={`relative flex h-full flex-col overflow-hidden rounded-3xl border p-6 card-shadow transition-transform duration-300 hover:-translate-y-1 ${
                   p.highlight ? "border-accent bg-accent-soft/30" : "border-border bg-surface"
@@ -143,6 +148,20 @@ export default async function PlansPage() {
               </div>
             </Reveal>
           ))}
+
+          {/* حالت خالی — وقتی ادمین همهٔ پلن‌ها را حذف/غیرفعال کرده */}
+          {plans.length === 0 && (
+            <div className="w-full max-w-xl rounded-3xl border border-border bg-surface p-10 text-center" data-testid="plans-empty">
+              <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+                <Icon name="briefcase" className="h-6 w-6" />
+              </span>
+              <p className="mt-4 text-base font-bold text-foreground">{t("در حال حاضر پلن فعالی ثبت نشده است")}</p>
+              <p className="mx-auto mt-2 max-w-sm text-xs leading-6 text-muted">
+                {t("برای اطلاع از پلن‌های عضویت و فعال‌سازی اختصاصی با ما در تماس باشید.")}
+              </p>
+              <Button href="/contact" icon="phone" className="mt-5">{t("تماس با دادورزان")}</Button>
+            </div>
+          )}
         </div>
 
         <p className="mx-auto mt-6 max-w-2xl text-center text-[11px] leading-6 text-muted">

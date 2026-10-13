@@ -131,9 +131,11 @@ export async function getLegalFormEntry(slug: string): Promise<LegalForm | null>
 export async function getMembershipPlans(): Promise<PlanCatalogItem[]> {
   try {
     const rows = await db.select().from(membershipPlans).orderBy(asc(membershipPlans.sortOrder), asc(membershipPlans.id));
-    const active = rows.filter((r) => r.active);
-    if (!active.length) return PLANS_CATALOG;
-    return active.map((r) => ({
+    // جدول کاملاً خالی = نصب تازه (سید اولیه هنوز انجام نشده) → کاتالوگ تحریریه
+    if (!rows.length) return PLANS_CATALOG;
+    // رکورد هست ولی همهٔ پلن‌ها غیرفعال/حذف‌شده توسط ادمین → خالی برمی‌گردد
+    // (صفحهٔ /plans پیام «پلن فعالی ثبت نشده» نشان می‌دهد؛ نه پلن‌های قدیمی)
+    return rows.filter((r) => r.active).map((r) => ({
       key: r.key,
       name: r.name,
       icon: r.icon as PlanCatalogItem["icon"],

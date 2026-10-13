@@ -4,7 +4,19 @@
  *  - fallback صفحهٔ /plans وقتی دیتابیس در دسترس نیست
  * پس از اولین seed، منبع واقعی همان جدول است و ویرایش ادمین همیشه برنده است.
  */
-export type PlanIcon = "user" | "bolt" | "badge";
+export type PlanIcon =
+  | "user"
+  | "bolt"
+  | "badge"
+  | "star"
+  | "shield"
+  | "sparkles"
+  | "coins"
+  | "certificate"
+  | "briefcase"
+  | "gavel"
+  | "landmark"
+  | "scale";
 
 export interface PlanCatalogItem {
   key: string;

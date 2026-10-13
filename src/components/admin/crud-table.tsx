@@ -286,8 +286,10 @@ export function AdminCrudTable({
                     className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary"
                   />
                 )}
-                {f.type === "csv" && (
-                  <p className="mt-1 text-[11px] text-muted">{f.hint ?? t("موارد را با «،» از هم جدا کنید")}</p>
+                {(f.hint || f.type === "csv") && (
+                  <p className="mt-1 text-[11px] leading-5 text-muted">
+                    {f.hint ?? t("موارد را با «،» از هم جدا کنید")}
+                  </p>
                 )}
               </div>
             ))}

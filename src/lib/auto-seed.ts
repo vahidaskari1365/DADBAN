@@ -203,10 +203,38 @@ export interface SeedCounts {
 
 /**
  * بخش‌های محتوایی وردپرس‌مانند — واژه‌نامه/قوانین/آرا/فرم‌ها/پلن‌ها.
- * فقط وقتی جدول خالی است از محتوای تحریریهٔ فعلی پر می‌شود؛ ویرایش‌های بعدی
- * ادمین روی دیتابیس می‌ماند و هرگز بازنویسی نمی‌شود (idempotent).
+ * فقط یک‌بار (نخستین بوت) از محتوای تحریریه سید می‌شود؛ نشانگر در platform_settings
+ * ثبت می‌شود تا حذفِ کامل رکوردها توسط ادمین (مثلاً پلن‌ها) در بوت بعدی بازنویسی نشود.
  */
-export async function seedContentSections(): Promise<void> {
+const CONTENT_SEED_KEY = "content_sections_seeded";
+
+async function contentSeedMarkerExists(): Promise<boolean> {
+  try {
+    await db.execute(
+      sql`CREATE TABLE IF NOT EXISTS platform_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL DEFAULT '', updated_at TIMESTAMP NOT NULL DEFAULT now())`,
+    );
+    const res = await db.execute(
+      sql`SELECT key FROM platform_settings WHERE key = ${CONTENT_SEED_KEY} LIMIT 1`,
+    );
+    const rows = (res as { rows?: unknown[] }).rows ?? [];
+    return rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+async function markContentSeedDone(): Promise<void> {
+  try {
+    await db.execute(
+      sql`INSERT INTO platform_settings (key, value) VALUES (${CONTENT_SEED_KEY}, '1') ON CONFLICT (key) DO NOTHING`,
+    );
+  } catch {
+    /* non-fatal */
+  }
+}
+
+export async function seedContentSections(force = false): Promise<void> {
+  if (!force && (await contentSeedMarkerExists())) return;
   try {
     const g = await db.select({ id: glossaryTerms.id }).from(glossaryTerms).limit(1);
     if (!g.length) {
@@ -317,6 +345,7 @@ export async function seedContentSections(): Promise<void> {
   } catch {
     /* non-fatal */
   }
+  await markContentSeedDone();
 }
 
 /** Seed categories + services once (idempotent). */
