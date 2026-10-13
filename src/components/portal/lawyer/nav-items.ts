@@ -13,6 +13,7 @@ export type LawyerNavKey =
   | "calendar"
   | "team"
   | "messages"
+  | "verification"
   | "profile";
 
 export function lawyerNav(
@@ -37,6 +38,7 @@ export function lawyerNav(
     { label: "تقویم و مهلت‌ها", icon: "calendar", href: "/dashboard/lawyer/calendar", active: active === "calendar" },
     { label: "کارآموز و تیم", icon: "user", href: "/dashboard/lawyer/team", active: active === "team" },
     { label: "پیام‌ها", icon: "mail", href: "/dashboard/lawyer#messages", active: active === "messages" },
+    { label: "احراز هویت", icon: "fingerprint", href: "/dashboard/lawyer/verification", active: active === "verification", badge: badges.verification },
     { label: "پروفایل حرفه‌ای", icon: "id", href: "/dashboard/lawyer/profile", active: active === "profile" },
   ];
 }

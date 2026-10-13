@@ -730,6 +730,11 @@ export async function ensureExtendedSchema(): Promise<void> {
   if (extendedSchemaReady) return;
   const stmts = [
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN NOT NULL DEFAULT false`,
+    /* ── احراز هویت وکلا: آپلود مدارک در پنل وکیل + صف بررسی ادمین ── */
+    `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS employee_lawyer BOOLEAN NOT NULL DEFAULT false`,
+    `CREATE TABLE IF NOT EXISTS lawyer_verifications (id SERIAL PRIMARY KEY, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, user_id INTEGER REFERENCES app_users(id) ON DELETE SET NULL, status TEXT NOT NULL DEFAULT 'pending', license_name TEXT NOT NULL DEFAULT '', license_mime TEXT NOT NULL DEFAULT '', license_size INTEGER NOT NULL DEFAULT 0, license_data BYTEA, id_name TEXT NOT NULL DEFAULT '', id_mime TEXT NOT NULL DEFAULT '', id_size INTEGER NOT NULL DEFAULT 0, id_data BYTEA, degree_name TEXT NOT NULL DEFAULT '', degree_mime TEXT NOT NULL DEFAULT '', degree_size INTEGER NOT NULL DEFAULT 0, degree_data BYTEA, note TEXT NOT NULL DEFAULT '', admin_note TEXT, reviewed_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS lawyer_verifications_status_idx ON lawyer_verifications (status, created_at)`,
+    `CREATE INDEX IF NOT EXISTS lawyer_verifications_lawyer_idx ON lawyer_verifications (lawyer_id)`,
     /* --- بخش‌های محتوایی وردپرس‌مانند (در هر دو مسیر بوت ساخته می‌شوند) --- */
     `CREATE TABLE IF NOT EXISTS glossary_terms (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, term TEXT NOT NULL, simple TEXT NOT NULL DEFAULT '', pro TEXT NOT NULL DEFAULT '', example TEXT NOT NULL DEFAULT '', related TEXT NOT NULL DEFAULT '', sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE TABLE IF NOT EXISTS laws (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, name TEXT NOT NULL, year TEXT NOT NULL DEFAULT '', authority TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'معتبر', subjects TEXT NOT NULL DEFAULT '', summary TEXT NOT NULL DEFAULT '', sort_order INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,

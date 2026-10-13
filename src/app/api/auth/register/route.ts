@@ -46,7 +46,14 @@ export async function POST(req: Request) {
     if (lawyerType === "karamooz") {
       if (!isUserAuthConfigured()) return NextResponse.json({ ok: false, error: "سامانه ثبت‌نام موقتاً در دسترس نیست؛ لطفاً بعداً تلاش کنید." }, { status: 503 });
       const city = text(body?.city, 60) ?? "";
+      // تخصص‌ها (الزامی ≥۱، حداکثر ۶) + گزینهٔ اختیاری «وکیل کارمندان و کارهای اداری»
+      const specialties = Array.isArray(body?.specialties)
+        ? Array.from(new Set((body.specialties as unknown[]).map((s) => text(s, 60)).filter((s): s is string => !!s))).slice(0, 6)
+        : [];
+      if (!specialties.length) return NextResponse.json({ ok: false, error: "حداقل یک تخصص انتخاب کنید." }, { status: 422 });
+      const employeeLawyer = body?.employeeLawyer === true;
       // یک تراکنش: حساب وکیل ← پروفایل کارآموز ← اتصال lawyerId
+      // پروفایل تازه verified=false: تا تأیید احراز هویت مدیر سایت در فهرست عمومی ظاهر نمی‌شود
       const result = await db.transaction(async (tx) => {
         const [created] = await tx.insert(users).values({ name, phone: mobile, email, passwordHash: hashPassword(password), role: "lawyer" }).returning({ id: users.id, name: users.name, role: users.role });
         const [profile] = await tx.insert(lawyers).values({
@@ -57,6 +64,9 @@ export async function POST(req: Request) {
           city,
           province: city,
           lawyerType: "karamooz",
+          specialties,
+          employeeLawyer,
+          verified: false,
           bio: "",
         }).returning({ id: lawyers.id, slug: lawyers.slug });
         await tx.update(users).set({ lawyerId: profile.id }).where(eq(users.id, created.id));

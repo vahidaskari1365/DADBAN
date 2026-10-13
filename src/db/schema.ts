@@ -375,6 +375,8 @@ export const lawyers = pgTable("lawyers", {
   services: text("services").array().notNull().default([]),
   views: integer("views").notNull().default(0),
   featured: boolean("featured").notNull().default(false),
+  /** وکیل کارمندان و کارهای اداری — گزینهٔ اختیاری هنگام ثبت‌نام (پذیرش پروندهٔ کارکنان/ادارات) */
+  employeeLawyer: boolean("employee_lawyer").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -989,6 +991,49 @@ export const lawyerOnboarding = pgTable(
   }),
 );
 export type LawyerOnboardingRow = typeof lawyerOnboarding.$inferSelect;
+
+/* ── ۶‌ب) احراز هویت وکلا — آپلود مدارک در پنل وکیل و بررسی مدیر سایت ──
+ * وکیل پس از ثبت‌نام مدارک (پروانه، کارت ملی، مدرک تحصیلی) را بارگذاری می‌کند؛
+ * درخواست در صف «احراز هویت وکلا» پنل ادمین می‌نشیند. با تأیید مدیر:
+ * lawyers.verified=true → پروفایل وارد فهرست عمومی وکلا می‌شود + اعلان به وکیل.
+ */
+export const lawyerVerifications = pgTable(
+  "lawyer_verifications",
+  {
+    id: serial("id").primaryKey(),
+    lawyerId: integer("lawyer_id")
+      .notNull()
+      .references(() => lawyers.id, { onDelete: "cascade" }),
+    userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
+    /** pending | approved | rejected */
+    status: text("status").notNull().default("pending"),
+    /* پروانهٔ وکالت (الزامی) */
+    licenseName: text("license_name").notNull().default(""),
+    licenseMime: text("license_mime").notNull().default(""),
+    licenseSize: integer("license_size").notNull().default(0),
+    licenseData: bytea("license_data"),
+    /* کارت ملی (الزامی) */
+    idName: text("id_name").notNull().default(""),
+    idMime: text("id_mime").notNull().default(""),
+    idSize: integer("id_size").notNull().default(0),
+    idData: bytea("id_data"),
+    /* مدرک تحصیلی یا سایر مدارک (اختیاری) */
+    degreeName: text("degree_name").notNull().default(""),
+    degreeMime: text("degree_mime").notNull().default(""),
+    degreeSize: integer("degree_size").notNull().default(0),
+    degreeData: bytea("degree_data"),
+    /** توضیح آزاد وکیل هنگام ارسال مدارک */
+    note: text("note").notNull().default(""),
+    adminNote: text("admin_note"),
+    reviewedAt: timestamp("reviewed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    statusIdx: index("lawyer_verifications_status_idx").on(t.status, t.createdAt),
+    lawyerIdx: index("lawyer_verifications_lawyer_idx").on(t.lawyerId),
+  }),
+);
+export type LawyerVerification = typeof lawyerVerifications.$inferSelect;
 
 /* ── ۷) بازبینی حقوقی — نشان «بازبینی‌شده توسط وکیل» روی صفحات قانونی ──
  * بازبینیِ واقعی کار انسانی وکیل است؛ این جدول فقط نتیجه و مسئول آن را شفاف ثبت می‌کند.

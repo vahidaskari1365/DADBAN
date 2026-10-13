@@ -18,7 +18,7 @@ import { notifyTelegramByUserIds } from "@/lib/telegram";
  * همه‌جا best-effort با try/catch.
  */
 
-export type NotificationType = "new_case" | "new_offer" | "offer_accepted";
+export type NotificationType = "new_case" | "new_offer" | "offer_accepted" | "verification";
 
 interface NotifyInput {
   type: NotificationType;
@@ -121,6 +121,31 @@ export async function notifyClientNewOffer(c: {
         meta: { lawyer: c.lawyerName, price: c.price, subject: c.subject, caseNumber: c.caseNumber },
       },
     );
+  } catch {
+    /* non-fatal */
+  }
+}
+
+/* ───────────────── ۴) نتیجهٔ احراز هویت وکلا → وکیل ───────────────── */
+
+/** مدیر سایت درخواست احراز هویت را تایید/رد کرد → اعلان به وکیل (پیغام در پنل) */
+export async function notifyVerificationResult(userId: number | null, approved: boolean, adminNote?: string | null): Promise<void> {
+  if (!userId) return;
+  try {
+    await insertFor([userId], approved
+      ? {
+          type: "verification",
+          title: "احراز هویت شما تأیید شد",
+          body: "پروفایل شما تأیید و در فهرست وکلای دادورزان نمایش داده شد",
+          link: "/dashboard/lawyer/verification",
+        }
+      : {
+          type: "verification",
+          title: "درخواست احراز هویت شما بررسی شد",
+          body: adminNote ? "تأیید نشد — {note}" : "تأیید نشد؛ می‌توانید مدارک را اصلاح و مجدد ارسال کنید",
+          link: "/dashboard/lawyer/verification",
+          meta: adminNote ? { note: adminNote } : undefined,
+        });
   } catch {
     /* non-fatal */
   }

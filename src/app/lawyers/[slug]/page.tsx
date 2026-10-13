@@ -303,6 +303,9 @@ export default async function LawyerProfile({
                   <Badge tone="primary">{dSpecialties[i]}</Badge>
                 </a>
               ))}
+              {l.employeeLawyer && (
+                <Badge tone="accent" icon="briefcase">{t("وکیل کارمندان و کارهای اداری")}</Badge>
+              )}
             </div>
           </section>
 

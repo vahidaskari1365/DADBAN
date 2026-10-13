@@ -4,9 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
-import { faNum } from "@/lib/data";
+import { faNum, LEGAL_TOPICS } from "@/lib/data";
 import { isRedirectSafeForRole, isLawyerSideRole, panelHomeForRole } from "@/lib/roles";
 import { useT } from "@/lib/i18n/provider";
+import { templateT } from "@/lib/i18n/core";
 import { ForgotPasswordFlow, OtpLoginFlow } from "@/components/auth/otp-flows";
 
 type Tab = "client" | "lawyer";
@@ -182,6 +183,7 @@ function BrandBand({ mode }: { mode: Mode }) {
 
 export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
   const t = useT();
+  const tf = templateT(t);
   const [tab, setTab] = useState<Tab>("client");
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState("");
@@ -196,6 +198,9 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
   /* مسیر عضویت وکیل — فقط در تب وکیلِ register استفاده می‌شود */
   const [lawyerTrack, setLawyerTrack] = useState<LawyerTrack>("wakil");
   const [lawyerCity, setLawyerCity] = useState("");
+  /* تخصص‌ها + گزینهٔ اختیاری «وکیل کارمندان و کارهای اداری» — فرم ثبت‌نام کارآموز */
+  const [lawyerSpecs, setLawyerSpecs] = useState<string[]>([]);
+  const [employeeLawyer, setEmployeeLawyer] = useState(false);
   /* زیرجریان‌های پیامکی تب موکلِ login — با رمز عبور، یا کد پیامکی، یا بازیابی رمز */
   const [loginFlow, setLoginFlow] = useState<"password" | "otp">("password");
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -381,6 +386,10 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
       setError(t("رمز عبور باید حداقل ۸ کاراکتر باشد."));
       return;
     }
+    if (!lawyerSpecs.length) {
+      setError(t("حداقل یک تخصص انتخاب کنید."));
+      return;
+    }
     setLoading(true);
     setError("");
     setNotice("");
@@ -393,6 +402,8 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
           phone: mobile,
           password,
           lawyerType: "karamooz",
+          specialties: lawyerSpecs,
+          employeeLawyer,
           ...(lawyerCity ? { city: lawyerCity } : {}),
         }),
       });
@@ -769,8 +780,76 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                           <Icon name="chevron" className="pointer-events-none absolute left-1 top-1/2 h-4 w-4 -translate-y-1/2 rotate-90 text-[var(--auth-ink-soft)]" />
                         </span>
                       </label>
+
+                      {/* تخصص‌ها — چیپ چندانتخابی (الزامی، حداکثر ۶ مورد) */}
+                      <fieldset>
+                        <legend className="mb-1.5 block text-[11px] font-extrabold text-[var(--auth-ink-soft)]">
+                          {t("تخصص‌ها")} *{" "}
+                          <span className="font-normal">
+                            {tf("(حداکثر {m} مورد — انتخاب‌شده: {s})", { m: faNum(6), s: faNum(lawyerSpecs.length) })}
+                          </span>
+                        </legend>
+                        <div className="flex flex-wrap gap-2">
+                          {LEGAL_TOPICS.map((topic) => {
+                            const active = lawyerSpecs.includes(topic.label);
+                            const disabled = !active && lawyerSpecs.length >= 6;
+                            return (
+                              <button
+                                key={topic.label}
+                                type="button"
+                                onClick={() => setLawyerSpecs((s) => (active ? s.filter((x) => x !== topic.label) : disabled ? s : [...s, topic.label]))}
+                                aria-pressed={active}
+                                disabled={disabled}
+                                title={t(topic.hint)}
+                                className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-all ${
+                                  active
+                                    ? "border-[var(--accent)] bg-[var(--accent)] text-white shadow-sm"
+                                    : disabled
+                                      ? "cursor-not-allowed border-[var(--auth-line)] opacity-45 text-[var(--auth-ink-soft)]"
+                                      : "border-[var(--auth-line)] text-[var(--auth-ink-soft)] hover:border-[var(--accent)] hover:text-[var(--auth-ink)]"
+                                }`}
+                              >
+                                {active && <Icon name="check" className="h-3.5 w-3.5" />}
+                                {t(topic.label)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </fieldset>
+
+                      {/* گزینهٔ اختیاری — وکیل کارمندان و کارهای اداری */}
+                      <button
+                        type="button"
+                        role="checkbox"
+                        aria-checked={employeeLawyer}
+                        onClick={() => setEmployeeLawyer((v) => !v)}
+                        data-testid="employee-lawyer-toggle"
+                        className={`flex w-full items-start gap-3 rounded-2xl border p-3.5 text-start transition-all ${
+                          employeeLawyer
+                            ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)]"
+                            : "border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_4%,transparent)] hover:border-[color-mix(in_oklab,var(--accent)_40%,transparent)]"
+                        }`}
+                      >
+                        <span
+                          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
+                            employeeLawyer ? "border-[var(--accent)] bg-[var(--accent)] text-white" : "border-[var(--auth-line)] bg-transparent"
+                          }`}
+                          aria-hidden
+                        >
+                          {employeeLawyer && <Icon name="check" className="h-3.5 w-3.5" />}
+                        </span>
+                        <span>
+                          <span className={`block text-[13px] font-extrabold ${employeeLawyer ? "text-[var(--auth-ink)]" : "text-[var(--auth-ink-soft)]"}`}>
+                            {t("وکیل کارمندان و کارهای اداری")}
+                          </span>
+                          <span className="mt-0.5 block text-[11px] leading-5 text-[var(--auth-ink-soft)]">
+                            {t("برای پذیرش پرونده‌های کارکنان، ادارات و امور اداری — اختیاری")}
+                          </span>
+                        </span>
+                      </button>
+
                       <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-[11px] font-bold leading-6 text-[var(--auth-ink-soft)]">
-                        {t("حساب و پروفایل کارآموزی شما فوری ساخته می‌شود؛ بعداً از پنل، تخصص‌ها و معرفی خود را کامل کنید.")}
+                        {t("پس از ثبت‌نام وارد پنل وکیل می‌شوید؛ برای دیده‌شدن در فهرست وکلای سایت، مدارک را در بخش «احراز هویت» پنل بارگذاری کنید تا مدیر سایت بررسی و تأیید کند.")}
                       </p>
                       <AuthSubmit loading={loading} label={t("ساخت حساب کارآموز")} loadingLabel={t("در حال ساخت حساب کارآموزی…")} />
                       <p className="text-center text-xs text-[var(--auth-ink-soft)]">

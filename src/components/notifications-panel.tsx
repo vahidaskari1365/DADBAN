@@ -32,16 +32,18 @@ interface NotifItem {
   createdAt: string;
 }
 
-const TYPE_ICON: Record<string, "folder" | "mail" | "check"> = {
+const TYPE_ICON: Record<string, "folder" | "mail" | "check" | "badge"> = {
   new_case: "folder",
   new_offer: "mail",
   offer_accepted: "check",
+  verification: "badge",
 };
 
 const TYPE_TONE: Record<string, string> = {
   new_case: "bg-primary-soft text-primary",
   new_offer: "bg-accent-soft text-accent-text",
   offer_accepted: "bg-success/15 text-success",
+  verification: "bg-success/15 text-success",
 };
 
 export function NotificationsPanel() {

@@ -144,6 +144,7 @@ export default async function AdminPage() {
                 { label: "مدیریت مشاوره‌ها", href: "/admin/consultations", icon: "calendar" as const },
                 { label: "مدیریت تیکت‌ها", href: "/admin/tickets", icon: "mail" as const },
                 { label: "روی‌بوردینگ وکلا", href: "/admin/onboarding", icon: "badge" as const },
+                { label: "احراز هویت وکلا", href: "/admin/verifications", icon: "fingerprint" as const },
                 { label: "صندوق ایمیل و خبرنامه", href: "/admin/outbox", icon: "send" as const },
                 { label: "مانیتور خطاها", href: "/admin/errors", icon: "alert" as const },
                 { label: "بازگشت به سایت", href: "/", icon: "home" as const },

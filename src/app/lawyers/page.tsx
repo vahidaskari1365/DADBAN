@@ -80,6 +80,8 @@ export default async function LawyersPage({
   const lawyerSide = isLawyerSideRole(meRole);
 
   const conds = [];
+  // فقط وکلای احراز هویت‌شده (تأیید مدیر سایت) در فهرست عمومی دیده می‌شوند
+  conds.push(eq(lawyers.verified, true));
   if (sp) conds.push(sql`${lawyers.specialties} @> ARRAY[${sp}]::text[]`);
   if (city) {
     // اگر پارامتر یک استان باشد، همه شهرهای آن استان جستجو می‌شود
