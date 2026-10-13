@@ -10,6 +10,7 @@ import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
+import { safeJsonLd } from "@/lib/jsonld";
 
 export const dynamic = "force-dynamic";
 
@@ -95,7 +96,7 @@ export default async function QaDetailPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <PageHero
         variant="market"
         image="/images/hero-qa.png"

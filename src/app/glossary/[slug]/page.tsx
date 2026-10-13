@@ -6,6 +6,7 @@ import { Icon } from "@/components/icons";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
 import { GLOSSARY } from "@/lib/content";
+import { safeJsonLd } from "@/lib/jsonld";
 
 export const revalidate = 300;
 
@@ -106,7 +107,7 @@ export default async function GlossaryTermPage({
           </Card>
         </aside>
       </Container>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
     </>
   );
 }

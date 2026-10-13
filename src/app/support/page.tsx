@@ -6,6 +6,7 @@ import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { FAQ_ITEMS } from "@/lib/content";
 import { getT } from "@/lib/i18n/server";
+import { safeJsonLd } from "@/lib/jsonld";
 
 /** چندزبانه: تیتر/توضیح با generateMetadata و getT به زبان انتخابی کاربر می‌رود */
 export async function generateMetadata(): Promise<Metadata> {
@@ -79,7 +80,7 @@ export default async function SupportPage() {
         </div>
       </Container>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
     </>
   );
 }

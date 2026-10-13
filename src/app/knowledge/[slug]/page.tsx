@@ -15,6 +15,7 @@ import { makeT } from "@/lib/i18n/core";
 import { tdyn, tdynArticle } from "@/lib/i18n/dynamic";
 import Link from "next/link";
 import { SEO_BASE } from "@/lib/seo";
+import { safeJsonLd } from "@/lib/jsonld";
 
 export const dynamic = "force-dynamic";
 
@@ -301,7 +302,7 @@ export default async function ArticlePage({
         </Container>
       </article>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
     </>
   );
 }

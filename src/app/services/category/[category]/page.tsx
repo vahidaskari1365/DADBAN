@@ -12,6 +12,7 @@ import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
 import { templateT } from "@/lib/i18n/core";
 import Link from "next/link";
+import { safeJsonLd } from "@/lib/jsonld";
 
 export const dynamic = "force-dynamic";
 
@@ -256,7 +257,7 @@ export default async function ServiceCategoryPage({
         </Reveal>
       </Container>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
     </>
   );
 }

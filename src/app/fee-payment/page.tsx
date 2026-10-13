@@ -8,6 +8,7 @@ import { faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { SITE_NAME } from "@/lib/brand";
 import { getT } from "@/lib/i18n/server";
+import { safeJsonLd } from "@/lib/jsonld";
 
 /**
  * حق‌الوکاله و پرداخت قسطی — صفحهٔ مرجعِ صادقانه برای دغدغهٔ پرداخت وکیل.
@@ -435,7 +436,7 @@ export default async function FeePaymentPage() {
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }}
       />
     </>
   );

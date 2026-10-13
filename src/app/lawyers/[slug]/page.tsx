@@ -20,6 +20,7 @@ import { getT, getServerLocale } from "@/lib/i18n/server";
 import { makeT, templateT } from "@/lib/i18n/core";
 import { tdyn, tdynLong } from "@/lib/i18n/dynamic";
 import Link from "next/link";
+import { safeJsonLd } from "@/lib/jsonld";
 
 export const dynamic = "force-dynamic";
 
@@ -521,7 +522,7 @@ export default async function LawyerProfile({
         />
       )}
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd([jsonLd, breadcrumbLd]) }} />
     </>
   );
 }

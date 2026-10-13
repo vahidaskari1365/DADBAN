@@ -6,6 +6,7 @@ import { Reveal } from "@/components/reveal";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { faPrice } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
+import { safeJsonLd } from "@/lib/jsonld";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -241,7 +242,7 @@ export default async function PlansPage() {
         </Reveal>
       </Container>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
     </>
   );
 }

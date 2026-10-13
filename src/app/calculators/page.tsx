@@ -4,6 +4,7 @@ import { Container } from "@/components/ui";
 import { getT } from "@/lib/i18n/server";
 import { CalculatorsClient } from "@/components/calculators/calculators-client";
 import { SITE_URL } from "@/lib/site";
+import { safeJsonLd } from "@/lib/jsonld";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -116,9 +117,9 @@ export default async function CalculatorsPage() {
       <Container className="py-12">
         <CalculatorsClient />
       </Container>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(webAppJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
     </>
   );
 }
