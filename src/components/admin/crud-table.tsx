@@ -29,6 +29,8 @@ export interface CrudField {
   required?: boolean;
   /** مقدار پیش‌فرض بولین هنگام ساخت رکورد جدید (پیش‌فرض: false) */
   default?: boolean;
+  /** مقدار پیش‌فرض فیلد select هنگام ساخت رکورد جدید (پیش‌فرض: گزینهٔ اول) */
+  defaultValue?: string;
   span?: 1 | 2;
 }
 
@@ -216,10 +218,24 @@ export function AdminCrudTable({
     });
   }, [rows, q, searchKeys, sortBy]);
 
+  /** مقدار اولیهٔ فیلد هنگام «افزودن» — select بدون مقدار گزینهٔ اول را نشان می‌دهد ولی state خالی می‌ماند؛
+      پس مقدار باید صریحاً گزینهٔ اول (یا defaultValue) باشد */
+  const initialFor = (f: CrudField): unknown => {
+    if (f.type === "number") return 0;
+    if (f.type === "boolean") return f.default ?? false;
+    if (f.type === "select") {
+      const opts = f.options ?? [];
+      const first = opts[0];
+      const firstVal = typeof first === "string" ? first : first?.value;
+      return f.defaultValue ?? firstVal ?? "";
+    }
+    return "";
+  };
+
   const startNew = () => {
     const initial: Record<string, unknown> = {};
     for (const f of fields) {
-      initial[f.key] = f.type === "number" ? 0 : f.type === "boolean" ? (f.default ?? false) : "";
+      initial[f.key] = initialFor(f);
     }
     setForm(initial);
     setEditing("new");
@@ -229,7 +245,7 @@ export function AdminCrudTable({
 
   const startEdit = (row: Row) => {
     const initial: Record<string, unknown> = {};
-    for (const f of fields) initial[f.key] = row[f.key] ?? (f.type === "number" ? 0 : f.type === "boolean" ? false : "");
+    for (const f of fields) initial[f.key] = row[f.key] ?? initialFor(f);
     setForm(initial);
     setEditing(row);
     setError("");
