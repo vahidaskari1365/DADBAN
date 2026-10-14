@@ -32,8 +32,8 @@ export async function PageContentBlocks({
   if (!rows.length) return null;
 
   return (
-    <Container className={position === "top" ? `py-6 ${className}` : `py-10 ${className}`} data-testid={`page-content-${page}-${position}`}>
-      <div className="flex flex-col gap-4">
+    <Container className={position === "top" ? `py-6 ${className}` : `py-10 ${className}`}>
+      <div className="flex flex-col gap-4" data-testid={`page-content-${page}-${position}`}>
         {rows.map((b) => {
           if (b.kind === "announcement") {
             return (
@@ -41,10 +41,17 @@ export async function PageContentBlocks({
                 key={b.id}
                 className="flex flex-col gap-2 rounded-2xl border border-accent/40 bg-accent-soft px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="min-w-0">
-                  {b.title && <p className="text-sm font-black text-accent-text">{b.title}</p>}
-                  {b.subtitle && <p className="mt-0.5 text-xs font-medium text-accent-text/80">{b.subtitle}</p>}
-                  {b.body && <p className="mt-1 whitespace-pre-line text-sm leading-7 text-foreground-soft">{b.body}</p>}
+                <div className="flex min-w-0 items-start gap-3">
+                  {b.imageUrl && (
+                    <div className="relative hidden h-14 w-24 shrink-0 overflow-hidden rounded-xl sm:block">
+                      <Image src={b.imageUrl} alt="" fill sizes="96px" className="object-cover" unoptimized />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    {b.title && <p className="text-sm font-black text-accent-text">{b.title}</p>}
+                    {b.subtitle && <p className="mt-0.5 text-xs font-medium text-accent-text/80">{b.subtitle}</p>}
+                    {b.body && <p className="mt-1 whitespace-pre-line text-sm leading-7 text-foreground-soft">{b.body}</p>}
+                  </div>
                 </div>
                 {b.link && (
                   <Button href={b.link} size="sm" variant="accent" icon="arrow" className="shrink-0">

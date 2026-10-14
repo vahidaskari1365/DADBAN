@@ -27,6 +27,8 @@ export interface CrudField {
   options?: (string | { value: string; label: string })[];
   /** فیلدهای لازم برای ساخت رکورد جدید (پیش‌فرض: همه به‌جز id/createdAt) */
   required?: boolean;
+  /** مقدار پیش‌فرض بولین هنگام ساخت رکورد جدید (پیش‌فرض: false) */
+  default?: boolean;
   span?: 1 | 2;
 }
 
@@ -217,7 +219,7 @@ export function AdminCrudTable({
   const startNew = () => {
     const initial: Record<string, unknown> = {};
     for (const f of fields) {
-      initial[f.key] = f.type === "number" ? 0 : f.type === "boolean" ? false : "";
+      initial[f.key] = f.type === "number" ? 0 : f.type === "boolean" ? (f.default ?? false) : "";
     }
     setForm(initial);
     setEditing("new");

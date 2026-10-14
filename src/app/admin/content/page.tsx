@@ -62,7 +62,7 @@ export default async function AdminContentPage() {
         { key: "imageUrl", label: "عکس (آپلود)", type: "image", span: 2 },
         { key: "link", label: "لینک دکمه", placeholder: "/contact" },
         { key: "linkLabel", label: "متن دکمه", placeholder: "مشاهده" },
-        { key: "active", label: "فعال (نمایش در سایت)", type: "boolean" },
+        { key: "active", label: "فعال (نمایش در سایت)", type: "boolean", default: true, hint: "پیش‌فرض روشن — بلافاصله روی سایت منتشر می‌شود" },
         { key: "sortOrder", label: "ترتیب نمایش", type: "number", hint: "عدد کوچک‌تر = بالاتر" },
       ]}
     />

@@ -42,8 +42,8 @@ export function PageContentBlocksClient({ page, position = "top", className = ""
   if (!blocks || blocks.length === 0) return null;
 
   return (
-    <Container className={position === "top" ? `py-6 ${className}` : `py-10 ${className}`} data-testid={`page-content-${page}-${position}`}>
-      <div className="flex flex-col gap-4">
+    <Container className={position === "top" ? `py-6 ${className}` : `py-10 ${className}`}>
+      <div className="flex flex-col gap-4" data-testid={`page-content-${page}-${position}`}>
         {blocks.map((b) => {
           if (b.kind === "announcement") {
             return (
