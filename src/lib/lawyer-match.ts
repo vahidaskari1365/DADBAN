@@ -7,7 +7,6 @@ import { db } from "@/db";
 import { lawyers } from "@/db/schema";
 import { and, desc, eq, inArray, notInArray } from "drizzle-orm";
 import { analyzeLegalQuery } from "@/lib/legal-engine";
-import { lawyerData } from "@/lib/auto-seed";
 import { LOCATIONS } from "@/lib/data";
 
 /** وکیل عمومی‌شده برای نمایش در چت / رابط کاربری — بدون فیلد حساس. */
@@ -161,25 +160,12 @@ function toMatched(row: LawyerPublicRow): MatchedLawyer {
 }
 
 /**
- * fallback درون‌حافظه‌ای از کاتالوگ رسمی وکلا (همان دیتای seed دیتابیس) —
- * وقتی دسترسی به دیتابیس ممکن نیست (مثلاً dev محلی یا اختلاط لحظه‌ای). دیتا واقعی است.
- * رتبه‌بندی: هم‌تخصص (استان کاربر → سایر) سپس سایر وکلا — تخصص مهم‌تر از استان است.
+ * fallback صادقانهٔ خالی — دیگر هیچ وکیل نمونه‌ای وجود ندارد.
+ * وکلای پیشنهادی همیشه و فقط از دیتابیس واقعی (ثبت‌نام + احراز هویت مدیر) می‌آیند؛
+ * اگر دیتابیس در دسترس نباشد، خالی برمی‌گردیم به‌جای نمایش وکیل جعلی.
  */
-function seedFallback(specialties: string[], limit: number, province?: string | null): MatchedLawyer[] {
-  const pool = lawyerData.map((l, i) => ({
-    ...l,
-    id: i + 1,
-    photoUrl: `/lawyers/${l.slug}.jpg`,
-  }));
-  const provCities = province ? new Set(LOCATIONS.find((l) => l.province === province)?.cities ?? []) : null;
-  const inProv = (l: { city: string }) => (provCities ? provCities.has(l.city) : false);
-  const inSp = (l: { specialties: string[] }) => l.specialties.some((s) => specialties.includes(s));
-  // امتیاز: تخصص+استان=۰، فقط تخصص=۱، فقط استان=۲، هیچ‌کدام=۳
-  const score = (l: { city: string; specialties: string[] }) => (inSp(l) ? 0 : 2) + (inProv(l) ? 0 : 1);
-  const ranked = pool.sort(
-    (a, b) => score(a) - score(b) || b.rating - a.rating || b.reviewCount - a.reviewCount,
-  );
-  return ranked.slice(0, limit).map((l) => toMatched(l as unknown as LawyerPublicRow));
+function seedFallback(_specialties: string[], _limit: number, _province?: string | null): MatchedLawyer[] {
+  return [];
 }
 
 /** مرتب‌سازی: وکلای هم‌تخصص اول (به ترتیب امتیاز)، سپس برترین‌های بقیه برای تکمیل ۱۰ نفر. */

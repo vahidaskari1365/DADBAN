@@ -56,32 +56,18 @@ export const lawyerData: Array<{
   views: number;
   featured: boolean;
 }> = [
-  { slug: "sohrab-mohammadi", name: "دکتر سهراب محمدی", avatarColor: "#15365d", title: "وکیل پایه یک دادگستری", licenseNo: "۱۲۳۴۵/تهران", city: "تهران", province: "تهران", gender: "male", experienceYears: 16, specialties: ["خانواده", "طلاق", "ارث"], rating: 4.9, reviewCount: 312, caseCount: 540, priceChat: 120000, priceVoice: 350000, priceVideo: 600000, topRated: true, fastResponder: true, contractExpert: false, responseTime: "کمتر از ۳۰ دقیقه", bio: "متخصص دعاوی خانواده با ۱۶ سال سابقه؛ تمرکز بر طلاق توافقی و یک‌طرفه، مهریه و حضانت.", about: "دکتر سهراب محمدی دانش‌آموخته حقوق خصوصی و عضو کانون وکلای دادگستری مرکز است. ایشان با رویکرد میانجی‌گری، تلاش می‌کند دعاوی خانواده با کمترین تنش و در کوتاه‌ترین زمان به نتیجه برسد. تجربه گسترده در پرونده‌های مهریه، نفقه، اجرت‌المثل و حضانت را داراست.", services: ["مشاوره طلاق توافقی", "مطالبه مهریه", "حضانت فرزندان", "تنظیم دادخواست خانواده"], views: 8420, featured: true },
-  { slug: "neda-karimi", name: "ندا کریمی", avatarColor: "#946809", title: "وکیل پایه یک دادگستری", licenseNo: "۸۷۶۵۴/اصفهان", city: "اصفهان", province: "اصفهان", gender: "female", experienceYears: 12, specialties: ["ملک", "قراردادها"], rating: 4.8, reviewCount: 198, caseCount: 360, priceChat: 100000, priceVoice: 300000, priceVideo: 500000, topRated: true, fastResponder: false, contractExpert: true, responseTime: "کمتر از ۲ ساعت", bio: "وکیل تخصصی املاک؛ تخلیه، الزام به تنظیم سند، تصرف عدوانی و تنظیم قرارداد اجاره.", about: "خانم ندا کریمی عضو کانون وکلای استان اصفهان و متخصص حقوق ملک است. ایشان در زمینه دعاوی تخلیه، مطالبه اجاره‌بها، الزام به تنظیم سند رسمی و تصرف عدوانی تجربه گسترده‌ای دارد و قراردادهای اجاره امن تهیه می‌کند.", services: ["تخلیه ملک", "الزام به تنظیم سند", "تصرف عدوانی", "تنظیم قرارداد اجاره"], views: 5310, featured: true },
-  { slug: "amirhossein-rostami", name: "امیرحسین رستمی", avatarColor: "#1d6a3f", title: "وکیل پایه یک دادگستری", licenseNo: "۴۵۳۲۱/خراسان رضوی", city: "مشهد", province: "خراسان رضوی", gender: "male", experienceYears: 9, specialties: ["کیفری", "قراردادها"], rating: 4.7, reviewCount: 142, caseCount: 210, priceChat: 110000, priceVoice: 320000, priceVideo: 520000, topRated: false, fastResponder: true, contractExpert: false, responseTime: "کمتر از یک ساعت", bio: "دفاع کیفری در جرایم کلاهبرداری، خیانت در امانت، جعل و سرقت؛ پاسخ‌گویی سریع.", about: "آقای امیرحسین رستمی وکیل پایه یک و عضو کانون وکلای خراسان رضوی است. تخصص ایشان دعاوی کیفری به‌ویژه کلاهبرداری، خیانت در امانت، جعل و سرقت است و در مرحله دادسرا و دادگاه دفاع می‌کند.", services: ["شکایت کلاهبرداری", "دفاع کیفری", "تنظیم شکواییه", "اعاده اعتبار"], views: 4120, featured: true },
-  { slug: "mahsa-ebrahimi", name: "دکتر مهسا ابراهیمی", avatarColor: "#7a2e7d", title: "وکیل پایه یک دادگستری", licenseNo: "۹۹۱۱۲/تهران", city: "تهران", province: "تهران", gender: "female", experienceYears: 14, specialties: ["قراردادها", "تجارت", "شرکت‌ها"], rating: 5.0, reviewCount: 267, caseCount: 430, priceChat: 150000, priceVoice: 400000, priceVideo: 700000, topRated: true, fastResponder: true, contractExpert: true, responseTime: "کمتر از یک ساعت", bio: "متخصص حقوق قراردادها و شرکت‌ها؛ تنظیم و بررسی قراردادهای تجاری و بین‌المللی.", about: "دکتر مهسا ابراهیمی دکترای حقوق تجاری و مشاور حقوقی چند شرکت بزرگ است. تخصص ایشان تنظیم و بازبینی قراردادهای تجاری، مشارکت، تأمین و قراردادهای استارتاپی است و به کسب‌وکارها مشاوره ثابت می‌دهد.", services: ["تنظیم قرارداد تجاری", "بررسی قرارداد", "مشاوره شرکت‌ها", "قرارداد سرمایه‌گذاری"], views: 7240, featured: true },
-  { slug: "reza-najafi", name: "رضا نجفی", avatarColor: "#2a5d8f", title: "وکیل پایه یک دادگستری", licenseNo: "۳۳۰۹۸/آذربایجان شرقی", city: "تبریز", province: "آذربایجان شرقی", gender: "male", experienceYears: 18, specialties: ["تجارت", "شرکت‌ها", "مالیاتی"], rating: 4.6, reviewCount: 121, caseCount: 280, priceChat: 130000, priceVoice: 360000, priceVideo: 580000, topRated: false, fastResponder: false, contractExpert: true, responseTime: "کمتر از ۳ ساعت", bio: "حقوق تجارت و شرکت‌ها با ۱۸ سال سابقه؛ ثبت، تغییرات و دعاوی تجاری.", about: "آقای رضا نجفی از وکلای باتجربه استان آذربایجان شرقی در حوزه تجارت و شرکت‌هاست. ایشان در ثبت شرکت، تنظیم صورتجلسات و دعاوی تجاری فعالیت دارد.", services: ["ثبت شرکت", "دعاوی تجاری", "مشاوره مالیاتی", "تغییرات شرکت"], views: 2980, featured: false },
-  { slug: "sara-mousavi", name: "سارا موسوی", avatarColor: "#b07d12", title: "وکیل پایه یک دادگستری", licenseNo: "۲۲۳۱۱/فارس", city: "شیراز", province: "فارس", gender: "female", experienceYears: 11, specialties: ["ارث", "خانواده"], rating: 4.8, reviewCount: 156, caseCount: 240, priceChat: 95000, priceVoice: 280000, priceVideo: 480000, topRated: true, fastResponder: false, contractExpert: false, responseTime: "کمتر از ۲ ساعت", bio: "متخصص امور حسبی؛ انحصار وراثت، تقسیم ترکه و وصیت‌نامه.", about: "خانم سارا موسوی عضو کانون وکلای فارس و متخصص امور ارث و انحصار وراثت است. ایشان در اخذ گواهی انحصار وراثت، تقسیم ترکه و حل‌وفصل اختلافات وراث تجربه دارد.", services: ["انحصار وراثت", "تقسیم ترکه", "وصیت‌نامه", "دعاوی ارث"], views: 3650, featured: false },
-  { slug: "kaveh-ahmadi", name: "کاوه احمدی", avatarColor: "#8f2a2a", title: "وکیل پایه یک دادگستری", licenseNo: "۷۷۰۱۲/البرز", city: "کرج", province: "البرز", gender: "male", experienceYears: 8, specialties: ["چک و اسناد", "قراردادها"], rating: 4.7, reviewCount: 178, caseCount: 320, priceChat: 90000, priceVoice: 260000, priceVideo: 440000, topRated: false, fastResponder: true, contractExpert: false, responseTime: "کمتر از یک ساعت", bio: "متخصص چک برگشتی، سفته و مطالبات؛ پیگیری سریع از طریق اجرائیه.", about: "آقای کاوه احمدی وکیل پایه یک و متخصص اسناد تجاری است. ایشان در مطالبه وجه چک برگشتی، سفته و وصول مطالبات از مسیر اجرائیه و دعاوی حقوقی تخصص دارد و پاسخ‌گویی سریعی ارائه می‌دهد.", services: ["مطالبه چک برگشتی", "اجرائیه", "تنظیم اظهارنامه", "وصول مطالبات"], views: 4870, featured: false },
-  { slug: "leila-sadeghi", name: "دکتر لیلا صادقی", avatarColor: "#0e7c7b", title: "وکیل پایه یک دادگستری", licenseNo: "۶۶۵۴۳/گیلان", city: "رشت", province: "گیلان", gender: "female", experienceYears: 13, specialties: ["خانواده", "طلاق"], rating: 4.9, reviewCount: 203, caseCount: 380, priceChat: 105000, priceVoice: 300000, priceVideo: 520000, topRated: true, fastResponder: true, contractExpert: false, responseTime: "کمتر از یک ساعت", bio: "وکیل خانواده؛ متخصص مهریه، نفقه و اجرت‌المثل با رویکرد حل مسالمت‌آمیز.", about: "دکتر لیلا صادقی عضو کانون وکلای گیلان و متخصص دعاوی خانواده است. ایشان با تمرکز بر حقوق زنان، در پرونده‌های مهریه، نفقه، اجرت‌المثل و طلاق فعالیت دارد.", services: ["مطالبه مهریه", "نفقه و اجرت‌المثل", "طلاق توافقی", "حضانت"], views: 5920, featured: false },
-  { slug: "mohammadreza-ghasemi", name: "محمدرضا قاسمی", avatarColor: "#444b8f", title: "وکیل پایه یک دادگستری", licenseNo: "۵۵۰۲۳/خوزستان", city: "اهواز", province: "خوزستان", gender: "male", experienceYears: 15, specialties: ["مالیاتی", "شرکت‌ها"], rating: 4.5, reviewCount: 98, caseCount: 170, priceChat: 140000, priceVoice: 380000, priceVideo: 620000, topRated: false, fastResponder: false, contractExpert: true, responseTime: "کمتر از ۴ ساعت", bio: "متخصص دعاوی مالیاتی و گمرکی؛ دفاع در کمیسیون‌های مالیاتی.", about: "آقای محمدرضا قاسمی وکیل پایه یک و متخصص حقوق مالیاتی است. ایشان در دعاوی مالیاتی، اعتراض به آرای کمیسیون و امور گمرکی تخصص دارد.", services: ["اعتراض مالیاتی", "دفاع کمیسیون", "مشاوره مالیاتی شرکت", "امور گمرکی"], views: 2140, featured: false },
-  { slug: "fateme-nouri", name: "فاطمه نوری", avatarColor: "#9c27b0", title: "وکیل پایه یک دادگستری", licenseNo: "۸۸۹۹۰/مازندران", city: "ساری", province: "مازندران", gender: "female", experienceYears: 10, specialties: ["کار", "خانواده"], rating: 4.7, reviewCount: 134, caseCount: 220, priceChat: 95000, priceVoice: 270000, priceVideo: 450000, topRated: false, fastResponder: true, contractExpert: false, responseTime: "کمتر از ۲ ساعت", bio: "وکیل دعاوی کارگری و کارفرمایی؛ دفاع در اداره کار.", about: "خانم فاطمه نوری وکیل پایه یک و متخصص حقوق کار است. ایشان در دعاوی اخراج، مطالبه حقوق و سنوات و تأخیر تأدیه در هیأت‌های اداره کار فعالیت دارد.", services: ["شکایت اخراج", "مطالبه سنوات", "قرارداد کار", "دفاع اداره کار"], views: 2760, featured: false },
-  { slug: "alireza-bahrami", name: "علیرضا بهرامی", avatarColor: "#3a5c3a", title: "وکیل پایه یک دادگستری", licenseNo: "۱۱۲۲۳/قم", city: "قم", province: "قم", gender: "male", experienceYears: 17, specialties: ["ملک", "کیفری"], rating: 4.6, reviewCount: 145, caseCount: 300, priceChat: 100000, priceVoice: 290000, priceVideo: 500000, topRated: false, fastResponder: false, contractExpert: false, responseTime: "کمتر از ۳ ساعت", bio: "متخصص تصرف عدوانی، خلع ید و دعاوی ملکی.", about: "آقای علیرضا بهرامی وکیل پایه یک و متخصص حقوق ملک و کیفری است. ایشان در دعاوی تصرف عدوانی، خلع ید و تخلیه ملک تجربه گسترده‌ای دارد.", services: ["تصرف عدوانی", "خلع ید", "تخلیه ملک", "افراز"], views: 3180, featured: false },
-  { slug: "zahra-farahmand", name: "دکتر زهرا فرهمند", avatarColor: "#6a1b9a", title: "وکیل پایه یک دادگستری", licenseNo: "۹۹۰۰۱/تهران", city: "تهران", province: "تهران", gender: "female", experienceYears: 19, specialties: ["مهاجرت", "تجارت"], rating: 4.8, reviewCount: 187, caseCount: 290, priceChat: 160000, priceVoice: 420000, priceVideo: 720000, topRated: true, fastResponder: false, contractExpert: true, responseTime: "کمتر از ۴ ساعت", bio: "متخصص امور مهاجرتی و تجارت بین‌الملل؛ وکالت‌های خارجی و قراردادهای مرزی.", about: "دکتر زهرا فرهمند دکترای حقوق بین‌الملل و متخصص امور مهاجرت و تجارت بین‌الملل است. ایشان در تنظیم قراردادهای بین‌المللی، احراز هویت و وکالت‌های خارجی فعالیت دارد.", services: ["امور مهاجرت", "قرارداد بین‌المللی", "وکالت خارجی", "تجارت مرزی"], views: 3940, featured: false },
-  { slug: "hossein-alamdari", name: "حسین علمداری", avatarColor: "#7f3911", title: "وکیل پایه یک دادگستری", licenseNo: "۳۳۴۴۵/خراسان رضوی", city: "مشهد", province: "خراسان رضوی", gender: "male", experienceYears: 12, specialties: ["کیفری"], rating: 4.7, reviewCount: 161, caseCount: 250, priceChat: 115000, priceVoice: 330000, priceVideo: 540000, topRated: false, fastResponder: true, contractExpert: false, responseTime: "کمتر از یک ساعت", bio: "دفاع کیفری تخصصی؛ کلاهبرداری، خیانت در امانت و جرایم اقتصادی.", about: "آقای حسین علمداری وکیل پایه یک و متخصص دفاع کیفری در جرایم اقتصادی است. ایشان در پرونده‌های کلاهبرداری، خیانت در امانت و جرایم رایانه‌ای دفاع می‌کند.", services: ["دفاع کلاهبرداری", "خیانت در امانت", "جرایم رایانه‌ای", "تنظیم شکواییه"], views: 3520, featured: false },
-  { slug: "negar-soleimani", name: "نگار سلیمانی", avatarColor: "#1565c0", title: "وکیل پایه یک دادگستری", licenseNo: "۴۴۵۵۶/البرز", city: "کرج", province: "البرز", gender: "female", experienceYears: 9, specialties: ["ثبت برند", "شرکت‌ها", "قراردادها"], rating: 4.8, reviewCount: 129, caseCount: 200, priceChat: 110000, priceVoice: 310000, priceVideo: 510000, topRated: false, fastResponder: true, contractExpert: true, responseTime: "کمتر از ۲ ساعت", bio: "متخصص مالکیت فکری؛ ثبت برند، علامت تجاری و اختراع.", about: "خانم نگار سلیمانی وکیل پایه یک و متخصص مالکیت فکری و امور ثبتی است. ایشان در ثبت برند، علامت تجاری و اختراع و دعاوی نقض حقوق مالکیت فکری تخصص دارد.", services: ["ثبت برند", "ثبت علامت تجاری", "ثبت اختراع", "دعوای نقض"], views: 4010, featured: false },
+  /* وکلای نمونه حذف شدند — وکیل فقط از مسیر ثبت‌نام واقعی + احراز هویت مدیر ساخته می‌شود.
+     نوع آرایه برای سازگاری تایپ‌ها حفظ شده و عمداً خالی است. */
 ];
 
-const reviewData = [
-  { lawyerId: 1, clientName: "محمد ر.", rating: 5, comment: "بسیار حرفه‌ای و صبور، پرونده طلاق توافقی در کمترین زمان انجام شد.", service: "مشاوره طلاق", createdAt: daysAgo(8) },
-  { lawyerId: 1, clientName: "سارا ک.", rating: 5, comment: "مهریه‌ام را بدون دردسر وصول کردم. ممنونم.", service: "مطالبه مهریه", createdAt: daysAgo(21) },
-  { lawyerId: 2, clientName: "رضا م.", rating: 5, comment: "قرارداد اجاره‌ای عالی تنظیم کرد و مشکل تخلیه را حل کرد.", service: "تنظیم قرارداد", createdAt: daysAgo(5) },
-  { lawyerId: 4, clientName: "شرکت آرمان", rating: 5, comment: "بررسی قرارداد سرمایه‌گذاری دقیق و کامل بود. توصیه می‌کنم.", service: "بررسی قرارداد", createdAt: daysAgo(12) },
-  { lawyerId: 4, clientName: "الهام ت.", rating: 4, comment: "تخصص بالا در قراردادهای تجاری، فقط زمان پاسخ‌گویی کمی طولانی بود.", service: "تنظیم قرارداد", createdAt: daysAgo(30) },
-  { lawyerId: 8, clientName: "زهرا ع.", rating: 5, comment: "وکیل دلسوز و متخصص؛ نفقه‌ام را تأمین کردم.", service: "مشاوره نفقه", createdAt: daysAgo(3) },
-  { lawyerId: 7, clientName: "حسن ب.", rating: 5, comment: "چک برگشتی را خیلی سریع پیگیری کرد و وجه را وصول کردم.", service: "مطالبه چک", createdAt: daysAgo(6) },
-  { lawyerId: 3, clientName: "کریم ن.", rating: 5, comment: "دفاع کیفری قوی، برائت گرفتم. سپاسگزارم.", service: "دفاع کیفری", createdAt: daysAgo(15) },
-];
+const reviewData: Array<{
+  lawyerId: number;
+  clientName: string;
+  rating: number;
+  comment: string;
+  service?: string;
+  createdAt: Date;
+}> = [];
 
 const contractData = [
   { slug: "aghrarname-ejare-melk", title: "قرارداد اجاره ملک (مسکونی/تجاری)", category: "اجاره", icon: "home", description: "قرارداد اجاره استاندارد و مطمئن با رعایت قانون روابط موجر و مستأجر.", useCase: "برای اجاره ملک مسکونی یا تجاری بین موجر و مستأجر؛ تعیین ودیعه، اجاره‌بها و مدت.", risks: ["نبود شرط تخلیه مشخص", "عدم تعیین دقیق هزینه‌های شارژ و آب/برق", "تاریخ وصول اجاره‌بها نامشخص"], keyClauses: ["مشخصات موجر و مستأجر", "ودیعه و اجاره‌بها و نحوه پرداخت", "مدت اجاره و شرط تمدید", "تعهدات موجر و مستأجر", "شرط تخلیه و خلع ید"], samplePrice: 250000, customPrice: 850000, popular: true, steps: ["مشخصات موجر", "مشخصات مستأجر", "مشخصات ملک", "مبلغ ودیعه و اجاره", "مدت اجاره", "شروط خاص", "تعهدات طرفین", "خروجی قرارداد"] },
@@ -512,11 +498,12 @@ export function getCounts(): SeedCounts {
 }
 
 async function insertAll() {
-  await db.insert(lawyers).values(lawyerData.map((l) => ({ ...l, photoUrl: `/lawyers/${l.slug}.jpg` })));
-  await db.insert(reviews).values(reviewData);
-  await db.insert(contracts).values(contractData);
-  await db.insert(articles).values(articleData);
-  await db.insert(qaQuestions).values(qaData);
+  // وکلای نمونه/نظرات نمونه دیگر درج نمی‌شوند — وکیل فقط از مسیر ثبت‌نام واقعی + احراز هویت مدیر ساخته می‌شود.
+  if (lawyerData.length) await db.insert(lawyers).values(lawyerData.map((l) => ({ ...l, photoUrl: `/lawyers/${l.slug}.jpg` })));
+  if (reviewData.length) await db.insert(reviews).values(reviewData);
+  if (contractData.length) await db.insert(contracts).values(contractData);
+  if (articleData.length) await db.insert(articles).values(articleData);
+  if (qaData.length) await db.insert(qaQuestions).values(qaData);
 }
 
 /**
@@ -525,6 +512,7 @@ async function insertAll() {
  */
 export async function ensureLawyerPhotos(): Promise<void> {
   try {
+    if (!lawyerData.length) return; // وکلای نمونه حذف شده‌اند — کاری برای انجام دادن نیست
     await db.execute(sql.raw(`ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS photo_url TEXT`));
     const slugList = lawyerData.map((l) => `'${l.slug}'`).join(", ");
     await db.execute(
@@ -672,7 +660,12 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
       /* non-fatal */
     }
     if (c > 0) return { seeded: false, counts: getCounts() };
-    await insertAll();
+    // فهرست وکلا خالی است → هرگز وکیل نمونه ساخته نمی‌شود. وکیل واقعی فقط از
+    // مسیر ثبت‌نام + تأیید ادمین (lawyers.verified) وارد فهرست عمومی می‌شود.
+    // فقط محتوای تحریریه (قراردادها) ایدمپوتنت درج می‌شود تا بوت بعدی تکرار نشود.
+    if (contractData.length) {
+      await db.insert(contracts).values(contractData).onConflictDoNothing({ target: contracts.slug });
+    }
     return { seeded: true, counts: getCounts() };
   } catch {
     return { seeded: false, counts: getCounts() };
