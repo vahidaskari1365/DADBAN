@@ -35,6 +35,30 @@ export async function GET(req: Request) {
       return NextResponse.json({ ok: false, error: "پرداخت یافت نشد" }, { status: 404 });
     }
 
+    // IDOR: فاکتور فقط برای مالک پرداخت (موکل همان مشاوره / کاربر همان درخواست خدمت)
+    // یا نقش داخلی قابل مشاهده است — نه هر کاربر لاگین‌شده.
+    const internal = ["admin", "staff", "supervisor"].includes(user.role);
+    let owned = internal;
+    if (!owned && payment.consultationId) {
+      const [consultation] = await db
+        .select({ clientPhone: consultations.clientPhone })
+        .from(consultations)
+        .where(eq(consultations.id, payment.consultationId))
+        .limit(1);
+      owned = !!consultation && consultation.clientPhone === user.phone;
+    }
+    if (!owned && payment.orderType === "service") {
+      const [svc] = await db
+        .select({ userId: serviceRequests.userId })
+        .from(serviceRequests)
+        .where(eq(serviceRequests.requestNumber, payment.reference))
+        .limit(1);
+      owned = !!svc && svc.userId === user.id;
+    }
+    if (!owned) {
+      return NextResponse.json({ ok: false, error: "پرداخت یافت نشد" }, { status: 404 });
+    }
+
     // اطلاعات مشاوره یا خدمت مرتبط
     let orderInfo: any = null;
     if (payment.consultationId) {

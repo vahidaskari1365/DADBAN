@@ -5,7 +5,7 @@ import { caseProposals as caseProposalsTable } from "@/db/schema-marketplace";
 import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { rateLimit, readJson, text, publicError } from "@/lib/api-security";
-import { getCaseRow, isLawyerRole } from "@/components/portal/lawyer/portal-server";
+import { getCaseRow, isLawyerRole, canAccessCase, isCaseLawyerSide, isInternalRole } from "@/components/portal/lawyer/portal-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +31,11 @@ export async function GET(req: Request, { params }: RouteCtx) {
 
     const c = await getCaseRow(id);
     if (!c) return NextResponse.json({ ok: false, error: "پرونده یافت نشد." }, { status: 404 });
+
+    // مجوزدستی: فقط مالک پرونده، وکیلِ واگذارشده یا نقش داخلی — جلوگیری از نشت trackingToken/اطلاعات تماس
+    if (!canAccessCase(c, user)) {
+      return NextResponse.json({ ok: false, error: "دسترسی به این پرونده مجاز نیست." }, { status: 403 });
+    }
 
     let proposals: unknown[] = [];
     let assignedLawyer: Record<string, unknown> | null = null;
@@ -153,6 +158,19 @@ export async function PATCH(req: Request, { params }: RouteCtx) {
 
     if (Object.keys(patch).length === 0) {
       return NextResponse.json({ ok: false, error: "فیلد قابل به‌روزرسانی ارسال نشده است." }, { status: 422 });
+    }
+
+    // مجوزدستی نوشتن: فقط وکیلِ واگذارشده (یا نقش داخلی). وکیلِ واگذارنشده فقط
+    // می‌تواند خودش را به پروندهٔ بدون وکیل «انتصاب» کند — نه وکیل دیگری را.
+    if (!isInternalRole(user.role) && !isCaseLawyerSide(c, user)) {
+      const selfAssignOk =
+        !c.assignedLawyerId &&
+        user.lawyerId != null &&
+        Object.keys(patch).length === 1 &&
+        patch.assignedLawyerId === user.lawyerId;
+      if (!selfAssignOk) {
+        return NextResponse.json({ ok: false, error: "دسترسی به این پرونده مجاز نیست." }, { status: 403 });
+      }
     }
 
     await db.update(cases).set(patch).where(eq(cases.id, id));

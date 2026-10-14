@@ -4,7 +4,7 @@ import { cases } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { rateLimit, publicError } from "@/lib/api-security";
-import { getCaseRow } from "@/components/portal/lawyer/portal-server";
+import { getCaseRow, canAccessCase } from "@/components/portal/lawyer/portal-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +31,11 @@ export async function POST(req: Request, { params }: RouteCtx) {
 
     const c = await getCaseRow(caseId);
     if (!c) return NextResponse.json({ ok: false, error: "پرونده یافت نشد." }, { status: 404 });
+
+    // مجوزدستی: امضای قرارداد فقط توسط طرفین پرونده (موکل/وکیل پرونده) یا نقش داخلی
+    if (!canAccessCase(c, user)) {
+      return NextResponse.json({ ok: false, error: "دسترسی به این پرونده مجاز نیست." }, { status: 403 });
+    }
 
     if (!c.assignedLawyerId) {
       return NextResponse.json({ ok: false, error: "ابتدا وکیل پرونده باید تعیین شود." }, { status: 422 });

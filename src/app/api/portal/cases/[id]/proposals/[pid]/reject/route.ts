@@ -4,7 +4,7 @@ import { caseProposals } from "@/db/schema-marketplace";
 import { and, eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { rateLimit, publicError } from "@/lib/api-security";
-import { getCaseRow } from "@/components/portal/lawyer/portal-server";
+import { getCaseRow, isCaseOwner, isInternalRole } from "@/components/portal/lawyer/portal-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,6 +29,11 @@ export async function POST(req: Request, { params }: RouteCtx) {
 
     const c = await getCaseRow(caseId);
     if (!c) return NextResponse.json({ ok: false, error: "پرونده یافت نشد." }, { status: 404 });
+
+    // مجوزدستی: رد پیشنهاد فقط تصمیم مالک موکل پرونده است (یا نقش داخلی)
+    if (!isCaseOwner(c, user) && !isInternalRole(user.role)) {
+      return NextResponse.json({ ok: false, error: "دسترسی به این پرونده مجاز نیست." }, { status: 403 });
+    }
 
     const proposalRows = (await db
       .select()

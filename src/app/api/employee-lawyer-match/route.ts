@@ -4,6 +4,7 @@ import { lawyers } from "@/db/schema";
 import { desc, sql } from "drizzle-orm";
 import { LOCATIONS } from "@/lib/data";
 import { askLLM } from "@/lib/llm";
+import { rateLimit } from "@/lib/api-security";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,6 +23,10 @@ interface MatchItem {
 
 export async function POST(req: Request) {
   try {
+    // سقف مصرف LLM — تنها مسیر AI بدون rate-limit بود (بردار هزینه‌سوز)
+    const limited = rateLimit(req, "emp-match", 15, 60 * 60_000);
+    if (limited) return limited;
+
     const body = await req.json().catch(() => ({} as any));
     const problem =
       typeof body?.problem === "string" ? body.problem.trim().slice(0, 800) : "";

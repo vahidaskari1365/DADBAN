@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { cases, documents, payments, consultations, serviceRequests } from "@/db/schema";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, and, inArray } from "drizzle-orm";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, Badge, Button, EmptyState } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -85,13 +85,12 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
         .orderBy(desc(consultations.createdAt))
         .limit(20);
       const refs = consultRows.map((c) => c.paymentRef).filter((r): r is string => !!r);
-      const pays: typeof payments.$inferSelect[] = [];
-      // Fetch each payment by its unique reference (indexed) — simple and safe.
-      for (const r of refs) {
-        const pr = await db.select().from(payments).where(eq(payments.reference, r)).limit(1);
-        if (pr[0]) pays.push(pr[0]);
-      }
-      userPayments = pays.map((payment) => ({
+      // یک کوئری با inArray به‌جای N+1
+      const payRows =
+        refs.length > 0
+          ? await db.select().from(payments).where(inArray(payments.reference, refs)).limit(40)
+          : [];
+      userPayments = payRows.map((payment) => ({
         payment,
         consult: consultRows.find((c) => c.paymentRef === payment.reference) ?? null,
       }));

@@ -67,6 +67,43 @@ export async function resolveLawyerContext(user: {
 
 export const isLawyerRole = (role: string): boolean => role === "lawyer" || role === "trainee";
 
+/* ------------------------------ مجوزدستی پرونده (ownership) ------------------------------ */
+
+/** شکل کاربر نشست موردنیاز مجوزدستی پرونده (از getCurrentUser قابل ساخت مستقیم) */
+export type CaseAccessUser = {
+  phone: string | null;
+  role: string;
+  lawyerId: number | null;
+  parentLawyerId?: number | null;
+};
+
+/** مالک موکل پرونده — تطابق شماره تماس (همان منطق case-documents) */
+export function isCaseOwner(row: CaseRow, user: CaseAccessUser): boolean {
+  if (!user?.phone) return false;
+  return row.contactPhone === user.phone || (!!row.clientUserPhone && row.clientUserPhone === user.phone);
+}
+
+/** سمت وکالت پرونده — وکیل/همکار واگذارشده یا کارآموزِ همان وکیل */
+export function isCaseLawyerSide(row: CaseRow, user: CaseAccessUser): boolean {
+  if (user.role === "lawyer" || user.role === "team") {
+    return user.lawyerId != null && row.assignedLawyerId != null && row.assignedLawyerId === user.lawyerId;
+  }
+  if (user.role === "trainee") {
+    return user.parentLawyerId != null && row.assignedLawyerId != null && row.assignedLawyerId === user.parentLawyerId;
+  }
+  return false;
+}
+
+/** نقش‌های داخلی پلتفرم (کارشناس عملیات/ناظر/مدیر) */
+export function isInternalRole(role: string): boolean {
+  return role === "staff" || role === "supervisor" || role === "admin";
+}
+
+/** دسترسی به پرونده در پرتال — فقط مالک، وکیلِ پرونده یا نقش داخلی */
+export function canAccessCase(row: CaseRow, user: CaseAccessUser): boolean {
+  return isInternalRole(user.role) || isCaseOwner(row, user) || isCaseLawyerSide(row, user);
+}
+
 /* ------------------------------ تطبیق تخصص و امتیاز مارکت ------------------------------ */
 
 /** تطبیق نرم تخصص: «ملکی» با «ملک»، «قراردادها» با «قرارداد» و… */

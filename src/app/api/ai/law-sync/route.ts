@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { syncLawFacts } from "@/lib/law-facts";
 import { isAdmin } from "@/lib/admin-auth";
+import { rateLimit } from "@/lib/api-security";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // کرون روزانه — با همزمانی ۴ و بودجهٔ ۱۴ثانیه‌ای هر موضوع زیر سقف می‌ماند
@@ -20,13 +21,18 @@ async function handle(req: Request): Promise<NextResponse> {
   const bearer = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
   const keyParam = url.searchParams.get("key") ?? "";
   const isCron = req.headers.get("x-vercel-cron") === "1";
-  const authorized = isCron || (!!token && (bearer === token || keyParam === token));
+  const authorized = (!!token && (bearer === token || keyParam === token)) || isCron;
 
   if (!authorized) {
     // نشست ادمین — فقط اگر توکنی تنظیم نشده بود هم اجازهٔ دستی بدهیم که راه گیر نیفتد؟ نه؛ ادمین کافی است
     const admin = await isAdmin().catch(() => false);
     if (!admin) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
+
+  // هدر x-vercel-cron قابل جعل است — سقف ساعتی جلوی سوختن بودجهٔ LLM/سینک را می‌گیرد
+  // (کرون واقعی هر شب یک‌بار صدا می‌زند؛ ۲ بار در ساعت حاشیهٔ امن کافی است)
+  const limited = rateLimit(req, "law-sync", 2, 60 * 60_000);
+  if (limited) return limited;
 
   const summary = await syncLawFacts();
   return NextResponse.json({ ...summary, ok: true, at: new Date().toISOString() });

@@ -161,8 +161,12 @@ export default async function LawyerDashboard() {
     console.error("[dadban] lawyer dashboard: consultations query failed:", err);
   }
   try {
-    const t = await db.select().from(tickets);
-    openTickets = t.filter((x) => x.status === "open").length;
+    // شمارش تیکت‌های باز در دیتابیس — نه اسکن کامل جدول
+    const t = await db
+      .select({ c: sql<number>`count(*)::int` })
+      .from(tickets)
+      .where(eq(tickets.status, "open"));
+    openTickets = Number(t[0]?.c ?? 0);
   } catch (err) {
     console.error("[dadban] lawyer dashboard: tickets query failed:", err);
   }

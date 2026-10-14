@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { lawyerReminders } from "@/db/schema";
-import { asc, eq } from "drizzle-orm";
+import { asc, and, eq } from "drizzle-orm";
 import { rateLimit, readJson, text } from "@/lib/api-security";
 import { getLawyerActor } from "@/lib/lawyer-actor";
 import { ensureProfileSchema } from "@/lib/auto-seed";
@@ -97,10 +97,11 @@ export async function PATCH(req: Request) {
   }
   try {
     await ensureProfileSchema();
+    // IDOR: فقط یادآورِ خودِ وکیل (نه وکلای دیگر)
     await db
       .update(lawyerReminders)
       .set({ done: body.done })
-      .where(eq(lawyerReminders.id, id));
+      .where(and(eq(lawyerReminders.id, id), eq(lawyerReminders.lawyerId, actor.lawyerId)));
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: false, error: "به‌روزرسانی انجام نشد." }, { status: 500 });
@@ -116,7 +117,8 @@ export async function DELETE(req: Request) {
   if (!Number.isInteger(id)) return NextResponse.json({ ok: false, error: "شناسه نامعتبر است." }, { status: 422 });
   try {
     await ensureProfileSchema();
-    await db.delete(lawyerReminders).where(eq(lawyerReminders.id, id));
+    // IDOR: فقط یادآورِ خودِ وکیل (نه وکلای دیگر)
+    await db.delete(lawyerReminders).where(and(eq(lawyerReminders.id, id), eq(lawyerReminders.lawyerId, actor.lawyerId)));
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: false, error: "حذف انجام نشد." }, { status: 500 });

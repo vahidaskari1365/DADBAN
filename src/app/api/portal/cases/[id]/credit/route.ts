@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { creditRequests } from "@/db/schema-marketplace";
 import { getCurrentUser } from "@/lib/user-auth";
 import { rateLimit, readJson, text, publicError } from "@/lib/api-security";
-import { generateReferenceCode, getCaseRow, isLawyerRole, parseAmount } from "@/components/portal/lawyer/portal-server";
+import { generateReferenceCode, getCaseRow, isLawyerRole, parseAmount, isCaseLawyerSide, isInternalRole } from "@/components/portal/lawyer/portal-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,6 +32,10 @@ export async function POST(req: Request, { params }: RouteCtx) {
     }
     const c = await getCaseRow(caseId);
     if (!c) return NextResponse.json({ ok: false, error: "پرونده یافت نشد." }, { status: 404 });
+    // مجوزدستی: فقط وکیلِ واگذارشده/کارآموزِ همان وکیل (یا نقش داخلی)
+    if (!isCaseLawyerSide(c, user) && !isInternalRole(user.role)) {
+      return NextResponse.json({ ok: false, error: "دسترسی به این پرونده مجاز نیست." }, { status: 403 });
+    }
 
     const body = await readJson(req, 4_000);
     if (!body) return NextResponse.json({ ok: false, error: "بدنه درخواست نامعتبر است." }, { status: 422 });

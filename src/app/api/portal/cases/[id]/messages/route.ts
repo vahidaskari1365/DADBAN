@@ -4,7 +4,7 @@ import { caseMessages } from "@/db/schema-marketplace";
 import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { rateLimit, readJson, text, publicError } from "@/lib/api-security";
-import { getCaseMessages, getCaseRow } from "@/components/portal/lawyer/portal-server";
+import { getCaseMessages, getCaseRow, canAccessCase } from "@/components/portal/lawyer/portal-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,6 +24,13 @@ export async function GET(req: Request, { params }: RouteCtx) {
     const caseId = Number(id);
     if (!Number.isFinite(caseId) || caseId <= 0) {
       return NextResponse.json({ ok: false, error: "شناسه پرونده نامعتبر است." }, { status: 422 });
+    }
+
+    const c = await getCaseRow(caseId);
+    if (!c) return NextResponse.json({ ok: false, error: "پرونده یافت نشد." }, { status: 404 });
+    // مجوزدستی: فقط طرفین پرونده یا نقش داخلی
+    if (!canAccessCase(c, user)) {
+      return NextResponse.json({ ok: false, error: "دسترسی به این پرونده مجاز نیست." }, { status: 403 });
     }
 
     const messages = await getCaseMessages(caseId);
@@ -52,6 +59,10 @@ export async function POST(req: Request, { params }: RouteCtx) {
     }
     const c = await getCaseRow(caseId);
     if (!c) return NextResponse.json({ ok: false, error: "پرونده یافت نشد." }, { status: 404 });
+    // مجوزدستی: فقط طرفین پرونده می‌توانند پیام بفرستند
+    if (!canAccessCase(c, user)) {
+      return NextResponse.json({ ok: false, error: "دسترسی به این پرونده مجاز نیست." }, { status: 403 });
+    }
 
     const payload = await readJson(req, 8_000);
     if (!payload) return NextResponse.json({ ok: false, error: "بدنه درخواست نامعتبر است." }, { status: 422 });
