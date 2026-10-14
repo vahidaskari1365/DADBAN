@@ -19,7 +19,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const st = makeT(await getServerLocale());
   const topic = await getForumTopic(Number(id)).catch(() => null);
-  if (!topic) return { title: st("موضوع یافت نشد — تالار گفتگو دادورزان") };
+  if (!topic) {
+    /* ۴۰۴ واقعی — notFound در generateMetadata پیش از شروع استریم اجرا می‌شود */
+    notFound();
+  }
   return {
     title: `${topic.title} — ${st("تالار گفتگو دادورزان")}`,
     description: topic.body.slice(0, 160) || st("گفتگوی تالار دادورزان"),
