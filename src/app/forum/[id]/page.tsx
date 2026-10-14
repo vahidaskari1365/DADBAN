@@ -20,8 +20,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const st = makeT(await getServerLocale());
   const topic = await getForumTopic(Number(id)).catch(() => null);
   if (!topic) {
-    /* ۴۰۴ واقعی — notFound در generateMetadata پیش از شروع استریم اجرا می‌شود */
-    notFound();
+    /* soft-404 هماهنگ با بقیهٔ سایت (knowledge/[slug] و lawyers/[slug] هم همین‌طور) —
+       ولی برای سئو صادقانه noindex می‌کنیم تا از ایندکس خارج شود */
+    return {
+      title: st("موضوع یافت نشد — تالار گفتگو دادورزان"),
+      robots: { index: false, follow: false },
+    };
   }
   return {
     title: `${topic.title} — ${st("تالار گفتگو دادورزان")}`,
