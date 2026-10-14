@@ -9,6 +9,7 @@ import type { IconKey } from "@/lib/data";
 import { SITE_NAME } from "@/lib/brand";
 import { getT } from "@/lib/i18n/server";
 import { safeJsonLd } from "@/lib/jsonld";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 /**
  * حق‌الوکاله و پرداخت قسطی — صفحهٔ مرجعِ صادقانه برای دغدغهٔ پرداخت وکیل.
@@ -249,6 +250,8 @@ export default async function FeePaymentPage() {
           />
         </div>
       </section>
+
+      <PageContentBlocks page="fee-payment" position="top" />
 
       {/* حق‌الوکاله چیست؟ — توضیح ساده و صادقانه */}
       <Container className="py-14 sm:py-16">

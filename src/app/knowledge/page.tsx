@@ -10,6 +10,7 @@ import { faNum } from "@/lib/data";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { makeT } from "@/lib/i18n/core";
 import { tdyn } from "@/lib/i18n/dynamic";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600; // ISR — هر ساعت آپدیت می‌شه
@@ -70,6 +71,7 @@ export default async function KnowledgePage() {
         desc={t("مقالات تخصصی و راهنماهای گام‌به‌گام برای آشنایی با حقوق خود؛ به قلم وکلای متخصص دادورزان.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("بانک دانش حقوقی") }]}
       />
+      <PageContentBlocks page="knowledge" position="top" />
 
       <Container className="py-8">
         {/* جستجوی موضوعی + فیلتر دسته‌بندی */}

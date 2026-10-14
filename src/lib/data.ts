@@ -222,6 +222,7 @@ export const NAV: {
       { label: "پرسش و پاسخ", href: "/qa", desc: "پاسخ وکلای متخصص" },
     ],
   },
+  { label: "تالار گفتگو", href: "/forum" },
   { label: "دستیار هوشمند", href: "/ai-assistant", ai: true },
 ];
 

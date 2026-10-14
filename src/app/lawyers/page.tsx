@@ -18,6 +18,7 @@ import { makeT, templateT } from "@/lib/i18n/core";
 import { tdyn } from "@/lib/i18n/dynamic";
 import Link from "next/link";
 import { safeJsonLd } from "@/lib/jsonld";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 export const dynamic = "force-dynamic";
 
@@ -196,6 +197,8 @@ export default async function LawyersPage({
           </p>
         )}
       </PageHero>
+
+      <PageContentBlocks page="lawyers" position="top" />
 
       <Container className="py-8">
         <div className="sticky top-16 z-30 mb-6">

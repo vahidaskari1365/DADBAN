@@ -4,6 +4,7 @@ import { Container } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
 import LegalReviewBadge from "@/components/legal-review-badge";
 import { getT } from "@/lib/i18n/server";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 /** چندزبانه: تیتر/توضیح با generateMetadata و getT به زبان انتخابی کاربر می‌رود */
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,6 +35,7 @@ export default async function PrivacyPage() {
         desc={t("حفظ حریم خصوصی شما برای ما اولویت است. آخرین به‌روزرسانی: بهار ۱۴۰۴")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("حریم خصوصی") }]}
       />
+      <PageContentBlocks page="privacy" position="top" />
       <Container className="py-12">
         <div className="mx-auto max-w-3xl space-y-5">
           <LegalReviewBadge slug="privacy" />

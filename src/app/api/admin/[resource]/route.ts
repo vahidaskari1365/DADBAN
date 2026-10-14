@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { lawyers, contracts, qaQuestions, cases, consultations, tickets, articles, qaSubmissions, payments, lawyerAvailability, managedServices, serviceCategories, glossaryTerms, laws, judgments, legalForms, membershipPlans } from "@/db/schema";
+import { lawyers, contracts, qaQuestions, cases, consultations, tickets, articles, qaSubmissions, payments, lawyerAvailability, managedServices, serviceCategories, glossaryTerms, laws, judgments, legalForms, membershipPlans, siteContent, forumTopics, forumReplies } from "@/db/schema";
 import { desc, eq, asc } from "drizzle-orm";
 import { isAdmin } from "@/lib/admin-auth";
 
@@ -25,6 +25,10 @@ const TABLES: Record<string, { table: any; orderBy: any; searchCol?: any }> = {
   judgments: { table: judgments, orderBy: asc(judgments.sortOrder), searchCol: judgments.title },
   "legal-forms": { table: legalForms, orderBy: asc(legalForms.sortOrder), searchCol: legalForms.name },
   plans: { table: membershipPlans, orderBy: asc(membershipPlans.sortOrder), searchCol: membershipPlans.name },
+  /* --- CMS محتوای صفحات + تالار گفتگو --- */
+  "site-content": { table: siteContent, orderBy: asc(siteContent.sortOrder), searchCol: siteContent.title },
+  "forum-topics": { table: forumTopics, orderBy: desc(forumTopics.createdAt), searchCol: forumTopics.title },
+  "forum-replies": { table: forumReplies, orderBy: desc(forumReplies.createdAt), searchCol: forumReplies.body },
 };
 
 export async function GET(req: Request, { params }: { params: Promise<{ resource: string }> }) {

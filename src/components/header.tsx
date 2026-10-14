@@ -41,6 +41,7 @@ const childIcon = (label: string): IconKey => {
     "قوانین": "landmark",
     "آرای قضایی": "gavel",
     "پرسش و پاسخ": "chat",
+    "تالار گفتگو": "chat",
     "واژه‌نامه حقوقی": "book",
     "دستیار حقوقی AI": "sparkles",
     "دستیار هوش مصنوعی": "sparkles",

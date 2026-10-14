@@ -11,6 +11,7 @@ import { ServiceCard } from "@/components/managed";
 import { CATALOG_CATEGORIES, CATALOG_SERVICES } from "@/lib/managed-catalog";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -92,6 +93,8 @@ export default async function ServicesCatalog() {
           </Link>
         </div>
       </PageHero>
+
+      <PageContentBlocks page="services" position="top" />
 
       <div id="catalog" className="mt-12">
         <Container>

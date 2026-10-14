@@ -9,6 +9,7 @@ import { getT } from "@/lib/i18n/server";
 import { getMembershipPlans } from "@/lib/content-store";
 import type { PlanCatalogItem } from "@/lib/plans-catalog";
 import { safeJsonLd } from "@/lib/jsonld";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 export const revalidate = 0;
 
@@ -72,6 +73,7 @@ export default async function PlansPage() {
           { icon: "bolt", label: t("آمار بازدید و عملکرد پروفایل") },
         ]}
       />
+      <PageContentBlocks page="plans" position="top" />
 
       {/* کارت‌های پلن */}
       <Container className="py-12">

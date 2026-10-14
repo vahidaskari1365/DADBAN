@@ -7,6 +7,7 @@ import { faNum } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
 import { templateT } from "@/lib/i18n/core";
 import Link from "next/link";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 /**
  * چندزبانه: با generateMetadata و getT، تیتر/توضیح به زبان انتخابی کاربر می‌رود
@@ -59,6 +60,7 @@ export default async function AboutPage() {
         title={t("عدالت، در دسترس همه")}
         desc={t("دادورزان با هدف دموکراتیزه‌کردن دسترسی به خدمات حقوقی ساخته شده است؛ پلتفرمی که وکیل‌یابی، مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی را در یک‌جا گرد می‌آورد.")}
       />
+      <PageContentBlocks page="about" position="top" />
 
       <Container className="py-12">
         <div className="grid grid-cols-2 gap-6 rounded-3xl border border-border bg-surface p-8 card-shadow sm:grid-cols-4">

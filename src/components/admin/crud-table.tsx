@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -14,7 +14,7 @@ import { useT } from "@/lib/i18n/provider";
  * - تغییرات بلافاصله در سایت عمومی نمایش داده می‌شود (صفحات DB-first هستند)
  */
 
-export type CrudFieldType = "text" | "textarea" | "number" | "boolean" | "csv";
+export type CrudFieldType = "text" | "textarea" | "number" | "boolean" | "csv" | "image" | "select";
 
 export interface CrudField {
   key: string;
@@ -23,6 +23,8 @@ export interface CrudField {
   placeholder?: string;
   /** فقط برای type="csv" — راهنمای جداکننده */
   hint?: string;
+  /** فقط برای type="select" — گزینه‌های قابل انتخاب (رشتهٔ ساده یا value/label) */
+  options?: (string | { value: string; label: string })[];
   /** فیلدهای لازم برای ساخت رکورد جدید (پیش‌فرض: همه به‌جز id/createdAt) */
   required?: boolean;
   span?: 1 | 2;
@@ -40,6 +42,87 @@ interface Row extends Record<string, unknown> {
 }
 
 const EMPTY: Record<string, unknown> = {};
+
+/** آپلود تصویر به /api/admin/upload — خروجی: url عمومی /api/media/{id} */
+function ImageField({
+  value,
+  onChange,
+  onError,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+  onError: (msg: string) => void;
+}) {
+  const t = useT();
+  const [busy, setBusy] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const uploadRouter = useRouter();
+
+  const upload = async (file: File) => {
+    setBusy(true);
+    onError("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      if (res.status === 401) {
+        uploadRouter.push("/admin/login");
+        return;
+      }
+      const data = await res.json();
+      if (!data.ok) {
+        onError(data.error || t("آپلود ناموفق بود"));
+        return;
+      }
+      onChange(data.url as string);
+    } catch {
+      onError(t("خطا در آپلود تصویر"));
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap items-start gap-3">
+      {value ? (
+        <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-xl border border-border bg-surface-2">
+          {/* eslint-disable-next-line @next/next/no-img-element -- پیش‌نمایش url همان دامنه از رسانهٔ ادمین */}
+          <img src={value} alt="" className="h-full w-full object-cover" data-testid="crud-image-preview" />
+        </div>
+      ) : (
+        <span className="inline-flex h-20 w-32 shrink-0 items-center justify-center rounded-xl border border-dashed border-border bg-surface-2 text-muted">
+          <Icon name="document" className="h-6 w-6" />
+        </span>
+      )}
+      <div className="flex flex-col gap-2">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          disabled={busy}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void upload(f);
+          }}
+          aria-label={t("انتخاب تصویر")}
+          data-testid="crud-image-input"
+          className="block w-56 text-xs text-muted file:me-3 file:rounded-lg file:border-0 file:bg-primary-soft file:px-3 file:py-2 file:text-xs file:font-bold file:text-primary"
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="self-start rounded-lg border border-border px-2.5 py-1.5 text-[11px] font-bold text-muted transition hover:border-destructive hover:text-destructive"
+          >
+            {t("حذف تصویر")}
+          </button>
+        )}
+        <p className="text-[11px] leading-5 text-muted">{t("PNG، JPEG، WebP یا GIF — حداکثر ۳ مگابایت")}</p>
+      </div>
+    </div>
+  );
+}
 
 function displayValue(row: Record<string, unknown>, col: CrudColumn): string {
   if (col.render) return col.render(row);
@@ -261,6 +344,29 @@ export function AdminCrudTable({
                     rows={3}
                     className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm leading-7 text-foreground outline-none transition focus:border-primary"
                   />
+                ) : f.type === "image" ? (
+                  <ImageField
+                    value={String(form[f.key] ?? "")}
+                    onChange={(url) => setForm((s) => ({ ...s, [f.key]: url }))}
+                    onError={(msg) => setError(msg)}
+                  />
+                ) : f.type === "select" ? (
+                  <select
+                    id={`crud-${f.key}`}
+                    value={String(form[f.key] ?? "")}
+                    onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
+                    className="h-10 w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground outline-none transition focus:border-primary"
+                  >
+                    {(f.options ?? []).map((opt) => {
+                      const value = typeof opt === "string" ? opt : opt.value;
+                      const label = typeof opt === "string" ? t(opt) : t(opt.label);
+                      return (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      );
+                    })}
+                  </select>
                 ) : f.type === "boolean" ? (
                   <button
                     id={`crud-${f.key}`}

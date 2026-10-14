@@ -6,6 +6,7 @@ import { Reveal } from "@/components/reveal";
 import { getT } from "@/lib/i18n/server";
 import Link from "next/link";
 import { templateT } from "@/lib/i18n/core";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -50,6 +51,8 @@ export default async function BusinessPage() {
           <Link href="/pricing" className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-sm font-bold text-white transition-colors hover:bg-white/20"><Icon name="money" className="h-4 w-4" />{t("مشاهده تعرفه")}</Link>
         </div>
       </PageHero>
+
+      <PageContentBlocks page="business" position="top" />
 
       <Container className="py-12">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

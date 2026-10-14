@@ -1283,5 +1283,83 @@ export const membershipPlans = pgTable("membership_plans", {
 });
 export type MembershipPlanRow = typeof membershipPlans.$inferSelect;
 
+/* --------------------------- CMS — محتوای صفحات سایت --------------------------- */
+/**
+ * بلوک‌های محتوایی مدیریت‌شده از پنل ادمین (/admin/content).
+ * هر رکورد = یک بلوک برای یک صفحه (page) — عنوان/زیرعنوان/متن/عکس/لینک + ترتیب و فعال.
+ * صفحات عمومی با <PageContentBlocks page="…"/> این بلوک‌ها را می‌خوانند (DB-first، خالی = بی‌اثر).
+ */
+export const siteContent = pgTable("site_content", {
+  id: serial("id").primaryKey(),
+  /** کلید صفحه — از PAGE_REGISTRY (home، about، contact، plans، …) */
+  page: text("page").notNull(),
+  /** برچسب بخش — فقط برای مرتب‌سازی ذهنی مدیر */
+  section: text("section").notNull().default(""),
+  /** نوع بلوک: announcement | text | feature | faq | image */
+  kind: text("kind").notNull().default("text"),
+  title: text("title").notNull().default(""),
+  subtitle: text("subtitle").notNull().default(""),
+  body: text("body").notNull().default(""),
+  imageUrl: text("image_url"),
+  link: text("link"),
+  linkLabel: text("link_label"),
+  active: boolean("active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export type SiteContentRow = typeof siteContent.$inferSelect;
+
+/* --------------------------- رسانه — عکس‌های آپلودی ادمین --------------------------- */
+/**
+ * تصاویر آپلودی پنل ادمین — در دیتابیس ذخیره می‌شوند (base64) چون فایل‌سیستم Vercel فقط‌خواندنی است.
+ * سرو از GET /api/media/[id] با کش ابدی (id یکتاست).
+ */
+export const media = pgTable("media", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull().default(""),
+  mime: text("mime").notNull().default("image/png"),
+  size: integer("size").notNull().default(0),
+  /** محتوای base64 فایل تصویر */
+  data: text("data").notNull(),
+  uploadedBy: text("uploaded_by").notNull().default("admin"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type MediaRow = typeof media.$inferSelect;
+
+/* --------------------------- تالار گفتگو --------------------------- */
+/**
+ * تالار گفتگو (/forum) — برای همه: کاربر لاگین‌شده با نام و نقش خودش،
+ * مهمان هم می‌تواند بنویسد (نام دلخواه + rate-limit سختگیرانه). مدیریت/پنهان‌سازی از /admin/forum.
+ */
+export const forumTopics = pgTable("forum_topics", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id"),
+  authorName: text("author_name").notNull().default("مهمان"),
+  /** guest | client | employee | lawyer | staff | supervisor | admin */
+  authorRole: text("author_role").notNull().default("guest"),
+  title: text("title").notNull(),
+  body: text("body").notNull().default(""),
+  category: text("category").notNull().default("گفتگوی آزاد"),
+  views: integer("views").notNull().default(0),
+  pinned: boolean("pinned").notNull().default(false),
+  /** visible | hidden */
+  status: text("status").notNull().default("visible"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type ForumTopicRow = typeof forumTopics.$inferSelect;
+
+export const forumReplies = pgTable("forum_replies", {
+  id: serial("id").primaryKey(),
+  topicId: integer("topic_id").notNull(),
+  userId: integer("user_id"),
+  authorName: text("author_name").notNull().default("مهمان"),
+  authorRole: text("author_role").notNull().default("guest"),
+  body: text("body").notNull(),
+  /** visible | hidden */
+  status: text("status").notNull().default("visible"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export type ForumReplyRow = typeof forumReplies.$inferSelect;
+
 /* جداول بازار پرونده‌ها (دادپیو) — در همین ماژول re-export می‌شوند تا همهٔ کد از "@/db/schema" مصرف کند */
 export * from "@/db/schema-marketplace";

@@ -42,6 +42,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
     links: [
       { label: "درباره دادورزان", href: "/about" },
       { label: "برای کسب‌وکارها", href: "/business" },
+      { label: "تالار گفتگو", href: "/forum" },
       { label: "پنل موکل", href: "/dashboard/client" },
       { label: "پنل وکیل", href: "/dashboard/lawyer" },
       { label: "عضویت وکلای جدید", href: "/join-as-lawyer" },

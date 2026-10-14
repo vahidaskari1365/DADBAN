@@ -5,6 +5,7 @@ import { Container, Button, Card } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 const CATS = ["پرداخت", "حساب کاربری", "وکیل", "پرونده", "مشاوره", "مشکل فنی", "شکایت", "سایر"];
 
@@ -51,6 +52,7 @@ export default function ContactPage() {
         desc={t("سؤال یا مشکلی دارید؟ تیکت ثبت کنید یا از راه‌های ارتباطی ما استفاده نمایید. تیم پشتیبانی ۲۴ ساعته در خدمت شماست.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("تماس و پشتیبانی") }]}
       />
+      <PageContentBlocks page="contact" position="top" />
 
       <Container className="grid gap-8 py-10 lg:grid-cols-[1fr_320px]">
         <Card hover={false}>

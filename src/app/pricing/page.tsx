@@ -6,6 +6,7 @@ import { faPrice, faNum } from "@/lib/data";
 import type { IconKey } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
 import { templateT } from "@/lib/i18n/core";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -67,6 +68,7 @@ export default async function PricingPage() {
         desc={t("خدمات حقوقی را به‌صورت شفاف و با قیمت مشخص سفارش دهید؛ یا برای کسب‌وکار خود اشتراک حقوقی بگیرید.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("تعرفه خدمات") }]}
       />
+      <PageContentBlocks page="pricing" position="top" />
 
       {/* Services marketplace */}
       <Container className="py-10">

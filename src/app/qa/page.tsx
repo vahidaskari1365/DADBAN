@@ -12,6 +12,7 @@ import { makeT } from "@/lib/i18n/core";
 import { tdyn } from "@/lib/i18n/dynamic";
 import Link from "next/link";
 import { safeJsonLd } from "@/lib/jsonld";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +74,7 @@ export default async function QaPage() {
         desc={t("پاسخ وکلای متخصص دادورزان به پرسش‌های رایج؛ دسته‌بندی‌شده و قابل جستجو. سؤال خود را هم بپرسید.")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پرسش و پاسخ") }]}
       />
+      <PageContentBlocks page="qa" position="top" />
 
       <Container className="grid gap-8 py-10 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">

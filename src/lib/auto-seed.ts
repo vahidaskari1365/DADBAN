@@ -768,3 +768,30 @@ export async function ensureExtendedSchema(): Promise<void> {
   }
   extendedSchemaReady = true;
 }
+
+/**
+ * جداول CMS و تالار گفتگو — «محتوای صفحات»، «رسانه (عکس‌های ادمین)» و «فروم».
+ * همان الگوی ensure*های بالا: best-effort، بدون مایگریشن دستی در پروداکشن.
+ * (site_content + media + forum_topics + forum_replies)
+ */
+let cmsSchemaReady = false;
+export async function ensureCmsSchema(): Promise<void> {
+  if (cmsSchemaReady) return;
+  const stmts = [
+    `CREATE TABLE IF NOT EXISTS site_content (id SERIAL PRIMARY KEY, page TEXT NOT NULL, section TEXT NOT NULL DEFAULT '', kind TEXT NOT NULL DEFAULT 'text', title TEXT NOT NULL DEFAULT '', subtitle TEXT NOT NULL DEFAULT '', body TEXT NOT NULL DEFAULT '', image_url TEXT, link TEXT, link_label TEXT, active BOOLEAN NOT NULL DEFAULT true, sort_order INTEGER NOT NULL DEFAULT 0, updated_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS site_content_page_idx ON site_content (page, sort_order)`,
+    `CREATE TABLE IF NOT EXISTS media (id SERIAL PRIMARY KEY, filename TEXT NOT NULL DEFAULT '', mime TEXT NOT NULL DEFAULT 'image/png', size INTEGER NOT NULL DEFAULT 0, data TEXT NOT NULL, uploaded_by TEXT NOT NULL DEFAULT 'admin', created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE TABLE IF NOT EXISTS forum_topics (id SERIAL PRIMARY KEY, user_id INTEGER, author_name TEXT NOT NULL DEFAULT 'مهمان', author_role TEXT NOT NULL DEFAULT 'guest', title TEXT NOT NULL, body TEXT NOT NULL DEFAULT '', category TEXT NOT NULL DEFAULT 'گفتگوی آزاد', views INTEGER NOT NULL DEFAULT 0, pinned BOOLEAN NOT NULL DEFAULT false, status TEXT NOT NULL DEFAULT 'visible', created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS forum_topics_list_idx ON forum_topics (status, pinned, created_at DESC)`,
+    `CREATE TABLE IF NOT EXISTS forum_replies (id SERIAL PRIMARY KEY, topic_id INTEGER NOT NULL, user_id INTEGER, author_name TEXT NOT NULL DEFAULT 'مهمان', author_role TEXT NOT NULL DEFAULT 'guest', body TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'visible', created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS forum_replies_topic_idx ON forum_replies (topic_id, created_at)`,
+  ];
+  for (const stmt of stmts) {
+    try {
+      await db.execute(sql.raw(stmt));
+    } catch {
+      /* non-fatal */
+    }
+  }
+  cmsSchemaReady = true;
+}

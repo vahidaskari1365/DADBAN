@@ -24,6 +24,7 @@ import { PinMasonry } from "@/components/pin-masonry";
 import { ReviewsSpotlight } from "@/components/amazon/reviews-spotlight";
 import { SiteMenu } from "@/components/home/site-menu";
 import { getT } from "@/lib/i18n/server";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 /**
  * Homepage دادورزان — Conversion-focused و خلوت.
@@ -53,6 +54,8 @@ export default async function HomePage() {
     <div className="page-wash">
       {/* HERO — H1 + Legal Problem Search + موضوعات محبوب + فانل */}
       <HomeHero />
+
+      <PageContentBlocks page="home" position="top" />
 
       {/* TRUST STRIP — باریک، فقط ادعاهای واقعی */}
       <section className="-mt-6" aria-label={t("تضمین‌های دادورزان")}>
@@ -286,6 +289,8 @@ export default async function HomePage() {
           </Reveal>
         </Container>
       </section>
+
+      <PageContentBlocks page="home" position="bottom" />
 
       {/* منوی شناور «همه خدمات» — همبرگری با همهٔ بخش‌های سایت */}
       <SiteMenu />

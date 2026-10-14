@@ -4,6 +4,7 @@ import { Container } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
 import LegalReviewBadge from "@/components/legal-review-badge";
 import { getT } from "@/lib/i18n/server";
+import { PageContentBlocks } from "@/components/page-content-blocks";
 
 /** چندزبانه: تیتر/توضیح با generateMetadata و getT به زبان انتخابی کاربر می‌رود */
 export async function generateMetadata(): Promise<Metadata> {
@@ -35,6 +36,7 @@ export default async function TermsPage() {
         desc={t("آخرین به‌روزرسانی: بهار ۱۴۰۴")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قوانین و مقررات استفاده") }]}
       />
+      <PageContentBlocks page="terms" position="top" />
       <Container className="py-12">
         <div className="mx-auto max-w-3xl space-y-5">
           <LegalReviewBadge slug="terms" />
