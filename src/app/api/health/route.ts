@@ -1,3 +1,6 @@
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
+
 function causeChain(e: unknown, depth = 0): string {
   if (!e || depth > 3) return "";
   const err = e as { message?: string; code?: string; cause?: unknown };
