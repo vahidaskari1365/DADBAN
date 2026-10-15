@@ -95,7 +95,7 @@ function BrandPane({ mode, priority = false }: { mode: Mode; priority?: boolean 
 
       <div className="auth-stagger relative ms-auto w-full max-w-md">
         <div className="auth-float w-fit">
-          <div className="rounded-2xl bg-white p-2 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.65)] ring-1 ring-white/20">
+          <div className="logo-motion logo-motion-bare rounded-2xl bg-white p-2 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.65)] ring-1 ring-white/20">
             <Image
               src="/logo1.png"
               alt={t("لوگوی دادورزان")}

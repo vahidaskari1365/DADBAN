@@ -1454,3 +1454,87 @@ input, select, textarea {
 [dir="rtl"] .animate-marquee {
   animation-name: marquee-rtl;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   لوگوی دادورزان — موشن گرافیک طلایی
+   ورود نرم (scale-in) + درخشش متحرک روی سطح طلایی + هالهٔ نفس‌کشنده
+   ═══════════════════════════════════════════════════════════════════════ */
+@keyframes logo-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.82) rotate(-5deg);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1.06) rotate(1.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+@keyframes logo-shine {
+  0%, 58% {
+    transform: translateX(-135%) skewX(-18deg);
+  }
+  88%, 100% {
+    transform: translateX(235%) skewX(-18deg);
+  }
+}
+@keyframes logo-glow {
+  0%, 100% {
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.06),
+      0 0 0 rgb(190 148 60 / 0);
+  }
+  50% {
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.06),
+      0 6px 18px rgb(190 148 60 / 0.38);
+  }
+}
+.logo-motion {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  animation:
+    logo-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both,
+    logo-glow 5s ease-in-out 1.2s infinite;
+}
+/* وات خورشید روی طلایی — لایهٔ شاین با blend screen */
+.logo-motion::after {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgb(255 255 255 / 0.14) 46%,
+    rgb(255 250 235 / 0.62) 50%,
+    rgb(255 255 255 / 0.14) 54%,
+    transparent 60%
+  );
+  mix-blend-mode: screen;
+  transform: translateX(-135%) skewX(-18deg);
+  animation: logo-shine 5.5s ease-in-out 1.5s infinite;
+}
+.logo-motion > img,
+.logo-motion .logo-motion-img {
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.logo-motion:hover > img,
+.logo-motion:hover .logo-motion-img {
+  transform: scale(1.07) rotate(-2.5deg);
+}
+/* نسخهٔ بدون قاب (کارت سفید پنل auth) — فقط شاین */
+.logo-motion-bare::after {
+  inset: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-motion,
+  .logo-motion::after {
+    animation: none !important;
+  }
+}
