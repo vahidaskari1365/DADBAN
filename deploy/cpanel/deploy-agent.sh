@@ -11,6 +11,49 @@ MARK="$APP/.deploy-version"
 INBOX="$APP/.release-inbox/release.tar.gz"
 now() { date -u +%FT%TZ; }
 
+# ── one-shot diag3 (فقط بار اول) ──
+DIAG3="$HOME/diag3.txt"
+if [ ! -f "$DIAG3" ]; then
+  {
+    echo "=== diag3 start $(date -u +%FT%TZ) ==="
+    echo "--- try read pg_hba ---"
+    cat /var/lib/pgsql/data/pg_hba.conf 2>&1 | head -30
+    cat /etc/postgresql/16/main/pg_hba.conf 2>&1 | head -10
+    find /var /etc -xdev -maxdepth 4 -name "pg_hba.conf" 2>/dev/null | head -3
+    echo "--- psql -U postgres socket ---"
+    psql -U postgres -d postgres -c 'select current_user' 2>&1 | head -4
+    echo "--- psql -U dadvarza_admin db=postgres ---"
+    PGPASSWORD='Dadvarzan@0142' psql -U dadvarza_admin -d postgres -c 'select current_user' 2>&1 | head -4
+    echo "--- psql -U dadvarza_admin db=template1 ---"
+    PGPASSWORD='Dadvarzan@0142' psql -U dadvarza_admin -d template1 -c 'select 1' 2>&1 | head -4
+    echo "--- psql -U dadvarza_admin db=dadvarza_dadvarzan host=/var/run/postgresql ---"
+    PGPASSWORD='Dadvarzan@0142' psql "host=/var/run/postgresql user=dadvarza_admin dbname=dadvarza_dadvarzan" -c 'select 1' 2>&1 | head -4
+    echo "=== diag3 end ==="
+  } > "$DIAG3" 2>&1
+fi
+
+# ── one-shot diag2 (فقط بار اول) ──
+DIAG2="$HOME/diag2.txt"
+if [ ! -f "$DIAG2" ]; then
+  {
+    echo "=== diag2 start $(date -u +%FT%TZ) ==="
+    echo "--- socket files ---"
+    ls -la /tmp/.s.PGSQL.* 2>&1 | head -5
+    ls -la /var/run/postgresql/ 2>&1 | head -8
+    echo "--- psql socket default ---"
+    PGPASSWORD='Dadvarzan@0142' psql -U dadvarza_admin -d dadvarza_dadvarzan -c 'select 1' 2>&1 | head -6
+    echo "--- psql socket /tmp ---"
+    PGPASSWORD='Dadvarzan@0142' psql -h /tmp -U dadvarza_admin -d dadvarza_dadvarzan -c 'select 1' 2>&1 | head -6
+    echo "--- psql sslmode=require TCP ---"
+    PGPASSWORD='Dadvarzan@0142' psql "host=127.0.0.1 port=5432 sslmode=require user=dadvarza_admin dbname=dadvarza_dadvarzan" -c 'select 1' 2>&1 | head -6
+    echo "--- psql sslmode=verify-full localhost ---"
+    PGPASSWORD='Dadvarzan@0142' psql "host=localhost port=5432 sslmode=require user=dadvarza_admin dbname=dadvarza_dadvarzan" -c 'select 1' 2>&1 | head -6
+    echo "--- node path in cpanel venv ---"
+    ls /home/dadvarza/nodevenv/*/bin/node 2>/dev/null | head -3
+    echo "=== diag2 end ==="
+  } > "$DIAG2" 2>&1
+fi
+
 # ── one-shot diag (فقط بار اول) ──
 DIAG="$HOME/diag.txt"
 if [ ! -f "$DIAG" ]; then
