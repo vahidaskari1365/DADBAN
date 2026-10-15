@@ -105,6 +105,12 @@ jobs:
             set -e
             APP_DIR="$HOME/${{ secrets.CPANEL_APP_DIR }}"
             mkdir -p "$APP_DIR"
+            if [ ! -f "$APP_DIR/.env" ] && [ -n "${{ secrets.CPANEL_ENV_B64 }}" ]; then
+              echo "→ ساخت اولیهٔ .env روی سرور (در دیپلوی‌های بعدی دست نمی‌خورد)"
+              echo "${{ secrets.CPANEL_ENV_B64 }}" | base64 -d > "$APP_DIR/.env"
+              chmod 600 "$APP_DIR/.env"
+              echo ".env ساخته شد ✓"
+            fi
             echo "→ extract روی $APP_DIR (فایل .env دست‌نخورده می‌ماند)"
             tar -xzf "$HOME/dadvarzan-incoming/release.tar.gz" -C "$APP_DIR"
             rm -f "$HOME/dadvarzan-incoming/release.tar.gz"
