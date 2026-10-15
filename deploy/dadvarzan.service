@@ -1,0 +1,38 @@
+# /etc/systemd/system/dadvarzan.service
+# سرویس اپلیکیشن دادورزان (Next.js standalone) — روی 127.0.0.1:3000 گوش می‌دهد
+# و Nginx جلوی آن به‌عنوان reverse proxy قرار می‌گیرد.
+
+[Unit]
+Description=Dadvarzan (Next.js standalone)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=dadvarzan
+Group=dadvarzan
+WorkingDirectory=/opt/dadvarzan/current
+
+# تک منبع حقیقت متغیرهای محیطی — تغییر → «systemctl restart dadvarzan»
+EnvironmentFile=/etc/dadvarzan/dadvarzan.env
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+Environment=NEXT_TELEMETRY_DISABLED=1
+
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=3
+TimeoutStopSec=15
+KillSignal=SIGTERM
+SyslogIdentifier=dadvarzan
+
+# سخت‌سازی (hardening) پایه
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/dadvarzan/shared
+
+[Install]
+WantedBy=multi-user.target

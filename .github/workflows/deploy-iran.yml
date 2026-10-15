@@ -1,0 +1,126 @@
+name: Deploy to Iran Host (production)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# استقرار خودکار روی سرور ایران — تجربهٔ شبیه Vercel:
+#   push به main ← بیلد روی GitHub Actions ← انتقال بستهٔ standalone به سرور
+#   ← جابه‌جایی symlink + ری‌استارت سرویس ← health-check ← rollback خودکار در خطا
+#
+# Secrets لازم (Settings → Secrets and variables → Actions):
+#   IRAN_HOST        — IP عمومی سرور ایران
+#   IRAN_SSH_USER    — کاربر SSH (پیش‌فرض root)
+#   IRAN_SSH_KEY     — کلید خصوصی SSH (ed25519 — کل محتوای فایل شامل BEGIN/END)
+#   IRAN_SSH_PORT    — پورت SSH (اختیاری — پیش‌فرض ۲۲)
+#   BUILD_DATABASE_URL — (اختیاری ولی توصیه‌شده) URL دیتابیس فقط برای مرحلهٔ بیلد
+#                        (تا پایان کار Neon؛ بعداً می‌توانید حذفش کنید)
+# Repository Variables (اختیاری — برای inline شدن در بیلد کلاینت):
+#   NEXT_PUBLIC_SITE_URL / NEXT_PUBLIC_GA_ID / NEXT_PUBLIC_GSC_VERIFICATION /
+#   NEXT_PUBLIC_BING_VERIFICATION / NEXT_PUBLIC_TELEGRAM_BOT
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-iran
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # اگر secrets هنوز تنظیم نشده باشند، run سبز رد می‌شود (نه قرمز) —
+      # یعنی تا قبل از راه‌اندازی سرور، پوش‌های معمولی بدون خطای Action هستند.
+      - name: Guard — چک secrets هاست ایران
+        id: guard
+        env:
+          IRAN_HOST: ${{ secrets.IRAN_HOST }}
+          IRAN_SSH_KEY: ${{ secrets.IRAN_SSH_KEY }}
+        run: |
+          if [ -z "$IRAN_HOST" ] || [ -z "$IRAN_SSH_KEY" ]; then
+            echo "::notice::Secrets هاست ایران (IRAN_HOST / IRAN_SSH_KEY) تنظیم نشده‌اند — استقرار به‌صورت عمدی رد شد. (deploy/README.fa.md — فاز ۳)"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Bun (نصب وابستگی‌ها با bun.lock)
+        if: steps.guard.outputs.skip != 'true'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node 24 (بیلد Next.js با Node — مطابق engines)
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Cache bun packages
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - name: Install dependencies
+        if: steps.guard.outputs.skip != 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Build (Next.js standalone)
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_ENV: production
+          # فقط برای مرحلهٔ بیلد (prerender) — اگر خالی باشد بیلد در حالت امن
+          # بدون دیتابیس انجام می‌شود (لایهٔ db پروژه برای این حالت طراحی شده).
+          DATABASE_URL: ${{ secrets.BUILD_DATABASE_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_GA_ID: ${{ vars.NEXT_PUBLIC_GA_ID }}
+          NEXT_PUBLIC_GSC_VERIFICATION: ${{ vars.NEXT_PUBLIC_GSC_VERIFICATION }}
+          NEXT_PUBLIC_BING_VERIFICATION: ${{ vars.NEXT_PUBLIC_BING_VERIFICATION }}
+          NEXT_PUBLIC_TELEGRAM_BOT: ${{ vars.NEXT_PUBLIC_TELEGRAM_BOT }}
+        run: bun run build
+
+      - name: Package standalone bundle
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          set -e
+          mkdir -p pkg/.next
+          cp -a .next/standalone/. pkg/
+          cp -a .next/static pkg/.next/static
+          cp -a public pkg/public
+          tar -czf release.tar.gz -C pkg .
+          ls -lh release.tar.gz
+
+      - name: Upload bundle to Iran host
+        if: steps.guard.outputs.skip != 'true'
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.IRAN_HOST }}
+          username: ${{ secrets.IRAN_SSH_USER }}
+          key: ${{ secrets.IRAN_SSH_KEY }}
+          port: ${{ secrets.IRAN_SSH_PORT || 22 }}
+          source: "release.tar.gz"
+          target: "/tmp/dadvarzan-incoming/"
+          overwrite: true
+
+      - name: Release on host (symlink swap + health-check + auto-rollback)
+        if: steps.guard.outputs.skip != 'true'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.IRAN_HOST }}
+          username: ${{ secrets.IRAN_SSH_USER }}
+          key: ${{ secrets.IRAN_SSH_KEY }}
+          port: ${{ secrets.IRAN_SSH_PORT || 22 }}
+          command_timeout: 8m
+          script: |
+            bash /opt/dadvarzan/bin/release.sh /tmp/dadvarzan-incoming/release.tar.gz "${{ github.sha }}"
+            rm -f /tmp/dadvarzan-incoming/release.tar.gz

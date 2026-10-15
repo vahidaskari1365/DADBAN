@@ -1,0 +1,114 @@
+name: Migrate DB (Neon → Iran host)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# مهاجرت کامل دیتا از Neon به PostgreSQL سرور ایران — یک‌بار یا هر وقت خواستید
+# دیتای تازه بگیرید (سایتِ روی Vercel در حین مهاجرت ~۵ دقیقه فریز می‌شود تا
+# دیتای بین دو محیط یکی شود؛ بهترین زمان: ساعات کم‌ترافیک).
+#
+# Secrets لازم:
+#   NEON_DATABASE_URL   — URL کامل Neon (از داشبورد Neon کپی کنید؛ باید شامل
+#                         ?sslmode=require باشد)
+#   IRAN_HOST / IRAN_SSH_USER / IRAN_SSH_KEY / IRAN_SSH_PORT — مثل deploy workflow
+#
+# ورودی confirm باید دقیقاً MIGRATE باشد تا اتفاقی اجرا نشود.
+#
+# سرچشمهٔ حقیقتِ اسکیمای پروژه همان dump است؛ بعد از مهاجرت، تغییر اسکیمای آینده
+# با «drizzle-kit push» از طریق SSH tunnel اعمال می‌شود (deploy/README.fa.md).
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'برای تأیید بنویسید: MIGRATE'
+        required: true
+        default: ''
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard — تأیید و چک secrets
+        env:
+          CONFIRM: ${{ github.event.inputs.confirm }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          IRAN_SSH_KEY: ${{ secrets.IRAN_SSH_KEY }}
+        run: |
+          [ "$CONFIRM" = "MIGRATE" ] || { echo "::error::برای اجرا، ورودی confirm را دقیقاً MIGRATE بگذارید"; exit 1; }
+          [ -n "$NEON_DATABASE_URL" ] || { echo "::error::secret NEON_DATABASE_URL تنظیم نشده"; exit 1; }
+          [ -n "$IRAN_SSH_KEY" ] || { echo "::error::secrets هاست ایران تنظیم نشده"; exit 1; }
+
+      - name: نصب PostgreSQL client 17 (سازگار با هر دو نسخهٔ Neon)
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          pg_dump --version
+
+      - name: گرفتن dump کامل از Neon
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          pg_dump "$NEON_DATABASE_URL" \
+            --no-owner --no-privileges --encoding=UTF8 \
+            --file=neon-dump.sql
+          gzip -f neon-dump.sql
+          ls -lh neon-dump.sql.gz
+
+      - name: انتقال dump به سرور ایران
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.IRAN_HOST }}
+          username: ${{ secrets.IRAN_SSH_USER }}
+          key: ${{ secrets.IRAN_SSH_KEY }}
+          port: ${{ secrets.IRAN_SSH_PORT || 22 }}
+          source: "neon-dump.sql.gz"
+          target: "/tmp/dadvarzan-incoming/"
+          overwrite: true
+
+      - name: بازگردانی روی PostgreSQL سرور (سایت برای چند دقیقه فریز می‌شود)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.IRAN_HOST }}
+          username: ${{ secrets.IRAN_SSH_USER }}
+          key: ${{ secrets.IRAN_SSH_KEY }}
+          port: ${{ secrets.IRAN_SSH_PORT || 22 }}
+          command_timeout: 15m
+          script: |
+            set -e
+            DUMP=/tmp/dadvarzan-incoming/neon-dump.sql.gz
+            gunzip -f "$DUMP"
+            chmod 644 /tmp/dadvarzan-incoming/neon-dump.sql
+
+            echo "→ توقف موقت اپلیکیشن"
+            systemctl stop dadvarzan || true
+
+            echo "→ پاک‌سازی اسکیمای فعلی و بازگردانی (مالکیت = dadvarzan)"
+            sudo -u dadvarzan psql -d dadvarzan -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;" >/dev/null
+            sudo -u dadvarzan psql -v ON_ERROR_STOP=1 -d dadvarzan -f /tmp/dadvarzan-incoming/neon-dump.sql
+
+            echo "→ ANALYZE برای آمار بهینه‌ساز"
+            sudo -u dadvarzan psql -d dadvarzan -c "ANALYZE;" >/dev/null
+
+            echo "→ شروع دوبارهٔ اپلیکیشن"
+            systemctl start dadvarzan || true
+            sleep 3
+
+            echo "→ health check"
+            for i in $(seq 1 30); do
+              sleep 1
+              if curl -fsS -m 3 http://127.0.0.1:3000/api/health | grep -q '"ok":true'; then
+                echo "✓ مهاجرت کامل شد و سایت روی دیتابیس جدید سالم است"
+                COUNT=$(sudo -u dadvarzan psql -d dadvarzan -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")
+                echo "  تعداد جداول بازگردانی‌شده: $COUNT"
+                rm -f /tmp/dadvarzan-incoming/neon-dump.sql
+                exit 0
+              fi
+            done
+            echo "::error::health check بعد از مهاجرت ناموفق — journalctl -u dadvarzan -n 50"
+            sudo -u dadvarzan psql -d dadvarzan -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'" || true
+            exit 1
