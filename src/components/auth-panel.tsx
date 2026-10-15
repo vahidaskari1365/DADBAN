@@ -97,7 +97,7 @@ function BrandPane({ mode, priority = false }: { mode: Mode; priority?: boolean 
         <div className="auth-float w-fit">
           <div className="logo-motion logo-motion-bare rounded-2xl bg-white p-2 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.65)] ring-1 ring-white/20">
             <Image
-              src="/logo1.png"
+              src="/logo-crest.png"
               alt={t("لوگوی دادورزان")}
               width={96}
               height={96}
@@ -165,7 +165,7 @@ function BrandBand({ mode }: { mode: Mode }) {
       <div className="auth-stagger relative px-6 pb-14 pt-7">
         <div className="flex items-center gap-3">
           <div className="auth-float rounded-xl bg-white p-1.5 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.6)] ring-1 ring-white/20">
-            <Image src="/logo1.png" alt={t("لوگوی دادورزان")} width={44} height={44} priority className="h-11 w-11 rounded-lg" />
+            <Image src="/logo-crest.png" alt={t("لوگوی دادورزان")} width={44} height={44} priority className="h-11 w-11 rounded-lg" />
           </div>
           <p className="text-[10px] font-extrabold tracking-[0.4em] text-[var(--auth-gold)]">دادورزان</p>
         </div>
