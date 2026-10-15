@@ -1,10 +1,11 @@
 name: Package release (cPanel)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# بیلد standalone + انتشار به GitHub Releases با تگ ثابت latest-cpanel.
-# اسکریپت deploy-agent روی هاست cPanel هر ۵ دقیقه آخرین ریلیز را چک می‌کند و
-# اگر جدید باشد دانلود + extract + restart خودکار انجام می‌دهد.
-# (پورت SSH و پورت‌های passive FTP روی این سرور بسته است — اسکن کامل شد)
+# بیلد standalone + انتشار به GitHub Releases با تگ ثابت latest-cpanel
+# + آپلود مستقیم tarball به اینباکس هاست (FTP) — چون دانلود github از ایران
+#   بسیار کند است، deploy-agent تاربال محلی را ترجیح می‌دهد (مسیر ۱) و
+#   دانلود github فقط fallback است.
+# deploy-agent روی هاست هر ۵ دقیقه چک می‌کند: اینباکس جدید → extract + restart.
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
@@ -64,3 +65,26 @@ jobs:
             --title "cPanel deploy" \
             --notes "باندل standalone برای deploy-agent — $GITHUB_SHA" \
             --latest
+
+      - name: Upload tarball to host inbox (FTP)
+        env:
+          FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
+          FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
+          FTP_USER: ${{ secrets.CPANEL_FTP_USER }}
+          FTP_PASS: ${{ secrets.CPANEL_FTP_PASS }}
+          APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
+        run: |
+          set -e
+          curl -sL --retry 3 -o release.tar.gz \
+            "https://github.com/$GITHUB_REPOSITORY/releases/download/latest-cpanel/release.tar.gz"
+          ls -la release.tar.gz
+          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF
+            set net:max-retries 5
+            set net:timeout 40
+            set ftp:ssl-allow off
+            set ftp:passive-mode on
+            mkdir -p "$APP_DIR/.release-inbox"
+            put -O "$APP_DIR/.release-inbox" release.tar.gz
+            bye
+          EOF
+          echo "✓ tarball به اینباکس هاست آپلود شد — deploy-agent در tick بعدی کرون نصب می‌کند"
