@@ -13,9 +13,9 @@ name: Deploy to Iran cPanel (FTP — بدون SSH)
 #   CPANEL_APP_DIR  — مسیر مطلق پوشهٔ اپ از دید FTP، مثل: /home/USER/dadvarzan
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ⚠️ پورت‌های passive FTP روی این سرور تصادفی بلاک می‌شوند (۱ از ۸ موفق بود).
+# تا اطلاع ثانوی فقط اجرای دستی. مسیر اصلی: package-release.yml + deploy-agent
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:

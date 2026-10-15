@@ -1,0 +1,66 @@
+name: Package release (cPanel)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# بیلد standalone + انتشار به GitHub Releases با تگ ثابت latest-cpanel.
+# اسکریپت deploy-agent روی هاست cPanel هر ۵ دقیقه آخرین ریلیز را چک می‌کند و
+# اگر جدید باشد دانلود + extract + restart خودکار انجام می‌دهد.
+# (پورت SSH و پورت‌های passive FTP روی این سرور بسته است — اسکن کامل شد)
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: package-release
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_ENV: production
+          DATABASE_URL: ${{ secrets.BUILD_DATABASE_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_GA_ID: ${{ vars.NEXT_PUBLIC_GA_ID }}
+          NEXT_PUBLIC_GSC_VERIFICATION: ${{ vars.NEXT_PUBLIC_GSC_VERIFICATION }}
+          NEXT_PUBLIC_BING_VERIFICATION: ${{ vars.NEXT_PUBLIC_BING_VERIFICATION }}
+          NEXT_PUBLIC_TELEGRAM_BOT: ${{ vars.NEXT_PUBLIC_TELEGRAM_BOT }}
+        run: bun run build
+
+      - name: Package
+        run: |
+          set -e
+          mkdir -p pkg/.next
+          cp -a .next/standalone/. pkg/
+          cp -a .next/static pkg/.next/static
+          cp -a public pkg/public
+          cp deploy/cpanel/app.js pkg/app.js
+          tar -czf release.tar.gz -C pkg .
+
+      - name: Publish to GitHub Release (latest-cpanel)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete latest-cpanel --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag 2>/dev/null || true
+          sleep 3
+          gh release create latest-cpanel release.tar.gz \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "cPanel deploy" \
+            --notes "باندل standalone برای deploy-agent — $GITHUB_SHA" \
+            --latest
