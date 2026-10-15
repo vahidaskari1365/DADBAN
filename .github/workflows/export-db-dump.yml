@@ -1,0 +1,57 @@
+name: Export DB dump (Neon → برای phpPgAdmin)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# یک dump کامل از Neon می‌گیرد و به‌عنوان Artifact می‌گذارد — شما دانلودش
+# می‌کنید و در cPanel → PostgreSQL Databases → phpPgAdmin → SQL وارد می‌کنید.
+#
+# Secret لازم: NEON_DATABASE_URL (URL کامل Neon با ?sslmode=require)
+#
+# اجرا: Actions → این workflow → Run workflow → در confirm بنویسید DUMP
+# بعد: تب خلاصهٔ run → قسمت Artifacts → دانلود neon-dump (فایل neon-dump.sql)
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'برای تأیید بنویسید: DUMP'
+        required: true
+        default: ''
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard
+        env:
+          CONFIRM: ${{ github.event.inputs.confirm }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          [ "$CONFIRM" = "DUMP" ] || { echo "::error::confirm را MIGRATE/DUMP دقیق بنویسید"; exit 1; }
+          [ -n "$NEON_DATABASE_URL" ] || { echo "::error::secret NEON_DATABASE_URL تنظیم نشده"; exit 1; }
+
+      - name: نصب PostgreSQL client 17
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Dump از Neon
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          pg_dump "$NEON_DATABASE_URL" --no-owner --no-privileges --encoding=UTF8 --file=neon-dump.sql
+          gzip -kf neon-dump.sql
+          ls -lh neon-dump.sql*
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-dump
+          path: |
+            neon-dump.sql
+            neon-dump.sql.gz
+          retention-days: 7

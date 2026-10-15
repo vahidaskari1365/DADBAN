@@ -1,0 +1,111 @@
+name: Deploy to Iran cPanel (SSH)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# استقرار روی هاست اشتراکی Node (cPanel / Passenger) — وقتی SSH در دسترس است.
+#
+# Secrets لازم:
+#   CPANEL_HOST      — IP یا آدرس سرور هاست
+#   CPANEL_SSH_PORT  — پورت SSH (معمولاً 22 یا پورت اختصاصی هاست ایران)
+#   CPANEL_SSH_USER  — نام کاربری cPanel
+#   CPANEL_SSH_KEY   — کلید خصوصی (عمومی‌اش در cPanel → SSH Access ثبت شده)
+#   CPANEL_APP_DIR   — مسیر Application root نسبت به home، مثل: dadvarzan
+#
+# مکانیزم: بیلد روی Actions → scp بسته → extract روی پوشهٔ اپ (فایل .env دست
+# نمی‌خورد) → touch tmp/restart.txt → Passenger خودش ری‌استارت می‌کند.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-cpanel
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard — چک secrets
+        id: guard
+        env:
+          H: ${{ secrets.CPANEL_HOST }}
+          K: ${{ secrets.CPANEL_SSH_KEY }}
+        run: |
+          if [ -z "$H" ] || [ -z "$K" ]; then
+            echo "::notice::secrets cPanel (SSH) تنظیم نشده — رد شد (راهنما: deploy/cpanel/README-cpanel.fa.md)"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.skip != 'true'
+      - uses: oven-sh/setup-bun@v2
+        if: steps.guard.outputs.skip != 'true'
+      - uses: actions/setup-node@v4
+        if: steps.guard.outputs.skip != 'true'
+        with:
+          node-version: 24
+
+      - name: Install
+        if: steps.guard.outputs.skip != 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_ENV: production
+          DATABASE_URL: ${{ secrets.BUILD_DATABASE_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_GA_ID: ${{ vars.NEXT_PUBLIC_GA_ID }}
+          NEXT_PUBLIC_GSC_VERIFICATION: ${{ vars.NEXT_PUBLIC_GSC_VERIFICATION }}
+          NEXT_PUBLIC_BING_VERIFICATION: ${{ vars.NEXT_PUBLIC_BING_VERIFICATION }}
+          NEXT_PUBLIC_TELEGRAM_BOT: ${{ vars.NEXT_PUBLIC_TELEGRAM_BOT }}
+        run: bun run build
+
+      - name: Package
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          set -e
+          mkdir -p pkg/.next pkg/tmp
+          cp -a .next/standalone/. pkg/
+          cp -a .next/static pkg/.next/static
+          cp -a public pkg/public
+          cp deploy/cpanel/app.js pkg/app.js
+          date -u +"restart %Y-%m-%dT%H:%M:%SZ ${GITHUB_SHA::12}" > pkg/tmp/restart.txt
+          tar -czf release.tar.gz -C pkg .
+
+      - name: Upload bundle
+        if: steps.guard.outputs.skip != 'true'
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_SSH_USER }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
+          port: ${{ secrets.CPANEL_SSH_PORT || 22 }}
+          source: "release.tar.gz"
+          target: "~/dadvarzan-incoming/"
+          overwrite: true
+
+      - name: Release (extract + Passenger restart)
+        if: steps.guard.outputs.skip != 'true'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_SSH_USER }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
+          port: ${{ secrets.CPANEL_SSH_PORT || 22 }}
+          command_timeout: 10m
+          script: |
+            set -e
+            APP_DIR="$HOME/${{ secrets.CPANEL_APP_DIR }}"
+            mkdir -p "$APP_DIR"
+            echo "→ extract روی $APP_DIR (فایل .env دست‌نخورده می‌ماند)"
+            tar -xzf "$HOME/dadvarzan-incoming/release.tar.gz" -C "$APP_DIR"
+            rm -f "$HOME/dadvarzan-incoming/release.tar.gz"
+            mkdir -p "$APP_DIR/tmp"
+            touch "$APP_DIR/tmp/restart.txt"
+            echo "✓ دیپلوی شد — Passenger در چند ثانیه ری‌استارت می‌کند"

@@ -1,0 +1,115 @@
+name: Deploy to Iran cPanel (FTP — بدون SSH)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# استقرار روی هاست اشتراکی Node (cPanel / Passenger) — وقتی SSH بسته است.
+# فقط FTP لازم است؛ ری‌استارت اپ با آپلود tmp/restart.txt انجام می‌شود
+# (mtime جدید → Passenger ری‌استارت می‌کند).
+#
+# Secrets لازم:
+#   CPANEL_FTP_HOST — آدرس FTP (معمولاً همان IP یا ftp.your-domain.ir)
+#   CPANEL_FTP_PORT — 21 (پیش‌فرض؛ اگر هاست گفت 990/FTS جدا، همان را بگذارید)
+#   CPANEL_FTP_USER — نام کاربری FTP (معمولاً مثل user@domain)
+#   CPANEL_FTP_PASS — رمز FTP (در cPanel → FTP Accounts)
+#   CPANEL_APP_DIR  — مسیر مطلق پوشهٔ اپ از دید FTP، مثل: /home/USER/dadvarzan
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-cpanel
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard — چک secrets
+        id: guard
+        env:
+          H: ${{ secrets.CPANEL_FTP_HOST }}
+          P: ${{ secrets.CPANEL_FTP_PASS }}
+        run: |
+          if [ -z "$H" ] || [ -z "$P" ]; then
+            echo "::notice::secrets cPanel (FTP) تنظیم نشده — رد شد"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.skip != 'true'
+      - uses: oven-sh/setup-bun@v2
+        if: steps.guard.outputs.skip != 'true'
+      - uses: actions/setup-node@v4
+        if: steps.guard.outputs.skip != 'true'
+        with:
+          node-version: 24
+
+      - name: Install
+        if: steps.guard.outputs.skip != 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_ENV: production
+          DATABASE_URL: ${{ secrets.BUILD_DATABASE_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_GA_ID: ${{ vars.NEXT_PUBLIC_GA_ID }}
+          NEXT_PUBLIC_GSC_VERIFICATION: ${{ vars.NEXT_PUBLIC_GSC_VERIFICATION }}
+          NEXT_PUBLIC_BING_VERIFICATION: ${{ vars.NEXT_PUBLIC_BING_VERIFICATION }}
+          NEXT_PUBLIC_TELEGRAM_BOT: ${{ vars.NEXT_PUBLIC_TELEGRAM_BOT }}
+        run: bun run build
+
+      - name: Package
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          set -e
+          mkdir -p pkg/.next pkg/tmp
+          cp -a .next/standalone/. pkg/
+          cp -a .next/static pkg/.next/static
+          cp -a public pkg/public
+          cp deploy/cpanel/app.js pkg/app.js
+          date -u +"restart %Y-%m-%dT%H:%M:%SZ ${GITHUB_SHA::12}" > pkg/tmp/restart.txt
+
+      - name: FTP mirror (فایل‌های جدید/تغییریکی؛ .env و tmp پاک نمی‌شوند)
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
+          FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
+          FTP_USER: ${{ secrets.CPANEL_FTP_USER }}
+          FTP_PASS: ${{ secrets.CPANEL_FTP_PASS }}
+          APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
+        run: |
+          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF
+            set net:max-retries 2
+            set ftp:ssl-allow off
+            set ftp:passive-mode on
+            mirror -R --delete --verbose=1 \
+              --exclude '^\.env$' \
+              --exclude '^tmp/' \
+              ./pkg "$APP_DIR"
+            bye
+          EOF
+
+      - name: Verify restart trigger
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
+          FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
+          FTP_USER: ${{ secrets.CPANEL_FTP_USER }}
+          FTP_PASS: ${{ secrets.CPANEL_FTP_PASS }}
+          APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
+        run: |
+          # آپلود مجدد restart.txt با mtime تازه → تریگر ری‌استارت Passenger
+          echo "restart $(date -u +%Y-%m-%dT%H:%M:%SZ)" > restart.txt
+          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF
+            set ftp:ssl-allow off
+            put -O "$APP_DIR/tmp/" restart.txt
+            bye
+          EOF
+          echo "✓ restart.txt آپلود شد — Passenger ری‌استارت می‌کند"
