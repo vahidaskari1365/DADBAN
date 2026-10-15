@@ -76,6 +76,13 @@ jobs:
           cp deploy/cpanel/app.js pkg/app.js
           date -u +"restart %Y-%m-%dT%H:%M:%SZ ${GITHUB_SHA::12}" > pkg/tmp/restart.txt
 
+      - name: Install lftp
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          sudo apt-get update -y -qq >/dev/null 2>&1 || true
+          sudo apt-get install -y -qq lftp >/dev/null 2>&1 || sudo apt-get install -y lftp
+          lftp --version | head -1
+
       - name: FTP mirror (فایل‌های جدید/تغییریکی؛ .env و tmp پاک نمی‌شوند)
         if: steps.guard.outputs.skip != 'true'
         env:

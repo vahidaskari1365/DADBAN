@@ -75,6 +75,9 @@ jobs:
           APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
         run: |
           set -e
+          sudo apt-get update -y -qq >/dev/null 2>&1 || true
+          sudo apt-get install -y -qq lftp >/dev/null 2>&1 || sudo apt-get install -y lftp
+          lftp --version | head -1
           curl -sL --retry 3 -o release.tar.gz \
             "https://github.com/$GITHUB_REPOSITORY/releases/download/latest-cpanel/release.tar.gz"
           ls -la release.tar.gz
