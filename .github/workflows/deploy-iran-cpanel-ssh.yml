@@ -14,9 +14,9 @@ name: Deploy to Iran cPanel (SSH)
 # نمی‌خورد) → touch tmp/restart.txt → Passenger خودش ری‌استارت می‌کند.
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ⚠️ پورت ۲۲ (و هر SSH دیگری) روی سرور فعلی از بیرون بسته است (اسکن کامل 65535).
+# تا زمان باز شدن SSH از سمت هاست، فقط اجرای دستی:
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:

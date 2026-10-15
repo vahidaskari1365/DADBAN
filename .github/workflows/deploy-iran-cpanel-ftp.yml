@@ -89,7 +89,7 @@ jobs:
             set net:max-retries 2
             set ftp:ssl-allow off
             set ftp:passive-mode on
-            mirror -R --delete --verbose=1 \
+            mirror -R --delete --verbose=1 --parallel=10 \
               --exclude '^\.env$' \
               --exclude '^tmp/' \
               ./pkg "$APP_DIR"
