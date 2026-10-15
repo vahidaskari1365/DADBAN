@@ -86,6 +86,7 @@ jobs:
           username: ${{ secrets.CPANEL_SSH_USER }}
           key: ${{ secrets.CPANEL_SSH_KEY }}
           port: ${{ secrets.CPANEL_SSH_PORT || 22 }}
+          passphrase: ${{ secrets.CPANEL_SSH_PASSPHRASE }}
           source: "release.tar.gz"
           target: "~/dadvarzan-incoming/"
           overwrite: true
@@ -98,6 +99,7 @@ jobs:
           username: ${{ secrets.CPANEL_SSH_USER }}
           key: ${{ secrets.CPANEL_SSH_KEY }}
           port: ${{ secrets.CPANEL_SSH_PORT || 22 }}
+          passphrase: ${{ secrets.CPANEL_SSH_PASSPHRASE }}
           command_timeout: 10m
           script: |
             set -e
