@@ -147,10 +147,6 @@ const DDL: string[] = [
   `ALTER TABLE cases ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT true`,
 ];
 
-const DAY = 86400000;
-const ago = (n: number) => new Date(Date.now() - n * DAY);
-const ahead = (n: number) => new Date(Date.now() + n * DAY);
-
 async function count(table: string): Promise<number> {
   const res = await db.execute(sql.raw(`SELECT COUNT(*)::int AS c FROM ${table}`));
   const rows = (res as { rows?: unknown[] }).rows ?? [];
@@ -158,7 +154,10 @@ async function count(table: string): Promise<number> {
 }
 
 async function seedMarketplaceDemo(): Promise<void> {
-  /* --- تنظیمات پلتفرم --- */
+  /* دادهٔ نمونه حذف شد — دیگر هیچ پروندهٔ جعلی، پیشنهاد وکیل جعلی، رویداد
+     «دکتر سهراب محمدی»، پیام نمونه، قسط، اعتبار، تراکنش یا کارآموز/همکار
+     جعلی (علی رضایی / مریم کاظمی) ساخته نمی‌شود.
+     فقط تنظیمات واقعی پلتفرم درج می‌شود؛ پرونده، وکیل و تیم همگی واقعی‌اند. */
   if ((await count("platform_settings")) === 0) {
     await db.execute(sql.raw(
       `INSERT INTO platform_settings (key, value) VALUES
@@ -167,102 +166,6 @@ async function seedMarketplaceDemo(): Promise<void> {
        ('min_lawyer_score', '4.0'),
        ('credit_providers', 'azki,partner_bank'),
        ('matching_model', 'glm-4.6')`
-    ));
-  }
-
-  /* --- پرونده‌های نمونهٔ بازار (اگر پرونده نیست، چند مورد درج کن) --- */
-  if ((await count("cases")) === 0) {
-    await db.execute(sql.raw(
-      `INSERT INTO cases (case_number, tracking_token, subject, description, city, stage, budget, contact_name, contact_phone, status, specialty, province, ai_category, ai_confidence, ai_estimate, progress) VALUES
-       ('C-14040101','tok-demo-1','الزام به تنظیم سند رسمی','اختلاف در انتقال یک واحد تجاری و نیاز به پیگیری قضایی برای الزام به تنظیم سند رسمی.','تهران','ثبت اولیه','۸۰ تا ۱۵۰ میلیون','موکل نمونه الف','09120000001','new','ملکی','تهران','ملکی',96,'۴ تا ۶ ماه · ۸۰ تا ۱۵۰ میلیون تومان',5),
-       ('C-14040102','tok-demo-2','دفاع در پرونده جرایم اقتصادی','پرونده مالی پیچیده؛ موکل نیازمند وکیل متخصص کیفری با سابقه پرونده‌های اقتصادی است.','تهران','ثبت اولیه','۱۵۰ تا ۳۰۰ میلیون','موکل نمونه ب','09120000002','new','کیفری','تهران','کیفری',93,'۶ تا ۱۲ ماه · ۱۵۰ تا ۳۰۰ میلیون تومان',5),
-       ('C-14040103','tok-demo-3','مطالبه وجه و خسارت تأخیر','مطالبه وجه ناشی از قرارداد و پیگیری تا اجرای حکم.','کرج','ثبت اولیه','۵۰ تا ۹۰ میلیون','موکل نمونه ج','09120000003','new','چک و اسناد','البرز','حقوقی',89,'۳ تا ۵ ماه · ۵۰ تا ۹۰ میلیون تومان',5),
-       ('C-14040104','tok-demo-4','تنظیم قرارداد مشارکت ساخت','نیاز به بررسی اسناد مالکیت و تنظیم قرارداد جامع مشارکت در ساخت.','تهران','ثبت اولیه','۳۰ تا ۷۰ میلیون','موکل نمونه د','09120000004','new','قراردادها','تهران','قرارداد',87,'۱ ماه · ۳۰ تا ۷۰ میلیون تومان',5)`
-    ));
-  }
-
-  /* --- پیشنهادهای قیمت نمونه --- */
-  if ((await count("case_proposals")) === 0) {
-    await db.execute(sql.raw([
-      `INSERT INTO case_proposals (case_id, lawyer_id, amount, note, duration_months, status, ai_match_score, created_at) VALUES
-       (1, 1, 1200000000, 'دامنه خدمات: تنظیم دادخواست، تمام جلسات رسیدگی تا صدور رأی بدوی و پیگیری اجرای حکم. امکان پرداخت در سه قسط.', 6, 'accepted', 96, now() - interval '9 days')`,
-      `INSERT INTO case_proposals (case_id, lawyer_id, amount, note, duration_months, status, ai_match_score, created_at) VALUES
-       (2, 3, 1800000000, 'دفاع تخصصی در مرحله دادسرا و دادگاه با تمرکز بر اسناد مالی؛ پرداخت در دو مرحله.', 10, 'negotiating', 93, now() - interval '4 days')`,
-      `INSERT INTO case_proposals (case_id, lawyer_id, amount, note, duration_months, status, ai_match_score, created_at) VALUES
-       (3, 7, 700000000, 'مطالبه وجه چک از مسیر اجرائیه و توقیف اموال؛ تخمین ۴ ماه تا وصول.', 4, 'pending', 89, now() - interval '2 days')`,
-      `INSERT INTO case_proposals (case_id, lawyer_id, amount, note, duration_months, status, ai_match_score, created_at) VALUES
-       (1, 4, 1450000000, 'بررسی کامل اسناد ثبتی و تنظیم دادخواست با لایحه تخصصی؛ بدون امکان قسطی.', 5, 'pending', 91, now() - interval '1 days')`,
-    ].join(";")));
-  }
-
-  /* --- روند پرونده ۱ (طبق نمونهٔ طراحی) --- */
-  if ((await count("case_events")) === 0) {
-    await db.execute(sql.raw(
-      `INSERT INTO case_events (case_id, actor, actor_name, title, description, progress, visible_to_client, created_at) VALUES
-       (1,'system','دادپیو','تشکیل پرونده و احراز اطلاعات','اطلاعات هویتی و اولیه پرونده بررسی و تأیید شد.',15,true, now() - interval '10 days'),
-       (1,'lawyer','دکتر سهراب محمدی','دریافت و بررسی اسناد','۸ سند دریافت و بررسی اولیه شد.',35,true, now() - interval '8 days'),
-       (1,'lawyer','دکتر سهراب محمدی','جلسه مشاوره و تعیین راهبرد','راهبرد حقوقی پرونده با موکل بررسی و نهایی شد.',48,true, now() - interval '6 days'),
-       (1,'lawyer','دکتر سهراب محمدی','بررسی سند مالکیت','بررسی اصالت و مشخصات ثبتی سند انجام شد.',55,true, now() - interval '5 days'),
-       (1,'lawyer','دکتر سهراب محمدی','تهیه پیش‌نویس دادخواست','پیش‌نویس دادخواست الزام به تنظیم سند در حال آماده‌سازی است.',62,true, now() - interval '2 days'),
-       (1,'lawyer','دکتر سهراب محمدی','ثبت دادخواست و اخذ شماره پرونده','پس از نهایی‌شدن دادخواست در دفاتر خدمات قضایی ثبت می‌شود.',NULL,false, now() - interval '2 days'),
-       (1,'system','دادپیو','تعیین وقت رسیدگی','در انتظار تعیین وقت از سوی مرجع قضایی.',NULL,true, now() - interval '1 days')`
-    ));
-  }
-
-  /* --- پیام‌های نمونه --- */
-  if ((await count("case_messages")) === 0) {
-    await db.execute(sql.raw(
-      `INSERT INTO case_messages (case_id, sender_role, sender_name, body, created_at) VALUES
-       (1,'client','موکل نمونه الف','سلام، سند جدید مربوط به ملک را بارگذاری کردم؛ ممنون می‌شود بررسی کنید.', now() - interval '3 days'),
-       (1,'lawyer','دکتر سهراب محمدی','سلام و احترام؛ سند را بررسی کردم. مشخصات ثبتی با قرارداد مطابقت دارد. برای جلسه مشاوره بعدی خبر می‌دهم.', now() - interval '2 days'),
-       (1,'client','موکل نمونه الف','خیلی خب. پیش‌پرداخت هم پرداخت شد، مبلغ باقی‌مانده طبق برنامه اقساطی است.', now() - interval '1 days')`
-    ));
-  }
-
-  /* --- تقویم جلسات و مهلت‌ها --- */
-  if ((await count("appointments")) === 0) {
-    await db.execute(sql.raw(
-      `INSERT INTO appointments (case_id, lawyer_id, title, kind, location, notes, starts_at, created_by) VALUES
-       (1, 1, 'جلسه رسیدگی · پرونده الزام به تنظیم سند','hearing','شعبه ۱۵ دادگاه عمومی حقوقی تهران','با همراه داشتن اصل اسناد مالکیت', to_timestamp(extract(epoch from now()) + 6*86400), 'lawyer'),
-       (1, 1, 'پایان مهلت اعتراض به کارشناسی','deadline','','مهلت قانونی ۲۰ روزه از تاریخ ابلاغ', to_timestamp(extract(epoch from now()) + 12*86400), 'lawyer'),
-       (1, 1, 'جلسه مشاوره آنلاین با موکل','consultation','آنلاین · تصویری','بررسی پیش‌نویس دادخواست', to_timestamp(extract(epoch from now()) + 2*86400), 'lawyer')`
-    ));
-  }
-
-  /* --- اقساط پرونده ۱ (پیش‌پرداخت پرداخت‌شده + ۱۱ قسط) --- */
-  if ((await count("installments")) === 0) {
-    await db.execute(sql.raw(
-      `INSERT INTO installments (case_id, number, amount, due_date, status, source, paid_at, tracking_code) VALUES
-       (1, 0, 360000000, now() - interval '7 days', 'paid', 'client', now() - interval '7 days', 'TRX-DEMO-001'),
-       (1, 1, 82000000, now() + interval '20 days', 'pending', 'client', NULL, ''),
-       (1, 2, 82000000, now() + interval '50 days', 'pending', 'client', NULL, ''),
-       (1, 3, 82000000, now() + interval '80 days', 'pending', 'client', NULL, '')`
-    ));
-  }
-
-  /* --- درخواست تأمین اعتبار (ازکی‌وام) --- */
-  if ((await count("credit_requests")) === 0) {
-    await db.execute(sql.raw(
-      `INSERT INTO credit_requests (case_id, provider, amount, months, status, status_detail, reference_code, created_at) VALUES
-       (1, 'azki', 900000000, 12, 'submitted', 'در انتظار اعتبارسنجی موکل در پنل تأمین‌کننده', 'AZK-DEMO-4512', now() - interval '3 days')`
-    ));
-  }
-
-  /* --- کمیسیون و تراکنش‌ها --- */
-  if ((await count("platform_ledger")) === 0) {
-    await db.execute(sql.raw(
-      `INSERT INTO platform_ledger (case_id, lawyer_id, type, amount, commission, description, created_at) VALUES
-       (1, 1, 'payment', 360000000, 54000000, 'پیش‌پرداخت حق‌الوکاله پرونده ۱۴۰۴۰۱۰۱', now() - interval '7 days'),
-       (1, 1, 'commission', 54000000, 0, 'کمیسیون پلتفرم (۱۵٪) از پیش‌پرداخت', now() - interval '7 days')`
-    ));
-  }
-
-  /* --- تیم و کارآموز وکیل ۱ --- */
-  if ((await count("team_members")) === 0) {
-    await db.execute(sql.raw(
-      `INSERT INTO team_members (lawyer_id, name, email, role, scope, status) VALUES
-       (1, 'علی رضایی', 'ali.rezaei@example.ir', 'trainee', 'پرونده‌های ارجاعی', 'active'),
-       (1, 'مریم کاظمی', 'maryam.kazemi@example.ir', 'associate', 'مدارک و پیش‌نویس‌ها', 'active')`
     ));
   }
 }
