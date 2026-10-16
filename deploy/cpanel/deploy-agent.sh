@@ -128,19 +128,24 @@ ensure_own_pg() {
 
   # ── ساخت دیتابیس اپلیکیشن — فقط تا وقتی مارکر نباشد ──
   if [ ! -f "$PGDATA/.db-created" ]; then
-    if [ -x "$PGBIN/psql" ]; then
+    local PSQLEXE=""
+    [ -x "$PGBIN/psql" ] && PSQLEXE="$PGBIN/psql"
+    if [ -z "$PSQLEXE" ] && command -v psql >/dev/null 2>&1; then
+      PSQLEXE=$(command -v psql)  # کلاینت سیستمی هاست (باینری‌های Zonky فقط initdb/pg_ctl/postgres دارند)
+    fi
+    if [ -n "$PSQLEXE" ]; then
       export PGPASSWORD='Dadvarzan@0142'
-      if "$PGBIN/psql" -h 127.0.0.1 -p 5433 -U dadvarza_admin -d postgres -tAc "SELECT 1" >/dev/null 2>&1; then
+      if "$PSQLEXE" -h 127.0.0.1 -p 5433 -U dadvarza_admin -d postgres -tAc "SELECT 1" >/dev/null 2>&1; then
         local hasdb
-        hasdb=$("$PGBIN/psql" -h 127.0.0.1 -p 5433 -U dadvarza_admin -d postgres \
+        hasdb=$("$PSQLEXE" -h 127.0.0.1 -p 5433 -U dadvarza_admin -d postgres \
                  -tAc "SELECT 1 FROM pg_database WHERE datname='dadvarza_dadvarzan'" 2>/dev/null | tr -d ' \n')
         if [ "$hasdb" = "1" ]; then
           touch "$PGDATA/.db-created"
         else
-          if "$PGBIN/psql" -h 127.0.0.1 -p 5433 -U dadvarza_admin -d postgres \
+          if "$PSQLEXE" -h 127.0.0.1 -p 5433 -U dadvarza_admin -d postgres \
                -c "CREATE DATABASE dadvarza_dadvarzan OWNER dadvarza_admin" >> "$PGLOG" 2>&1; then
             touch "$PGDATA/.db-created"
-            pglog "✓ دیتابیس dadvarza_dadvarzan ساخته شد"
+            pglog "✓ دیتابیس dadvarza_dadvarzan ساخته شد ($PSQLEXE)"
           else
             pglog "ERROR: ساخت دیتابیس ناموفق"
             return 1
@@ -150,6 +155,9 @@ ensure_own_pg() {
         pglog "WARN: PG اجراست ولی اتصال psql برقرار نشد (احتمالاً در حال راه‌اندازی)"
         return 1
       fi
+    else
+      pglog "ERROR: هیچ کلاینت psql پیدا نشد — ساخت دیتابیس ممکن نیست"
+      return 1
     fi
   fi
   return 0
