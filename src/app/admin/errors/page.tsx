@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { appErrors } from "@/db/schema";
 import { count, desc, gte } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { PageHero } from "@/components/page-hero";
 import { Container, Card, EmptyState } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -72,8 +71,8 @@ async function loadErrorsDashboard(): Promise<ErrorsDashboard> {
 }
 
 export default async function AdminErrorsPage() {
-  // گارد ادمین — همان الگوی بقیهٔ صفحات پنل مدیریت
-  if (!(await isAdmin())) redirect("/admin/login");
+  // گارد ادمین + دسترسی — همان الگوی بقیهٔ صفحات پنل مدیریت
+  await guardAdminPage("errors");
   const t = await getT();
   const tf = templateT(t);
 

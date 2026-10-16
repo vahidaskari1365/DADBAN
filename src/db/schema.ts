@@ -1363,3 +1363,26 @@ export type ForumReplyRow = typeof forumReplies.$inferSelect;
 
 /* جداول بازار پرونده‌ها (دادپیو) — در همین ماژول re-export می‌شوند تا همهٔ کد از "@/db/schema" مصرف کند */
 export * from "@/db/schema-marketplace";
+
+/* --------------------- ادمین‌های پنل (چند-کاربره با تعیین دسترسی) --------------------- */
+/**
+ * کاربران پنل ادمین — جدا از app_users (کاربران سایت).
+ * مالک اصلی از متغیرهای محیطی (ADMIN_EMAIL/ADMIN_PASSWORD) می‌آید و همیشه super_admin است؛
+ * سایر ادمین‌ها از صفحهٔ /admin/admins ساخته می‌شوند و دسترسی محدود (CSVpermissions) دارند.
+ * ورود: همان /admin/login — اول حساب env، بعد جدول admin_users.
+ */
+export const adminUsers = pgTable("admin_users", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  /** super_admin | content_manager | support | operations | finance | moderator | custom */
+  role: text("role").notNull().default("custom"),
+  /** دسترسی‌ها به‌صورت CSV از کلیدهای کاتالوگ (src/lib/admin-permissions.ts) — «*» یعنی همه */
+  permissions: text("permissions").notNull().default(""),
+  isActive: boolean("is_active").notNull().default(true),
+  lastLoginAt: timestamp("last_login_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export type AdminUserRow = typeof adminUsers.$inferSelect;

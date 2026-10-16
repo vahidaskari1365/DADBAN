@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { users, lawyers } from "@/db/schema";
 import { and, count, desc, eq, gte, ilike, or } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { PageHero } from "@/components/page-hero";
+import UserEditButton from "@/components/admin/user-edit-button";
 import { Card, Badge, Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { toFa, formatJalali } from "@/lib/money";
@@ -23,6 +23,9 @@ export const dynamic = "force-dynamic";
 const ROLE_LABELS: Record<string, { label: string; tone: "neutral" | "accent" | "success" | "primary" | "danger" }> = {
   client: { label: "موکل", tone: "neutral" },
   lawyer: { label: "وکیل", tone: "accent" },
+  team: { label: "عضو تیم وکیل", tone: "primary" },
+  staff: { label: "کارمند عملیات", tone: "primary" },
+  supervisor: { label: "سرپرست", tone: "success" },
   admin: { label: "مدیر", tone: "danger" },
 };
 
@@ -31,7 +34,7 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<{ q?: string; role?: string; tab?: string }>;
 }) {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("users");
   const t = await getT();
   const tf = templateT(t);
   const sp = await searchParams;
@@ -40,7 +43,7 @@ export default async function AdminUsersPage({
   const tab = sp.tab === "lawyers" ? "lawyers" : "users";
 
   /* ---------------- داده‌ها ---------------- */
-  let userRows: { id: number; name: string; phone: string; role: string; createdAt: Date }[] = [];
+  let userRows: { id: number; name: string; phone: string; email: string | null; role: string; createdAt: Date }[] = [];
   let lawyerRows: {
     id: number;
     name: string;
@@ -62,7 +65,7 @@ export default async function AdminUsersPage({
 
     const [u, l, tu, tl, vl, nu] = await Promise.all([
       db
-        .select({ id: users.id, name: users.name, phone: users.phone, role: users.role, createdAt: users.createdAt })
+        .select({ id: users.id, name: users.name, phone: users.phone, email: users.email, role: users.role, createdAt: users.createdAt })
         .from(users)
         .where(userConds.length ? and(...userConds) : undefined)
         .orderBy(desc(users.createdAt))
@@ -195,12 +198,13 @@ export default async function AdminUsersPage({
                     <th className="p-3">{t("موبایل")}</th>
                     <th className="p-3">{t("نقش")}</th>
                     <th className="p-3">{t("تاریخ عضویت")}</th>
+                    <th className="p-3">{t("عملیات")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {userRows.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="p-6 text-center text-sm text-muted">
+                      <td colSpan={6} className="p-6 text-center text-sm text-muted">
                         {t("کاربری مطابق جستجو یافت نشد.")}
                       </td>
                     </tr>
@@ -218,6 +222,9 @@ export default async function AdminUsersPage({
                           <Badge tone={r.tone}>{t(r.label)}</Badge>
                         </td>
                         <td className="p-3 text-sm text-muted">{formatJalali(u.createdAt)}</td>
+                        <td className="p-3">
+                          <UserEditButton user={{ id: u.id, name: u.name, phone: u.phone, email: u.email, role: u.role }} />
+                        </td>
                       </tr>
                     );
                   })}

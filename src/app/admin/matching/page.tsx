@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { cases } from "@/db/schema";
 import { desc } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { PageHero } from "@/components/page-hero";
 import { Card, Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -22,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const dynamic = "force-dynamic";
 
 export default async function AdminMatchingPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("matching");
   const t = await getT();
   const tf = templateT(t);
 

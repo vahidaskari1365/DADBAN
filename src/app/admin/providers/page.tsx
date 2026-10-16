@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { creditRequests } from "@/db/schema-marketplace";
 import { cases } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { PageHero } from "@/components/page-hero";
 import { Card, Badge, Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -23,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const dynamic = "force-dynamic";
 
 export default async function AdminProvidersPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("finance");
   const t = await getT();
   const tf = templateT(t);
 

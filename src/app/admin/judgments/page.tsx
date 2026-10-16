@@ -1,11 +1,10 @@
-import { redirect } from "next/navigation";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { AdminCrudTable } from "@/components/admin/crud-table";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminJudgmentsPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("knowledge");
   return (
     <AdminCrudTable
       resource="judgments"

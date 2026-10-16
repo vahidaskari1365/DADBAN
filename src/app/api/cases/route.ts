@@ -2,7 +2,7 @@ import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { cases } from "@/db/schema";
-import { isAdmin } from "@/lib/admin-auth";
+import { permDenied } from "@/lib/admin-guard";
 import { sql } from "drizzle-orm";
 import { phone, rateLimit, readJson, text, validPhone } from "@/lib/api-security";
 import { notifyNewCase } from "@/lib/notify";
@@ -14,4 +14,4 @@ export async function POST(req: Request) {
  if(!subject||!city||!name||!validPhone(mobile)||!STAGES.includes(stage)) return NextResponse.json({ok:false,error:"اطلاعات پرونده معتبر نیست."},{status:422});
  try { try { await db.execute(sql.raw(`ALTER TABLE cases ADD COLUMN IF NOT EXISTS payment_gateway text`)); } catch { /* best-effort */ } const caseNumber=`SHF-${randomBytes(6).toString("hex").toUpperCase()}`; const trackingToken=randomBytes(32).toString("base64url"); const [inserted]=await db.insert(cases).values({caseNumber,trackingToken,subject,description:description||"",city,stage,budget:budget||null,contactName:name,contactPhone:mobile,status:"new"}).returning({id:cases.id}); /* اعلان «پروندهٔ جدید» برای وکلای همان استان — best-effort */ try { await notifyNewCase({ id: inserted?.id ?? 0, subject, city }); } catch { /* non-fatal */ } return NextResponse.json({ok:true,caseNumber,trackingToken,stageIndex:STAGES.indexOf(stage),stages:STAGES,message:"پرونده شما ثبت شد. کد پیگیری را در جای امن نگه دارید."}); } catch { return NextResponse.json({ok:false,error:"ثبت پرونده انجام نشد."},{status:500}); }
 }
-export async function GET() { if(!(await isAdmin())) return NextResponse.json({ok:false,error:"unauthorized"},{status:401}); try { const rows=await db.select({id:cases.id,caseNumber:cases.caseNumber,subject:cases.subject,city:cases.city,stage:cases.stage,status:cases.status,createdAt:cases.createdAt}).from(cases).limit(200); return NextResponse.json({ok:true,cases:rows}); } catch { return NextResponse.json({ok:false,error:"خطای داخلی رخ داد."},{status:500}); } }
+export async function GET() { const _d=await permDenied("cases"); if(_d) return _d; try { const rows=await db.select({id:cases.id,caseNumber:cases.caseNumber,subject:cases.subject,city:cases.city,stage:cases.stage,status:cases.status,createdAt:cases.createdAt}).from(cases).limit(200); return NextResponse.json({ok:true,cases:rows}); } catch { return NextResponse.json({ok:false,error:"خطای داخلی رخ داد."},{status:500}); } }

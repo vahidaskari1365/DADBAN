@@ -1,13 +1,12 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { AdminCrudTable } from "@/components/admin/crud-table";
 
 export const dynamic = "force-dynamic";
 
 /** مدیریت پاسخ‌های تالار گفتگو — پنهان‌سازی/حذف پاسخ‌های نامناسب */
 export default async function AdminForumRepliesPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("forum");
   return (
     <AdminCrudTable
       resource="forum-replies"

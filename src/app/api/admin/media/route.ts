@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db, isDbConfigured } from "@/db";
 import { media } from "@/db/schema";
-import { isAdmin } from "@/lib/admin-auth";
+import { getAdminSession, hasAnyPerm } from "@/lib/admin-auth";
 import { ensureCmsSchema } from "@/lib/auto-seed";
 import { desc, eq } from "drizzle-orm";
 
@@ -14,7 +14,11 @@ export const dynamic = "force-dynamic";
  * DELETE /api/admin/media?id=N
  */
 export async function GET() {
-  if (!(await isAdmin())) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  const session = await getAdminSession();
+  if (!session) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  if (!hasAnyPerm(session, ["media", "articles", "content", "knowledge"])) {
+    return NextResponse.json({ ok: false, error: "شما دسترسی به رسانه‌ها را ندارید." }, { status: 403 });
+  }
   if (!isDbConfigured()) return NextResponse.json({ ok: true, rows: [] });
   try {
     await ensureCmsSchema();
@@ -39,7 +43,11 @@ export async function GET() {
 }
 
 export async function DELETE(req: Request) {
-  if (!(await isAdmin())) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  const session = await getAdminSession();
+  if (!session) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  if (!hasAnyPerm(session, ["media", "articles", "content", "knowledge"])) {
+    return NextResponse.json({ ok: false, error: "شما دسترسی به رسانه‌ها را ندارید." }, { status: 403 });
+  }
   const id = Number(new URL(req.url).searchParams.get("id"));
   if (!id) return NextResponse.json({ ok: false, error: "id required" }, { status: 400 });
   try {

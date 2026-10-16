@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { db, isDbConfigured } from "@/db";
 import { emailOutbox, newsletterSubscribers } from "@/db/schema";
 import { and, count, desc, eq, gte } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { PageHero } from "@/components/page-hero";
 import { Card, Badge, Container } from "@/components/ui";
@@ -48,7 +47,7 @@ export default async function AdminOutboxPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("outbox");
   const t = await getT();
   const tf = templateT(t);
   const sp = await searchParams;

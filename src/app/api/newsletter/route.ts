@@ -3,7 +3,7 @@ import { db, isDbConfigured } from "@/db";
 import { newsletterSubscribers } from "@/db/schema";
 import { desc } from "drizzle-orm";
 import { rateLimit, readJson, text } from "@/lib/api-security";
-import { isAdmin } from "@/lib/admin-auth";
+import { permDenied } from "@/lib/admin-guard";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { formatJalaliDateTime } from "@/lib/jalali";
 
@@ -50,9 +50,8 @@ export async function POST(req: Request) {
  * پاسخ: فایل UTF-8 (با BOM برای اکسل فارسی) شامل ایمیل + تاریخ عضویت (میلادی ISO + شمسی).
  */
 export async function GET(req: Request) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
-  }
+  const _denied = await permDenied("outbox");
+  if (_denied) return _denied;
   const sp = new URL(req.url).searchParams;
   if (sp.get("export") !== "csv") {
     return NextResponse.json({ ok: false, error: "unsupported" }, { status: 400 });

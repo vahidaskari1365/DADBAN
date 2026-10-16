@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { articles } from "@/db/schema";
 import { desc } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { permDenied } from "@/lib/admin-guard";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  if (!(await isAdmin())) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  const _denied = await permDenied("articles"); if (_denied) return _denied;
   try {
     const rows = await db.select().from(articles).orderBy(desc(articles.publishedAt));
     return NextResponse.json({ ok: true, articles: rows });
@@ -17,7 +17,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  if (!(await isAdmin())) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  const _denied = await permDenied("articles"); if (_denied) return _denied;
   try {
     const body = await req.json();
     const row = {

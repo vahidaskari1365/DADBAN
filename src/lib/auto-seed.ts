@@ -120,6 +120,7 @@ const DDL = [
   `CREATE TABLE IF NOT EXISTS tickets (id SERIAL PRIMARY KEY, ticket_number TEXT NOT NULL, name TEXT NOT NULL, phone TEXT NOT NULL, category TEXT NOT NULL, message TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', created_at TIMESTAMP NOT NULL DEFAULT now())`,
   `CREATE TABLE IF NOT EXISTS page_views (id SERIAL PRIMARY KEY, path TEXT NOT NULL UNIQUE, views INTEGER NOT NULL DEFAULT 0, last_seen TIMESTAMP NOT NULL DEFAULT now())`,
   `CREATE TABLE IF NOT EXISTS app_users (id SERIAL PRIMARY KEY, name TEXT NOT NULL, phone TEXT NOT NULL UNIQUE, email TEXT UNIQUE, password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'client', created_at TIMESTAMP NOT NULL DEFAULT now())`,
+  `CREATE TABLE IF NOT EXISTS admin_users (id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'custom', permissions TEXT NOT NULL DEFAULT '', is_active BOOLEAN NOT NULL DEFAULT true, last_login_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now(), updated_at TIMESTAMP NOT NULL DEFAULT now())`,
   `CREATE TABLE IF NOT EXISTS app_documents (id SERIAL PRIMARY KEY, user_phone TEXT NOT NULL, name TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'مدرک', size INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
   /* --- Additive, idempotent hardening (safe on both fresh and existing DBs) --- */
   `ALTER TABLE consultations ADD COLUMN IF NOT EXISTS starts_at TIMESTAMP`,

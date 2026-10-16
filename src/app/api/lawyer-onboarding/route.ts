@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { lawyerOnboarding, lawyers, users } from "@/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
-import { isAdmin } from "@/lib/admin-auth";
+import { permDenied } from "@/lib/admin-guard";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { rateLimit, readJson, text, validPhone, publicError } from "@/lib/api-security";
 import { toEn } from "@/lib/money";
@@ -211,9 +211,8 @@ export async function PUT(req: Request) {
     const limited = rateLimit(req, "lawyer-onboarding-put", 30, 60_000);
     if (limited) return limited;
 
-    if (!(await isAdmin())) {
-      return NextResponse.json({ ok: false, error: "دسترسی غیرمجاز" }, { status: 401 });
-    }
+    const _denied = await permDenied("lawyers");
+    if (_denied) return _denied;
 
     const body = await readJson(req, 4_000);
     if (!body) {

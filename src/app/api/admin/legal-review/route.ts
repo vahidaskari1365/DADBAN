@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { legalReviews } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { permDenied } from "@/lib/admin-guard";
 import { rateLimit, readJson, text, publicError } from "@/lib/api-security";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 
@@ -14,14 +14,13 @@ const ALLOWED_SLUGS = ["terms", "privacy"] as const;
 
 /**
  * POST /api/admin/legal-review — ثبت/به‌روزرسانی بازبینی حقوقی یک صفحه (upsert روی pageSlug).
- * گارد ادمین: همان مکانیزم کوکی dadban_admin با isAdmin() — مثل بقیهٔ APIهای ادمین.
+ * گارد ادمین: کوکی dadban_admin + دسترسی «content» — مثل بقیهٔ APIهای ادمین.
  */
 export async function POST(req: Request) {
   const limited = rateLimit(req, "admin-legal-review", 30, 60_000);
   if (limited) return limited;
-  if (!(await isAdmin())) {
-    return NextResponse.json({ ok: false, error: "دسترسی غیرمجاز" }, { status: 401 });
-  }
+  const _denied = await permDenied("content");
+  if (_denied) return _denied;
 
   const body = await readJson(req, 4_096);
   if (!body) return NextResponse.json({ ok: false, error: "بدنهٔ درخواست نامعتبر است." }, { status: 422 });
@@ -68,9 +67,8 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   const limited = rateLimit(req, "admin-legal-review-delete", 30, 60_000);
   if (limited) return limited;
-  if (!(await isAdmin())) {
-    return NextResponse.json({ ok: false, error: "دسترسی غیرمجاز" }, { status: 401 });
-  }
+  const _denied = await permDenied("content");
+  if (_denied) return _denied;
 
   const id = Number(new URL(req.url).searchParams.get("id") ?? "");
   if (!Number.isFinite(id) || id <= 0) {

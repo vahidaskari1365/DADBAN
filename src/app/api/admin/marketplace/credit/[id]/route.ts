@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { creditRequests } from "@/db/schema-marketplace";
 import { eq } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { permDenied } from "@/lib/admin-guard";
 import { rateLimit, readJson, text, publicError } from "@/lib/api-security";
 
 export const runtime = "nodejs";
@@ -19,9 +19,8 @@ type CreditStatus = (typeof ALLOWED)[number];
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const limited = rateLimit(req, "admin-credit-patch", 60, 60_000);
   if (limited) return limited;
-  if (!(await isAdmin())) {
-    return NextResponse.json({ ok: false, error: "دسترسی غیرمجاز" }, { status: 401 });
-  }
+  const _denied = await permDenied("finance");
+  if (_denied) return _denied;
 
   const { id } = await params;
   const requestId = Number(id);

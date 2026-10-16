@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { AdminCrudTable } from "@/components/admin/crud-table";
 import { Container, Card } from "@/components/ui";
 import { FORUM_CATEGORIES } from "@/lib/cms";
@@ -12,7 +11,7 @@ export const dynamic = "force-dynamic";
  * پاسخ‌ها در /admin/forum/replies مدیریت می‌شوند.
  */
 export default async function AdminForumPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("forum");
   return (
     <>
       <Container className="pt-6">

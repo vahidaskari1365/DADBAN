@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { platformSettings } from "@/db/schema-marketplace";
 import { legalReviews } from "@/db/schema";
 import { desc } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { PageHero } from "@/components/page-hero";
 import { Container } from "@/components/ui";
@@ -29,7 +28,7 @@ const DEFAULTS: Record<string, string> = {
 };
 
 export default async function AdminSettingsPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("settings");
   const t = await getT();
 
   let settings: Record<string, string> = { ...DEFAULTS };

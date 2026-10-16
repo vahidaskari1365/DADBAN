@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { lawyerOnboarding } from "@/db/schema";
 import { desc } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { PageHero } from "@/components/page-hero";
 import { Container } from "@/components/ui";
@@ -22,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const dynamic = "force-dynamic";
 
 export default async function AdminOnboardingPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("lawyers");
   const t = await getT();
   const tf = templateT(t);
 

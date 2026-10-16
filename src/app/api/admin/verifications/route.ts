@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { lawyers, lawyerVerifications, users } from "@/db/schema";
 import { desc, eq, sql } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { permDenied } from "@/lib/admin-guard";
 import { rateLimit, readJson, text } from "@/lib/api-security";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { notifyVerificationResult } from "@/lib/notify";
@@ -41,7 +41,7 @@ const META_COLS = {
 };
 
 export async function GET() {
-  if (!(await isAdmin())) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  const _denied = await permDenied("lawyers"); if (_denied) return _denied;
   try {
     await ensureExtendedSchema();
     const rows = await db
@@ -64,7 +64,7 @@ export async function GET() {
  * reject  → ذخیرهٔ دلیل (الزامی) + اعلان به وکیل برای ارسال مجدد
  */
 export async function PATCH(req: Request) {
-  if (!(await isAdmin())) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  const _denied = await permDenied("lawyers"); if (_denied) return _denied;
   const limited = rateLimit(req, "admin-verify", 60, 15 * 60_000);
   if (limited) return limited;
   const body = await readJson(req, 4096);

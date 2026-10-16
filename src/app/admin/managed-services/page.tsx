@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import Link from "next/link";
@@ -9,7 +8,7 @@ import { getT } from "@/lib/i18n/server";
 export const dynamic = "force-dynamic";
 
 export default async function AdminManagedServicesPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("services");
   const t = await getT();
   return (
     <Container className="py-10">

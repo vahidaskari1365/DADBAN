@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { platformLedger, payoutRequests, installments } from "@/db/schema-marketplace";
 import { cases, lawyers } from "@/db/schema";
 import { and, asc, count, desc, eq, lt, or, sum } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { PageHero } from "@/components/page-hero";
 import { Container } from "@/components/ui";
 import { getT } from "@/lib/i18n/server";
@@ -20,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const dynamic = "force-dynamic";
 
 export default async function AdminFinancePage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("finance");
   const t = await getT();
 
   /* ---------------- دادهٔ مالی (try/catch — بدون دیتابیس هم امن) ---------------- */

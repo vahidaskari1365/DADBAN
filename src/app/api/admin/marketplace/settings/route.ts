@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { platformSettings } from "@/db/schema-marketplace";
-import { isAdmin } from "@/lib/admin-auth";
+import { permDenied } from "@/lib/admin-guard";
 import { rateLimit, readJson, publicError } from "@/lib/api-security";
 
 export const runtime = "nodejs";
@@ -35,9 +35,8 @@ function defaults(): SettingsMap {
 export async function GET(req: Request) {
   const limited = rateLimit(req, "admin-settings", 120, 60_000);
   if (limited) return limited;
-  if (!(await isAdmin())) {
-    return NextResponse.json({ ok: false, error: "دسترسی غیرمجاز" }, { status: 401 });
-  }
+  const _denied = await permDenied("settings");
+  if (_denied) return _denied;
 
   try {
     const rows = await db.select().from(platformSettings);
@@ -61,9 +60,8 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
   const limited = rateLimit(req, "admin-settings-put", 30, 60_000);
   if (limited) return limited;
-  if (!(await isAdmin())) {
-    return NextResponse.json({ ok: false, error: "دسترسی غیرمجاز" }, { status: 401 });
-  }
+  const _denied = await permDenied("settings");
+  if (_denied) return _denied;
 
   const body = await readJson(req, 4_000);
   const rawItems = body?.settings;

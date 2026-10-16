@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { AdminCrudTable } from "@/components/admin/crud-table";
 import { PAGE_REGISTRY } from "@/lib/cms";
 
@@ -12,7 +11,7 @@ export const dynamic = "force-dynamic";
  * برای نمایش در پایین صفحه، «بخش» را بنویسید: bottom
  */
 export default async function AdminContentPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("content");
   return (
     <AdminCrudTable
       resource="site-content"

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { lawyers, lawyerVerifications, users } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { guardAdminPage } from "@/lib/admin-auth";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { Container, Card } from "@/components/ui";
 import { Icon } from "@/components/icons";
@@ -20,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const dynamic = "force-dynamic";
 
 export default async function AdminVerificationsPage() {
-  if (!(await isAdmin())) redirect("/admin/login");
+  await guardAdminPage("lawyers");
   const t = await getT();
 
   try {

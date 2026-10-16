@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { platformLedger, payoutRequests, installments } from "@/db/schema-marketplace";
 import { cases, lawyers } from "@/db/schema";
 import { and, asc, count, desc, eq, lt, or, sum } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { permDenied } from "@/lib/admin-guard";
 import { rateLimit, publicError } from "@/lib/api-security";
 
 export const runtime = "nodejs";
@@ -19,9 +19,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const limited = rateLimit(req, "admin-finance", 120, 60_000);
   if (limited) return limited;
-  if (!(await isAdmin())) {
-    return NextResponse.json({ ok: false, error: "دسترسی غیرمجاز" }, { status: 401 });
-  }
+  const _denied = await permDenied("finance");
+  if (_denied) return _denied;
 
   try {
     const [paySum, commissionSum, openPayouts, activeInstallments, ledger, payouts, lateRows] = await Promise.all([

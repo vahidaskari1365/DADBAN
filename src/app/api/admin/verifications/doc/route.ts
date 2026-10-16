@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { lawyerVerifications } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { isAdmin } from "@/lib/admin-auth";
+import { permDenied } from "@/lib/admin-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,7 +19,7 @@ const KINDS = {
 } as const;
 
 export async function GET(req: Request) {
-  if (!(await isAdmin())) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  const _denied = await permDenied("lawyers"); if (_denied) return _denied;
   const url = new URL(req.url);
   const id = Number(url.searchParams.get("id"));
   const kindParam = url.searchParams.get("kind") ?? "";
