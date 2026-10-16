@@ -9,6 +9,7 @@ import { Container, Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { PageHero } from "@/components/page-hero";
+import LogoutButton from "@/components/admin/logout-button";
 import { getT } from "@/lib/i18n/server";
 import { templateT } from "@/lib/i18n/core";
 
@@ -127,7 +128,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           {canArticles && (
             <Link href="/admin/articles" className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-bold text-white transition-colors hover:bg-white/20"><Icon name="book" className="h-3.5 w-3.5" />{t("مدیریت مقالات")}</Link>
           )}
-          <Link href="/api/admin/logout" className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-bold text-white transition-colors hover:bg-white/20"><Icon name="x" className="h-3.5 w-3.5" />{t("خروج")}</Link>
+          <LogoutButton />
         </div>
       </PageHero>
       <Container className="py-12">
