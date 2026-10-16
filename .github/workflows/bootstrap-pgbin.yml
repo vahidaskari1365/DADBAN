@@ -1,0 +1,56 @@
+name: Bootstrap portable PostgreSQL (pgbin)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ارسال باینری‌های پرتابل PostgreSQL (Zonky) به اینباکس هاست — یک‌بار اجرا شود.
+# چرا؟ سرور PG سیستمیِ هاست داخل کانتنر ایزوله است و باینری سرور (initdb و…)
+# در دسترس یوزرلند نیست؛ pg_hba.conf آن هم فقط superuser را قبول می‌کند.
+# راه‌حل: PostgreSQL خودمان در ~/pgdata روی 127.0.0.1:5433 با باینری‌های
+# ~/pgbin (بدون root، بدون تیکت هاست). deploy-agent v2.4 این آرشیو را
+# در ~/pgbin نصب و PG را بوت می‌کند.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: bootstrap-pgbin
+  cancel-in-progress: false
+
+jobs:
+  upload-pgbin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare portable PostgreSQL 16.4 binaries (Zonky)
+        run: |
+          set -e
+          mkdir -p pgpkg
+          curl -sL --retry 3 -o epb.jar "https://repo1.maven.org/maven2/io/zonky/test/postgres/embedded-postgres-binaries-linux-amd64/16.4.0/embedded-postgres-binaries-linux-amd64-16.4.0.jar"
+          python3 -c "import zipfile; zipfile.ZipFile('epb.jar').extract('postgres-linux-x86_64.txz')"
+          tar -xJf postgres-linux-x86_64.txz -C pgpkg
+          ./pgpkg/bin/initdb --version
+          ./pgpkg/bin/postgres --version
+          tar -czf pgbin.tar.gz pgpkg
+          ls -la pgbin.tar.gz
+
+      - name: Upload pgbin to host inbox (FTP)
+        env:
+          FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
+          FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
+          FTP_USER: ${{ secrets.CPANEL_FTP_USER }}
+          FTP_PASS: ${{ secrets.CPANEL_FTP_PASS }}
+          APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
+        run: |
+          set -e
+          sudo apt-get update -y -qq >/dev/null 2>&1 || true
+          sudo apt-get install -y -qq lftp >/dev/null 2>&1
+          lftp --version | head -1
+          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF
+            set net:max-retries 8
+            set net:timeout 60
+            set ftp:ssl-allow off
+            set ftp:passive-mode on
+            mkdir -p "$APP_DIR/.release-inbox"
+            put -O "$APP_DIR/.release-inbox" pgbin.tar.gz
+            bye
+          EOF
+          echo "✓ pgbin.tar.gz به اینباکس هاست آپلود شد — deploy-agent در تیک بعدی نصبش می‌کند"

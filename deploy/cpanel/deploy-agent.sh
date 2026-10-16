@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════
-# deploy-agent v2.2 — دادورزان (cPanel)
+# deploy-agent v2.4 — دادورزان (cPanel)
 #   ۱) PostgreSQL خودمانی: بدون root، در ~/pgdata روی 127.0.0.1:5433
 #      (initdb یک‌بار + watchdog در هر تیک کرون — سرور سیستمی pg_hba را دور می‌زنیم)
 #   ۲) اگر .env تغییر کند → restart.txt (Passenger دوباره env را می‌خواند)
@@ -25,7 +25,27 @@ if [ -f "$PGLOG" ] && [ "$(wc -l < "$PGLOG" 2>/dev/null || echo 0)" -gt 400 ]; t
 fi
 
 ensure_own_pg() {
+  # ═══ مرحله ۰: نصب باینری‌های PG پرتابل از اینباکس (یک‌بار، از workflow bootstrap-pgbin) ═══
+  local PGBINARC="$APP/.release-inbox/pgbin.tar.gz"
+  local PGBINROOT="$HOME/pgbin"
+  if [ ! -f "$PGBINROOT/.installed" ] && [ -f "$PGBINARC" ] && [ -s "$PGBINARC" ]; then
+    rm -rf "$PGBINROOT"
+    mkdir -p "$PGBINROOT"
+    if tar -xzf "$PGBINARC" -C "$PGBINROOT" 2>>"$PGLOG"; then
+      touch "$PGBINROOT/.installed"
+      rm -f "$PGBINARC" 2>/dev/null || true
+      pglog "✓ PostgreSQL پرتابل در ~/pgbin نصب شد"
+    else
+      pglog "ERROR: استخراج pgbin.tar.gz ناموفق — فایل حذف می‌شود تا دوباره آپلود شود"
+      rm -f "$PGBINARC"
+    fi
+  fi
+
   # مسیر باینری‌های سرور PG — یک‌بار پیدا و کش می‌شود
+  # throttle: اگر به‌تازگی جستجو بی‌نتیجه بوده، این تیک رد شود
+  if [ -f "$PGDATA/.nobin" ] && [ -z "$(find "$PGDATA/.nobin" -mmin +20 2>/dev/null)" ]; then
+    return 1
+  fi
   local PGBIN=""
   if [ -f "$HOME/.pgbin" ]; then
     local cached; cached=$(cat "$HOME/.pgbin" 2>/dev/null || echo "")
@@ -33,22 +53,29 @@ ensure_own_pg() {
   fi
   if [ -z "$PGBIN" ]; then
     local p
-    for p in /usr/pgsql-16/bin /usr/pgsql-17/bin /usr/pgsql-15/bin \
+    # اولویت اول: باینری‌های پرتابل خودمان؛ بعد باینری‌های سیستمی هاست
+    for p in "$HOME/pgbin/pgpkg/bin" \
+             /usr/pgsql-16/bin /usr/pgsql-17/bin /usr/pgsql-15/bin \
              /usr/lib/postgresql/16/bin /usr/lib/postgresql/15/bin \
+             /opt/alt/alt-postgres/root/usr/pgsql-16/bin \
+             /opt/alt/alt-postgres/root/usr/bin \
+             /opt/alt/postgresql/root/usr/bin \
              /usr/local/pgsql/bin /usr/bin; do
       if [ -x "$p/initdb" ]; then PGBIN="$p"; break; fi
     done
     if [ -z "$PGBIN" ]; then
       local found
-      found=$(find /usr /opt -maxdepth 5 -name initdb -type f 2>/dev/null | head -1)
+      # جستجوی عمیق کل ریشه (CloudLinux باینری‌ها را عمیق در /opt/alt می‌گذارد)
+      found=$(find / -xdev -maxdepth 9 -name initdb -type f 2>/dev/null | head -1)
       [ -n "$found" ] && PGBIN=$(dirname "$found")
     fi
     if [ -n "$PGBIN" ] && [ -x "$PGBIN/initdb" ]; then
       echo "$PGBIN" > "$HOME/.pgbin"
+      rm -f "$PGDATA/.nobin" 2>/dev/null
     else
-      # فقط یک‌بار در هر ۱۰ تیک هشدار بده تا لاگ شلوغ نشود
-      if [ ! -f "$PGDATA/.nobin" ] || [ -n "$(find "$PGDATA/.nobin" -mmin +50 2>/dev/null)" ]; then
-        pglog "ERROR: initdb در هاست پیدا نشد — PostgreSQL خودمانی ممکن نیست (جزئیات: مسیرهای استاندارد و find خالی)"
+      # فقط یک‌بار در هر ۲۰ دقیقه هشدار بده تا لاگ شلوغ نشود
+      if [ ! -f "$PGDATA/.nobin" ] || [ -n "$(find "$PGDATA/.nobin" -mmin +20 2>/dev/null)" ]; then
+        pglog "ERROR: initdb در هاست پیدا نشد — PostgreSQL خودمانی ممکن نیست (جزئیات: diag4.txt را ببین)"
         mkdir -p "$PGDATA"; touch "$PGDATA/.nobin"
       fi
       return 1
@@ -129,6 +156,29 @@ ensure_own_pg() {
 }
 
 ensure_own_pg || true
+
+# ── one-shot diag4 (فقط بار اول) — شکار باینری‌های PG روی هاست ──
+DIAG4="$HOME/diag4.txt"
+if [ ! -f "$DIAG4" ]; then
+  {
+    echo "=== diag4 start $(date -u +%FT%TZ) ==="
+    echo "--- processes ---"
+    ps aux 2>/dev/null | grep -i postgres | grep -v grep | head -12
+    echo "--- /opt/alt ---"
+    ls /opt/alt 2>/dev/null | head -20
+    echo "--- known dirs ---"
+    ls -d /usr/pgsql* /usr/lib/postgresql/* /opt/alt/alt-postgres* /opt/alt/postgresql* /usr/local/pgsql* 2>/dev/null
+    echo "--- deep find initdb/postgres (xdev, 60s cap) ---"
+    timeout 60 find / -xdev \( -name initdb -o -name "postgres" -type f \) 2>/dev/null | head -12
+    echo "--- pg_hba candidates ---"
+    for f in /var/lib/pgsql/data/pg_hba.conf /etc/postgresql/*/main/pg_hba.conf /var/lib/pgsql/*/data/pg_hba.conf; do
+      [ -r "$f" ] && { echo "READABLE: $f"; grep -vE '^\s*#|^\s*$' "$f" | head -20; }
+    done
+    echo "--- psql client path ---"
+    command -v psql initdb pg_ctl 2>/dev/null
+    echo "=== diag4 end ==="
+  } > "$DIAG4" 2>&1
+fi
 
 # ═══════════ ری‌استارت Passenger در صورت تغییر .env ═══════════
 ENVF="$APP/.env"; ENVMD5="$APP/tmp/.env.md5"
