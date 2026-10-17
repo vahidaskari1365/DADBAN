@@ -56,6 +56,7 @@ export function ArticleBody({ content }: { content: string }) {
   const lines = content.split("\n");
   const blocks: ReactNode[] = [];
   let list: { ordered: boolean; items: string[] } | null = null;
+  let table: string[][] | null = null;
 
   const flushList = (key: string) => {
     if (!list) return;
@@ -74,10 +75,56 @@ export function ArticleBody({ content }: { content: string }) {
     list = null;
   };
 
+  const isSeparatorRow = (cells: string[]) => cells.length > 0 && cells.every((c) => /^:?-{2,}:?$/.test(c));
+
+  const flushTable = (key: string) => {
+    if (!table || table.length === 0) {
+      table = null;
+      return;
+    }
+    const [header, ...rows] = table.filter((r) => !isSeparatorRow(r));
+    blocks.push(
+      <div key={key} className="my-5 overflow-x-auto rounded-xl border border-border/70">
+        <table className="w-full min-w-[420px] border-collapse text-right text-[14px] sm:text-[15px]">
+          <thead>
+            <tr className="bg-muted/60">
+              {header.map((cell, j) => (
+                <th key={`h${j}`} className="border-b border-border/70 px-3 py-2.5 font-bold text-foreground">
+                  {renderInline(cell, `${key}-h${j}`)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, r) => (
+              <tr key={`r${r}`} className={r % 2 === 1 ? "bg-muted/25" : ""}>
+                {row.map((cell, j) => (
+                  <td key={`c${j}`} className="border-b border-border/40 px-3 py-2.5 align-top leading-7 text-foreground-soft last:border-b-0">
+                    {renderInline(cell, `${key}-c${r}-${j}`)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>,
+    );
+    table = null;
+  };
+
   lines.forEach((raw, idx) => {
     const line = raw.trimEnd();
     const ulMatch = /^[-*]\s+(.*)$/.exec(line);
     const olMatch = /^\d+[.)]\s+(.*)$/.exec(line);
+    const tableMatch = /^\|.*\|$/.test(line.trim());
+    if (tableMatch) {
+      flushList(`blk-${idx}-tp`);
+      const cells = line.trim().slice(1, -1).split("|").map((c) => c.trim());
+      if (!table) table = [];
+      table.push(cells);
+      return;
+    }
+    flushTable(`blk-${idx}-tbl`);
     if (ulMatch) {
       if (!list || list.ordered) {
         flushList(`blk-${idx}-prev`);
@@ -117,6 +164,7 @@ export function ArticleBody({ content }: { content: string }) {
     );
   });
   flushList("blk-end");
+  flushTable("blk-end-tbl");
 
   return <div className="space-y-4">{blocks}</div>;
 }
