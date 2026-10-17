@@ -11,6 +11,8 @@ import { getT, getServerLocale } from "@/lib/i18n/server";
 import { makeT } from "@/lib/i18n/core";
 import { tdyn } from "@/lib/i18n/dynamic";
 import { PageContentBlocks } from "@/components/page-content-blocks";
+import Link from "next/link";
+import { LAWS } from "@/lib/laws-content";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600; // ISR — هر ساعت آپدیت می‌شه
@@ -89,7 +91,7 @@ export default async function KnowledgePage() {
         </Container>
       ) : (
         featured && (
-          <Container className="pb-16">
+          <Container className="pb-10">
             {/* Featured */}
             <a
               href={`/knowledge/${featured.slug}`}
@@ -121,6 +123,51 @@ export default async function KnowledgePage() {
           </Container>
         )
       )}
+
+      {/* مرکز قوانین — زیربخش قوانین مجله (AEO: توضیح هر قانون به زبان ساده) */}
+      <Container className="pb-14">
+        <section aria-label="مرکز قوانین" className="rounded-3xl border border-border bg-surface p-6 card-shadow sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <span className="mt-1 inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+                <Icon name="landmark" className="h-6 w-6" />
+              </span>
+              <div>
+                <h2 className="text-lg font-black text-foreground sm:text-xl">{t("مرکز قوانین ایران")}</h2>
+                <p className="mt-1 max-w-xl text-sm leading-7 text-muted">
+                  {t("۲۹ قانون مهم کشور به زبان ساده — همراه با مواد کلیدی، نکات عدددار و پرسش‌های متداول هر قانون.")}
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/laws"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
+            >
+              {t("مشاهده همه قوانین")}
+              <Icon name="arrow" className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {LAWS.slice(0, 6).map((l) => (
+              <Link
+                key={l.slug}
+                href={`/laws/${l.slug}`}
+                className="group rounded-2xl border border-border bg-surface-2 p-4 transition-all hover:-translate-y-1 hover:border-primary/40"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-foreground">{l.name}</h3>
+                  <span className="text-[10px] text-muted">{l.year}</span>
+                </div>
+                <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-muted">{l.summary}</p>
+                <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-primary">
+                  {t("توضیح کامل")}
+                  <Icon name="arrow" className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </Container>
     </>
   );
 }

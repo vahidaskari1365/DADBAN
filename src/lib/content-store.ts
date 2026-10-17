@@ -49,20 +49,41 @@ export async function getGlossaryEntry(slug: string): Promise<GlossaryTerm | nul
   }
 }
 
-/* ------------------------------- قوانین ------------------------------- */
+/* ------------------------------- قوانین -------------------------------
+ * استراتژی ادغام: فیلدهای نمایشی پایه (نام، خلاصه، وضعیت و...) از دیتابیس
+ * (ویرایش ادمین) و محتوای تحریریهٔ غنی AEO (introLead، مواد کلیدی، FAQ و...)
+ * همیشه از کاتالوگ ثابت laws-content بر اساس slug — تا ویرایش ادمین
+ * محتوای سئو را از بین نبرد و صفحهٔ بدون محتوای غنی هم رندر نشود.
+ */
+function mergeLawRow(r: typeof laws.$inferSelect): Law {
+  const rich = LAWS.find((x) => x.slug === r.slug);
+  return {
+    slug: r.slug,
+    name: r.name,
+    year: r.year,
+    authority: r.authority,
+    status: r.status,
+    subjects: csv(r.subjects),
+    summary: r.summary,
+    category: rich?.category ?? "general",
+    introLead: rich?.introLead ?? r.summary,
+    purpose: rich?.purpose ?? r.summary,
+    intro: rich?.intro ?? [],
+    keyArticles: rich?.keyArticles ?? [],
+    highlights: rich?.highlights ?? [],
+    faqs: rich?.faqs ?? [],
+    relatedRoutes: rich?.relatedRoutes ?? [],
+    updated: rich?.updated ?? "",
+  };
+}
+
 export async function getLaws(): Promise<Law[]> {
   try {
     const rows = await db.select().from(laws).orderBy(asc(laws.sortOrder), asc(laws.id));
     if (!rows.length) return LAWS;
-    return rows.map((r) => ({
-      slug: r.slug,
-      name: r.name,
-      year: r.year,
-      authority: r.authority,
-      status: r.status,
-      subjects: csv(r.subjects),
-      summary: r.summary,
-    }));
+    // رکوردهای ادمین که در کاتالوگ تحریریه نیستند هم نمایش داده شوند (با محتوای پایه)
+    const editorialExtra = LAWS.filter((l) => !rows.some((r) => r.slug === l.slug));
+    return [...rows.map(mergeLawRow), ...editorialExtra];
   } catch {
     return LAWS;
   }
@@ -72,7 +93,7 @@ export async function getLawEntry(slug: string): Promise<Law | null> {
   try {
     const [row] = await db.select().from(laws).where(eq(laws.slug, slug)).limit(1);
     if (!row) return LAWS.find((x) => x.slug === slug) ?? null;
-    return { slug: row.slug, name: row.name, year: row.year, authority: row.authority, status: row.status, subjects: csv(row.subjects), summary: row.summary };
+    return mergeLawRow(row);
   } catch {
     return LAWS.find((x) => x.slug === slug) ?? null;
   }

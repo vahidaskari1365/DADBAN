@@ -136,27 +136,13 @@ export const GLOSSARY: GlossaryTerm[] = [
   { slug: "estishhad", term: "استشهادیه", simple: "فرمی که شهادت شهود در آن ثبت می‌شود.", pro: "استشهادیه سندی است که گواهی شهود درباره موضوعی (مانند سکونت یا نسبت) را در بر می‌گیرد.", example: "برای طرح برخی دعاوی به استشهادیه نیاز دارید.", related: ["مدارک", "دادخواست"] },
 ];
 
-/* ----------------- Laws center (/laws) ----------------- */
-export interface Law {
-  slug: string;
-  name: string;
-  year: string;
-  authority: string;
-  status: string;
-  subjects: string[];
-  summary: string;
-}
-
-export const LAWS: Law[] = [
-  { slug: "ghanun-madani", name: "قانون مدنی", year: "۱۳۰۷", authority: "مجلس شورای ملی", status: "معتبر", subjects: ["خانواده", "ملک", "قراردادها", "ارث"], summary: "اصل‌ترین قانون روابط خصوصی شامل احوال شخصیه، اموال، قراردادها و ارث." },
-  { slug: "ghanun-hemayat-khanevade", name: "قانون حمایت خانواده", year: "۱۳۹۱", authority: "مجلس شورای اسلامی", status: "معتبر", subjects: ["خانواده", "طلاق", "مهریه", "حضانت"], summary: "قانون اصلی رسیدگی به دعاوی خانواده از جمله طلاق، مهریه، نفقه و حضانت." },
-  { slug: "ghanun-tejarat", name: "قانون تجارت", year: "۱۳۱۱", authority: "مجلس شورای ملی", status: "معتبر", subjects: ["تجارت", "شرکت‌ها", "اسناد تجاری"], summary: "تنظیم‌کننده‌ی روابط تجاری، شرکت‌های تجاری و اسناد تجاری مانند چک و سفته." },
-  { slug: "ghanun-mojazat-islami", name: "قانون مجازات اسلامی", year: "۱۳۹۲", authority: "مجلس شورای اسلامی", status: "معتبر", subjects: ["کیفری", "مجازات"], summary: "تعیین جرایم و مجازات‌ها در نظام حقوقی ایران." },
-  { slug: "ghanun-sodoor-check", name: "قانون صدور چک", year: "۱۳۸۲", authority: "مجلس شورای اسلامی", status: "اصلاحی", subjects: ["چک و اسناد", "تجارت"], summary: "قوانین مربوط به صدور چک، چک برگشتی و پیگیری حقوقی آن." },
-  { slug: "ghanun-kar", name: "قانون کار", year: "۱۳۶۹", authority: "مجلس شورای اسلامی", status: "معتبر", subjects: ["کار", "استخدام"], summary: "تنظیم روابط کارگری و کارفرمایی و حقوق کارگران و کارفرمایان." },
-  { slug: "aghname-dadrasi-madani", name: "آیین دادرسی مدنی", year: "۱۳۷۹", authority: "مجلس شورای اسلامی", status: "معتبر", subjects: ["دادرسی", "دادخواست"], summary: "روال رسیدگی به دعاوی مدنی در دادگاه‌ها." },
-  { slug: "aghname-dadrasi-keyfari", name: "آیین دادرسی کیفری", year: "۱۳۹۲", authority: "مجلس شورای اسلامی", status: "معتبر", subjects: ["کیفری", "دادرسی"], summary: "روال رسیدگی به جرایم در دادسرا و دادگاه کیفری." },
-];
+/* ----------------- Laws center (/laws) -----------------
+ * دیتای کامل ۲۹ قانون با محتوای AEO از laws-content می‌آید
+ * (types + LAWS + LAW_CATEGORIES + helperها) و اینجا re-export
+ * می‌شود تا همه importهای قدیمی از @/lib/content سالم بمانند.
+ */
+export { LAWS, LAW_CATEGORIES, findLaw, getLawCategory, getRelatedLaws, LAWS_UPDATED } from "./laws-content";
+export type { Law, LawCategory, LawFaq, LawKeyArticle, LawRoute } from "./laws-content";
 
 /* ----------------- Judgments (/judgments) ----------------- */
 export interface Judgment {

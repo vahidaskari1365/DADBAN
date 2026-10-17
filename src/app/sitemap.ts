@@ -67,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // پایگاه دانش
     { path: "knowledge", priority: 0.7, changeFreq: "weekly" as const, lastMod: NOW },
     { path: "qa", priority: 0.7, changeFreq: "weekly" as const, lastMod: NOW },
-    { path: "laws", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
+    { path: "laws", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
     { path: "judgments", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
     { path: "glossary", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
     { path: "legal-forms", priority: 0.6, changeFreq: "monthly" as const, lastMod: NOW },
@@ -92,15 +92,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // محتوای static مرجعی (glossary, laws, judgments, legal-forms)
+  // مرکز قوانین با ۲۹ صفحه غنی AEO — priority و freshness بالاتر
   const contentRoutes: MetadataRoute.Sitemap = [
     ...GLOSSARY.map((g) => ({ url: `${BASE}/glossary/${g.slug}`, priority: 0.5 })),
-    ...LAWS.map((l) => ({ url: `${BASE}/laws/${l.slug}`, priority: 0.6 })),
+    ...LAWS.map((l) => ({ url: `${BASE}/laws/${l.slug}`, priority: 0.7 })),
     ...JUDGMENTS.map((j) => ({ url: `${BASE}/judgments/${j.slug}`, priority: 0.5 })),
     ...LEGAL_FORMS.map((f) => ({ url: `${BASE}/legal-forms/${f.slug}`, priority: 0.5 })),
   ].map((r) => ({
     url: r.url,
     lastModified: NOW,
-    changeFrequency: "yearly" as const,
+    changeFrequency: "monthly" as const,
     priority: r.priority,
   }));
 
