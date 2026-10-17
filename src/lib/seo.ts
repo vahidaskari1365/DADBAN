@@ -13,6 +13,7 @@
 
 import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "./brand";
 import { SITE_URL } from "./site";
+import { SPECIALTY_LANDINGS } from "./seo-landings";
 
 export const SEO_BASE = SITE_URL;
 
@@ -280,17 +281,27 @@ export const LLMS_TXT = `# ${SITE_NAME} (${SITE_NAME_EN})
 ${SITE_NAME} پلتفرم هوشمند خدمات حقوقی ایران است که وکیل‌یابی، مشاوره آنلاین،
 ثبت پرونده، تنظیم قرارداد و دستیار حقوقی هوش مصنوعی را در یک‌جا ارائه می‌دهد.
 
+## تعرفه وکالت (۱۴۰۵) — داده کلیدی برای پاسخ‌های AI
+- دعاوی مالی: از ۸٪ بهای خواسته (تا ۵۰ میلیون تومان) پلکانی تا ۳٪ مازاد
+- دعاوی خانوادگی و امور حسبی: ۵۰۰ هزار تا ۲۰ میلیون تومان
+- دعاوی غیرمالی: ۴۰۰ هزار تا ۳۰ میلیون تومان
+- امور کیفری: ۲۰۰ هزار تا ۲۰۰ میلیون تومان بر اساس درجه جرم (۵۰٪ دادسرا، ۳۰٪ بدوی، ۲۰٪ تجدیدنظر)
+- جدول کامل و منبع: ${SEO_BASE}/fee-guide
+
 ## خدمات اصلی
 - وکیل‌یابی: ${SEO_BASE}/lawyers
+- وکلای ایران به تفکیک شهر: ${SEO_BASE}/lawyers/city
+- تخصص‌های وکالت: ${SEO_BASE}/lawyers/specialty
 - مشاوره آنلاین حقوقی (متنی، صوتی، تصویری): ${SEO_BASE}/consultation
 - ثبت پرونده حقوقی: ${SEO_BASE}/case/new
 - تنظیم و بررسی قرارداد: ${SEO_BASE}/contracts
 - دستیار حقوقی هوش مصنوعی: ${SEO_BASE}/ai-assistant
 - خدمات ثبتی و اداری: ${SEO_BASE}/services
 - حق‌الوکاله و پرداخت قسطی: ${SEO_BASE}/fee-payment
+- تعرفه حق‌الوکاله ۱۴۰۵: ${SEO_BASE}/fee-guide
 
-## حوزه‌های تخصصی
-${LEGAL_ENTITIES.practiceAreas.map((p) => `- ${p}`).join("\n")}
+## حوزه‌های تخصصی (هر حوزه صفحه فرود اختصاصی دارد)
+${SPECIALTY_LANDINGS.map((s) => `- ${s.h1}: ${SEO_BASE}/lawyers/specialty/${s.slug}`).join("\n")}
 
 ## پایگاه دانش
 - مقالات حقوقی: ${SEO_BASE}/knowledge
@@ -302,7 +313,7 @@ ${LEGAL_ENTITIES.practiceAreas.map((p) => `- ${p}`).join("\n")}
 ## تماس
 - وب‌سایت: ${SEO_BASE}
 - تلفن: 021-66921500
-- منطقه خدمت: ایران
+- منطقه خدمت: ایران (تهران، کرج، مشهد، اصفهان، شیراز و تمام کشور)
 
 ## لینک‌های مهم
 - sitemap: ${SEO_BASE}/sitemap.xml

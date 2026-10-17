@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { db } from "@/db";
 import { lawyers, contracts, articles, qaQuestions } from "@/db/schema";
 import { GLOSSARY, LAWS, JUDGMENTS, LEGAL_FORMS } from "@/lib/content";
+import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "@/lib/seo-landings";
 import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -51,6 +52,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "ai-assistant", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
     // حق‌الوکاله و پرداخت قسطی
     { path: "fee-payment", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
+    // تعرفه وکالت ۱۴۰۵ — صفحه پولی سئو
+    { path: "fee-guide", priority: 0.9, changeFreq: "weekly" as const, lastMod: NOW },
+    // صفحات فرود سئو — هاب‌ها و صفحات فرود تخصص/شهر/ترکیبی
+    { path: "lawyers/specialty", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
+    { path: "lawyers/city", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
     // خدمات
     { path: "services", priority: 0.9, changeFreq: "weekly" as const, lastMod: NOW },
     { path: "services/category/family", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
@@ -98,9 +104,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: r.priority,
   }));
 
+  // صفحات فرود سئو — تخصص‌ها (بالاترین اولویت long-tail)
+  const landingRoutes: MetadataRoute.Sitemap = [
+    ...SPECIALTY_LANDINGS.map((s) => ({
+      url: `${BASE}/lawyers/specialty/${s.slug}`,
+      lastModified: NOW,
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    })),
+    ...CITY_LANDINGS.map((c) => ({
+      url: `${BASE}/lawyers/city/${c.slug}`,
+      lastModified: NOW,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
+    // صفحات ترکیبی تخصص×شهر — ماشین long-tail (۱۲×۱۵)
+    ...SPECIALTY_LANDINGS.flatMap((s) =>
+      CITY_LANDINGS.map((c) => ({
+        url: `${BASE}/lawyers/specialty/${s.slug}/${c.slug}`,
+        lastModified: NOW,
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+      })),
+    ),
+  ];
+
   return [
     ...staticRoutes,
     ...contentRoutes,
+    ...landingRoutes,
     // پروفایل وکلا — priority بالا (صفحات conversion-critical)
     ...lw.map((l) => ({
       url: `${BASE}/lawyers/${l.slug}`,

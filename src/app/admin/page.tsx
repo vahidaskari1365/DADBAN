@@ -59,6 +59,7 @@ const MENU: { label: string; href: string; icon: Parameters<typeof Icon>[0]["nam
   { label: "مدیریت فرم‌های حقوقی", href: "/admin/legal-forms", icon: "file", perm: "knowledge" },
   { label: "مدیریت پلن‌های عضویت", href: "/admin/plans", icon: "briefcase", perm: "knowledge" },
   { label: "محتوای صفحات سایت", href: "/admin/content", icon: "document", perm: "content" },
+  { label: "تقویم محتوای سئو", href: "/admin/content-calendar", icon: "calendar", perm: "content" },
   { label: "تالار گفتگو", href: "/admin/forum", icon: "chat", perm: "forum" },
   { label: "پاسخ‌های تالار گفتگو", href: "/admin/forum/replies", icon: "chat", perm: "forum" },
   { label: "مدیریت پرونده‌ها", href: "/admin/cases", icon: "folder", perm: "cases" },

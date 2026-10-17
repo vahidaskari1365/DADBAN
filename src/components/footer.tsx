@@ -20,6 +20,19 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
     ],
   },
   {
+    title: "وکیل‌یابی",
+    links: [
+      { label: "جستجوی وکیل", href: "/lawyers" },
+      { label: "تخصص‌های وکالت", href: "/lawyers/specialty" },
+      { label: "وکیل طلاق و خانواده", href: "/lawyers/specialty/talaq-khanavadeh" },
+      { label: "وکیل کیفری", href: "/lawyers/specialty/keifari" },
+      { label: "وکیل ملکی", href: "/lawyers/specialty/melki" },
+      { label: "وکیل در تهران", href: "/lawyers/city/tehran" },
+      { label: "وکیل در مشهد", href: "/lawyers/city/mashhad" },
+      { label: "تعرفه وکالت ۱۴۰۵", href: "/fee-guide" },
+    ],
+  },
+  {
     title: "هوش مصنوعی",
     links: [
       { label: "دستیار حقوقی هوشمند", href: "/ai-assistant" },

@@ -44,12 +44,17 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/dashboard/", "/admin"],
       },
       {
-        userAgent: "Claude-SearchBot", // Claude search citability
+        userAgent: ["ClaudeBot", "Claude-Search", "Claude-User"], // Claude: crawl + search + user browsing
         allow: "/",
         disallow: ["/api/", "/dashboard/", "/admin"],
       },
       {
         userAgent: "PerplexityBot", // Perplexity search index
+        allow: "/",
+        disallow: ["/api/", "/dashboard/", "/admin"],
+      },
+      {
+        userAgent: "CCBot", // Common Crawl — خزنده‌ی آموزشی غیرجستجو
         allow: "/",
         disallow: ["/api/", "/dashboard/", "/admin"],
       },
