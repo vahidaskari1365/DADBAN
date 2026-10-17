@@ -22,6 +22,10 @@ export type AeoArticleSeed = {
   readTime: number;
 };
 
+import { AEO_ARTICLES_BATCH_2A } from "./aeo-articles-batch2a";
+import { AEO_ARTICLES_BATCH_2B } from "./aeo-articles-batch2b";
+
+/** بستهٔ فاز ۲ — batch 1 (۶ مقاله) + batch 2 (۸ مقاله: نفقه، حق حبس، چک صیادی، تخلیه ملک، وکالت در طلاق، الزام به سند، بیمه بیکاری، مالیات بر ارث) */
 export const AEO_ARTICLES: AeoArticleSeed[] = [
   {
     slug: "esar-az-mahriyeh-1405",
@@ -831,4 +835,6 @@ export const AEO_ARTICLES: AeoArticleSeed[] = [
     ],
     readTime: 8,
   },
+  ...AEO_ARTICLES_BATCH_2A,
+  ...AEO_ARTICLES_BATCH_2B,
 ];
