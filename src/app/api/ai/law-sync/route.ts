@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { syncLawFacts } from "@/lib/law-facts";
 import { isAdmin } from "@/lib/admin-auth";
 import { rateLimit } from "@/lib/api-security";
+import { submitIndexNow } from "@/lib/indexnow";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // کرون روزانه — با همزمانی ۴ و بودجهٔ ۱۴ثانیه‌ای هر موضوع زیر سقف می‌ماند
@@ -35,7 +36,26 @@ async function handle(req: Request): Promise<NextResponse> {
   if (limited) return limited;
 
   const summary = await syncLawFacts();
-  return NextResponse.json({ ...summary, ok: true, at: new Date().toISOString() });
+
+  // اگر نرخ‌ها به‌روز شدند، صفحات وابسته به همین نرخ‌ها را هم به IndexNow اطلاع بده
+  // (best-effort — هیچ‌وقت جریان اصلی سینک را نمی‌شکند)
+  let indexnow: { ok: boolean; status?: number; submitted: number; error?: string } | null = null;
+  if (summary.ran > 0) {
+    try {
+      const res = await submitIndexNow([
+        "/laws",
+        "/fee-guide",
+        "/calculators",
+        "/lawyers/specialty/mahriyeh",
+        "/lawyers/specialty/hezanat",
+      ]);
+      indexnow = { ok: res.ok, status: res.status, submitted: res.submitted, error: res.error };
+    } catch {
+      indexnow = null;
+    }
+  }
+
+  return NextResponse.json({ ...summary, indexnow, ok: true, at: new Date().toISOString() });
 }
 
 export async function GET(req: Request) {

@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { articles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { permDenied } from "@/lib/admin-guard";
+import { submitIndexNow } from "@/lib/indexnow";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,19 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
     if (body.readTime != null) patch.readTime = Number(body.readTime) || 5;
     const [updated] = await db.update(articles).set(patch).where(eq(articles.id, Number(id))).returning();
-    return NextResponse.json({ ok: true, article: updated });
+
+    // اطلاع‌رسانی فوری به IndexNow — بهترین تلاش؛ خطای آن جریان ویرایش را نمی‌شکند
+    let indexnow: { ok: boolean; status?: number; submitted: number } | null = null;
+    if (updated?.slug) {
+      try {
+        const res = await submitIndexNow([`/knowledge/${updated.slug}`, "/knowledge"]);
+        indexnow = { ok: res.ok, status: res.status, submitted: res.submitted };
+      } catch {
+        indexnow = null;
+      }
+    }
+
+    return NextResponse.json({ ok: true, article: updated, indexnow });
   } catch {
     return NextResponse.json({ ok: false, error: "failed" }, { status: 500 });
   }
