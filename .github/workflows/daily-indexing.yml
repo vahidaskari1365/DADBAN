@@ -1,0 +1,112 @@
+name: Daily Indexing Agent
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ایجنت روزانهٔ نمایه‌سازی گوگل — هر روز ۰۶:۰۰ به وقت تهران (02:30 UTC)
+#
+# Job A (همیشه اجرا می‌شود): بازارسال sitemap با سرویس‌اکانت — سیگنال تازگی برای گوگل
+# Job B (اگر کوکی تنظیم باشد): ربات مرورگر Playwright وارد UI سرچ‌کنسول می‌شود و
+#   برای حداکثر ~۱۰ صفحهٔ مهم صف (seo/indexing-queue.txt) دکمهٔ «Request Indexing» را می‌زند.
+#
+# کوکی‌ها در Secret با نام GOOGLE_COOKIES_JSON (آرایهٔ JSON یا رشتهٔ هدر Cookie).
+# گوگل برای Request Indexing هیچ API رسمی ندارد — فقط مسیر UI همین است.
+# وضعیت: seo/indexing-done.txt + seo/indexing-log.jsonl — صف مصرف‌شده به ریپو کامیت می‌شود.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    - cron: '30 2 * * *'   # 06:00 Asia/Tehran (UTC+3:30)
+  workflow_dispatch:
+    inputs:
+      count:
+        description: 'حداکثر تعداد URL امروز'
+        required: false
+        default: '10'
+      dry_run:
+        description: 'فقط تشخیص، بدون کلیک'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: daily-indexing
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  resubmit-sitemap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Resubmit sitemap via Search Console API
+        env:
+          GSC_KEY_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/gsc-sitemap-resubmit.mjs
+
+  request-indexing:
+    runs-on: ubuntu-latest
+    needs: resubmit-sitemap
+    timeout-minutes: 45
+    env:
+      RI_COUNT: ${{ inputs.count || '10' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Playwright + Chromium
+        run: |
+          npm install --no-save playwright@1.49.1 >/dev/null 2>&1
+          npx playwright install chromium --with-deps >/dev/null 2>&1
+          echo "✓ playwright ready"
+
+      - name: Guard — کوکی تنظیم شده؟
+        id: guard
+        env:
+          C: ${{ secrets.GOOGLE_COOKIES_JSON }}
+        run: |
+          if [ -z "$C" ]; then
+            echo "NO_COOKIES: ربات UI امروز رد شد — کوکی گوگل تنظیم نشده."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run request-indexing bot
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          GOOGLE_COOKIES_JSON: ${{ secrets.GOOGLE_COOKIES_JSON }}
+          GSC_PROPERTY: sc-domain:dadvarzan.com
+        run: |
+          FLAGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then FLAGS="--dry-run"; fi
+          node scripts/request-indexing.mjs --count "$RI_COUNT" $FLAGS
+
+      - name: Commit updated queue/state
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          git config user.name "dadvarzan-bot"
+          git config user.email "vahid.askari1986@gmail.com"
+          git add seo/indexing-queue.txt seo/indexing-done.txt seo/indexing-log.jsonl 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "چیزی برای کامیت نبود"
+          else
+            git commit -m "indexing-bot: daily request-indexing run $(date -u +%F) [skip deploy]"
+            git push
+          fi
+
+      - name: Upload screenshots (diagnostics)
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: indexing-bot-shots
+          path: seo/shots/
+          retention-days: 7
+          if-no-files-found: ignore

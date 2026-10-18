@@ -11,6 +11,13 @@ name: Package release (cPanel)
 on:
   push:
     branches: [main]
+    # تغییرات غیراپ دیپلوی بی‌مورد نساز (کامیت‌های ربات نمایه‌سازی، ورک‌فلوها، اسکریپت‌های ابزار)
+    paths-ignore:
+      - 'seo/**'
+      - 'scripts/**'
+      - '.github/**'
+      - 'docs/**'
+      - '**.md'
   workflow_dispatch:
 
 concurrency:
