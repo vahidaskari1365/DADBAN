@@ -17,6 +17,10 @@ import { SITE_URL } from "@/lib/site";
  */
 export const INDEXNOW_KEY = "a45bb99f393b45e9b26fd44e23bb561b";
 
+/** کلید قبلی (self-generated) — فایل کلیدش روی سایت است و نزد Bing معتبر شده؛
+ *  تا تکمیل Site Verification کاربر به‌عنوان fallback استفاده می‌شود. */
+export const LEGACY_INDEXNOW_KEY = "7d61d30a8c52abee357b96e9661b1e46";
+
 export function indexNowKeyUrl(): string {
   return `${SITE_URL}/${INDEXNOW_KEY}.txt`;
 }
@@ -37,19 +41,32 @@ export async function submitIndexNow(paths: string[]): Promise<IndexNowResult> {
 
   if (!urls.length) return { ok: false, error: "no valid urls", submitted: 0 };
 
-  try {
+  const post = async (key: string) => {
     const res = await fetch("https://api.indexnow.org/indexnow", {
       method: "POST",
       headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({
         host: new URL(SITE_URL).host,
-        key: INDEXNOW_KEY,
-        keyLocation: indexNowKeyUrl(),
+        key,
+        keyLocation: `${SITE_URL}/${key}.txt`,
         urlList: urls,
       }),
       cache: "no-store",
       signal: AbortSignal.timeout(10_000),
     });
+    return res;
+  };
+
+  try {
+    // کلید رسمی Bing Webmaster — تا وقتی Site Verification در پنل کاربر کامل
+    // نشده، Bing با 403 SiteVerificationNotCompleted پاسخ می‌دهد.
+    const res = await post(INDEXNOW_KEY);
+    if (res.status === 403) {
+      // fallback به کلید legacy (فایل کلیدش از قبل روی سایت و نزد Bing معتبر است)
+      // تا auto-ping ها قبل از تکمیل verify از دست نروند.
+      const alt = await post(LEGACY_INDEXNOW_KEY);
+      return { ok: alt.ok || alt.status === 202, status: alt.status, submitted: urls.length };
+    }
     return { ok: res.ok || res.status === 202, status: res.status, submitted: urls.length };
   } catch (err) {
     return { ok: false, error: String(err), submitted: urls.length };
