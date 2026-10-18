@@ -24,6 +24,10 @@ export type AeoArticleSeed = {
 
 import { AEO_ARTICLES_BATCH_2A } from "./aeo-articles-batch2a";
 import { AEO_ARTICLES_BATCH_2B } from "./aeo-articles-batch2b";
+import { AEO_ARTICLES_BATCH_3A } from "./aeo-articles-batch3a";
+import { AEO_ARTICLES_BATCH_3B } from "./aeo-articles-batch3b";
+import { AEO_ARTICLES_BATCH_3C } from "./aeo-articles-batch3c";
+import { AEO_ARTICLES_BATCH_3D } from "./aeo-articles-batch3d";
 
 /** بستهٔ فاز ۲ — batch 1 (۶ مقاله) + batch 2 (۸ مقاله: نفقه، حق حبس، چک صیادی، تخلیه ملک، وکالت در طلاق، الزام به سند، بیمه بیکاری، مالیات بر ارث) */
 export const AEO_ARTICLES: AeoArticleSeed[] = [
@@ -837,4 +841,9 @@ export const AEO_ARTICLES: AeoArticleSeed[] = [
   },
   ...AEO_ARTICLES_BATCH_2A,
   ...AEO_ARTICLES_BATCH_2B,
+  /** بستهٔ ۳ — batch 3 (۸ مقاله: دیه تصادف، خیار غبن، سرقفلی، ابطال سند، حکم غیابی/واخواهی، ثنا، قرارداد کار موقت، جرایم رایانه‌ای) */
+  ...AEO_ARTICLES_BATCH_3A,
+  ...AEO_ARTICLES_BATCH_3B,
+  ...AEO_ARTICLES_BATCH_3C,
+  ...AEO_ARTICLES_BATCH_3D,
 ];
