@@ -15,8 +15,10 @@ const SITE = (process.argv.find(a => a.startsWith('--site'))?.split('=')[1]
   ?? 'https://dadvarzan.com').replace(/\/$/, '');
 const OUT = (process.argv.find((a, i, arr) => arr[i - 1] === '--out') ?? 'gsc-audit-results.jsonl');
 const SITE_URL = process.env.GSC_SITE_URL ?? `sc-domain:${SITE.replace(/^https?:\/\//, '')}`;
-const CONC = 4;
-const API = 'https://searchconsole.googleapis.com/webmasters/v3';
+const CONC = 10;
+// URL Inspection API: /v1 path — siteUrl goes in the BODY (not /webmasters/v3/sites/...)
+const INSPECT_URL = 'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect';
+const MIN_GAP_MS = 120; // ≤500 requests/min (under the 600 QPM quota)
 
 function loadKey() {
   if (process.env.GSC_KEY_FILE) return JSON.parse(readFileSync(process.env.GSC_KEY_FILE, 'utf8'));
@@ -58,7 +60,8 @@ async function fetchSitemap(site) {
 }
 
 function classify(r) {
-  const i = r?.inspectionResult?.index ?? {};
+  // URL Inspection response: inspectionResult.indexStatusResult (a.k.a. "index" in some docs)
+  const i = r?.inspectionResult?.indexStatusResult ?? r?.inspectionResult?.index ?? {};
   const cov = i.coverageState ?? '';
   const v = i.verdict ?? 'UNKNOWN';
   let bucket;
@@ -74,22 +77,30 @@ function classify(r) {
   else if (/Spammy|Violating|Pure harm/i.test(cov)) bucket = 'SPAM';
   else if (v === 'PASS') bucket = 'INDEXED';
   else bucket = 'UNKNOWN';
-  return { bucket, verdict: v, coverage: cov, indexing: i.indexingState ?? '', crawling: i.crawlingState ?? '', robots: r?.inspectionResult?.robotsTxtState ?? '', fetch: i.pageFetchState ?? '', canonical: i.googleCanonical ?? '' };
+  return { bucket, verdict: v, coverage: cov, indexing: i.indexingState ?? '', crawling: i.crawlingState ?? '', robots: i.robotsTxtState ?? (r?.inspectionResult?.robotsTxtResult?.robotsTxtState ?? ''), fetch: i.pageFetchState ?? '', canonical: i.googleCanonical ?? '', lastCrawl: i.lastCrawlTime ?? '' };
+}
+
+let nextSlot = 0;
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+async function pace() {
+  const t = Math.max(nextSlot, Date.now());
+  nextSlot = t + MIN_GAP_MS;
+  await sleep(Math.max(0, t - Date.now()));
 }
 
 async function inspect(token, url) {
-  const res = await fetch(`${API}/sites/${encodeURIComponent(SITE_URL)}/urlInspection/index:inspect`, {
+  await pace();
+  const res = await fetch(INSPECT_URL, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ inspectionUrl: url, language: 'fa' }),
+    body: JSON.stringify({ inspectionUrl: url, siteUrl: SITE_URL, languageCode: 'fa' }),
+    signal: AbortSignal.timeout(60_000), // don't hang forever on slow live inspections
   });
   if (res.status === 429 || res.status >= 500) { const e = new Error(`HTTP ${res.status}`); e.retry = true; e.status = res.status; throw e; }
   const j = await res.json();
   if (j.error) { const e = new Error(`API ${j.error.code}: ${j.error.message?.slice(0, 120)}`); e.retry = j.error.code === 429 || j.error.code >= 500; throw e; }
   return j;
 }
-
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 async function main() {
   const t0 = Date.now();
@@ -125,7 +136,8 @@ async function main() {
           break;
         } catch (e) {
           tries++;
-          if (e.retry && tries <= 6) { await sleep(Math.min(60_000, 2000 * 2 ** tries)); continue; }
+          const retryable = e.retry || e.name === 'TimeoutError' || e.name === 'AbortError';
+          if (retryable && tries <= 6) { await sleep(Math.min(60_000, 2000 * 2 ** tries)); continue; }
           rec = { url, ts: new Date().toISOString(), bucket: 'ERROR', error: String(e.message ?? e).slice(0, 200) };
           fail++; failures.push(rec);
           break;
