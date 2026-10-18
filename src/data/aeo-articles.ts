@@ -28,6 +28,10 @@ import { AEO_ARTICLES_BATCH_3A } from "./aeo-articles-batch3a";
 import { AEO_ARTICLES_BATCH_3B } from "./aeo-articles-batch3b";
 import { AEO_ARTICLES_BATCH_3C } from "./aeo-articles-batch3c";
 import { AEO_ARTICLES_BATCH_3D } from "./aeo-articles-batch3d";
+import { AEO_ARTICLES_BATCH_4A } from "./aeo-articles-batch4a";
+import { AEO_ARTICLES_BATCH_4B } from "./aeo-articles-batch4b";
+import { AEO_ARTICLES_BATCH_4C } from "./aeo-articles-batch4c";
+import { AEO_ARTICLES_BATCH_4D } from "./aeo-articles-batch4d";
 
 /** بستهٔ فاز ۲ — batch 1 (۶ مقاله) + batch 2 (۸ مقاله: نفقه، حق حبس، چک صیادی، تخلیه ملک، وکالت در طلاق، الزام به سند، بیمه بیکاری، مالیات بر ارث) */
 export const AEO_ARTICLES: AeoArticleSeed[] = [
@@ -846,4 +850,9 @@ export const AEO_ARTICLES: AeoArticleSeed[] = [
   ...AEO_ARTICLES_BATCH_3B,
   ...AEO_ARTICLES_BATCH_3C,
   ...AEO_ARTICLES_BATCH_3D,
+  /** بستهٔ ۴ — batch 4 (۸ مقاله: وکالت بلاعزل، اجاره به شرط تملیک، اجرتالمثل، مجازات سرقت، خسارت تأخیر تأدیه، مشارکت مدنی، سند عادی، لایحه دفاعیه) */
+  ...AEO_ARTICLES_BATCH_4A,
+  ...AEO_ARTICLES_BATCH_4B,
+  ...AEO_ARTICLES_BATCH_4C,
+  ...AEO_ARTICLES_BATCH_4D,
 ];
