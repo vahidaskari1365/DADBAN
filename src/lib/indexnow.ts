@@ -10,7 +10,12 @@ import { SITE_URL } from "@/lib/site";
  * (انتشار مقاله و…) را بشکند؛ فقط وضعیت را گزارش می‌کنیم.
  */
 
-export const INDEXNOW_KEY = "7d61d30a8c52abee357b96e9661b1e46";
+/**
+ * کلید رسمی IndexNow — گرفته‌شده از پنل Bing Webmaster Tools (کاربر).
+ * برای اینکه آمار سابمیت در پنل BWT خود کاربر دیده شود، باید از همان کلیدی
+ * استفاده شود که Bing در UI تولید کرده است.
+ */
+export const INDEXNOW_KEY = "a45bb99f393b45e9b26fd44e23bb561b";
 
 export function indexNowKeyUrl(): string {
   return `${SITE_URL}/${INDEXNOW_KEY}.txt`;

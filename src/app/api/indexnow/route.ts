@@ -6,7 +6,7 @@ import { indexNowKeyUrl, submitIndexNow, submitSitemapIndexNow } from "@/lib/ind
  * IndexNow — اطلاع‌رسانی سریع صفحات به Bing / Yandex / Seznam.
  *
  * نحوه کار:
- *  1. فایل کلید عمومی: /7d61d30a8c52abee357b96e9661b1e46.txt  (کلید = نام فایل)
+ *  1. فایل کلید عمومی: /a45bb99f393b45e9b26fd44e23bb561b.txt  (کلید رسمی از پنل Bing Webmaster)
  *  2. POST /api/indexnow  { urls: ["/fee-guide", "/lawyers/specialty/keifari", ...] }
  *     با هدر x-cron-secret یا x-admin-secret یا نشست ادمین (گارد داخلی).
  *  3. این endpoint درخواست را به https://api.indexnow.org ارسال می‌کند.
