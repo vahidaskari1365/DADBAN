@@ -10,6 +10,13 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["mammoth"],
   async redirects() {
     return [
+      // www → دامنهٔ اصلی (301) — جلوگیری از انتخاب canonical تکراری توسط گوگل
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.dadvarzan.com" }],
+        destination: "https://dadvarzan.com/:path*",
+        statusCode: 301,
+      },
       // مرکز هوش مصنوعی حذف شد — ریدایرکت دائمی برای حفظ سئو و لینک‌های قدیمی
       { source: "/ai", destination: "/ai-assistant", permanent: true },
       // صفحه‌ی جعبه‌ابزار منبع‌باز حذف شد — ریدایرکت دائمی به دستیار
