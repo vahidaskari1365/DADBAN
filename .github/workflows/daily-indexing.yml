@@ -63,8 +63,9 @@ jobs:
 
       - name: Install Playwright + Chromium
         run: |
-          npm install --no-save playwright@1.49.1 >/dev/null 2>&1
-          npx playwright install chromium --with-deps >/dev/null 2>&1
+          npm install --no-save --no-audit --no-fund playwright@1.49.1
+          npx playwright install chromium
+          npx playwright install-deps chromium || echo "install-deps skipped (libs usually preinstalled on ubuntu-latest)"
           echo "✓ playwright ready"
 
       - name: Guard — کوکی تنظیم شده؟
