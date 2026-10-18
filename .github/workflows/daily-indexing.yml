@@ -61,9 +61,12 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install Playwright + Chromium
+      - name: Install Playwright + Chromium (ایزوله از درخت وابستگی پروژه)
         run: |
-          npm install --no-save --no-audit --no-fund playwright@1.49.1
+          mkdir -p /tmp/pw
+          cd /tmp/pw
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund playwright@1.49.1
           npx playwright install chromium
           npx playwright install-deps chromium || echo "install-deps skipped (libs usually preinstalled on ubuntu-latest)"
           echo "✓ playwright ready"
@@ -88,7 +91,8 @@ jobs:
         run: |
           FLAGS=""
           if [ "${{ inputs.dry_run }}" = "true" ]; then FLAGS="--dry-run"; fi
-          node scripts/request-indexing.mjs --count "$RI_COUNT" $FLAGS
+          cp scripts/request-indexing.mjs /tmp/pw/bot.mjs
+          node /tmp/pw/bot.mjs --count "$RI_COUNT" $FLAGS
 
       - name: Commit updated queue/state
         if: steps.guard.outputs.skip != 'true'
