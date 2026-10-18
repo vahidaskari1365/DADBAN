@@ -3,10 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { qaQuestions } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { Container } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
+import { SeoLinkGrid } from "@/components/seo/link-grid";
 import { faNum } from "@/lib/data";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
@@ -53,6 +54,36 @@ export default async function QaDetailPage({ params }: Props) {
     notFound();
   }
   if (!original) notFound();
+
+  // پرسش‌های مرتبط — هم‌دسته، سپس پرخواننده‌ترین‌ها (لینک‌سازی داخلی)
+  let relatedQs: { slug: string; question: string }[] = [];
+  try {
+    const base = db
+      .select({ slug: qaQuestions.slug, question: qaQuestions.question })
+      .from(qaQuestions)
+      .where(
+        original.category
+          ? and(eq(qaQuestions.category, original.category), ne(qaQuestions.slug, slug))
+          : ne(qaQuestions.slug, slug),
+      )
+      .orderBy(desc(qaQuestions.views))
+      .limit(4);
+    relatedQs = await base;
+    if (relatedQs.length < 4) {
+      const more = await db
+        .select({ slug: qaQuestions.slug, question: qaQuestions.question })
+        .from(qaQuestions)
+        .where(ne(qaQuestions.slug, slug))
+        .orderBy(desc(qaQuestions.views))
+        .limit(8);
+      relatedQs = [
+        ...relatedQs,
+        ...more.filter((m) => !relatedQs.some((r) => r.slug === m.slug)),
+      ].slice(0, 4);
+    }
+  } catch {
+    /* ignore */
+  }
 
   // شمارش بازدید — best-effort و بی‌صدا
   try {
@@ -150,6 +181,13 @@ export default async function QaDetailPage({ params }: Props) {
               </Link>
             </div>
           </div>
+
+          {relatedQs.length > 0 && (
+            <SeoLinkGrid
+              title={t("پرسش‌های مرتبط")}
+              links={relatedQs.map((r) => ({ label: r.question, href: `/qa/${r.slug}` }))}
+            />
+          )}
         </div>
       </Container>
     </>

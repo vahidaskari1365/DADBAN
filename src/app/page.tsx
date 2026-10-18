@@ -23,6 +23,8 @@ import { LawyerCard } from "@/components/lawyer-card";
 import { PinMasonry } from "@/components/pin-masonry";
 import { ReviewsSpotlight } from "@/components/amazon/reviews-spotlight";
 import { SiteMenu } from "@/components/home/site-menu";
+import { SeoLinkGrid } from "@/components/seo/link-grid";
+import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "@/lib/seo-landings";
 import { getT } from "@/lib/i18n/server";
 import { PageContentBlocks } from "@/components/page-content-blocks";
 
@@ -256,6 +258,26 @@ export default async function HomePage() {
 
       {/* REAL SOCIAL PROOF — فقط نظرات واقعی دیتابیس */}
       <ReviewsSpotlight />
+
+      {/* SEO INTERNAL LINKS — دسترسی سریع تخصص‌ها و شهرها (توزیع PageRank به صفحات فرود) */}
+      <section className="mt-24" aria-label="دسترسی سریع تخصص‌ها و شهرها">
+        <Container className="space-y-4">
+          <SeoLinkGrid
+            title="تخصص‌های پرجستجوی وکالت"
+            links={SPECIALTY_LANDINGS.map((s) => ({
+              label: s.h1,
+              href: `/lawyers/specialty/${s.slug}`,
+            }))}
+          />
+          <SeoLinkGrid
+            title="وکیل در شهرهای ایران"
+            links={CITY_LANDINGS.map((c) => ({
+              label: `وکیل در ${c.city}`,
+              href: `/lawyers/city/${c.slug}`,
+            }))}
+          />
+        </Container>
+      </section>
 
       {/* FINAL CTA — تک‌هدفه */}
       <section className="mt-24 pb-8">

@@ -5,6 +5,7 @@ import { Icon } from "./icons";
 import NewsletterForm from "./newsletter-form";
 import type { IconKey } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
+import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "@/lib/seo-landings";
 
 const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -17,6 +18,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "بررسی قرارداد", href: "/contracts/review" },
       { label: "فرم‌های حقوقی", href: "/legal-forms" },
       { label: "محاسبه‌گرهای حقوقی", href: "/calculators" },
+      { label: "پرداخت اقساطی حق‌الوکاله", href: "/fee-payment" },
     ],
   },
   {
@@ -55,6 +57,8 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
     links: [
       { label: "درباره دادورزان", href: "/about" },
       { label: "برای کسب‌وکارها", href: "/business" },
+      { label: "تعرفه پلن‌های عضویت", href: "/pricing" },
+      { label: "پلن‌های عضویت وکلا", href: "/plans" },
       { label: "تالار گفتگو", href: "/forum" },
       { label: "پنل موکل", href: "/dashboard/client" },
       { label: "پنل وکیل", href: "/dashboard/lawyer" },
@@ -141,6 +145,38 @@ export async function Footer() {
               </ul>
             </div>
           ))}
+        </div>
+
+        {/* نوار سئو — لینک‌سازی داخلی سراسری به صفحات فرود (تخصص‌ها × شهرها) */}
+        <div className="mt-10 space-y-5 border-t border-border pt-8">
+          <nav aria-label="تخصص‌های وکالت">
+            <h3 className="text-xs font-bold text-foreground">تخصص‌های وکالت در دادورزان</h3>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+              {SPECIALTY_LANDINGS.map((s) => (
+                <Link
+                  key={s.slug}
+                  href={`/lawyers/specialty/${s.slug}`}
+                  className="text-xs text-muted transition-colors hover:text-primary"
+                >
+                  {s.h1}
+                </Link>
+              ))}
+            </div>
+          </nav>
+          <nav aria-label="وکیل در شهرهای ایران">
+            <h3 className="text-xs font-bold text-foreground">وکیل در شهرهای ایران</h3>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+              {CITY_LANDINGS.map((c) => (
+                <Link
+                  key={c.slug}
+                  href={`/lawyers/city/${c.slug}`}
+                  className="text-xs text-muted transition-colors hover:text-primary"
+                >
+                  وکیل در {c.city}
+                </Link>
+              ))}
+            </div>
+          </nav>
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">

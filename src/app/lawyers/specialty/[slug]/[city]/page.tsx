@@ -215,6 +215,15 @@ export default async function SpecialtyCityPage({ params }: { params: Params }) 
         <FaqSection items={cb.faqs} canonicalPath={canonical} />
 
         <SeoLinkGrid
+          title="راهنماهای مرتبط"
+          links={[
+            { label: sp.h1, href: `/lawyers/specialty/${sp.slug}` },
+            { label: `وکیل در ${c.city}`, href: `/lawyers/city/${c.slug}` },
+            { label: "همه تخصص‌های وکالت", href: "/lawyers/specialty" },
+            { label: "وکیل در شهرهای ایران", href: "/lawyers/city" },
+          ]}
+        />
+        <SeoLinkGrid
           title={`${sp.h1} در سایر شهرها`}
           links={CITY_LANDINGS.filter((x) => x.slug !== c.slug).map((x) => ({
             label: `${sp.h1} در ${x.city}`,
