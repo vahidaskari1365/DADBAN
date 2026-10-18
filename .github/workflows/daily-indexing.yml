@@ -10,6 +10,11 @@ name: Daily Indexing Agent
 # کوکی‌ها در Secret با نام GOOGLE_COOKIES_JSON (آرایهٔ JSON یا رشتهٔ هدر Cookie).
 # گوگل برای Request Indexing هیچ API رسمی ندارد — فقط مسیر UI همین است.
 # وضعیت: seo/indexing-done.txt + seo/indexing-log.jsonl — صف مصرف‌شده به ریپو کامیت می‌شود.
+#
+# Job C (Bing): پروب روزانهٔ sitemap از خود شبکهٔ مایکروسافت (رانر GitHub روی Azure)
+#   + ری‌سابمیت sitemap به Bing Webmaster API. سابقه: UI بینگ خطای
+#   «The request has timed out» می‌دهد و CrawlStats خالی است — این پروب مرز مشکل
+#   (شبکهٔ مایکروسافت ↔ هاست ایران) را هر روز اندازه‌گیری و ثبت می‌کند.
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
@@ -48,6 +53,40 @@ jobs:
           GSC_KEY_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
         run: node scripts/gsc-sitemap-resubmit.mjs
 
+  # ── Job C: بینگ ─────────────────────────────────────────────────────────
+  # رانر GitHub روی Azure (IP مایکروسافت) اجرا می‌شود؛ اگر از آنجا sitemap 200 و
+  # سریع برگردد، مسیر عمومی مایکروسافت→هاست باز است و تایم‌اوت بینگ باید از
+  # فایروال هاست روی رنج IP خودِ Bingbot باشد. بعد از پروب، sitemap به بینگ
+  # ری‌سابمیت می‌شود تا هر روز سیگنال خزش تازه بدهد.
+  bing-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Probe sitemap.xml از شبکهٔ مایکروسافت (Azure)
+        id: probe
+        run: |
+          CODE=$(curl -sS -o /tmp/sitemap.xml -w "%{http_code}" --max-time 45 https://dadvarzan.com/sitemap.xml || echo curl-failed)
+          METRICS=$(curl -sS -o /dev/null -w "ttfb=%{time_starttransfer}s total=%{time_total}s size=%{size_download}B" --max-time 45 https://dadvarzan.com/sitemap.xml || echo curl-failed)
+          URLS=$(grep -c "<loc>" /tmp/sitemap.xml || true); [ -n "$URLS" ] || URLS=0
+          echo "probe: HTTP=$CODE $METRICS urls=$URLS"
+          {
+            echo "## Bing probe — $(date -u '+%F %T') UTC"
+            echo "- HTTP: \`$CODE\` — $METRICS — URLs: $URLS"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CODE" != "200" ]; then
+            echo "❌ dadvarzan.com از شبکهٔ مایکروسافت در دسترس نیست → عامل تایم‌اوت بینگ"
+            exit 1
+          fi
+
+      - name: Resubmit sitemap به Bing Webmaster API
+        env:
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+        run: |
+          RESP=$(curl -sS -X POST -H "Content-Length: 0" --max-time 30 \
+            "https://ssl.bing.com/webmaster/api.svc/json/SubmitSitemap?apikey=$BING_API_KEY&siteUrl=https%3A%2F%2Fdadvarzan.com&feedUrl=https%3A%2F%2Fdadvarzan.com%2Fsitemap.xml" || echo curl-failed)
+          echo "SubmitSitemap → $RESP"
+          echo "- Resubmit response: \`$RESP\`" >> "$GITHUB_STEP_SUMMARY"
+
   request-indexing:
     runs-on: ubuntu-latest
     needs: resubmit-sitemap
@@ -61,16 +100,6 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install Playwright + Chromium (ایزوله از درخت وابستگی پروژه)
-        run: |
-          mkdir -p /tmp/pw
-          cd /tmp/pw
-          npm init -y >/dev/null 2>&1
-          npm install --no-audit --no-fund playwright@1.49.1
-          npx playwright install chromium
-          npx playwright install-deps chromium || echo "install-deps skipped (libs usually preinstalled on ubuntu-latest)"
-          echo "✓ playwright ready"
-
       - name: Guard — کوکی تنظیم شده؟
         id: guard
         env:
@@ -82,6 +111,16 @@ jobs:
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Install Playwright + Chromium (ایزوله از درخت وابستگی پروژه)
+        run: |
+          mkdir -p /tmp/pw
+          cd /tmp/pw
+          npm init -y >/dev/null 2>&1
+          npm install --no-audit --no-fund playwright@1.49.1
+          npx playwright install chromium
+          npx playwright install-deps chromium || echo "install-deps skipped (libs usually preinstalled on ubuntu-latest)"
+          echo "✓ playwright ready"
 
       - name: Run request-indexing bot
         if: steps.guard.outputs.skip != 'true'

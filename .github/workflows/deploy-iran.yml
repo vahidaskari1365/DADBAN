@@ -20,6 +20,14 @@ name: Deploy to Iran Host (production)
 on:
   push:
     branches: [main]
+    # کامیت‌های ابزاری (ربات ایندکس، workflow، اسکریپت، داکیومنت) دیپلوی نسازند
+    paths-ignore:
+      - '.github/**'
+      - 'docs/**'
+      - 'scripts/**'
+      - 'shots/**'
+      - 'seo/**'
+      - '**.md'
   workflow_dispatch:
 
 concurrency:
