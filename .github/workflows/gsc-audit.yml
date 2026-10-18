@@ -1,0 +1,51 @@
+name: GSC URL Inspection Audit
+
+# ─────────────────────────────────────────────────────────────────────────────
+# وضعیت ایندکس تک‌تک صفحه‌های sitemap را با URL Inspection API گوگل می‌گیرد.
+# کلید سرویس‌اکانت در Secret با نام GSC_SERVICE_ACCOUNT_JSON ذخیره شده
+# (به‌صورت sealed-box رمز شده؛ هرگز در لاگ چاپ نمی‌شود).
+# نتیجه (بدون دادهٔ حساس) به‌صورت Artifact آپلود می‌شود.
+# اجرای دستی: Actions → GSC URL Inspection Audit → Run workflow
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: 'آدرس سایت'
+        required: false
+        default: 'https://dadvarzan.com'
+
+concurrency:
+  group: gsc-audit
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run audit
+        env:
+          GSC_KEY_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+          GSC_SITE_URL: sc-domain:dadvarzan.com
+          AUDIT_SITE: ${{ inputs.site }}
+        run: |
+          node scripts/gsc-audit.mjs --site "$AUDIT_SITE" --out gsc-audit-results.jsonl
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: gsc-audit-results
+          path: gsc-audit-results.jsonl
+          retention-days: 90
+          if-no-files-found: error
