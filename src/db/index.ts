@@ -45,6 +45,13 @@ function getPool(): Pool {
       max: 2,
       connectionTimeoutMillis: 8_000,
       idleTimeoutMillis: 20_000,
+      // ⚠️ سقف‌های زمانی اجباری — هیچ کوئری/DDLای حق ندارد برای همیشه منتظر قفل PG بماند.
+      // باگ واقعی: درخواست ثبت‌نام با تأیید شماره بی‌پاسخ ماند (INSERT/DDL پشت قفل معلق شد؛
+      // PG بدون lock/statement timeout تا ابد منتظر می‌ماند) → پاسخ never برگشت و دکمهٔ
+      // «در حال بررسی…» کلاینت برای همیشه چرخید. با این سقف‌ها خطا در ≤۱۵ث برمی‌گردد.
+      statement_timeout: 15_000,
+      query_timeout: 20_000,
+      idle_in_transaction_session_timeout: 30_000,
     });
     pool.on("error", (err) => {
       console.error("[dadban] idle db client error:", err);

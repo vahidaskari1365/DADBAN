@@ -88,16 +88,13 @@ export async function POST(req: Request) {
       maxAge: 60 * 60 * 24 * 30,
     });
 
-    // خوش‌آمد پیامکی — best-effort، هرگز ثبت‌نام را نمی‌شکند
-    try {
-      await sendSms({
-        to: normalized,
-        template: "welcome",
-        params: { name, link: result.lawyerSlug ? "https://dadvarzan.com/dashboard/lawyer" : "https://dadvarzan.com/dashboard/client" },
-      });
-    } catch {
-      /* non-fatal */
-    }
+    // خوش‌آمد پیامکی — best-effort و «غیرمسدودکننده»: پاسخ ثبت‌نام نباید تا ۱۲ ثانیه
+    // منتظر وب‌سرویس فراز بماند (فایربند). خطاهای ارسال خودشان در appErrors ثبت می‌شوند.
+    void sendSms({
+      to: normalized,
+      template: "welcome",
+      params: { name, link: result.lawyerSlug ? "https://dadvarzan.com/dashboard/lawyer" : "https://dadvarzan.com/dashboard/client" },
+    }).catch(() => {});
     // خوش‌آمد ایمیلی — best-effort
     if (email) {
       try {

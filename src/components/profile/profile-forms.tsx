@@ -308,6 +308,7 @@ export function PhoneVerificationRow({ phone, verified }: { phone: string; verif
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, purpose: "verify" }),
+        signal: AbortSignal.timeout(25_000), // هیچ دکمه‌ای نباید برای همیشه لودینگ بماند
       });
       const data = (await res.json()) as { ok: boolean; error?: string; dev?: boolean; devCode?: string; via?: string };
       if (res.ok && data.ok) {
@@ -331,8 +332,8 @@ export function PhoneVerificationRow({ phone, verified }: { phone: string; verif
       } else {
         setMsg({ tone: "danger", text: data.error ?? t("ارسال کد ناموفق بود.") });
       }
-    } catch {
-      setMsg({ tone: "danger", text: t("ارتباط با سرور برقرار نشد.") });
+    } catch (err) {
+      setMsg({ tone: "danger", text: err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("ارتباط با سرور برقرار نشد.") });
     } finally {
       setLoading(false);
     }
@@ -348,6 +349,7 @@ export function PhoneVerificationRow({ phone, verified }: { phone: string; verif
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, code: c, purpose: "verify" }),
+        signal: AbortSignal.timeout(25_000),
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (res.ok && data.ok) {
@@ -359,8 +361,8 @@ export function PhoneVerificationRow({ phone, verified }: { phone: string; verif
       } else {
         setMsg({ tone: "danger", text: data.error ?? t("تأیید کد ناموفق بود.") });
       }
-    } catch {
-      setMsg({ tone: "danger", text: t("ارتباط با سرور برقرار نشد.") });
+    } catch (err) {
+      setMsg({ tone: "danger", text: err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("ارتباط با سرور برقرار نشد.") });
     } finally {
       setLoading(false);
     }

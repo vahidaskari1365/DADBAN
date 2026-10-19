@@ -350,6 +350,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier: id, password }),
+        signal: AbortSignal.timeout(25_000), // هیچ دکمه‌ای نباید برای همیشه لودینگ بماند
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -367,8 +368,8 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         return; // در حال هدایت — لودینگ باقی می‌ماند
       }
       setError(data.error ?? t("خطا در ورود"));
-    } catch {
-      setError(t("خطا در ارتباط با سرور"));
+    } catch (err) {
+      setError(err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("خطا در ارتباط با سرور"));
     }
     setLoading(false);
   };
@@ -384,6 +385,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: mobile, purpose: "register" }),
+        signal: AbortSignal.timeout(25_000),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -394,8 +396,8 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         return;
       }
       setError(data.error ?? t("ارسال کد تأیید ناموفق بود."));
-    } catch {
-      setError(t("خطا در ارتباط با سرور"));
+    } catch (err) {
+      setError(err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("خطا در ارتباط با سرور"));
     }
     setLoading(false);
   };
@@ -442,6 +444,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), phone: mobile, password, code: c }),
+        signal: AbortSignal.timeout(25_000),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -450,8 +453,8 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         return; // در حال هدایت — لودینگ باقی می‌ماند
       }
       setError(data.error ?? t("خطا در ثبت‌نام"));
-    } catch {
-      setError(t("خطا در ارتباط با سرور"));
+    } catch (err) {
+      setError(err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("خطا در ارتباط با سرور"));
     }
     setLoading(false);
   };
@@ -501,6 +504,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
           employeeLawyer,
           ...(lawyerCity ? { city: lawyerCity } : {}),
         }),
+        signal: AbortSignal.timeout(25_000),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -509,8 +513,8 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         return;
       }
       setError(data.error ?? t("خطا در ثبت‌نام"));
-    } catch {
-      setError(t("خطا در ارتباط با سرور"));
+    } catch (err) {
+      setError(err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("خطا در ارتباط با سرور"));
     }
     setLoading(false);
   };

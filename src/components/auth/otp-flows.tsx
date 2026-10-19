@@ -241,6 +241,7 @@ export function OtpLoginFlow({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: mobile, purpose: "login" }),
+        signal: AbortSignal.timeout(25_000), // هیچ دکمه‌ای نباید برای همیشه لودینگ بماند
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -259,8 +260,8 @@ export function OtpLoginFlow({
       } else {
         setBanner({ tone: "danger", text: data.error ?? t("ارسال کد ناموفق بود.") });
       }
-    } catch {
-      setBanner({ tone: "danger", text: t("خطا در ارتباط با سرور") });
+    } catch (err) {
+      setBanner({ tone: "danger", text: err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("خطا در ارتباط با سرور") });
     }
     setLoading(false);
   };
@@ -276,6 +277,7 @@ export function OtpLoginFlow({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: normalizeMobile(phone), code: c, purpose: "login" }),
+        signal: AbortSignal.timeout(25_000),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -283,8 +285,8 @@ export function OtpLoginFlow({
         return;
       }
       setBanner({ tone: "danger", text: data.error ?? t("تأیید کد ناموفق بود.") });
-    } catch {
-      setBanner({ tone: "danger", text: t("خطا در ارتباط با سرور") });
+    } catch (err) {
+      setBanner({ tone: "danger", text: err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("خطا در ارتباط با سرور") });
     }
     setLoading(false);
   };
@@ -392,6 +394,7 @@ export function ForgotPasswordFlow({ onBack }: { onBack: () => void }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(25_000),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -415,8 +418,8 @@ export function ForgotPasswordFlow({ onBack }: { onBack: () => void }) {
       } else {
         setBanner({ tone: "danger", text: data.error ?? t("ارسال کد ناموفق بود.") });
       }
-    } catch {
-      setBanner({ tone: "danger", text: t("خطا در ارتباط با سرور") });
+    } catch (err) {
+      setBanner({ tone: "danger", text: err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("خطا در ارتباط با سرور") });
     }
     setLoading(false);
   };
@@ -446,6 +449,7 @@ export function ForgotPasswordFlow({ onBack }: { onBack: () => void }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(25_000),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -455,8 +459,8 @@ export function ForgotPasswordFlow({ onBack }: { onBack: () => void }) {
       } else {
         setBanner({ tone: "danger", text: data.error ?? t("تغییر رمز ناموفق بود.") });
       }
-    } catch {
-      setBanner({ tone: "danger", text: t("خطا در ارتباط با سرور") });
+    } catch (err) {
+      setBanner({ tone: "danger", text: err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("خطا در ارتباط با سرور") });
     }
     setLoading(false);
   };
