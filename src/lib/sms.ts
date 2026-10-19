@@ -103,7 +103,7 @@ async function farazSend(
         message?: string;
         error?: { message?: string } | string | null;
         data?: { messageid?: number | string; message_id?: number | string } | null;
-      } = null;
+      } | null = null;
       try {
         data = JSON.parse(text);
       } catch {
