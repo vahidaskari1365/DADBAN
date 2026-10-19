@@ -33,9 +33,15 @@ export function isSmsConfigured(): boolean {
   return !!process.env.SMS_FARAZ_API_KEY;
 }
 
+/**
+ * خط فرستندهٔ پیش‌فرض پنل فراز: 90008361 (خط خدماتی — مناسب OTP/اطلاع‌رسانی؛
+ * پیام خدماتی مشمول بلاک‌لیست تبلیغاتی نمی‌شود). قابل بازنویسی با SMS_FARAZ_SENDER.
+ */
+const DEFAULT_SMS_SENDER = "90008361";
+
 /** شمارهٔ خط فرستندهٔ پنل فراز — در پنل فراز بخش «خطوط» قابل مشاهده است */
 function farazSender(): string {
-  return (process.env.SMS_FARAZ_SENDER ?? "").trim();
+  return (process.env.SMS_FARAZ_SENDER ?? "").trim() || DEFAULT_SMS_SENDER;
 }
 
 /** متن پیامک برای هر قالب — فارسی، کوتاه، با لینک سایت */
