@@ -439,15 +439,24 @@ export async function seedPlatformAccounts(): Promise<void> {
 }
 
 /* ---------------- Profile features migration (idempotent, once per process) ---------------- */
-let profileSchemaReady = false;
+/**
+ * الگوی مشترک ensure*ها: به‌جای پرچم بولی، «promise در حال اجرا» ذخیره می‌شود.
+ * چرا؟ باگ واقعی: درخواست‌های هم‌زمانِ اول هر پروسه هرکدام طوفان DDL خودشان را
+ * شروع می‌کردند (پرچم تا پایان طوفان false می‌ماند) → قفل‌گذاری متقابل روی PG
+ * → درخواست verify معلق و دکمهٔ کلاینت در «در حال بررسی…» گیر می‌کرد.
+ * حالا همهٔ فراخوانی‌های هم‌زمان همان یک طوفان را share می‌کنند و فراخوانی‌های
+ * بعدی همان promise حل‌شده را فوراً می‌گیرند (معادل پرچم، بدون رقابت).
+ */
+let profileSchemaPromise: Promise<void> | null = null;
 
 /**
  * Additive migration for user profiles + favorites. Runs the statements once
  * per process; safe on both fresh and existing databases (production Neon DB
  * included — drizzle-kit push is unavailable at runtime there).
  */
-export async function ensureProfileSchema(): Promise<void> {
-  if (profileSchemaReady) return;
+export function ensureProfileSchema(): Promise<void> {
+  if (!profileSchemaPromise) {
+    profileSchemaPromise = (async () => {
   const stmts = [
     // نوع وکیل — پیش‌نیاز ثبت‌نام مستقیم کارآموز وکالت (الگوی photo_url)
     `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS lawyer_type TEXT NOT NULL DEFAULT 'wakil'`,
@@ -486,7 +495,9 @@ export async function ensureProfileSchema(): Promise<void> {
       /* non-fatal — push is primary on dev */
     }
   }
-  profileSchemaReady = true;
+    })().catch(() => { /* هرگز reject نمی‌شود — خطاهای هر جمله همان‌جا بلعیده شده */ });
+  }
+  return profileSchemaPromise;
 }
 
 
@@ -675,31 +686,35 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
   }
 }
 
-/** جدول سیگنالینگ مشاوره زنده — best-effort روی دیتابیس واقعی. */
-let signalSchemaReady = false;
-export async function ensureSignalSchema(): Promise<void> {
-  if (signalSchemaReady) return;
-  const stmts = [
-    `CREATE TABLE IF NOT EXISTS consultation_signals (id SERIAL PRIMARY KEY, room TEXT NOT NULL, client_id TEXT NOT NULL, sender TEXT NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL DEFAULT '', created_at TIMESTAMP NOT NULL DEFAULT now())`,
-    `CREATE INDEX IF NOT EXISTS consultation_signals_room_idx ON consultation_signals (room, id)`,
-  ];
-  for (const stmt of stmts) {
-    try {
-      await db.execute(sql.raw(stmt));
-    } catch {
-      /* non-fatal */
-    }
+/** جدول سیگنالینگ مشاوره زنده — best-effort روی دیتابیس واقعی (promise مشترک). */
+let signalSchemaPromise: Promise<void> | null = null;
+export function ensureSignalSchema(): Promise<void> {
+  if (!signalSchemaPromise) {
+    signalSchemaPromise = (async () => {
+      const stmts = [
+        `CREATE TABLE IF NOT EXISTS consultation_signals (id SERIAL PRIMARY KEY, room TEXT NOT NULL, client_id TEXT NOT NULL, sender TEXT NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL DEFAULT '', created_at TIMESTAMP NOT NULL DEFAULT now())`,
+        `CREATE INDEX IF NOT EXISTS consultation_signals_room_idx ON consultation_signals (room, id)`,
+      ];
+      for (const stmt of stmts) {
+        try {
+          await db.execute(sql.raw(stmt));
+        } catch {
+          /* non-fatal */
+        }
+      }
+    })().catch(() => { /* هرگز reject نمی‌شود */ });
   }
-  signalSchemaReady = true;
+  return signalSchemaPromise;
 }
 
 /**
  * جداول گفتگوی موکل-وکیل و حضور آنلاین وکلا — best-effort.
  * (consult_messages + lawyer_presence — بدون نیاز به مایگریشن دستی در پروداکشن)
  */
-let consultSchemaReady = false;
-export async function ensureConsultSchema(): Promise<void> {
-  if (consultSchemaReady) return;
+let consultSchemaPromise: Promise<void> | null = null;
+export function ensureConsultSchema(): Promise<void> {
+  if (!consultSchemaPromise) {
+    consultSchemaPromise = (async () => {
   const stmts = [
     `CREATE TABLE IF NOT EXISTS consult_messages (id SERIAL PRIMARY KEY, room_id TEXT NOT NULL, lawyer_slug TEXT NOT NULL, sender TEXT NOT NULL, name TEXT NOT NULL, body TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE INDEX IF NOT EXISTS consult_messages_room_idx ON consult_messages (room_id, id)`,
@@ -713,7 +728,9 @@ export async function ensureConsultSchema(): Promise<void> {
       /* non-fatal */
     }
   }
-  consultSchemaReady = true;
+    })().catch(() => { /* هرگز reject نمی‌شود */ });
+  }
+  return consultSchemaPromise;
 }
 
 /**
@@ -721,9 +738,10 @@ export async function ensureConsultSchema(): Promise<void> {
  * خطایابی داخلی، مدارک پرونده، روی‌بوردینگ وکیل و بازبینی حقوقی.
  * همان الگوی ensure*های بالا: best-effort، بدون مایگریشن دستی در پروداکشن.
  */
-let extendedSchemaReady = false;
-export async function ensureExtendedSchema(): Promise<void> {
-  if (extendedSchemaReady) return;
+let extendedSchemaPromise: Promise<void> | null = null;
+export function ensureExtendedSchema(): Promise<void> {
+  if (!extendedSchemaPromise) {
+    extendedSchemaPromise = (async () => {
   const stmts = [
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN NOT NULL DEFAULT false`,
     /* ── احراز هویت وکلا: آپلود مدارک در پنل وکیل + صف بررسی ادمین ── */
@@ -769,7 +787,35 @@ export async function ensureExtendedSchema(): Promise<void> {
       /* non-fatal — هر مسیر مصرف‌کننده خودش در نبود جدول degraded می‌شود */
     }
   }
-  extendedSchemaReady = true;
+    })().catch(() => { /* هرگز reject نمی‌شود */ });
+  }
+  return extendedSchemaPromise;
+}
+
+/**
+ * تضمین سبک و هدفمند جدول OTP برای مسیرهای احراز پیامکی — فقط ۲ جملهٔ
+ * CREATE IF NOT EXISTS (وقتی جدول هست، هرکدام در حد میلی‌ثانیه و بدون قفل
+ * سنگین). عمداً از طوفان کامل ensureExtendedSchema جدا شده تا ورود/ثبت‌نام
+ * هیچ‌وقت پشت ALTER جدول‌های دیگر معلق نشود (باگ واقعی گیرکردن verify).
+ */
+let otpSchemaPromise: Promise<void> | null = null;
+export function ensureOtpSchema(): Promise<void> {
+  if (!otpSchemaPromise) {
+    otpSchemaPromise = (async () => {
+      const stmts = [
+        `CREATE TABLE IF NOT EXISTS otp_codes (id SERIAL PRIMARY KEY, phone TEXT NOT NULL, purpose TEXT NOT NULL, code_hash TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, expires_at TIMESTAMP NOT NULL, consumed_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+        `CREATE INDEX IF NOT EXISTS otp_codes_phone_purpose_idx ON otp_codes (phone, purpose, created_at)`,
+      ];
+      for (const stmt of stmts) {
+        try {
+          await db.execute(sql.raw(stmt));
+        } catch {
+          /* non-fatal — مسیر مصرف‌کننده خودش در نبود جدول degraded می‌شود */
+        }
+      }
+    })().catch(() => { /* هرگز reject نمی‌شود */ });
+  }
+  return otpSchemaPromise;
 }
 
 /**
@@ -777,9 +823,10 @@ export async function ensureExtendedSchema(): Promise<void> {
  * همان الگوی ensure*های بالا: best-effort، بدون مایگریشن دستی در پروداکشن.
  * (site_content + media + forum_topics + forum_replies)
  */
-let cmsSchemaReady = false;
-export async function ensureCmsSchema(): Promise<void> {
-  if (cmsSchemaReady) return;
+let cmsSchemaPromise: Promise<void> | null = null;
+export function ensureCmsSchema(): Promise<void> {
+  if (!cmsSchemaPromise) {
+    cmsSchemaPromise = (async () => {
   const stmts = [
     `CREATE TABLE IF NOT EXISTS site_content (id SERIAL PRIMARY KEY, page TEXT NOT NULL, section TEXT NOT NULL DEFAULT '', kind TEXT NOT NULL DEFAULT 'text', title TEXT NOT NULL DEFAULT '', subtitle TEXT NOT NULL DEFAULT '', body TEXT NOT NULL DEFAULT '', image_url TEXT, link TEXT, link_label TEXT, active BOOLEAN NOT NULL DEFAULT true, sort_order INTEGER NOT NULL DEFAULT 0, updated_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE INDEX IF NOT EXISTS site_content_page_idx ON site_content (page, sort_order)`,
@@ -796,5 +843,7 @@ export async function ensureCmsSchema(): Promise<void> {
       /* non-fatal */
     }
   }
-  cmsSchemaReady = true;
+    })().catch(() => { /* هرگز reject نمی‌شود */ });
+  }
+  return cmsSchemaPromise;
 }
