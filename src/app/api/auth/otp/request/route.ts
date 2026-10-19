@@ -4,6 +4,7 @@ import { users } from "@/db/schema";
 import { eq, or } from "drizzle-orm";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { isSmsConfigured, sendSms } from "@/lib/sms";
+import { logger } from "@/lib/logger";
 import { isEmailConfigured, sendPasswordResetEmail } from "@/lib/email";
 import { getCurrentUser } from "@/lib/user-auth";
 import { rateLimit, readJson } from "@/lib/api-security";
@@ -104,8 +105,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, dev: true, devCode: code, via: "sms-failed-dev" });
     }
     // پیامک فعال است ولی ارسال شکسته — صادقانه خطا، بدون ادعای تحویل
+    // reason = پیام کوتاه پرایدر (بدون هیچ راز) برای پشتیبانی/عیب‌یابی سریع
+    const reason = (smsRes.error ?? "unknown").slice(0, 160);
+    logger.warn("OTP SMS delivery failed", null, { to: normalized, reason, channel: smsRes.channel });
     return NextResponse.json(
-      { ok: false, error: "ارسال پیامک ناموفق بود؛ لطفاً چند لحظه بعد دوباره تلاش کنید." },
+      { ok: false, error: "ارسال پیامک ناموفق بود؛ لطفاً چند لحظه بعد دوباره تلاش کنید.", reason },
       { status: 502 },
     );
   } catch {

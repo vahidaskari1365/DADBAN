@@ -2,11 +2,20 @@
  * ============================================================================
  * dadvarzan — SMS Notification Module
  * ----------------------------------------------------------------------------
- * Provider: فراز اس‌ام‌اس (Faraz SMS / IPPanel) — وب‌سرویس ارسال تکی.
- *   POST {API_BASE}/api/v1/sms/send/webservice/single
- *   headers: { apikey: SMS_FARAZ_API_KEY }
- *   body:    { originator: SMS_FARAZ_SENDER, recipient: "09…", message: "…" }
- * برای کاربرد: کد تأیید ثبت‌نام/ورود (OTP) + اطلاع‌رسانی‌های موکل/وکیل.
+ * Provider: فراز اس‌ام‌اس (FarazSMS) — مستندات رسمی: docs.farazsms.com
+ *   Host:    https://api.iranpayamak.com   (قابل بازنویسی با SMS_FARAZ_API_BASE)
+ *   Header:  Api-Key: SMS_FARAZ_API_KEY   (نام هدر حساس به بزرگی/کوچکی حرف است!)
+ *
+ * دو کانال ارسال:
+ *   ۱) POST /ws/v1/sms/pattern — پیامک قالبی (OTP/کد تأیید): بدون صف، زیر ۵ ثانیه.
+ *      پیش‌نیاز: قالب تأییدشده در پنل فراز → کد قالب در SMS_FARAZ_PATTERN_CODE
+ *      (نام متغیر داخل قالب با SMS_FARAZ_PATTERN_VAR، پیش‌فرض «code»)
+ *   ۲) POST /ws/v1/sms/simple — متن آزاد به شماره‌ها: دارای معدل انسانی (چند دقیقه‌ای)
+ *      → مناسب اطلاع‌رسانی‌های غیرفوری. اگر قالب OTP تنظیم نشده باشد، OTP هم
+ *      با همین مسیر تلاش می‌شود (با تأخیر احتمالی) تا ثبت‌نام کاملاً قطع نشود.
+ *
+ * پاسخ موفق: 200/201 با {"status":"success","data":{"id":…}}؛ خطاها ممکن است
+ * HTML عمومی باشند (۴۲۲/…)، پس تشخیص فقط بر اساس کد وضعیت HTTP است.
  * در حالت بدون کلید فقط لاگ می‌کند (dev mode) — هیچ موفقیتی ساختگی در پروداکشن نیست.
  * ============================================================================
  */
@@ -44,6 +53,20 @@ function farazSender(): string {
   return (process.env.SMS_FARAZ_SENDER ?? "").trim() || DEFAULT_SMS_SENDER;
 }
 
+/** کد قالب OTP (پترن) از پنل فراز — بخش «قالب‌های پیامک» → کد وب‌سرویس */
+function farazPatternCode(): string {
+  return (process.env.SMS_FARAZ_PATTERN_CODE ?? "").trim();
+}
+
+/** نام متغیر داخل قالب OTP (مثلاً در پنل: %code%) */
+function farazPatternVar(): string {
+  return (process.env.SMS_FARAZ_PATTERN_VAR ?? "").trim() || "code";
+}
+
+function apiBase(): string {
+  return ((process.env.SMS_FARAZ_API_BASE ?? "").trim() || "https://api.iranpayamak.com").replace(/\/+$/, "");
+}
+
 /** متن پیامک برای هر قالب — فارسی، کوتاه، با لینک سایت */
 function buildMessage(template: SmsTemplate, params: Record<string, string>): string {
   const link = params.link ? `\n🔗 ${params.link}` : "";
@@ -67,86 +90,108 @@ function buildMessage(template: SmsTemplate, params: Record<string, string>): st
   }
 }
 
-/** ارسال خام با وب‌سرویس فراز — فالبک بین هاست‌های API در خطای شبکه */
-async function farazSend(
-  recipient09: string,
-  message: string,
-): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  const apiKey = process.env.SMS_FARAZ_API_KEY;
-  if (!apiKey) return { success: false, error: "SMS not configured" };
-
-  const bases = Array.from(
-    new Set([
-      (process.env.SMS_FARAZ_API_BASE ?? "").trim() || "https://api2.ippanel.com",
-      "https://api.ippanel.com",
-    ]),
-  );
-  const body = JSON.stringify({ originator: farazSender(), recipient: recipient09, message });
-  let lastError = "";
-
-  for (const base of bases) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12_000);
-      const res = await fetch(`${base}/api/v1/sms/send/webservice/single`, {
-        method: "POST",
-        headers: { apikey: apiKey, "Content-Type": "application/json" },
-        body,
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-
-      const text = await res.text();
-      if (!res.ok) {
-        lastError = `HTTP ${res.status}`;
-        logger.error("Faraz SMS API error", null, { base, status: res.status, body: text.slice(0, 300) });
-        continue;
-      }
-
-      let data: {
-        code?: string;
-        status?: string;
-        message?: string;
-        error?: { message?: string } | string | null;
-        data?: { messageid?: number | string; message_id?: number | string } | null;
-      } | null = null;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        lastError = `invalid JSON response`;
-        logger.error("Faraz SMS bad response", null, { base, body: text.slice(0, 200) });
-        continue;
-      }
-
-      const okCode = data?.code === "ok" || data?.status === "ok";
-      const messageId = data?.data?.messageid ?? data?.data?.message_id;
-      if (!okCode && !messageId) {
-        const apiMsg =
-          (typeof data?.error === "string" ? data.error : data?.error?.message) ?? data?.message ?? "unknown";
-        lastError = `api: ${String(apiMsg).slice(0, 180)}`;
-        logger.error("Faraz SMS rejected", null, { base, response: text.slice(0, 300) });
-        continue;
-      }
-
-      const id = String(messageId ?? Date.now());
-      logger.info("SMS sent via Faraz", { to: recipient09, messageId: id, base });
-      return { success: true, messageId: id };
-    } catch (err) {
-      lastError = (err as Error).message;
-      logger.error("Faraz SMS request failed", err, { base });
-    }
-  }
-
-  return { success: false, error: lastError || "faraz send failed" };
+export interface FarazResult {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+  /** «pattern» یا «simple» — کدام کانال فراز استفاده شد */
+  channel?: "pattern" | "simple";
 }
 
 /**
- * ارسال پیامک قالب‌بندی‌شده.
- * در dev mode (بدون کلید فراز)، فقط لاگ می‌کند و شناسهٔ dev_ برمی‌گرداند.
+ * فراخوانی خام وب‌سرویس فراز — هدر Api-Key + تشخیص نتیجه فقط با کد HTTP.
+ * خطاهای فراز گاهی HTML عمومی برمی‌گردانند (مثلاً 422 Upstream Error)، پس بدنهٔ
+ * غیر-JSON را با کد وضعیت گزارش می‌کنیم و هرگز کرش نمی‌کنیم.
  */
+async function farazRequest(
+  path: string,
+  body: Record<string, unknown>,
+): Promise<FarazResult> {
+  const apiKey = process.env.SMS_FARAZ_API_KEY;
+  if (!apiKey) return { success: false, error: "SMS not configured" };
+
+  let res: Response;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12_000);
+    res = await fetch(`${apiBase()}${path}`, {
+      method: "POST",
+      headers: { "Api-Key": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+  } catch (err) {
+    const msg = (err as Error).message || "network error";
+    logger.error("Faraz SMS request failed", err, { path });
+    return { success: false, error: `network: ${msg.slice(0, 120)}` };
+  }
+
+  const text = await res.text().catch(() => "");
+
+  if (!res.ok) {
+    // پیام خطای JSON فراز (اگر بود) — وگرنه کد HTTP
+    let apiMsg = "";
+    try {
+      const data = JSON.parse(text) as { message?: string; errors?: Record<string, string[]> | string };
+      if (data?.message) apiMsg = data.message;
+      else if (data?.errors) apiMsg = typeof data.errors === "string" ? data.errors : Object.values(data.errors).flat().join("؛ ");
+    } catch {
+      /* HTML error page — apiMsg stays empty */
+    }
+    const err = apiMsg ? `api: ${apiMsg.slice(0, 160)}` : `HTTP ${res.status}`;
+    logger.error("Faraz SMS API error", null, { path, status: res.status, body: text.slice(0, 200) });
+    return { success: false, error: err };
+  }
+
+  let data: { status?: string; message?: string; data?: { id?: number | string } | null } | null = null;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    /* fallthrough */
+  }
+  const id = data?.data?.id;
+  if (data?.status !== "success" || !id) {
+    const err = `unexpected: ${(data?.message || text).slice(0, 140)}`;
+    logger.error("Faraz SMS bad response", null, { path, body: text.slice(0, 200) });
+    return { success: false, error: err };
+  }
+
+  logger.info("SMS sent via Faraz", { to: String(body.recipient ?? (body.recipients as string[])?.[0] ?? ""), messageId: String(id), path, channel: path.includes("pattern") ? "pattern" : "simple" });
+  return { success: true, messageId: String(id), channel: path.includes("pattern") ? "pattern" : "simple" };
+}
+
+/** ارسال قالبی (پترن) — مسیر OTP: فوری و بدون صف. پیش‌نیاز: قالب تأییدشده در پنل */
+async function farazPatternSend(
+  recipient09: string,
+  vars: Record<string, string>,
+): Promise<FarazResult> {
+  const code = farazPatternCode();
+  if (!code) return { success: false, error: "pattern-not-configured: SMS_FARAZ_PATTERN_CODE خالی است (قالب را در پنل فراز بسازید)" };
+  return farazRequest("/ws/v1/sms/pattern", {
+    code,
+    attributes: vars,
+    recipient: recipient09,
+    line_number: farazSender(),
+    number_format: "english",
+  });
+}
+
+/** ارسال متن آزاد — دارای معدل انسانی فراز (چند دقیقه‌ای)، مناسب اطلاع‌رسانی */
+async function farazSimpleSend(recipient09: string, message: string): Promise<FarazResult> {
+  return farazRequest("/ws/v1/sms/simple", {
+    text: message,
+    line_number: farazSender(),
+    recipients: [recipient09],
+    number_format: "english",
+    schedule: null,
+  });
+}
+
+/** ارسال پیامک قالب‌بندی‌شده — OTP اول پترن، در نبود پترن فالبک ساده */
 export async function sendSms(
   payload: SmsPayload,
-): Promise<{ success: boolean; messageId?: string; error?: string }> {
+): Promise<FarazResult> {
   const { to, template, params } = payload;
 
   const normalizedPhone = normalizePhone(to);
@@ -165,14 +210,23 @@ export async function sendSms(
     return { success: true, messageId: `dev_${Date.now()}` };
   }
 
-  return farazSend(recipient09, buildMessage(template, params));
+  if (template === "otp") {
+    // مسیر اصلی OTP: پترن (فوری). اگر پترن تنظیم/تأیید نشده → فالبک ساده با هشدار
+    const patternRes = await farazPatternSend(recipient09, { [farazPatternVar()]: params.code ?? "" });
+    if (patternRes.success) return patternRes;
+    logger.warn("OTP pattern send failed — falling back to simple (moderated) send", null, {
+      error: patternRes.error,
+    });
+  }
+
+  return farazSimpleSend(recipient09, buildMessage(template, params));
 }
 
 /** ارسال متن آزاد (برای اطلاع‌رسانی‌های ساخته‌شده بیرون از این ماژول — notify.ts) */
 export async function sendSmsText(
   to: string,
   message: string,
-): Promise<{ success: boolean; messageId?: string; error?: string }> {
+): Promise<FarazResult> {
   const normalizedPhone = normalizePhone(to);
   if (!normalizedPhone) return { success: false, error: "شماره موبایل نامعتبر" };
   const recipient09 = `0${normalizedPhone.slice(2)}`;
@@ -180,7 +234,7 @@ export async function sendSmsText(
     logger.info("[sms:dev] SMS not configured, logging instead", { to: recipient09, message });
     return { success: true, messageId: `dev_${Date.now()}` };
   }
-  return farazSend(recipient09, message);
+  return farazSimpleSend(recipient09, message);
 }
 
 /**

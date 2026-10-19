@@ -70,6 +70,8 @@ jobs:
         env:
           SMS_FARAZ_API_KEY: ${{ secrets.SMS_FARAZ_API_KEY }}
           SMS_FARAZ_SENDER: ${{ secrets.SMS_FARAZ_SENDER }}
+          SMS_FARAZ_PATTERN_CODE: ${{ secrets.SMS_FARAZ_PATTERN_CODE }}
+          SMS_FARAZ_PATTERN_VAR: ${{ secrets.SMS_FARAZ_PATTERN_VAR }}
         run: |
           set -e
           mkdir -p pkg/.next pkg/tmp
@@ -81,6 +83,8 @@ jobs:
           {
             [ -n "$SMS_FARAZ_API_KEY" ] && echo "SMS_FARAZ_API_KEY=$SMS_FARAZ_API_KEY" || true
             [ -n "$SMS_FARAZ_SENDER" ] && echo "SMS_FARAZ_SENDER=$SMS_FARAZ_SENDER" || true
+            [ -n "$SMS_FARAZ_PATTERN_CODE" ] && echo "SMS_FARAZ_PATTERN_CODE=$SMS_FARAZ_PATTERN_CODE" || true
+            [ -n "$SMS_FARAZ_PATTERN_VAR" ] && echo "SMS_FARAZ_PATTERN_VAR=$SMS_FARAZ_PATTERN_VAR" || true
           } > pkg/.env.local
           date -u +"restart %Y-%m-%dT%H:%M:%SZ ${GITHUB_SHA::12}" > pkg/tmp/restart.txt
 
