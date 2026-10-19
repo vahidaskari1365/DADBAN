@@ -8,7 +8,7 @@ import { faNum, LEGAL_TOPICS } from "@/lib/data";
 import { isRedirectSafeForRole, isLawyerSideRole, panelHomeForRole } from "@/lib/roles";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
-import { ForgotPasswordFlow, OtpLoginFlow } from "@/components/auth/otp-flows";
+import { DevCodeNotice, ForgotPasswordFlow, OtpLoginFlow, OtpCodeInput, ResendRow, useCooldown } from "@/components/auth/otp-flows";
 
 type Tab = "client" | "lawyer";
 type Mode = "login" | "register";
@@ -179,6 +179,42 @@ function BrandBand({ mode }: { mode: Mode }) {
   );
 }
 
+/* ─────────────── مرحلهٔ کد تأیید ثبت‌نام — مشترک موکل/کارآموز ─────────────── */
+
+function RegisterOtpStep({
+  devCode,
+  phoneFa,
+  code,
+  onCodeChange,
+  cooldown,
+  onResend,
+  onBack,
+}: {
+  devCode: string | null;
+  phoneFa: string;
+  code: string;
+  onCodeChange: (v: string) => void;
+  cooldown: number;
+  onResend: () => void;
+  onBack: () => void;
+}) {
+  const t = useT();
+  return (
+    <div data-testid="register-otp-step" className="rounded-2xl border border-[var(--auth-line)] bg-[color-mix(in_oklab,var(--primary)_4%,transparent)] p-4">
+      <p className="text-center text-[13px] leading-7 text-[var(--auth-ink-soft)]">
+        {t("کد ۵ رقمی تأیید به")}{" "}
+        <span dir="ltr" className="font-bold text-[var(--auth-ink)]">
+          {phoneFa}
+        </span>{" "}
+        {t("ارسال شد؛ آن را وارد کنید.")}
+      </p>
+      {devCode && <DevCodeNotice devCode={devCode} extra={t("حالت توسعه — پیامک فعال نیست، کد نمایش داده می‌شود")} />}
+      <OtpCodeInput value={code} onChange={onCodeChange} label="کد تأیید ۵ رقمی ثبت‌نام" digits={5} />
+      <ResendRow cooldown={cooldown} onResend={onResend} onChange={onBack} onChangeLabel={t("اصلاح اطلاعات ثبت‌نام")} />
+    </div>
+  );
+}
+
 /* ─────────────── صحنه تمام‌صفحه با برش مورب ─────────────── */
 
 export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
@@ -204,6 +240,11 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
   /* زیرجریان‌های پیامکی تب موکلِ login — با رمز عبور، یا کد پیامکی، یا بازیابی رمز */
   const [loginFlow, setLoginFlow] = useState<"password" | "otp">("password");
   const [forgotOpen, setForgotOpen] = useState(false);
+  /* ثبت‌نام با تأیید شماره — مرحلهٔ فرم ← کد ۵ رقمی پیامکی ← ساخت حساب */
+  const [regStage, setRegStage] = useState<"form" | "code">("form");
+  const [regCode, setRegCode] = useState("");
+  const [regDevCode, setRegDevCode] = useState<string | null>(null);
+  const regCooldown = useCooldown(60, regStage === "code");
 
   /* تیغه: یک انیمیشن در هر لحظه؛ سوییچ محتوا زیر پوشش کامل آن */
   const [sweep, setSweep] = useState<{ dir: 1 | -1; id: number; mode: Mode; tab: Tab } | null>(null);
@@ -254,6 +295,9 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         setNotice("");
         setLoginFlow("password");
         setForgotOpen(false);
+        setRegStage("form");
+        setRegCode("");
+        setRegDevCode(null);
         try {
           window.history.replaceState(null, "", nextMode === "register" ? "/register" : "/login");
         } catch {}
@@ -329,6 +373,44 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
     setLoading(false);
   };
 
+  /** درخواست کد تأیید شماره (purpose=register) — مشترک بین فرم موکل و کارآموز */
+  const requestRegisterOtp = async (mobile: string): Promise<void> => {
+    if (loading) return;
+    setLoading(true);
+    setError("");
+    setNotice("");
+    try {
+      const res = await fetch("/api/auth/otp/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: mobile, purpose: "register" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setRegCode("");
+        setRegStage("code");
+        setRegDevCode(data.dev ? String(data.devCode ?? "") : null);
+        setNotice(data.dev ? "" : t("کد تأیید ۵ رقمی پیامک شد؛ صندوق پیامک را بررسی کنید."));
+        return;
+      }
+      setError(data.error ?? t("ارسال کد تأیید ناموفق بود."));
+    } catch {
+      setError(t("خطا در ارتباط با سرور"));
+    }
+    setLoading(false);
+  };
+
+  /** بازگشت از مرحلهٔ کد به فرم ثبت‌نام برای اصلاح اطلاعات */
+  const backToRegisterForm = () => {
+    setRegStage("form");
+    setRegCode("");
+    setRegDevCode(null);
+    setError("");
+    setNotice("");
+    setLoading(false);
+  };
+
+  /** ثبت‌نام موکل با تأیید شماره — مرحلهٔ ۱: کد پیامکی · مرحلهٔ ۲: کد ۵ رقمی + ساخت حساب */
   const submitRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     const mobile = toEnDigits(phone).trim();
@@ -341,30 +423,31 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
       setError(t("رمز عبور باید حداقل ۸ کاراکتر باشد."));
       return;
     }
+    // مرحلهٔ ۱ — تأیید شماره با کد پیامکی
+    if (regStage === "form") {
+      await requestRegisterOtp(mobile);
+      return;
+    }
+    // مرحلهٔ ۲ — بررسی کد ۵ رقمی و ساخت حساب
+    const c = toEnDigits(regCode).replace(/\D/g, "");
+    if (c.length !== 5) {
+      setError(t("کد ۵ رقمی را کامل وارد کنید."));
+      return;
+    }
     setLoading(true);
     setError("");
     setNotice("");
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/auth/register/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), phone: mobile, password }),
+        body: JSON.stringify({ name: name.trim(), phone: mobile, password, code: c }),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
-        const login = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ identifier: mobile, password }),
-        });
-        if (login.ok) {
-          let registered: { role?: string } | null = null;
-          try { registered = (await login.json())?.user ?? null; } catch {}
-          hardNavigate(destinationFor(registered?.role ?? "client"));
-          return;
-        }
-        hardNavigate("/login");
-        return;
+        // سشن server-side ست شده — ناوبری کامل مثل بعد از لاگین
+        hardNavigate(destinationFor(data.user?.role ?? "client"));
+        return; // در حال هدایت — لودینگ باقی می‌ماند
       }
       setError(data.error ?? t("خطا در ثبت‌نام"));
     } catch {
@@ -373,7 +456,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
     setLoading(false);
   };
 
-  /** ثبت‌نام مستقیم کارآموز وکالت — سرور حساب role=lawyer + پروفایل کارآموز می‌سازد و سشن صادر می‌کند */
+  /** ثبت‌نام مستقیم کارآموز وکالت با تأیید شماره — حساب role=lawyer + پروفایل کارآموز + سشن */
   const submitKaramooz = async (e: React.FormEvent) => {
     e.preventDefault();
     const mobile = toEnDigits(phone).trim();
@@ -390,17 +473,29 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
       setError(t("حداقل یک تخصص انتخاب کنید."));
       return;
     }
+    // مرحلهٔ ۱ — تأیید شماره با کد پیامکی
+    if (regStage === "form") {
+      await requestRegisterOtp(mobile);
+      return;
+    }
+    // مرحلهٔ ۲ — بررسی کد ۵ رقمی و ساخت حساب وکیل کارآموز
+    const c = toEnDigits(regCode).replace(/\D/g, "");
+    if (c.length !== 5) {
+      setError(t("کد ۵ رقمی را کامل وارد کنید."));
+      return;
+    }
     setLoading(true);
     setError("");
     setNotice("");
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/auth/register/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           phone: mobile,
           password,
+          code: c,
           lawyerType: "karamooz",
           specialties: lawyerSpecs,
           employeeLawyer,
@@ -644,7 +739,22 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                       </span>
                     )}
                   </div>
-                  <AuthSubmit loading={loading} label={t("ساخت حساب رایگان")} loadingLabel={t("در حال ساخت حساب…")} />
+                  {regStage === "code" && (
+                    <RegisterOtpStep
+                      devCode={regDevCode}
+                      phoneFa={faNum(toEnDigits(phone).trim())}
+                      code={regCode}
+                      onCodeChange={setRegCode}
+                      cooldown={regCooldown}
+                      onResend={() => void requestRegisterOtp(toEnDigits(phone).trim())}
+                      onBack={backToRegisterForm}
+                    />
+                  )}
+                  <AuthSubmit
+                    loading={loading}
+                    label={regStage === "form" ? t("تأیید شماره و ادامه") : t("تأیید کد و ورود")}
+                    loadingLabel={regStage === "form" ? t("در حال ارسال کد…") : t("در حال بررسی کد…")}
+                  />
                 </form>
               )}
 
@@ -851,7 +961,22 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                       <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-[11px] font-bold leading-6 text-[var(--auth-ink-soft)]">
                         {t("پس از ثبت‌نام وارد پنل وکیل می‌شوید؛ برای دیده‌شدن در فهرست وکلای سایت، مدارک را در بخش «احراز هویت» پنل بارگذاری کنید تا مدیر سایت بررسی و تأیید کند.")}
                       </p>
-                      <AuthSubmit loading={loading} label={t("ساخت حساب کارآموز")} loadingLabel={t("در حال ساخت حساب کارآموزی…")} />
+                      {regStage === "code" && (
+                        <RegisterOtpStep
+                          devCode={regDevCode}
+                          phoneFa={faNum(toEnDigits(phone).trim())}
+                          code={regCode}
+                          onCodeChange={setRegCode}
+                          cooldown={regCooldown}
+                          onResend={() => void requestRegisterOtp(toEnDigits(phone).trim())}
+                          onBack={backToRegisterForm}
+                        />
+                      )}
+                      <AuthSubmit
+                        loading={loading}
+                        label={regStage === "form" ? t("تأیید شماره و ادامه") : t("تأیید کد و ساخت حساب")}
+                        loadingLabel={regStage === "form" ? t("در حال ارسال کد…") : t("در حال بررسی کد…")}
+                      />
                       <p className="text-center text-xs text-[var(--auth-ink-soft)]">
                         {t("پروانه‌تان قبلاً تأیید شده؟")}{" "}
                         <button type="button" onClick={() => sweepTo("login", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">

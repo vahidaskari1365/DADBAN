@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { rateLimit, readJson, text, publicError } from "@/lib/api-security";
 import { getCaseMessages, getCaseRow, canAccessCase } from "@/components/portal/lawyer/portal-server";
+import { notifyCaseMessage } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -77,6 +78,21 @@ export async function POST(req: Request, { params }: RouteCtx) {
       senderName: user.name,
       body,
     });
+
+    // اعلان (پنل + تلگرام + پیامک) برای طرف مقابل — best-effort، هرگز ارسال پیام را نمی‌شکند
+    try {
+      await notifyCaseMessage({
+        caseId,
+        caseNumber: c.caseNumber,
+        senderRole,
+        senderName: user.name,
+        clientPhone: c.contactPhone,
+        clientUserPhone: c.clientUserPhone ?? null,
+        assignedLawyerId: c.assignedLawyerId ?? null,
+      });
+    } catch {
+      /* non-fatal */
+    }
 
     const messages = await getCaseMessages(caseId);
     return NextResponse.json({ ok: true, messages });

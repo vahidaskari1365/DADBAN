@@ -17,7 +17,20 @@ import { hashPassword, verifyPassword } from "@/lib/user-auth";
  * ============================================================================
  */
 
-export type OtpPurpose = "login" | "verify" | "reset";
+export type OtpPurpose = "login" | "verify" | "reset" | "register";
+
+/** طول کد برای هر هدف — ثبت‌نام ۵ رقمی (خواستهٔ محصول)، بقیه ۶ رقمی */
+const CODE_LENGTH: Record<OtpPurpose, number> = {
+  login: 6,
+  verify: 6,
+  reset: 6,
+  register: 5,
+};
+
+/** طول کد مورد انتظار برای هر هدف (سمت کلاینت/سرور برای اعتبارسنجی) */
+export function otpCodeLength(purpose: OtpPurpose): number {
+  return CODE_LENGTH[purpose] ?? 6;
+}
 
 export const OTP_TTL_MIN = 10;
 export const OTP_MAX_ATTEMPTS = 5;
@@ -54,7 +67,8 @@ export function phoneLookupVariants(normalized: string): [string, string] {
  * مستقیم به کلاینتِ پروداکشن داده نمی‌شود (فقط devCode در dev).
  */
 export async function issueOtp(phoneNormalized: string, purpose: OtpPurpose): Promise<string> {
-  const code = String(randomInt(100_000, 1_000_000)); // تصادفی رمزنگارانه، ۶ رقم
+  const len = CODE_LENGTH[purpose] ?? 6;
+  const code = String(randomInt(10 ** (len - 1), 10 ** len)); // تصادفی رمزنگارانه — ثبت‌نام ۵ رقم، بقیه ۶ رقم
   const now = new Date();
   try {
     // باطل‌کردن کدهای قبلی همان شماره+هدف (best-effort)

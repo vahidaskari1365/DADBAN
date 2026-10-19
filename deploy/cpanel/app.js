@@ -22,6 +22,20 @@ try {
   } else {
     console.log('[dadvarzan] .env not found — از متغیرهای cPanel استفاده می‌شود');
   }
+  // .env.local — لایهٔ اختیاری که از CI می‌آید (کلیدهای اضافی مثل SMS_FARAZ_API_KEY)؛
+  // مقادیر .env اصلی را بازنویسی نمی‌کند (فقط متغیرهای هنوز تعریف‌نشده را پر می‌کند).
+  const envLocalPath = path.join(__dirname, '.env.local');
+  if (fs.existsSync(envLocalPath)) {
+    for (const raw of fs.readFileSync(envLocalPath, 'utf8').split(/\r?\n/)) {
+      const line = raw.trim();
+      if (!line || line.startsWith('#')) continue;
+      const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+      if (m && process.env[m[1]] === undefined) {
+        process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+      }
+    }
+    console.log('[dadvarzan] .env.local loaded');
+  }
 } catch (e) {
   console.error('[dadvarzan] .env load error:', e && e.message);
 }

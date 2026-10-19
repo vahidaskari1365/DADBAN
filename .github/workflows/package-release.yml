@@ -52,6 +52,9 @@ jobs:
         run: bun run build
 
       - name: Package
+        env:
+          SMS_FARAZ_API_KEY: ${{ secrets.SMS_FARAZ_API_KEY }}
+          SMS_FARAZ_SENDER: ${{ secrets.SMS_FARAZ_SENDER }}
         run: |
           set -e
           mkdir -p pkg/.next
@@ -59,6 +62,11 @@ jobs:
           cp -a .next/static pkg/.next/static
           cp -a public pkg/public
           cp deploy/cpanel/app.js pkg/app.js
+          # لایهٔ env مکمل (app.js آن را بعد از .env اصلی می‌خواند) — کلید فراز از Secret می‌آید، در کد/ریپو نیست
+          {
+            [ -n "$SMS_FARAZ_API_KEY" ] && echo "SMS_FARAZ_API_KEY=$SMS_FARAZ_API_KEY" || true
+            [ -n "$SMS_FARAZ_SENDER" ] && echo "SMS_FARAZ_SENDER=$SMS_FARAZ_SENDER" || true
+          } > pkg/.env.local
           tar -czf release.tar.gz -C pkg .
 
       - name: Publish to GitHub Release (latest-cpanel)

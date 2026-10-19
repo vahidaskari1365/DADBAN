@@ -8,6 +8,7 @@ import { randomBytes } from "crypto";
 import { phone as normalizePhone, rateLimit, readJson, text, validPhone } from "@/lib/api-security";
 import { computeSlots, parseTehranDay } from "@/lib/availability";
 import { getPaymentProvider } from "@/lib/payments";
+import { notifyConsultationRequest } from "@/lib/notify";
 import { CONSULT_CASE_TYPES } from "@/lib/data";
 
 export const runtime = "nodejs";
@@ -172,6 +173,15 @@ export async function POST(req: Request) {
       );
     }
     return NextResponse.json({ ok: false, error: "خطای داخلی رخ داد." }, { status: 500 });
+  }
+
+  // اعلان «وقت مشاورهٔ جدید» برای وکیل (پنل + تلگرام + پیامک) — best-effort، هرگز رزرو را نمی‌شکند
+  if (inserted && lawyerId) {
+    try {
+      await notifyConsultationRequest({ lawyerId, clientName: name, type, scheduledAt: startsAt });
+    } catch {
+      /* non-fatal */
+    }
   }
 
   // Payment record: idempotent on the ticket reference — retries are free.

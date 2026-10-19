@@ -1,25 +1,25 @@
 /**
  * ============================================================================
- * dadban — SMS Notification Module
+ * dadvarzan — SMS Notification Module
  * ----------------------------------------------------------------------------
- * ارسال پیامک برای:
- *  - تأیید شماره موبایل (OTP)
- *  - یادآوری نوبت مشاوره
- *  - اطلاع‌رسانی تغییر وضعیت پرونده
- *  - خوش‌آمدگویی
- *
- * Provider: کاوه‌نگار (پیش‌فرض) — قابل تعویض با فراز SMS یا ملی پیامک.
- * در حالت بدون کلید، فقط لاگ می‌کنه (dev mode).
+ * Provider: فراز اس‌ام‌اس (Faraz SMS / IPPanel) — وب‌سرویس ارسال تکی.
+ *   POST {API_BASE}/api/v1/sms/send/webservice/single
+ *   headers: { apikey: SMS_FARAZ_API_KEY }
+ *   body:    { originator: SMS_FARAZ_SENDER, recipient: "09…", message: "…" }
+ * برای کاربرد: کد تأیید ثبت‌نام/ورود (OTP) + اطلاع‌رسانی‌های موکل/وکیل.
+ * در حالت بدون کلید فقط لاگ می‌کند (dev mode) — هیچ موفقیتی ساختگی در پروداکشن نیست.
  * ============================================================================
  */
 
 import { logger } from "./logger";
+import { SITE_URL } from "@/lib/site";
 
 export type SmsTemplate =
   | "otp"
+  | "notify"
+  | "welcome"
   | "consultation_reminder"
   | "case_status"
-  | "welcome"
   | "payment_success";
 
 interface SmsPayload {
@@ -28,125 +28,153 @@ interface SmsPayload {
   params: Record<string, string>;
 }
 
-/** آیا SMS فعال هست؟ (کلید API موجود باشه) */
+/** آیا SMS فعال هست؟ (کلید فراز موجود باشه) */
 export function isSmsConfigured(): boolean {
-  return !!(process.env.KAVEHNEGAR_API_KEY && process.env.KAVEHNEGAR_SENDER);
+  return !!process.env.SMS_FARAZ_API_KEY;
+}
+
+/** شمارهٔ خط فرستندهٔ پنل فراز — در پنل فراز بخش «خطوط» قابل مشاهده است */
+function farazSender(): string {
+  return (process.env.SMS_FARAZ_SENDER ?? "").trim();
+}
+
+/** متن پیامک برای هر قالب — فارسی، کوتاه، با لینک سایت */
+function buildMessage(template: SmsTemplate, params: Record<string, string>): string {
+  const link = params.link ? `\n🔗 ${params.link}` : "";
+  switch (template) {
+    case "otp":
+      return `دادورزان\nکد تأیید شما: ${params.code ?? ""}\nاین کد تا ۱۰ دقیقه معتبر است.`;
+    case "notify": {
+      const body = params.body ? `\n${params.body}` : "";
+      return `🔔 دادورزان\n${params.title ?? ""}${body}${link}`;
+    }
+    case "welcome":
+      return `${params.name ? `${params.name} عزیز، ` : ""}به دادورزان خوش آمدید!\n🔗 ${params.link || SITE_URL}`;
+    case "consultation_reminder":
+      return `🔔 دادورزان\nیادآوری: وقت مشاورهٔ شما ${params.time ?? ""} است.${link}`;
+    case "case_status":
+      return `🔔 دادورزان\nوضعیت پروندهٔ شما به‌روزرسانی شد: ${params.status ?? ""}${link}`;
+    case "payment_success":
+      return `پرداخت شما در دادورزان با موفقیت انجام شد.${params.amount ? `\nمبلغ: ${params.amount} تومان` : ""}\n🔗 ${SITE_URL}`;
+    default:
+      return `🔔 دادورزان`;
+  }
+}
+
+/** ارسال خام با وب‌سرویس فراز — فالبک بین هاست‌های API در خطای شبکه */
+async function farazSend(
+  recipient09: string,
+  message: string,
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  const apiKey = process.env.SMS_FARAZ_API_KEY;
+  if (!apiKey) return { success: false, error: "SMS not configured" };
+
+  const bases = Array.from(
+    new Set([
+      (process.env.SMS_FARAZ_API_BASE ?? "").trim() || "https://api2.ippanel.com",
+      "https://api.ippanel.com",
+    ]),
+  );
+  const body = JSON.stringify({ originator: farazSender(), recipient: recipient09, message });
+  let lastError = "";
+
+  for (const base of bases) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12_000);
+      const res = await fetch(`${base}/api/v1/sms/send/webservice/single`, {
+        method: "POST",
+        headers: { apikey: apiKey, "Content-Type": "application/json" },
+        body,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      const text = await res.text();
+      if (!res.ok) {
+        lastError = `HTTP ${res.status}`;
+        logger.error("Faraz SMS API error", null, { base, status: res.status, body: text.slice(0, 300) });
+        continue;
+      }
+
+      let data: {
+        code?: string;
+        status?: string;
+        message?: string;
+        error?: { message?: string } | string | null;
+        data?: { messageid?: number | string; message_id?: number | string } | null;
+      } = null;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        lastError = `invalid JSON response`;
+        logger.error("Faraz SMS bad response", null, { base, body: text.slice(0, 200) });
+        continue;
+      }
+
+      const okCode = data?.code === "ok" || data?.status === "ok";
+      const messageId = data?.data?.messageid ?? data?.data?.message_id;
+      if (!okCode && !messageId) {
+        const apiMsg =
+          (typeof data?.error === "string" ? data.error : data?.error?.message) ?? data?.message ?? "unknown";
+        lastError = `api: ${String(apiMsg).slice(0, 180)}`;
+        logger.error("Faraz SMS rejected", null, { base, response: text.slice(0, 300) });
+        continue;
+      }
+
+      const id = String(messageId ?? Date.now());
+      logger.info("SMS sent via Faraz", { to: recipient09, messageId: id, base });
+      return { success: true, messageId: id };
+    } catch (err) {
+      lastError = (err as Error).message;
+      logger.error("Faraz SMS request failed", err, { base });
+    }
+  }
+
+  return { success: false, error: lastError || "faraz send failed" };
 }
 
 /**
- * ارسال پیامک.
- * در dev mode (بدون کلید)، فقط لاگ می‌کنه.
+ * ارسال پیامک قالب‌بندی‌شده.
+ * در dev mode (بدون کلید فراز)، فقط لاگ می‌کند و شناسهٔ dev_ برمی‌گرداند.
  */
-export async function sendSms(payload: SmsPayload): Promise<{ success: boolean; messageId?: string; error?: string }> {
+export async function sendSms(
+  payload: SmsPayload,
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const { to, template, params } = payload;
 
-  // validation شماره موبایل
   const normalizedPhone = normalizePhone(to);
   if (!normalizedPhone) {
     return { success: false, error: "شماره موبایل نامعتبر" };
   }
+  // قالب ۰۹… که فراز می‌پذیرد
+  const recipient09 = `0${normalizedPhone.slice(2)}`;
 
-  // اگه SMS configured نیست، در dev mode لاگ کن
   if (!isSmsConfigured()) {
-    logger.info("[sms:dev] SMS not configured, logging instead", { to: normalizedPhone, template, params });
+    logger.info("[sms:dev] SMS not configured, logging instead", {
+      to: recipient09,
+      template,
+      params,
+    });
     return { success: true, messageId: `dev_${Date.now()}` };
   }
 
-  try {
-    const apiKey = process.env.KAVEHNEGAR_API_KEY!;
-    const sender = process.env.KAVEHNEGAR_SENDER!;
-    const templateId = KAVEHNEGAR_TEMPLATES[template];
-
-    if (!templateId) {
-      return { success: false, error: "template not found" };
-    }
-
-    // کاوه‌نگار API: lookup endpoint
-    const url = `https://api.kavenegar.com/v1/${apiKey}/verify/lookup.json`;
-    const body = new URLSearchParams({
-      receptor: normalizedPhone,
-      token: params.code || params.name || "",
-      token2: params.time || params.status || "",
-      token3: params.date || "",
-      template: templateId,
-    });
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000);
-
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      const text = await res.text();
-      logger.error("SMS API error", null, { status: res.status, body: text });
-      return { success: false, error: `SMS API ${res.status}` };
-    }
-
-    const data = await res.json();
-    const messageId = data?.entries?.[0]?.messageid || data?.return?.messageid;
-
-    logger.info("SMS sent", { to: normalizedPhone, template, messageId });
-    return { success: true, messageId: String(messageId) };
-  } catch (err) {
-    logger.error("SMS send failed", err, { to: normalizedPhone, template });
-    return { success: false, error: (err as Error).message };
-  }
+  return farazSend(recipient09, buildMessage(template, params));
 }
 
-/**
- * تولید OTP تصادفی (۶ رقم).
- */
-export function generateOtp(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-/**
- * ذخیره و تأیید OTP.
- * در production: Redis یا DB با TTL ۵ دقیقه.
- * فعلاً: در-memory map (برای single-instance).
- */
-const otpStore = new Map<string, { code: string; expiresAt: number; attempts: number }>();
-
-/** ذخیره‌ی OTP برای یک شماره. */
-export function storeOtp(phone: string, code: string, ttlMs = 5 * 60 * 1000) {
-  otpStore.set(normalizePhone(phone)!, {
-    code,
-    expiresAt: Date.now() + ttlMs,
-    attempts: 0,
-  });
-}
-
-/** تأیید OTP واردشده توسط کاربر. */
-export function verifyOtp(phone: string, code: string): { valid: boolean; reason?: string } {
-  const normalized = normalizePhone(phone);
-  if (!normalized) return { valid: false, reason: "شماره نامعتبر" };
-
-  const record = otpStore.get(normalized);
-  if (!record) return { valid: false, reason: "کد منقضی شده یا ارسال نشده" };
-
-  if (Date.now() > record.expiresAt) {
-    otpStore.delete(normalized);
-    return { valid: false, reason: "کد منقضی شده" };
+/** ارسال متن آزاد (برای اطلاع‌رسانی‌های ساخته‌شده بیرون از این ماژول — notify.ts) */
+export async function sendSmsText(
+  to: string,
+  message: string,
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  const normalizedPhone = normalizePhone(to);
+  if (!normalizedPhone) return { success: false, error: "شماره موبایل نامعتبر" };
+  const recipient09 = `0${normalizedPhone.slice(2)}`;
+  if (!isSmsConfigured()) {
+    logger.info("[sms:dev] SMS not configured, logging instead", { to: recipient09, message });
+    return { success: true, messageId: `dev_${Date.now()}` };
   }
-
-  if (record.attempts >= 5) {
-    otpStore.delete(normalized);
-    return { valid: false, reason: "تعداد تلاش‌ها بیش از حد" };
-  }
-
-  record.attempts++;
-  if (record.code !== code) {
-    return { valid: false, reason: "کد اشتباه" };
-  }
-
-  otpStore.delete(normalized);
-  return { valid: true };
+  return farazSend(recipient09, message);
 }
 
 /**
@@ -174,12 +202,3 @@ export function normalizePhone(phone: string): string | null {
   }
   return null;
 }
-
-/** قالب‌های پیامک کاوه‌نگار. */
-const KAVEHNEGAR_TEMPLATES: Record<SmsTemplate, string> = {
-  otp: "dadban-otp",
-  consultation_reminder: "dadban-consultation",
-  case_status: "dadban-case",
-  welcome: "dadban-welcome",
-  payment_success: "dadban-payment",
-};

@@ -40,7 +40,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /* ─────────────── اجزای مشترک ─────────────── */
 
-function FlowBanner({ tone, text }: { tone: Tone; text: string }) {
+export function FlowBanner({ tone, text }: { tone: Tone; text: string }) {
   return (
     <div
       role="alert"
@@ -56,7 +56,7 @@ function FlowBanner({ tone, text }: { tone: Tone; text: string }) {
   );
 }
 
-function FlowSubmit({
+export function FlowSubmit({
   loading,
   label,
   loadingLabel,
@@ -88,7 +88,7 @@ function FlowSubmit({
   );
 }
 
-function FlowPill({
+export function FlowPill({
   onClick,
   children,
   disabled,
@@ -110,7 +110,7 @@ function FlowPill({
 }
 
 /** بنر حالت توسعه + نمایش کد dev (فقط وقتی سرور dev:true برگردانده) */
-function DevCodeNotice({ devCode, extra }: { devCode: string; extra: string }) {
+export function DevCodeNotice({ devCode, extra }: { devCode: string; extra: string }) {
   const t = useT();
   return (
     <div className="mt-4 rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/[0.08] p-3">
@@ -132,7 +132,7 @@ function DevCodeNotice({ devCode, extra }: { devCode: string; extra: string }) {
 }
 
 /** شمارش معکوس سادهٔ ارسال مجدد کد — سقف اصلی را سرور اعمال می‌کند */
-function useCooldown(seconds: number, active: boolean) {
+export function useCooldown(seconds: number, active: boolean) {
   const [left, setLeft] = useState(0);
   useEffect(() => {
     if (!active || seconds <= 0) return;
@@ -146,20 +146,23 @@ function useCooldown(seconds: number, active: boolean) {
   return left;
 }
 
-function OtpCodeInput({
+/** ورودی کد یکبارمصرف — ۵ یا ۶ خانه (ثبت‌نام ۵ رقمی، ورود ۶ رقمی) */
+export function OtpCodeInput({
   value,
   onChange,
   label,
+  digits = 6,
 }: {
   value: string;
   onChange: (v: string) => void;
   label: string;
+  digits?: number;
 }) {
   const t = useT();
   return (
     <div dir="ltr" className="flex justify-center py-1">
       <InputOTP
-        maxLength={6}
+        maxLength={digits}
         pattern={REGEXP_ONLY_DIGITS}
         inputMode="numeric"
         value={value}
@@ -169,7 +172,7 @@ function OtpCodeInput({
         containerClassName="justify-center"
       >
         <InputOTPGroup>
-          {[0, 1, 2, 3, 4, 5].map((i) => (
+          {Array.from({ length: digits }).map((_, i) => (
             <InputOTPSlot
               key={i}
               index={i}
@@ -182,7 +185,7 @@ function OtpCodeInput({
   );
 }
 
-function ResendRow({
+export function ResendRow({
   cooldown,
   onResend,
   onChange,

@@ -16,11 +16,12 @@ import {
 
 export const runtime = "nodejs";
 
-const PURPOSES: OtpPurpose[] = ["login", "reset", "verify"];
+const PURPOSES: OtpPurpose[] = ["login", "reset", "verify", "register"];
 
 /**
  * POST /api/auth/otp/request — درخواست کد یکبارمصرف
- * body: { phone, purpose: "login" | "reset" | "verify" }
+ * body: { phone, purpose: "login" | "reset" | "verify" | "register" }
+ * register → ثبت‌نام با تایید شماره: حساب با این شماره نباید وجود داشته باشد
  * صادقانه: بدون کلید پیامک در پروداکشن 503؛ در dev کد به‌عنوان devCode برمی‌گردد.
  */
 export async function POST(req: Request) {
@@ -55,6 +56,16 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: false, error: "این شماره با شمارهٔ ثبت‌شدهٔ حساب شما یکسان نیست." }, { status: 403 });
       }
       userEmail = me.email ?? null;
+    } else if (purpose === "register") {
+      // ثبت‌نام با تایید شماره — برعکس ورود: حساب با این شماره نباید وجود داشته باشد
+      const [bare, zeroed] = phoneLookupVariants(normalized);
+      const [user] = await db.select().from(users).where(or(eq(users.phone, zeroed), eq(users.phone, bare))).limit(1);
+      if (user) {
+        return NextResponse.json(
+          { ok: false, error: "این شماره قبلاً ثبت شده است؛ وارد شوید یا رمز عبورتان را بازیابی کنید." },
+          { status: 409 },
+        );
+      }
     } else {
       // ورود/بازیابی: حساب با این شماره باید وجود داشته باشد (هر نقشی)
       const [bare, zeroed] = phoneLookupVariants(normalized);
@@ -87,6 +98,10 @@ export async function POST(req: Request) {
         { ok: false, error: "سامانه پیامک هنوز فعال نشده است؛ فعلاً از ورود با رمز عبور استفاده کنید یا با پشتیبانی تماس بگیرید." },
         { status: 503 },
       );
+    }
+    if (!smsDelivered && process.env.NODE_ENV !== "production") {
+      // در dev حتی وقتی کلید هست ولی ارسال به پرایدر شکست خورده (مثلاً شبکه)، فلو با کد dev ادامه می‌یابد تا قابل تست بماند
+      return NextResponse.json({ ok: true, dev: true, devCode: code, via: "sms-failed-dev" });
     }
     // پیامک فعال است ولی ارسال شکسته — صادقانه خطا، بدون ادعای تحویل
     return NextResponse.json(
