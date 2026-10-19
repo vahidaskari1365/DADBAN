@@ -107,7 +107,7 @@ export async function POST(req: Request) {
     // پیامک فعال است ولی ارسال شکسته — صادقانه خطا، بدون ادعای تحویل
     // reason = پیام کوتاه پرایدر (بدون هیچ راز) برای پشتیبانی/عیب‌یابی سریع
     const reason = (smsRes.error ?? "unknown").slice(0, 160);
-    logger.warn("OTP SMS delivery failed", null, { to: normalized, reason, channel: smsRes.channel });
+    logger.warn("OTP SMS delivery failed", { to: normalized, reason, channel: smsRes.channel });
     return NextResponse.json(
       { ok: false, error: "ارسال پیامک ناموفق بود؛ لطفاً چند لحظه بعد دوباره تلاش کنید.", reason },
       { status: 502 },

@@ -214,7 +214,7 @@ export async function sendSms(
     // مسیر اصلی OTP: پترن (فوری). اگر پترن تنظیم/تأیید نشده → فالبک ساده با هشدار
     const patternRes = await farazPatternSend(recipient09, { [farazPatternVar()]: params.code ?? "" });
     if (patternRes.success) return patternRes;
-    logger.warn("OTP pattern send failed — falling back to simple (moderated) send", null, {
+    logger.warn("OTP pattern send failed — falling back to simple (moderated) send", {
       error: patternRes.error,
     });
   }
