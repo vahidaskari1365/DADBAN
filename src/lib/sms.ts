@@ -67,6 +67,44 @@ function apiBase(): string {
   return ((process.env.SMS_FARAZ_API_BASE ?? "").trim() || "https://api.iranpayamak.com").replace(/\/+$/, "");
 }
 
+/**
+ * ثبت رویداد/خطای فراز در جدول app_errors تا در «پنل ادمین → پایش خطاها»
+ * (/admin/errors) دیده شود — چون لاگ کنسول هاست برای ادمین قابل مشاهده نیست.
+ * best-effort: هیچ‌وقت throw نمی‌کند و در مسیر ارسال وقفه نمی‌اندازد.
+ */
+async function persistSmsEvent(
+  message: string,
+  level: "error" | "warning",
+  meta: Record<string, unknown>,
+): Promise<void> {
+  try {
+    const { db } = await import("@/db");
+    const { appErrors } = await import("@/db/schema");
+    await db.insert(appErrors).values({
+      level,
+      source: "server",
+      message: `Faraz SMS: ${message}`.slice(0, 500),
+      stack: null,
+      url: null,
+      userId: null,
+      userAgent: null,
+      meta,
+    });
+  } catch {
+    /* دیتابیس در دسترس نیست — لاگ کنسول کافی است */
+  }
+}
+
+/** وضعیت پیکربندی SMS برای ابزار تشخیصی ادمین — هیچ رازی (کلید/کد پترن) برنمی‌گرداند */
+export function smsStatus(): { configured: boolean; sender: string; patternConfigured: boolean; apiBase: string } {
+  return {
+    configured: isSmsConfigured(),
+    sender: farazSender(),
+    patternConfigured: !!farazPatternCode(),
+    apiBase: apiBase(),
+  };
+}
+
 /** متن پیامک برای هر قالب — فارسی، کوتاه، با لینک سایت */
 function buildMessage(template: SmsTemplate, params: Record<string, string>): string {
   const link = params.link ? `\n🔗 ${params.link}` : "";
@@ -124,6 +162,7 @@ async function farazRequest(
   } catch (err) {
     const msg = (err as Error).message || "network error";
     logger.error("Faraz SMS request failed", err, { path });
+    void persistSmsEvent(`request failed: ${msg.slice(0, 120)}`, "error", { path });
     return { success: false, error: `network: ${msg.slice(0, 120)}` };
   }
 
@@ -141,24 +180,31 @@ async function farazRequest(
     }
     const err = apiMsg ? `api: ${apiMsg.slice(0, 160)}` : `HTTP ${res.status}`;
     logger.error("Faraz SMS API error", null, { path, status: res.status, body: text.slice(0, 200) });
+    void persistSmsEvent(err, "error", { path, status: res.status, body: text.slice(0, 200) });
     return { success: false, error: err };
   }
 
-  let data: { status?: string; message?: string; data?: { id?: number | string } | null } | null = null;
+  let data: { status?: string; message?: string; messages?: string; data?: number | string | null } | null = null;
   try {
     data = JSON.parse(text);
   } catch {
     /* fallthrough */
   }
-  const id = data?.data?.id;
-  if (data?.status !== "success" || !id) {
+  // ⚠️ پاسخ موفق مستندات رسمی فراز: {"status":"success","data":0,"messages":"…"}
+  // `data` خودِ شناسهٔ ارسال است (عدد — حتی ۰ معتبر است)، نه آبجکت با فیلد id.
+  // موفقیت فقط با status سنجیده می‌شود؛ سنجیدن data.data.id باعث می‌شد حتی ارسالِ
+  // موفق هم «شکست» گزارش شود (باگ واقعی که باعث 502 برای OTP سالم می‌شد).
+  if (data?.status !== "success") {
     const err = `unexpected: ${(data?.message || text).slice(0, 140)}`;
     logger.error("Faraz SMS bad response", null, { path, body: text.slice(0, 200) });
+    void persistSmsEvent(err, "error", { path, body: text.slice(0, 200) });
     return { success: false, error: err };
   }
 
-  logger.info("SMS sent via Faraz", { to: String(body.recipient ?? (body.recipients as string[])?.[0] ?? ""), messageId: String(id), path, channel: path.includes("pattern") ? "pattern" : "simple" });
-  return { success: true, messageId: String(id), channel: path.includes("pattern") ? "pattern" : "simple" };
+  const rawId = data.data;
+  const messageId = rawId !== undefined && rawId !== null && rawId !== "" ? String(rawId) : "-";
+  logger.info("SMS sent via Faraz", { to: String(body.recipient ?? (body.recipients as string[])?.[0] ?? ""), messageId, path, channel: path.includes("pattern") ? "pattern" : "simple" });
+  return { success: true, messageId, channel: path.includes("pattern") ? "pattern" : "simple" };
 }
 
 /** ارسال قالبی (پترن) — مسیر OTP: فوری و بدون صف. پیش‌نیاز: قالب تأییدشده در پنل */
@@ -217,6 +263,12 @@ export async function sendSms(
     logger.warn("OTP pattern send failed — falling back to simple (moderated) send", {
       error: patternRes.error,
     });
+    // هشدار قابل‌مشاهده در /admin/errors — یادآوری اینکه OTP بدون پترن، صف‌دار و کند است
+    void persistSmsEvent(
+      `OTP pattern fallback → simple (قسمت صف‌دار): ${patternRes.error ?? "unknown"}`,
+      "warning",
+      { to: recipient09 },
+    );
   }
 
   return farazSimpleSend(recipient09, buildMessage(template, params));

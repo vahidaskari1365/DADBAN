@@ -12,6 +12,7 @@ import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { getT } from "@/lib/i18n/server";
 import { templateT } from "@/lib/i18n/core";
 import ErrorsRefreshButton from "./refresh-button";
+import SmsTestCard from "./sms-test";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -114,6 +115,9 @@ export default async function AdminErrorsPage() {
             )}
           </Card>
         </div>
+
+        {/* تست سامانهٔ پیامک — ارسال واقعی از مسیر پروداکشن + نتیجهٔ خام فراز */}
+        <SmsTestCard />
 
         {/* فهرست ۱۰۰ خطای آخر */}
         {rows.length ? (
