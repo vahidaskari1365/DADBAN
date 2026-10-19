@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { lawyers, contracts, articles, qaQuestions } from "@/db/schema";
+import { lawyers, contracts, articles, qaQuestions, managedServices } from "@/db/schema";
 import { GLOSSARY, LAWS, JUDGMENTS, LEGAL_FORMS } from "@/lib/content";
 import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "@/lib/seo-landings";
 import { SITE_URL } from "@/lib/site";
@@ -26,12 +27,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let ct: { slug: string }[] = [];
   let ar: { slug: string; updatedAt: Date }[] = [];
   let qa: { slug: string }[] = [];
+  let svc: { slug: string; updatedAt: Date }[] = [];
   try {
-    [lw, ct, ar, qa] = await Promise.all([
+    [lw, ct, ar, qa, svc] = await Promise.all([
       db.select({ slug: lawyers.slug, updatedAt: lawyers.createdAt }).from(lawyers),
       db.select({ slug: contracts.slug }).from(contracts),
       db.select({ slug: articles.slug, updatedAt: articles.publishedAt }).from(articles),
       db.select({ slug: qaQuestions.slug }).from(qaQuestions),
+      // خدمات مدیریت‌شدهٔ فعال — صفحات /services/[slug] دیتابیسی‌اند و باید ایندکس شوند
+      db
+        .select({ slug: managedServices.slug, updatedAt: managedServices.updatedAt })
+        .from(managedServices)
+        .where(eq(managedServices.active, true)),
     ]);
   } catch {
     /* degrade gracefully when DB is not configured */
@@ -161,6 +168,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: NOW,
       changeFrequency: "monthly" as const,
       priority: 0.6,
+    })),
+    // صفحات خدمات (دیتابیسی) — فعال‌ها با تاریخ واقعی به‌روزرسانی
+    ...svc.map((s) => ({
+      url: `${BASE}/services/${s.slug}`,
+      lastModified: s.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
   ];
 }
