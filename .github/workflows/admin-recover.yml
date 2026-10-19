@@ -1,15 +1,17 @@
 name: Admin access recovery (one-off)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# یک‌بارمصرف — بازیابی دسترسی مالک به پنل ادمین.
+# یک‌بارمصرف — بازیابی اعتبارنامهٔ مالک پنل ادمین از .env هاست.
 #
-# پس‌زمینه: ورود مالک از env هاست (ADMIN_EMAIL/ADMIN_PASSWORD) می‌آید که
-# write-only است و قابل خواندن نیست. این ورک‌فلو به‌جای خواندن آن، یک
-# ادمین «مدیر کل» در جدول admin_users دیتابیس می‌سازد که همان مسیر ورود
-# رسمی (verifyAdminLogin) را دارد — بدون دست زدن به .env هاست و بدون ری‌استارت.
+# پس‌زمینه: ورود مالک از ADMIN_EMAIL/ADMIN_PASSWORD هاست می‌آید که در Secret
+# CPANEL_ENV_B64 هم write-only است و قابل خواندن نیست. SSH هم بسته است.
+# این ورک‌فلو از همان کانال FTP استقرار استفاده می‌کند ولی به‌جای دانلودِ
+# کل .env، فقط دو خط ADMIN_* را استخراج و در آرتیفکت یک‌روزه می‌گذارد.
 #
-# امنیت: رمز جدید روی رانر تولید می‌شود (هرگز در گیت/لاگ نمی‌رود) و فقط در
-# یک آرتیفکت یک‌روزه گذاشته می‌شود. پس از استفاده، این فایل و ران آن حذف می‌شود.
+# امنیت:
+#  - اول FTPS (TLS) امتحان می‌شود؛ اگر هاست پشتیبانی نکرد فالبک به FTP ساده.
+#  - کل .env هرگز آرتیفکت/لاگ نمی‌شود؛ فقط ADMIN_EMAIL و ADMIN_PASSWORD.
+#  - پس از استفاده: آرتیفکت + ران + همین فایل حذف می‌شوند.
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
@@ -23,63 +25,54 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Install pg client (scratch dir)
-        run: |
-          mkdir -p /tmp/pgwork
-          cd /tmp/pgwork
-          npm init -y >/dev/null 2>&1
-          npm i pg --no-audit --no-fund --loglevel=error
-
-      - name: Upsert owner admin (DB)
+      - name: Extract ADMIN_* lines from host .env (FTPS preferred)
         env:
-          DATABASE_URL: ${{ secrets.BUILD_DATABASE_URL }}
-          ADMIN_EMAIL_TARGET: vahid.askari1986@gmail.com
+          FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
+          FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
+          FTP_USER: ${{ secrets.CPANEL_FTP_USER }}
+          FTP_PASS: ${{ secrets.CPANEL_FTP_PASS }}
+          APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
         run: |
           set -e
-          PW=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 16)
-          export ADMIN_PW="$PW"
-          cat > /tmp/pgwork/recover.mjs <<'EOF'
-          import { Client } from "pg";
-          import { scryptSync, randomBytes } from "crypto";
+          sudo apt-get update -y -qq >/dev/null 2>&1 || true
+          sudo apt-get install -y -qq lftp >/dev/null 2>&1 || sudo apt-get install -y lftp
+          mkdir -p /tmp/work /tmp/out
+          chmod 700 /tmp/work
 
-          const url = process.env.DATABASE_URL;
-          const pw = process.env.ADMIN_PW;
-          const email = process.env.ADMIN_EMAIL_TARGET;
-          if (!url || !pw || !email) { console.error("missing env"); process.exit(1); }
-
-          // دقیقاً همان قالب hashPassword در src/lib/user-auth.ts: salt:hash (hex, scrypt 64)
-          const salt = randomBytes(16).toString("hex");
-          const hash = scryptSync(pw, salt, 64).toString("hex");
-          const stored = `${salt}:${hash}`;
-
-          const c = new Client({ connectionString: url });
-          await c.connect();
-
-          const before = await c.query("select id, email, role, is_active from admin_users order by id");
-          console.log("before:", JSON.stringify(before.rows));
-
-          await c.query(
-            `insert into admin_users (name, email, password_hash, role, permissions, is_active)
-             values ($1, $2, $3, 'super_admin', '*', true)
-             on conflict (email) do update
-               set password_hash = $3, role = 'super_admin', permissions = '*', is_active = true, updated_at = now()`,
-            ["مالک", email, stored],
-          );
-
-          const after = await c.query("select id, email, role, is_active from admin_users order by id");
-          console.log("after:", JSON.stringify(after.rows));
-          await c.end();
-          console.log("UPSERT OK");
+          fetch_env () {  # $1 = ssl-mode string (lftp settings)
+            lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" $1 <<EOF
+            set net:max-retries 2
+            set net:timeout 30
+            $1
+            get -O /tmp/work "$APP_DIR/.env"
+            bye
           EOF
-          cd /tmp/pgwork && node recover.mjs
-          mkdir -p /tmp/out
-          printf 'login: https://dadvarzan.com/admin/login\nemail: %s\npassword: %s\n' "$ADMIN_EMAIL_TARGET" "$PW" > /tmp/out/admin-recover.txt
+          }
 
-      - name: Upload password artifact (1 day)
+          echo "→ تلاش با FTPS (TLS)…"
+          if fetch_env "set ftp:ssl-allow on; set ftp:ssl-force true; set ftp:ssl-protect-data true;" 2>/tmp/work/ftps.err && [ -f /tmp/work/.env ]; then
+            echo "✓ دانلود با FTPS موفق — کانال رمزنگاری‌شده"
+          else
+            echo "⚠ FTPS نشد — فالبک به FTP ساده (مثل مسیر استقرار فعلی)"
+            fetch_env "set ftp:ssl-allow off;"
+          fi
+          test -f /tmp/work/.env || { echo "✗ دانلود .env ناموفق"; exit 1; }
+
+          # فقط دو خط مالک — بقیهٔ فایل هرگز خارج از هاست نمی‌رود
+          grep -E '^ADMIN_(EMAIL|PASSWORD)=' /tmp/work/.env > /tmp/out/admin-recover.txt || true
+          printf 'login: https://dadvarzan.com/admin/login\n' >> /tmp/out/admin-recover.txt
+          # پاک‌سازی فوری — کل .env فقط در همین استپ زندگی می‌کند
+          rm -f /tmp/work/.env /tmp/work/ftps.err
+
+          # لاگ: فقط ایمیل (نه رمز) برای تأیید اینکه خط پیدا شد
+          if grep -q '^ADMIN_PASSWORD=' /tmp/out/admin-recover.txt; then
+            echo "✓ خطوط ADMIN پیدا شد — ایمیل: $(grep '^ADMIN_EMAIL=' /tmp/out/admin-recover.txt | cut -d= -f2)"
+          else
+            echo "✗ ADMIN_PASSWORD در .env هاست پیدا نشد!"
+            exit 1
+          fi
+
+      - name: Upload artifact (1 day)
         uses: actions/upload-artifact@v4
         with:
           name: admin-recover
