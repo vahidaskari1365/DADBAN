@@ -1,5 +1,24 @@
 # صف درخواست نمایه‌سازی روزانه — اولویت‌دار (بالا = مهم‌تر)
 # منبع: Audit تازهٔ 394 صفحه‌ای (CI run 39134135601، 2026-10-18) — 129 صفحه الان ایندکس است
+https://dadvarzan.com/services/administrative-request
+https://dadvarzan.com/services/case-followup
+https://dadvarzan.com/services/commission-100-defense
+https://dadvarzan.com/services/court-docs-errand
+https://dadvarzan.com/services/court-execution-agent
+https://dadvarzan.com/services/deed-execution-office
+https://dadvarzan.com/services/doc-prep
+https://dadvarzan.com/services/doc-review
+https://dadvarzan.com/services/enforcement-followup
+https://dadvarzan.com/services/enforcement-tracking
+https://dadvarzan.com/services/general-managed-task
+https://dadvarzan.com/services/inheritance-package
+https://dadvarzan.com/services/lawyer-referral
+https://dadvarzan.com/services/org-followup
+https://dadvarzan.com/services/registration-followup
+https://dadvarzan.com/services/sso-admin-fix
+https://dadvarzan.com/services/tax-followup
+https://dadvarzan.com/services/tax-office-admin
+https://dadvarzan.com/services/vehicle-registry-errand
 https://dadvarzan.com/knowledge/ajrat-almesl-zojeh-1405
 https://dadvarzan.com/knowledge/chak-sayadi-1405
 https://dadvarzan.com/knowledge/ejare-be-shart-tamlik-1405
