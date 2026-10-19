@@ -1,0 +1,88 @@
+name: Admin access recovery (one-off)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# یک‌بارمصرف — بازیابی دسترسی مالک به پنل ادمین.
+#
+# پس‌زمینه: ورود مالک از env هاست (ADMIN_EMAIL/ADMIN_PASSWORD) می‌آید که
+# write-only است و قابل خواندن نیست. این ورک‌فلو به‌جای خواندن آن، یک
+# ادمین «مدیر کل» در جدول admin_users دیتابیس می‌سازد که همان مسیر ورود
+# رسمی (verifyAdminLogin) را دارد — بدون دست زدن به .env هاست و بدون ری‌استارت.
+#
+# امنیت: رمز جدید روی رانر تولید می‌شود (هرگز در گیت/لاگ نمی‌رود) و فقط در
+# یک آرتیفکت یک‌روزه گذاشته می‌شود. پس از استفاده، این فایل و ران آن حذف می‌شود.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install pg client (scratch dir)
+        run: |
+          mkdir -p /tmp/pgwork
+          cd /tmp/pgwork
+          npm init -y >/dev/null 2>&1
+          npm i pg --no-audit --no-fund --loglevel=error
+
+      - name: Upsert owner admin (DB)
+        env:
+          DATABASE_URL: ${{ secrets.BUILD_DATABASE_URL }}
+          ADMIN_EMAIL_TARGET: vahid.askari1986@gmail.com
+        run: |
+          set -e
+          PW=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 16)
+          export ADMIN_PW="$PW"
+          cat > /tmp/pgwork/recover.mjs <<'EOF'
+          import { Client } from "pg";
+          import { scryptSync, randomBytes } from "crypto";
+
+          const url = process.env.DATABASE_URL;
+          const pw = process.env.ADMIN_PW;
+          const email = process.env.ADMIN_EMAIL_TARGET;
+          if (!url || !pw || !email) { console.error("missing env"); process.exit(1); }
+
+          // دقیقاً همان قالب hashPassword در src/lib/user-auth.ts: salt:hash (hex, scrypt 64)
+          const salt = randomBytes(16).toString("hex");
+          const hash = scryptSync(pw, salt, 64).toString("hex");
+          const stored = `${salt}:${hash}`;
+
+          const c = new Client({ connectionString: url });
+          await c.connect();
+
+          const before = await c.query("select id, email, role, is_active from admin_users order by id");
+          console.log("before:", JSON.stringify(before.rows));
+
+          await c.query(
+            `insert into admin_users (name, email, password_hash, role, permissions, is_active)
+             values ($1, $2, $3, 'super_admin', '*', true)
+             on conflict (email) do update
+               set password_hash = $3, role = 'super_admin', permissions = '*', is_active = true, updated_at = now()`,
+            ["مالک", email, stored],
+          );
+
+          const after = await c.query("select id, email, role, is_active from admin_users order by id");
+          console.log("after:", JSON.stringify(after.rows));
+          await c.end();
+          console.log("UPSERT OK");
+          EOF
+          cd /tmp/pgwork && node recover.mjs
+          mkdir -p /tmp/out
+          printf 'login: https://dadvarzan.com/admin/login\nemail: %s\npassword: %s\n' "$ADMIN_EMAIL_TARGET" "$PW" > /tmp/out/admin-recover.txt
+
+      - name: Upload password artifact (1 day)
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-recover
+          path: /tmp/out/admin-recover.txt
+          retention-days: 1
+          if-no-files-found: error
