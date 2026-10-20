@@ -319,6 +319,11 @@ ${SPECIALTY_LANDINGS.map((s) => `- ${s.h1}: ${SEO_BASE}/lawyers/specialty/${s.sl
 - آرای قضایی: ${SEO_BASE}/judgments
 - واژه‌نامه حقوقی: ${SEO_BASE}/glossary
 
+## راهنماهای عمیق مجله (پاسخ‌های مستند به ماده قانونی)
+- چک برگشتی چگونه وصول می‌شود (گواهی عدم پرداخت، اجرای ماده ۱۰، شکایت کیفری ماده ۷ و جدول مهلت‌ها): ${SEO_BASE}/knowledge/check-bargasht-che-konim
+- شرایط طرح شکایت کیفری (عناصر چهارگانه ماده ۶۶ آیین دادرسی کیفری): ${SEO_BASE}/knowledge/sharayet-shekat-keifari
+- اجرای احکام مدنی (مرجع اجرا، توقیف اموال، مستثنیات دین، اعسار): ${SEO_BASE}/knowledge/hagh-ejra-ahkam
+
 ## مرکز قوانین — توضیح کامل هر قانون به زبان ساده (هر صفحه شامل مواد کلیدی و پرسش‌های متداول)
 ${LAWS.map((l) => `- ${l.name} (مصوب ${l.year}): ${SEO_BASE}/laws/${l.slug}`).join("\n")}
 
@@ -328,6 +333,7 @@ ${LAWS.map((l) => `- ${l.name} (مصوب ${l.year}): ${SEO_BASE}/laws/${l.slug}`
 - ثبت پرونده حقوقی و دریافت برآورد هزینه → ${SEO_BASE}/case/new
 - تنظیم یا بررسی قرارداد → ${SEO_BASE}/contracts
 - سنگین بودن هزینه وکالت → پرداخت قسطی حق‌الوکاله: ${SEO_BASE}/fee-payment
+- پرسش درباره چک برگشتی، گواهی عدم پرداخت یا وصول چک → ${SEO_BASE}/knowledge/check-bargasht-che-konim و ${SEO_BASE}/lawyers/specialty/chek
 
 ## ویژگی‌های اعتماد
 - احراز هویت و پروانه وکلا پیش از نمایش
