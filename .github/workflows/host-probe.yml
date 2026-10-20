@@ -38,28 +38,28 @@ jobs:
           sudo apt-get install -y -qq lftp >/dev/null 2>&1 || sudo apt-get install -y lftp
           LFTP="lftp -u $FTP_USER,$FTP_PASS -p $FTP_PORT ftp://$FTP_HOST"
           echo "=== app dir top-level (freshness of server.js/app.js/.next) ==="
-          $LFTP <<'EOF' 2>&1
+          $LFTP <<EOF 2>&1
             set ftp:ssl-allow off
             set ftp:passive-mode on
-            ls -la "$APP_DIR" | head -40
+            ls -la "$APP_DIR"
             bye
           EOF
           echo "=== BUILD_ID on host ==="
           mkdir -p fetched
-          $LFTP <<'EOF2' 2>&1
+          $LFTP <<EOF2 2>&1
             set ftp:ssl-allow off
             set ftp:passive-mode on
             get -O fetched "$APP_DIR/.next/BUILD_ID"
-            get -O fetched/llms-body.txt "$APP_DIR/.next/server/app/llms.txt.body"
-            get -O fetched/agent.log deploy-agent.log
-            get -O fetched/agent.sh deploy-agent.sh
+            get -O fetched "$APP_DIR/.next/server/app/llms.txt.body"
+            get -O fetched deploy-agent.log
+            get -O fetched deploy-agent.sh
             bye
           EOF2
           echo "--- BUILD_ID ---"; cat fetched/BUILD_ID 2>/dev/null || echo "(missing)"
           echo "--- prerendered llms.txt.body head (CANARY — must contain نسخه محتوای مجله in new build) ---"
-          head -8 fetched/llms-body.txt 2>/dev/null || echo "(llms.txt.body not found — handler may be dynamic)"
+          head -8 fetched/llms.txt.body 2>/dev/null || head -8 fetched/llms-body.txt 2>/dev/null || echo "(llms.txt.body not found — handler may be dynamic)"
           echo "--- host deploy-agent.sh: restart-related lines ---"
-          rg -n "restart|pkill|kill" fetched/agent.sh 2>/dev/null || echo "(no match)"
+          rg -n "restart|pkill|kill" fetched/deploy-agent.sh 2>/dev/null || echo "(no match)"
 
       - name: Patch host deploy-agent.sh (hard restart after extract)
         if: ${{ github.event.inputs.patch_agent == 'true' }}
