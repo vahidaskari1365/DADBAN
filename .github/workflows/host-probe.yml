@@ -59,7 +59,7 @@ jobs:
           echo "--- prerendered llms.txt.body head (CANARY — must contain نسخه محتوای مجله in new build) ---"
           head -8 fetched/llms.txt.body 2>/dev/null || head -8 fetched/llms-body.txt 2>/dev/null || echo "(llms.txt.body not found — handler may be dynamic)"
           echo "--- host deploy-agent.sh: restart-related lines ---"
-          rg -n "restart|pkill|kill" fetched/deploy-agent.sh 2>/dev/null || echo "(no match)"
+          grep -nE "restart|pkill|kill" fetched/deploy-agent.sh 2>/dev/null || echo "(no match)"
 
       - name: Patch host deploy-agent.sh (hard restart on fresh restart.txt)
         if: ${{ github.event.inputs.patch_agent == 'true' }}
@@ -79,7 +79,7 @@ jobs:
             bye
           EOF
           python3 scripts/patch-deploy-agent.py /tmp/deploy-agent.sh
-          rg -q "HARD-RESTART-BLOCK" /tmp/deploy-agent.sh
+          grep -q "HARD-RESTART-BLOCK" /tmp/deploy-agent.sh
           # ۲) آپلود نسخهٔ پچ‌شده
           lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF2 2>&1
             set ftp:ssl-allow off
