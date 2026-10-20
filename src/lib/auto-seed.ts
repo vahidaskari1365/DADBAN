@@ -637,17 +637,28 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
     const existingRows = (existing as { rows?: unknown[] }).rows ?? [];
     const existingCount = Number((existingRows[0] as { c?: number })?.c ?? 0);
     if (existingCount > 0) {
+      // هر گام مستقل و لاگ‌شده — تا خطای یک گام، آپگرید محتوای مقالات را
+      // بی‌صدا از کار نیندازد (باگ خاموش که انتشار محتوا را متوقف کرده بود).
+      const steps: [string, () => Promise<void>][] = [
+        ["ensureProfileSchema", ensureProfileSchema],
+        ["ensureExtendedSchema", ensureExtendedSchema],
+        ["seedManagedServices", seedManagedServices],
+        ["seedContentSections", seedContentSections],
+        ["seedDemoOperators", seedDemoOperators],
+        ["seedPlatformAccounts", seedPlatformAccounts],
+        ["ensureLawyerPhotos", ensureLawyerPhotos],
+      ];
+      for (const [name, fn] of steps) {
+        try {
+          await fn();
+        } catch (err) {
+          console.error(`[auto-seed] ${name} failed:`, err);
+        }
+      }
       try {
-        await ensureProfileSchema();
-        await ensureExtendedSchema();
-        await seedManagedServices();
-        await seedContentSections();
-        await seedDemoOperators();
-        await seedPlatformAccounts(); // اکانت‌های وکیل/موکل تحویل — در پروداکشن هم
-        await ensureLawyerPhotos();
         await upgradeArticles();
-      } catch {
-        /* non-fatal */
+      } catch (err) {
+        console.error("[auto-seed] upgradeArticles failed:", err);
       }
       return { seeded: false, counts: getCounts() };
     }
