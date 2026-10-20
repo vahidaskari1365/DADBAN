@@ -10,7 +10,11 @@ on:
       force_install:
         description: "re-upload tarball + remove install marker (force next cron tick)"
         required: false
-        default: "true"
+        default: "false"
+      patch_agent:
+        description: "upload patched deploy-agent.sh with hard restart (kill stale node)"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -19,7 +23,9 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect host state (home, inbox, marker, agent log & script)
+      - uses: actions/checkout@v4
+
+      - name: Inspect host state
         env:
           FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
           FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
@@ -31,37 +37,69 @@ jobs:
           sudo apt-get update -y -qq >/dev/null 2>&1 || true
           sudo apt-get install -y -qq lftp >/dev/null 2>&1 || sudo apt-get install -y lftp
           LFTP="lftp -u $FTP_USER,$FTP_PASS -p $FTP_PORT ftp://$FTP_HOST"
-          echo "=== home root listing ==="
+          echo "=== app dir top-level (freshness of server.js/app.js/.next) ==="
           $LFTP <<'EOF' 2>&1
             set ftp:ssl-allow off
             set ftp:passive-mode on
-            ls -la .
+            ls -la "$APP_DIR" | head -40
             bye
           EOF
-          echo "=== inbox / marker / restart.txt ==="
-          $LFTP <<'EOF' 2>&1
-            set ftp:ssl-allow off
-            set ftp:passive-mode on
-            ls -la .release-inbox
-            ls -la .deploy-version
-            ls -la tmp/restart.txt
-            bye
-          EOF
-          echo "=== fetch deploy-agent.log + deploy-agent.sh + marker content ==="
+          echo "=== BUILD_ID on host ==="
           mkdir -p fetched
           $LFTP <<'EOF2' 2>&1
             set ftp:ssl-allow off
             set ftp:passive-mode on
-            get -O fetched deploy-agent.log
-            get -O fetched deploy-agent.sh
-            get -O fetched/.deploy-version .deploy-version
-            get -O fetched/restart.txt tmp/restart.txt
+            get -O fetched "$APP_DIR/.next/BUILD_ID"
+            get -O fetched/llms-body.txt "$APP_DIR/.next/server/app/llms.txt.body"
+            get -O fetched/agent.log deploy-agent.log
+            get -O fetched/agent.sh deploy-agent.sh
             bye
           EOF2
-          echo "--- .deploy-version content ---"; cat fetched/.deploy-version 2>/dev/null || echo "(missing)"
-          echo "--- tmp/restart.txt content ---"; cat fetched/restart.txt 2>/dev/null || echo "(missing)"
-          echo "--- deploy-agent.log tail 100 ---"; tail -100 fetched/deploy-agent.log 2>/dev/null || echo "(no log at FTP root — trying APP_DIR next)"
-          echo "--- deploy-agent.sh (first 40 lines) ---"; head -40 fetched/deploy-agent.sh 2>/dev/null || echo "(script not at FTP root)"
+          echo "--- BUILD_ID ---"; cat fetched/BUILD_ID 2>/dev/null || echo "(missing)"
+          echo "--- prerendered llms.txt.body head (CANARY — must contain نسخه محتوای مجله in new build) ---"
+          head -8 fetched/llms-body.txt 2>/dev/null || echo "(llms.txt.body not found — handler may be dynamic)"
+          echo "--- host deploy-agent.sh: restart-related lines ---"
+          rg -n "restart|pkill|kill" fetched/agent.sh 2>/dev/null || echo "(no match)"
+
+      - name: Patch host deploy-agent.sh (hard restart after extract)
+        if: ${{ github.event.inputs.patch_agent == 'true' }}
+        env:
+          FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
+          FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
+          FTP_USER: ${{ secrets.CPANEL_FTP_USER }}
+          FTP_PASS: ${{ secrets.CPANEL_FTP_PASS }}
+          APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
+        run: |
+          set -e
+          # نسخهٔ میزبان را می‌گیریم و فقط بلوک ری‌استارت سخت را اضافه می‌کنیم
+          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<'EOF' 2>&1
+            set ftp:ssl-allow off
+            set ftp:passive-mode on
+            get -O /tmp deploy-agent.sh
+            bye
+          EOF
+          cp /tmp/deploy-agent.sh /tmp/deploy-agent.sh.orig
+          if ! rg -q "HARD-RESTART-BLOCK" /tmp/deploy-agent.sh; then
+            cat >> /tmp/deploy-agent.sh <<'BLOCK'
+
+          # ── HARD-RESTART-BLOCK (ops patch) ──
+          # اگر ری‌استارت Passenger با restart.txt اثر نکند، پروسه‌های node قدیمی
+          # همین کاربر را می‌کشیم تا Passenger با کد جدید دوباره spawn کند.
+          if [ -f "$APP/tmp/restart.txt" ] && [ "$APP/tmp/restart.txt" -nt "$HOME/.node-pid-stamp" ]; then
+            pkill -u "$USER" -f "server\.js" 2>/dev/null || true
+            pkill -u "$USER" -f "app\.js" 2>/dev/null || true
+            date -u +%FT%TZ > "$HOME/.node-pid-stamp"
+            echo "$(now) HARD-RESTART: stale node processes killed — Passenger will respawn with new code"
+          fi
+          BLOCK
+          fi
+          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF2 2>&1
+            set ftp:ssl-allow off
+            set ftp:passive-mode on
+            put -O . /tmp/deploy-agent.sh
+            bye
+          EOF2
+          echo "✓ patched deploy-agent.sh uploaded (with HARD-RESTART-BLOCK)"
 
       - name: Download fresh tarball from release
         if: ${{ github.event.inputs.force_install == 'true' }}
