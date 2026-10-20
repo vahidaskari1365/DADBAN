@@ -54,8 +54,11 @@ jobs:
             get -O fetched deploy-agent.log
             get -O fetched deploy-agent.sh
             get -O fetched "$APP_DIR/stderr.log"
+            get -O fetched "$APP_DIR/tmp/boot-status.log"
             bye
           EOF2
+          echo "--- boot-status.log (app boot trace) ---"
+          tail -40 fetched/boot-status.log 2>/dev/null || echo "(no boot-status.log yet)"
           echo "--- BUILD_ID ---"; cat fetched/BUILD_ID 2>/dev/null || echo "(missing)"
           echo "--- prerendered llms.txt.body head (CANARY — must contain نسخه محتوای مجله in new build) ---"
           head -8 fetched/llms.txt.body 2>/dev/null || head -8 fetched/llms-body.txt 2>/dev/null || echo "(llms.txt.body not found — handler may be dynamic)"
