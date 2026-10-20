@@ -1,6 +1,8 @@
 // Single source of truth for seed data + automatic DB provisioning.
 // Used by /api/seed (manual) and instrumentation (automatic on startup).
 
+import fs from "node:fs";
+import path from "node:path";
 import { db } from "@/db";
 import { articleData, ARTICLES_CONTENT_VERSION } from "@/data/articles-seed";
 import {
@@ -542,6 +544,21 @@ export async function ensureLawyerPhotos(): Promise<void> {
 }
 
 /**
+ * bootLog — ردپای بوت روی فایل (FTP-fetchable).
+ * لاگ‌های Passenger در cPanel قابل‌پیش‌بینی نیستند؛ برای عیب‌یابی انتشار محتوا،
+ * هر گام بوت یک خط به tmp/boot-status.log اضافه می‌کند. هرگز throw نمی‌کند.
+ */
+function bootLog(line: string): void {
+  try {
+    const dir = path.join(process.cwd(), "tmp");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.appendFileSync(path.join(dir, "boot-status.log"), `${new Date().toISOString()} ${line}\n`);
+  } catch {
+    /* non-fatal */
+  }
+}
+
+/**
  * آپگرید محتوای مقالات — نسخه‌محور (نه مقایسه طول متن):
  * نسخه تحریریه در جدول app_meta ذخیره می‌شود؛ اگر با ARTICLES_CONTENT_VERSION فرق داشته باشد،
  * همه مقالات seed با محتوای جدید بازنویسی می‌شوند و updatedAt مقالات واقعاً ویرایش‌شده
@@ -550,6 +567,7 @@ export async function ensureLawyerPhotos(): Promise<void> {
  */
 async function upgradeArticles(): Promise<void> {
   if (!articleData.length) return;
+  bootLog(`upgradeArticles: start (target version ${ARTICLES_CONTENT_VERSION})`);
   try {
     // مهاجرت ستون‌های جدید — idempotent و در هر دو مسیر (fast-path هم لازم است)
     await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS quick_answer TEXT NOT NULL DEFAULT ''`));
@@ -565,7 +583,9 @@ async function upgradeArticles(): Promise<void> {
     );
     const storedRows = (stored as { rows?: { value?: string }[] }).rows ?? [];
     const storedVersion = storedRows[0]?.value ?? "";
+    bootLog(`upgradeArticles: storedVersion=${storedVersion || "(none)"}`);
     if (storedVersion === ARTICLES_CONTENT_VERSION) {
+      bootLog(`upgradeArticles: already at target — skip`);
       console.log(`[auto-seed] articles already at content version ${ARTICLES_CONTENT_VERSION} — skip`);
       return;
     }
@@ -586,32 +606,39 @@ async function upgradeArticles(): Promise<void> {
         prev.content === a.content;
       if (isUnchanged) continue;
       changed++;
-      await db
-        .insert(articles)
-        .values({ ...a, updatedAt: revisedAt })
-        .onConflictDoUpdate({
-          target: articles.slug,
-          set: {
-            title: a.title,
-            category: a.category,
-            excerpt: a.excerpt,
-            content: a.content,
-            quickAnswer: a.quickAnswer ?? "",
-            faq: a.faq ?? "[]",
-            imageUrl: a.imageUrl ?? null,
-            imageAlt: a.imageAlt ?? null,
-            readTime: a.readTime,
-            updatedAt: revisedAt,
-          },
-        });
+      try {
+        await db
+          .insert(articles)
+          .values({ ...a, updatedAt: revisedAt })
+          .onConflictDoUpdate({
+            target: articles.slug,
+            set: {
+              title: a.title,
+              category: a.category,
+              excerpt: a.excerpt,
+              content: a.content,
+              quickAnswer: a.quickAnswer ?? "",
+              faq: a.faq ?? "[]",
+              imageUrl: a.imageUrl ?? null,
+              imageAlt: a.imageAlt ?? null,
+              readTime: a.readTime,
+              updatedAt: revisedAt,
+            },
+          });
+      } catch (rowErr) {
+        bootLog(`upgradeArticles: row FAILED slug=${a.slug}: ${rowErr instanceof Error ? rowErr.message : String(rowErr)}`);
+        throw rowErr;
+      }
     }
     await db.execute(
       sql`INSERT INTO app_meta (key, value) VALUES ('articles_content_version', ${ARTICLES_CONTENT_VERSION}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
     );
+    bootLog(`upgradeArticles: DONE ${storedVersion || "(none)"} → ${ARTICLES_CONTENT_VERSION} (${changed}/${articleData.length} changed)`);
     console.log(
       `[auto-seed] articles upgraded: ${storedVersion || "(none)"} → ${ARTICLES_CONTENT_VERSION} (${changed}/${articleData.length} changed, updatedAt=${revisedAt.toISOString()})`,
     );
   } catch (err) {
+    bootLog(`upgradeArticles: FAILED: ${err instanceof Error ? err.message : String(err)}`);
     console.error("[auto-seed] upgradeArticles failed:", err);
   }
 }
@@ -637,8 +664,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
     const existingRows = (existing as { rows?: unknown[] }).rows ?? [];
     const existingCount = Number((existingRows[0] as { c?: number })?.c ?? 0);
     if (existingCount > 0) {
-      // هر گام مستقل و لاگ‌شده — تا خطای یک گام، آپگرید محتوای مقالات را
-      // بی‌صدا از کار نیندازد (باگ خاموش که انتشار محتوا را متوقف کرده بود).
+      bootLog(`ensureSeeded: fast path (lawyers=${existingCount})`);
       const steps: [string, () => Promise<void>][] = [
         ["ensureProfileSchema", ensureProfileSchema],
         ["ensureExtendedSchema", ensureExtendedSchema],
@@ -651,15 +677,19 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
       for (const [name, fn] of steps) {
         try {
           await fn();
+          bootLog(`step ${name}: ok`);
         } catch (err) {
+          bootLog(`step ${name}: FAILED: ${err instanceof Error ? err.message : String(err)}`);
           console.error(`[auto-seed] ${name} failed:`, err);
         }
       }
       try {
         await upgradeArticles();
       } catch (err) {
+        bootLog(`fast-path upgradeArticles threw: ${err instanceof Error ? err.message : String(err)}`);
         console.error("[auto-seed] upgradeArticles failed:", err);
       }
+      bootLog("fast-path: complete");
       return { seeded: false, counts: getCounts() };
     }
   } catch {
