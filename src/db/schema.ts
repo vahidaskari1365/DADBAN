@@ -427,6 +427,8 @@ export const articles = pgTable("articles", {
   authorRole: text("author_role").notNull().default("پژوهشگر حقوق"),
   views: integer("views").notNull().default(0),
   publishedAt: timestamp("published_at").defaultNow().notNull(),
+  /** تاریخ واقعی آخرین بازبینی تحریریه — مبنای dateModified در JSON-LD (E-E-A-T) */
+  updatedAt: timestamp("updated_at"),
 });
 
 /* ------------------------------ Q&A ------------------------------ */

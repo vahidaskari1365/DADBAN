@@ -114,6 +114,7 @@ const DDL = [
   `ALTER TABLE articles ADD COLUMN IF NOT EXISTS faq TEXT NOT NULL DEFAULT '[]'`,
   `ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_url TEXT`,
   `ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_alt TEXT`,
+  `ALTER TABLE articles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP`,
   `CREATE TABLE IF NOT EXISTS qa_questions (id SERIAL PRIMARY KEY, slug TEXT NOT NULL UNIQUE, question TEXT NOT NULL, body TEXT NOT NULL DEFAULT '', answer TEXT NOT NULL, category TEXT NOT NULL, lawyer_name TEXT NOT NULL, lawyer_title TEXT NOT NULL DEFAULT 'وکیل پایه یک', verified BOOLEAN NOT NULL DEFAULT true, helpful INTEGER NOT NULL DEFAULT 0, views INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT now())`,
   `CREATE TABLE IF NOT EXISTS cases (id SERIAL PRIMARY KEY, case_number TEXT NOT NULL, subject TEXT NOT NULL, description TEXT NOT NULL, city TEXT NOT NULL, stage TEXT NOT NULL DEFAULT 'ثبت اولیه', budget TEXT, contact_name TEXT NOT NULL, contact_phone TEXT NOT NULL, status case_status NOT NULL DEFAULT 'new', created_at TIMESTAMP NOT NULL DEFAULT now())`,
   `CREATE TABLE IF NOT EXISTS consultations (id SERIAL PRIMARY KEY, lawyer_name TEXT, lawyer_id INTEGER, type consultation_type NOT NULL DEFAULT 'chat', duration INTEGER NOT NULL DEFAULT 30, client_name TEXT NOT NULL, client_phone TEXT NOT NULL, subject TEXT NOT NULL, scheduled_at TEXT, price NUMERIC(12,0) NOT NULL DEFAULT '0', status consultation_status NOT NULL DEFAULT 'pending', created_at TIMESTAMP NOT NULL DEFAULT now())`,
@@ -552,6 +553,7 @@ async function upgradeArticles(): Promise<void> {
     await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS faq TEXT NOT NULL DEFAULT '[]'`));
     await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_url TEXT`));
     await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_alt TEXT`));
+    await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP`));
     const probe = await db.execute(
       sql`SELECT LENGTH(content) AS l FROM articles WHERE slug = ${articleData[0].slug} LIMIT 1`,
     );

@@ -17,6 +17,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       if (typeof body[k] === "string") patch[k] = body[k].trim();
     }
     if (body.readTime != null) patch.readTime = Number(body.readTime) || 5;
+    // هر ویرایش تحریریه = بازبینی جدید — تاریخ واقعی برای dateModified (E-E-A-T)
+    patch.updatedAt = new Date();
     const [updated] = await db.update(articles).set(patch).where(eq(articles.id, Number(id))).returning();
 
     // اطلاع‌رسانی فوری به IndexNow — بهترین تلاش؛ خطای آن جریان ویرایش را نمی‌شکند

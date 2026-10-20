@@ -139,21 +139,40 @@ export default async function ArticlePage({
   const wordCount = a.content.split(/\s+/).filter(Boolean).length;
   const articleUrl = `${SEO_BASE}/knowledge/${a.slug}`;
 
+  // تاریخ‌های واقعی انتشار/بازبینی — مبنای بلوک اعتماد E-E-A-T و dateModified
+  const faDate = (d: Date) => new Intl.DateTimeFormat("fa-IR", { dateStyle: "long" }).format(d);
+  const publishedLabel = original.publishedAt ? faDate(original.publishedAt) : null;
+  const reviewedLabel = original.updatedAt ? faDate(original.updatedAt) : publishedLabel;
+
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "Article",
+      "@id": `${articleUrl}#article`,
       headline: a.title,
       description: a.excerpt,
       articleSection: a.category,
       inLanguage: LANG_TAG[locale] ?? "fa-IR",
       wordCount,
-      author: { "@type": "Person", name: a.author, jobTitle: a.authorRole },
-      publisher: { "@type": "Organization", name: "دادورزان", url: SEO_BASE },
+      author: {
+        "@type": "Person",
+        "@id": `${SEO_BASE}/#editorial-team`,
+        name: a.author,
+        jobTitle: a.authorRole,
+        worksFor: { "@id": `${SEO_BASE}/#organization` },
+      },
+      publisher: { "@type": "Organization", "@id": `${SEO_BASE}/#organization`, name: "دادورزان", url: SEO_BASE },
+      isPartOf: { "@id": `${SEO_BASE}/#organization` },
       datePublished: original.publishedAt,
-      dateModified: original.publishedAt,
+      // تاریخ واقعی آخرین ویرایش تحریریه؛ اگر هنوز بازبینی نشده همان انتشار
+      dateModified: original.updatedAt ?? original.publishedAt,
       mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
       image: a.imageUrl ? `${SEO_BASE}${a.imageUrl}` : undefined,
+      // AEO — بلوک‌های پاسخ مستقیم برای اسپیکرها و موتورهای پاسخ‌محور
+      speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: ["h1", ".aeo-quick-answer"],
+      },
     },
     {
       "@context": "https://schema.org",
@@ -197,6 +216,26 @@ export default async function ArticlePage({
 
         <Container className="grid gap-8 py-10 lg:grid-cols-[1fr_300px]">
           <div className="max-w-2xl">
+            {/* بلوک اعتماد E-E-A-T — نویسنده، تاریخ انتشار و بازبینی واقعی تحریریه */}
+            <div
+              aria-label="اطلاعات نویسنده و بازبینی"
+              className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl border border-border bg-surface px-5 py-4 text-xs leading-6 text-muted"
+            >
+              <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                <Icon name="user" className="h-4 w-4 text-primary" /> {a.author} — {a.authorRole}
+              </span>
+              {publishedLabel && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="calendar" className="h-4 w-4 text-primary" /> انتشار: {publishedLabel}
+                </span>
+              )}
+              {reviewedLabel && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="clock" className="h-4 w-4 text-primary" /> آخرین بازبینی: {reviewedLabel}
+                </span>
+              )}
+            </div>
+
             {/* تصویر شاخص مقاله */}
             {a.imageUrl && (
               <figure className="mb-6 overflow-hidden rounded-3xl border border-border">
@@ -214,9 +253,9 @@ export default async function ArticlePage({
               </figure>
             )}
 
-            {/* پاسخ سریع (AEO — پاسخ مستقیم برای موتورهای پاسخ‌محور) */}
+            {/* پاسخ سریع (AEO — پاسخ مستقیم برای موتورهای پاسخ‌محور؛ هوک speakable: .aeo-quick-answer) */}
             {a.quickAnswer && (
-              <div className="mb-7 rounded-2xl border border-accent/30 bg-accent-soft/40 p-5">
+              <div className="aeo-quick-answer mb-7 rounded-2xl border border-accent/30 bg-accent-soft/40 p-5">
                 <p className="flex items-center gap-2 text-sm font-black text-foreground">
                   <Icon name="quote" className="h-4 w-4 text-accent-text" /> {t("پاسخ کوتاه")}
                 </p>

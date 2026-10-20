@@ -84,20 +84,8 @@ export default async function LawPage({ params }: { params: Promise<{ slug: stri
           { "@type": "ListItem", position: 3, name: l.name, item: `${SITE_URL}${canonical}` },
         ],
       },
-      ...(l.faqs.length
-        ? [
-            {
-              "@type": "FAQPage",
-              "@id": `${SITE_URL}${canonical}#faq`,
-              mainEntity: l.faqs.map((f) => ({
-                "@type": "Question",
-                name: f.q,
-                text: f.q,
-                acceptedAnswer: { "@type": "Answer", text: f.a },
-              })),
-            },
-          ]
-        : []),
+      /* FAQPage schema فقط یک‌بار و توسط <FaqSection /> تزریق می‌شود —
+         تکرار با @id یکسان خلاف گایدلاین ساختاریافتهٔ گوگل است. */
     ],
   };
 
