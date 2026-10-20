@@ -1,10 +1,9 @@
 // Single source of truth for seed data + automatic DB provisioning.
 // Used by /api/seed (manual) and instrumentation (automatic on startup).
 
-import fs from "node:fs";
-import path from "node:path";
 import { db } from "@/db";
 import { articleData, ARTICLES_CONTENT_VERSION } from "@/data/articles-seed";
+import { bootLog } from "@/lib/boot-log";
 import {
   lawyers,
   reviews,
@@ -538,21 +537,6 @@ export async function ensureLawyerPhotos(): Promise<void> {
     await db.execute(
       sql.raw(`UPDATE lawyers SET photo_url = '/lawyers/' || slug || '.jpg' WHERE photo_url IS NULL AND slug IN (${slugList})`),
     );
-  } catch {
-    /* non-fatal */
-  }
-}
-
-/**
- * bootLog — ردپای بوت روی فایل (FTP-fetchable).
- * لاگ‌های Passenger در cPanel قابل‌پیش‌بینی نیستند؛ برای عیب‌یابی انتشار محتوا،
- * هر گام بوت یک خط به tmp/boot-status.log اضافه می‌کند. هرگز throw نمی‌کند.
- */
-function bootLog(line: string): void {
-  try {
-    const dir = path.join(process.cwd(), "tmp");
-    fs.mkdirSync(dir, { recursive: true });
-    fs.appendFileSync(path.join(dir, "boot-status.log"), `${new Date().toISOString()} ${line}\n`);
   } catch {
     /* non-fatal */
   }

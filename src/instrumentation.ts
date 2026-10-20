@@ -1,14 +1,19 @@
 // Runs once on server startup. Automatically provisions the database so the
 // platform always boots with the correct schema and seed data — no manual steps.
+import { bootLog } from "@/lib/boot-log";
+
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  bootLog(`instrumentation register: fired (runtime=${process.env.NEXT_RUNTIME}, pid=${process.pid})`);
   try {
     const { ensureSeeded } = await import("./lib/auto-seed");
     const res = await ensureSeeded();
+    bootLog(`instrumentation register: ensureSeeded done (seeded=${res.seeded})`);
     if (res.seeded) {
       console.log("[dadban] auto-seed: database provisioned with seed data.");
     }
   } catch (e) {
+    bootLog(`instrumentation register: ensureSeeded THREW: ${e instanceof Error ? e.message : String(e)}`);
     console.error("[dadban] auto-seed failed:", e);
   }
 }
