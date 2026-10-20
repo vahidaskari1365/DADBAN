@@ -15,6 +15,7 @@ import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "./brand";
 import { SITE_URL } from "./site";
 import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "./seo-landings";
 import { LAWS } from "./laws-content";
+import { faNum } from "./data";
 
 export const SEO_BASE = SITE_URL;
 
@@ -314,7 +315,7 @@ ${SPECIALTY_LANDINGS.map((s) => `- ${s.h1}: ${SEO_BASE}/lawyers/specialty/${s.sl
 ## پایگاه دانش
 - مقالات حقوقی: ${SEO_BASE}/knowledge
 - پرسش و پاسخ حقوقی: ${SEO_BASE}/qa
-- مرکز قوانین (۲۹ قانون مهم ایران با توضیح کامل): ${SEO_BASE}/laws
+- مرکز قوانین (${faNum(LAWS.length)} قانون مهم ایران با توضیح کامل): ${SEO_BASE}/laws
 - آرای قضایی: ${SEO_BASE}/judgments
 - واژه‌نامه حقوقی: ${SEO_BASE}/glossary
 

@@ -1,24 +1,25 @@
 /**
  * مرکز قوانین دادورزان — منبع واحد دیتای قوانین.
  *
- * ۲۹ قانون در ۷ دسته با محتوای تحریریه کامل (AEO/GEO/AIO/SXO):
+ * ۴۱ قانون در ۷ دسته با محتوای تحریریه کامل (AEO/GEO/AIO/SXO):
  *  - صفحه فهرست: /laws (دسته‌بندی + FAQ + schema)
  *  - صفحه هر قانون: /laws/[slug] (قالب مقاله citation-ready)
  *
- * ترتیب دیتا: laws-catalog-a (خانواده/کیفری/دادرسی) سپس laws-catalog-b
- * (مالی/کار/املاک/اداری). اسلاگ‌های ۸ قانون قدیمی حفظ شده‌اند تا
- * اعتبار ایندکس گوگل از دست نرود.
+ * ترتیب دیتا: laws-catalog-a (خانواده/کیفری/دادرسی)، laws-catalog-b
+ * (مالی/کار/املاک/اداری) و laws-catalog-c (تکمیل مرکز قوانین).
+ * اسلاگ‌های ۸ قانون قدیمی حفظ شده‌اند تا اعتبار ایندکس گوگل از دست نرود.
  */
 
 import type { Law, LawCategory } from "@/data/laws-types";
 import { LAW_CATEGORIES } from "@/data/laws-types";
 import { LAWS_A } from "@/data/laws-catalog-a";
 import { LAWS_B } from "@/data/laws-catalog-b";
+import { LAWS_C } from "@/data/laws-catalog-c";
 
 export type { Law, LawCategory, LawFaq, LawKeyArticle, LawRoute } from "@/data/laws-types";
 export { LAW_CATEGORIES } from "@/data/laws-types";
 
-export const LAWS: Law[] = [...LAWS_A, ...LAWS_B];
+export const LAWS: Law[] = [...LAWS_A, ...LAWS_B, ...LAWS_C];
 
 export const LAWS_UPDATED = "مهر ۱۴۰۵";
 

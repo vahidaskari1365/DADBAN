@@ -246,12 +246,15 @@ export async function seedContentSections(force = false): Promise<void> {
     /* non-fatal */
   }
   try {
-    const l = await db.select({ id: laws.id }).from(laws).limit(1);
-    if (!l.length) {
+    // قوانین موجود در کاتالوگ تحریریه که هنوز در DB نیستند را درج کن —
+    // با افزودن قانون جدید به LAWS، سطر خودکار به پروداکشن هم می‌رسد (onConflictDoNothing)
+    const existingLaws = await db.select({ slug: laws.slug }).from(laws);
+    const missingLaws = LAWS.filter((x) => !existingLaws.some((r) => r.slug === x.slug));
+    if (missingLaws.length) {
       await db
         .insert(laws)
         .values(
-          LAWS.map((x, i) => ({
+          missingLaws.map((x, i) => ({
             slug: x.slug,
             name: x.name,
             year: x.year,
@@ -259,7 +262,7 @@ export async function seedContentSections(force = false): Promise<void> {
             status: x.status,
             subjects: x.subjects.join("،"),
             summary: x.summary,
-            sortOrder: i,
+            sortOrder: existingLaws.length + i,
           })),
         )
         .onConflictDoNothing();

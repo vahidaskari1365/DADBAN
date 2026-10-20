@@ -137,7 +137,7 @@ export const GLOSSARY: GlossaryTerm[] = [
 ];
 
 /* ----------------- Laws center (/laws) -----------------
- * دیتای کامل ۲۹ قانون با محتوای AEO از laws-content می‌آید
+ * دیتای کامل قوانین (۴۱ قانون) با محتوای AEO از laws-content می‌آید
  * (types + LAWS + LAW_CATEGORIES + helperها) و اینجا re-export
  * می‌شود تا همه importهای قدیمی از @/lib/content سالم بمانند.
  */

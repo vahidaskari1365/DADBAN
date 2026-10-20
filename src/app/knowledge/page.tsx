@@ -12,7 +12,7 @@ import { makeT } from "@/lib/i18n/core";
 import { tdyn } from "@/lib/i18n/dynamic";
 import { PageContentBlocks } from "@/components/page-content-blocks";
 import Link from "next/link";
-import { LAWS } from "@/lib/laws-content";
+import { LAWS, LAW_CATEGORIES } from "@/lib/laws-content";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600; // ISR — هر ساعت آپدیت می‌شه
@@ -135,7 +135,9 @@ export default async function KnowledgePage() {
               <div>
                 <h2 className="text-lg font-black text-foreground sm:text-xl">{t("مرکز قوانین ایران")}</h2>
                 <p className="mt-1 max-w-xl text-sm leading-7 text-muted">
-                  {t("۲۹ قانون مهم کشور به زبان ساده — همراه با مواد کلیدی، نکات عدددار و پرسش‌های متداول هر قانون.")}
+                  {t(
+                    "همه قوانین مهم کشور به زبان ساده در یک‌جا — همراه با مواد کلیدی، نکات عدددار و پرسش‌های متداول هر قانون.",
+                  )}
                 </p>
               </div>
             </div>
@@ -147,25 +149,30 @@ export default async function KnowledgePage() {
               <Icon name="arrow" className="h-4 w-4" />
             </Link>
           </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {LAWS.slice(0, 6).map((l) => (
-              <Link
-                key={l.slug}
-                href={`/laws/${l.slug}`}
-                className="group rounded-2xl border border-border bg-surface-2 p-4 transition-all hover:-translate-y-1 hover:border-primary/40"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-foreground">{l.name}</h3>
-                  <span className="text-[10px] text-muted">{l.year}</span>
-                </div>
-                <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-muted">{l.summary}</p>
-                <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-primary">
-                  {t("توضیح کامل")}
-                  <Icon name="arrow" className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" />
-                </span>
-              </Link>
-            ))}
+          <div className="nice-scroll mt-6 max-h-[560px] overflow-y-auto pr-1">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {LAWS.map((l) => (
+                <Link
+                  key={l.slug}
+                  href={`/laws/${l.slug}`}
+                  className="group rounded-2xl border border-border bg-surface-2 p-4 transition-all hover:-translate-y-1 hover:border-primary/40"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-bold text-foreground">{l.name}</h3>
+                    <span className="shrink-0 text-[10px] text-muted">{l.year}</span>
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-muted">{l.summary}</p>
+                  <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-primary">
+                    {t("توضیح کامل")}
+                    <Icon name="arrow" className="h-3 w-3 transition-transform group-hover:-translate-x-0.5" />
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
+          <p className="mt-4 text-center text-[11px] text-muted">
+            {t(`${faNum(LAWS.length)} قانون در ${faNum(LAW_CATEGORIES.length)} دسته موضوعی — برای توضیح کامل هر قانون، صفحه آن را باز کنید.`)}
+          </p>
         </section>
       </Container>
     </>

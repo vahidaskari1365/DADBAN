@@ -7,30 +7,31 @@ import { Reveal } from "@/components/reveal";
 import { FaqSection } from "@/components/seo/faq-section";
 import { safeJsonLd } from "@/lib/jsonld";
 import { SITE_URL } from "@/lib/site";
+import { faNum } from "@/lib/data";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
 import { getLaws } from "@/lib/content-store";
-import { LAW_CATEGORIES, LAWS_UPDATED, type Law, type LawCategory } from "@/lib/laws-content";
+import { LAWS, LAW_CATEGORIES, LAWS_UPDATED, type Law, type LawCategory } from "@/lib/laws-content";
 
 export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
+  const n = faNum(LAWS.length);
   return {
-    title: "مرکز قوانین ایران | متن، توضیح و مواد کلیدی ۲۹ قانون",
+    title: `مرکز قوانین ایران | متن، توضیح و مواد کلیدی ${n} قانون`,
     description:
-      "مجموعه کامل قوانین ایران به زبان ساده: قانون مدنی، حمایت خانواده، مجازات اسلامی، صدور چک، کار، تجارت، مالیات و قوانین جدید املاک — همراه با مواد کلیدی، پاسخ سوالات متداول و راهنمای کاربرد در پرونده.",
+      `مجموعه کامل قوانین ایران به زبان ساده: قانون مدنی، حمایت خانواده، مجازات اسلامی، صدور چک، کار، تجارت، مالیات، جرایم رایانه‌ای، پیش‌فروش ساختمان و قوانین جدید املاک — ${n} قانون همراه با مواد کلیدی، پاسخ سوالات متداول و راهنمای کاربرد در پرونده.`,
     alternates: { canonical: "/laws" },
     openGraph: {
       title: "مرکز قوانین ایران | دادورزان",
-      description: "۲۹ قانون مهم ایران با توضیح کامل، مواد کلیدی و پرسش‌های متداول به زبان ساده.",
+      description: `${n} قانون مهم ایران با توضیح کامل، مواد کلیدی و پرسش‌های متداول به زبان ساده.`,
       url: `${SITE_URL}/laws`,
     },
   };
 }
 
-const HUB_INTRO_LEAD =
-  "مرکز قوانین دادورزان، مجموعه مرجع ۲۹ قانون مهم ایران در ۷ دسته است: از قانون مدنی و حمایت خانواده تا مجازات اسلامی، صدور چک، کار، تجارت، مالیات و قوانین جدید املاک ۱۴۰۳. هر قانون با توضیح ساده، جدول مواد کلیدی، نکات عدددار و پرسش‌های متداول ارائه می‌شود تا پیش از مشورت با وکیل، تصویر درستی از حقوق و تعهدات خود داشته باشید. متن قوانین در منابع رسمی در دسترس است؛ تفسیر کاربردی آن در پرونده شما کار وکیل متخصص است.";
+const HUB_INTRO_LEAD = `مرکز قوانین دادورزان، مجموعه مرجع ${faNum(LAWS.length)} قانون مهم ایران در ۷ دسته است: از قانون مدنی و حمایت خانواده تا مجازات اسلامی، صدور چک، کار، تجارت، مالیات، جرایم رایانه‌ای و قوانین جدید املاک ۱۴۰۳. هر قانون با توضیح ساده، جدول مواد کلیدی، نکات عدددار و پرسش‌های متداول ارائه می‌شود تا پیش از مشورت با وکیل، تصویر درستی از حقوق و تعهدات خود داشته باشید. متن قوانین در منابع رسمی در دسترس است؛ تفسیر کاربردی آن در پرونده شما کار وکیل متخصص است.`;
 
 const HUB_FAQS = [
   {
@@ -110,7 +111,7 @@ export default async function LawsPage() {
         "@id": `${SITE_URL}/laws#page`,
         name: "مرکز قوانین ایران — دادورزان",
         description:
-          "توضیح کامل ۲۹ قانون مهم ایران به زبان ساده با جدول مواد کلیدی، نکات عدددار و پرسش‌های متداول؛ همراه با مسیرهای وکیل تخصصی و محاسبه‌گرهای حقوقی.",
+          `توضیح کامل ${faNum(laws.length)} قانون مهم ایران به زبان ساده با جدول مواد کلیدی، نکات عدددار و پرسش‌های متداول؛ همراه با مسیرهای وکیل تخصصی و محاسبه‌گرهای حقوقی.`,
         url: `${SITE_URL}/laws`,
         isPartOf: { "@id": `${SITE_URL}/#organization` },
         dateModified: LAWS_UPDATED,
@@ -147,7 +148,7 @@ export default async function LawsPage() {
         image="/images/hero-laws.png"
         badge="مرکز قوانین"
         title="قوانین ایران، به زبان ساده و کاربردی"
-        desc="۲۹ قانون مهم کشور در ۷ دسته — همراه با توضیح کامل، جدول مواد کلیدی و پاسخ پرسش‌های رایج."
+        desc={`${faNum(laws.length)} قانون مهم کشور در ۷ دسته — همراه با توضیح کامل، جدول مواد کلیدی و پاسخ پرسش‌های رایج.`}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("قوانین") }]}
         chips={[
           { icon: "landmark", label: `${laws.length} قانون مصوب` },

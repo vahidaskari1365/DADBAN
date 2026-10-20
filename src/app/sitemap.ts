@@ -99,7 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // محتوای static مرجعی (glossary, laws, judgments, legal-forms)
-  // مرکز قوانین با ۲۹ صفحه غنی AEO — priority و freshness بالاتر
+  // مرکز قوانین با صفحات غنی AEO (تعداد از LAWS) — priority و freshness بالاتر
   const contentRoutes: MetadataRoute.Sitemap = [
     ...GLOSSARY.map((g) => ({ url: `${BASE}/glossary/${g.slug}`, priority: 0.5 })),
     ...LAWS.map((l) => ({ url: `${BASE}/laws/${l.slug}`, priority: 0.7 })),
