@@ -972,6 +972,8 @@ export const lawyerOnboarding = pgTable(
     licenseNo: text("license_no").notNull(),
     /** wakil | karamooz */
     lawyerType: text("lawyer_type").notNull().default("wakil"),
+    /** kanoon | markaz — عضویت رسمی: کانون وکلا یا مرکز وکلا (فرم مستقیم ثبت‌نام وکلا) */
+    barType: text("bar_type"),
     city: text("city").notNull(),
     province: text("province").notNull(),
     experienceYears: integer("experience_years").notNull().default(0),

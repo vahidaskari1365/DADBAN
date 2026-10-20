@@ -24,6 +24,7 @@ type OnboardingRow = {
   email: string | null;
   licenseNo: string;
   lawyerType: string; // wakil | karamooz
+  barType: string | null; // kanoon | markaz — فرم مستقیم ثبت‌نام وکلا
   city: string;
   province: string;
   experienceYears: number;
@@ -196,7 +197,13 @@ export default function OnboardingClient({
                     <span dir="ltr" className="font-mono">{r.phone}</span>
                     {r.email && <span dir="ltr" className="font-mono">{r.email}</span>}
                     <span>{t("پروانه:")} <b className="font-mono" dir="ltr">{r.licenseNo}</b></span>
-                    <span>{t(LAWYER_TYPE_FA[r.lawyerType] ?? r.lawyerType)}</span>
+                    <span className="font-bold text-accent-text">
+                      {r.barType === "markaz"
+                        ? t("وکیل مرکز وکلا")
+                        : r.barType === "kanoon"
+                          ? t("وکیل کانون وکلا")
+                          : t(LAWYER_TYPE_FA[r.lawyerType] ?? r.lawyerType)}
+                    </span>
                     <span className="inline-flex items-center gap-1">
                       <Icon name="location" className="h-3.5 w-3.5" />
                       {r.province} / {r.city}

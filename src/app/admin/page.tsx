@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/db";
-import { lawyers, articles, contracts, qaQuestions, cases, consultations, tickets, pageViews } from "@/db/schema";
-import { count, desc, sum } from "drizzle-orm";
+import { lawyers, articles, contracts, qaQuestions, cases, consultations, tickets, pageViews, lawyerOnboarding } from "@/db/schema";
+import { count, desc, eq, sum } from "drizzle-orm";
 import { getAdminSession, hasPerm } from "@/lib/admin-auth";
 import { roleLabel } from "@/lib/admin-permissions";
 import { Container, Card, Badge, Button } from "@/components/ui";
@@ -10,6 +10,7 @@ import { Icon } from "@/components/icons";
 import { faNum } from "@/lib/data";
 import { PageHero } from "@/components/page-hero";
 import LogoutButton from "@/components/admin/logout-button";
+import PendingLawyersAlert, { type PendingLawyerRow } from "@/components/admin/pending-lawyers-alert";
 import { getT } from "@/lib/i18n/server";
 import { templateT } from "@/lib/i18n/core";
 
@@ -96,6 +97,41 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     recent = [];
   }
 
+  /* ── اعلان ثبت‌نام وکلای جدید (فرم مستقیم کانون/مرکز وکلا) — صف pending ── */
+  let pendingLawyerRows: PendingLawyerRow[] = [];
+  let pendingLawyersTotal = 0;
+  try {
+    const rows = await db
+      .select({
+        id: lawyerOnboarding.id,
+        name: lawyerOnboarding.name,
+        phone: lawyerOnboarding.phone,
+        licenseNo: lawyerOnboarding.licenseNo,
+        barType: lawyerOnboarding.barType,
+        lawyerType: lawyerOnboarding.lawyerType,
+        province: lawyerOnboarding.province,
+        createdAt: lawyerOnboarding.createdAt,
+      })
+      .from(lawyerOnboarding)
+      .where(eq(lawyerOnboarding.status, "pending"))
+      .orderBy(desc(lawyerOnboarding.createdAt))
+      .limit(5);
+    pendingLawyerRows = (Array.isArray(rows) ? rows : []).map((r) => ({
+      id: r.id,
+      name: r.name,
+      phone: r.phone,
+      licenseNo: r.licenseNo,
+      barType: r.barType,
+      lawyerType: r.lawyerType,
+      province: r.province,
+      createdAt: (r.createdAt instanceof Date ? r.createdAt : new Date(r.createdAt)).toISOString(),
+    }));
+    const c = await db.select({ value: count() }).from(lawyerOnboarding).where(eq(lawyerOnboarding.status, "pending"));
+    pendingLawyersTotal = c[0]?.value ?? pendingLawyerRows.length;
+  } catch {
+    pendingLawyerRows = [];
+  }
+
   const stats = [
     { label: "وکلا", value: s.lawyers, icon: "badge" as const, tone: "primary" as const, href: "/lawyers" },
     { label: "مقالات", value: s.articles, icon: "book" as const, tone: "accent" as const, href: "/knowledge" },
@@ -154,6 +190,15 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               </Card>
             </Link>
           ))}
+        </div>
+
+        {/* اعلان ثبت‌نام وکیل جدید — با دکمه‌های تأیید / عدم تأیید */}
+        <div className="mt-6">
+          <PendingLawyersAlert
+            rows={pendingLawyerRows}
+            total={pendingLawyersTotal}
+            canReview={hasPerm(session, "lawyers")}
+          />
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">

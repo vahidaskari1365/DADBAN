@@ -267,7 +267,13 @@ export async function PUT(req: Request) {
         .values({
           slug: lawyerProfileSlug(request.name),
           name: request.name,
-          title: request.lawyerType === "karamooz" ? "کارآموز وکالت" : "وکیل پایه یک دادگستری",
+          // عنوان پروفایل از نوع عضویت: کانون وکلا / مرکز وکلا / کارآموز
+          title:
+            request.barType === "markaz"
+              ? "وکیل مرکز وکلا"
+              : request.lawyerType === "karamooz"
+                ? "کارآموز وکالت"
+                : "وکیل پایه یک دادگستری",
           lawyerType: request.lawyerType,
           licenseNo: request.licenseNo,
           city: request.city,

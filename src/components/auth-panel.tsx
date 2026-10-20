@@ -9,6 +9,7 @@ import { isRedirectSafeForRole, isLawyerSideRole, panelHomeForRole } from "@/lib
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 import { DevCodeNotice, ForgotPasswordFlow, OtpLoginFlow, OtpCodeInput, ResendRow, useCooldown } from "@/components/auth/otp-flows";
+import { ProvinceCombobox } from "@/components/auth/province-combobox";
 
 type Tab = "client" | "lawyer";
 type Mode = "login" | "register";
@@ -39,12 +40,6 @@ const BRAND: Record<Mode, { title: string; gold: string; sub: string }> = {
     sub: "حساب بسازید؛ وکیل متخصص، پیگیری شفاف پرونده و دستیار هوشمند، همین‌جا است.",
   },
 };
-
-const LAWYER_STEPS = [
-  { title: "ارسال مدارک و شماره پروانه", desc: "از طریق پشتیبانی، پروانه وکالت و مدارک هویتی را ارسال کنید." },
-  { title: "بررسی و احراز هویت", desc: "کارشناسان دادورزان ظرف ۳ تا ۵ روز کاری راستی‌آزمایی می‌کنند." },
-  { title: "فعال‌سازی پنل وکیل", desc: "پنل شما فعال می‌شود و درخواست‌های موکلان را دریافت می‌کنید." },
-];
 
 const TRUST_ITEMS = ["وکلای احراز هویت‌شده", "پیگیری شفاف", "پشتیبانی ۲۴/۷"];
 
@@ -234,6 +229,11 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
   /* مسیر عضویت وکیل — فقط در تب وکیلِ register استفاده می‌شود */
   const [lawyerTrack, setLawyerTrack] = useState<LawyerTrack>("wakil");
   const [lawyerCity, setLawyerCity] = useState("");
+  /* ثبت‌نام مستقیم وکیل رسمی — نوع عضویت (کانون/مرکز وکلا)، پروانه و استان */
+  const [barType, setBarType] = useState<"kanoon" | "markaz" | null>(null);
+  const [licenseNo, setLicenseNo] = useState("");
+  const [province, setProvince] = useState("");
+  const [wakilDone, setWakilDone] = useState(false);
   /* تخصص‌ها + گزینهٔ اختیاری «وکیل کارمندان و کارهای اداری» — فرم ثبت‌نام کارآموز */
   const [lawyerSpecs, setLawyerSpecs] = useState<string[]>([]);
   const [employeeLawyer, setEmployeeLawyer] = useState(false);
@@ -298,6 +298,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         setRegStage("form");
         setRegCode("");
         setRegDevCode(null);
+        setWakilDone(false);
         try {
           window.history.replaceState(null, "", nextMode === "register" ? "/register" : "/login");
         } catch {}
@@ -520,13 +521,85 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
     setLoading(false);
   };
 
+  /** ثبت‌نام مستقیم وکیل رسمی (کانون/مرکز وکلا) — فرم: نوع عضویت، پروانه، استان، نام، موبایل، رمز ← کد تأیید ← درخواست pending برای مدیر */
+  const submitWakil = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const mobile = toEnDigits(phone).trim();
+    if (loading) return;
+    if (!barType) {
+      setError(t("نوع عضویت (کانون وکلا یا مرکز وکلا) را انتخاب کنید."));
+      return;
+    }
+    if (licenseNo.trim().length < 2) {
+      setError(t("شماره پروانه وکالت را وارد کنید."));
+      return;
+    }
+    if (!province) {
+      setError(t("استان را انتخاب کنید."));
+      return;
+    }
+    if (!name.trim() || !mobile || !password) return;
+    if (!/^09\d{9}$/.test(mobile)) {
+      setError(t("شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد."));
+      return;
+    }
+    if (password.length < 8) {
+      setError(t("رمز عبور باید حداقل ۸ کاراکتر باشد."));
+      return;
+    }
+    // مرحلهٔ ۱ — تأیید شماره با کد پیامکی
+    if (regStage === "form") {
+      await requestRegisterOtp(mobile);
+      return;
+    }
+    // مرحلهٔ ۲ — بررسی کد ۵ رقمی و ثبت درخواست عضویت
+    const c = toEnDigits(regCode).replace(/\D/g, "");
+    if (c.length !== 5) {
+      setError(t("کد ۵ رقمی را کامل وارد کنید."));
+      return;
+    }
+    setLoading(true);
+    setError("");
+    setNotice("");
+    try {
+      const res = await fetch("/api/lawyer-register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          barType,
+          licenseNo: licenseNo.trim(),
+          province,
+          name: name.trim(),
+          phone: mobile,
+          password,
+          code: c,
+        }),
+        signal: AbortSignal.timeout(25_000),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        // سشن صادر شد؛ درخواست «در انتظار تأیید مدیر» است — صفحهٔ موفقیت داخل همان کارت
+        setWakilDone(true);
+        setRegStage("form");
+        setRegCode("");
+        setRegDevCode(null);
+        setLoading(false);
+        return;
+      }
+      setError(data.error ?? t("خطا در ثبت‌نام"));
+    } catch (err) {
+      setError(err instanceof Error && err.name === "TimeoutError" ? t("پاسخ سرور بیش از حد طول کشید؛ لطفاً دوباره تلاش کنید.") : t("خطا در ارتباط با سرور"));
+    }
+    setLoading(false);
+  };
+
   const heading =
     tab === "lawyer"
       ? mode === "login"
         ? { title: "ورود وکلا", sub: "با شماره موبایل یا ایمیلِ حساب وکیل خود وارد شوید." }
         : lawyerTrack === "karamooz"
           ? { title: "عضویت کارآموز وکالت", sub: "حساب و پروفایل کارآموزی شما فوری ساخته می‌شود." }
-          : { title: "عضویت وکلا", sub: "پس از احراز هویت، پنل اختصاصی وکیل برای شما فعال می‌شود." }
+          : { title: "عضویت وکلا", sub: "فرم زیر را کامل کنید؛ پس از تأیید شمارهٔ موبایل، درخواستتان برای تأیید مدیران ارسال می‌شود و پنل وکیل فعال می‌گردد." }
       : forgotOpen
         ? { title: "بازیابی رمز عبور", sub: "کد تأیید بگیرید و رمز جدیدی برای حساب خود بگذارید." }
         : mode === "login" && loginFlow === "otp"
@@ -824,35 +897,151 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                   </div>
 
                   {lawyerTrack === "wakil" ? (
-                    /* ── مسیر وکیل رسمی — همان فرآیند احراز هویت از طریق پشتیبانی ── */
-                    <div>
-                      <ol className="space-y-3">
-                        {LAWYER_STEPS.map((s, i) => (
-                          <li key={s.title} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3.5">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-black text-[var(--primary-foreground)] shadow-md">
-                              {faNum(i + 1)}
-                            </span>
-                            <span className="flex flex-col gap-0.5">
-                              <span className="text-sm font-bold text-[var(--auth-ink)]">{t(s.title)}</span>
-                              <span className="text-xs leading-6 text-[var(--auth-ink-soft)]">{t(s.desc)}</span>
-                            </span>
-                          </li>
-                        ))}
-                      </ol>
-                      <a
-                        href="/contact"
-                        className="btn-press mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] text-sm font-extrabold text-[var(--primary-foreground)] shadow-[0_14px_30px_-12px_rgba(21,54,93,0.55)] transition-all hover:bg-[var(--primary-hover)] hover:shadow-[0_18px_36px_-12px_rgba(21,54,93,0.65)]"
-                      >
-                        <Icon name="chat" className="h-4 w-4" />
-                        {t("شروع درخواست عضویت")}
-                      </a>
-                      <p className="mt-4 text-center text-xs text-[var(--auth-ink-soft)]">
+                    /* ── مسیر وکیل رسمی — ثبت‌نام مستقیم: نوع عضویت، پروانه، استان، نام، موبایل، رمز ← کد تأیید ── */
+                    <form onSubmit={submitWakil} className="space-y-5" noValidate data-testid="wakil-register-form">
+                      {wakilDone ? (
+                        <div className="rounded-2xl border border-[color-mix(in_oklab,var(--success)_35%,transparent)] bg-[color-mix(in_oklab,var(--success)_8%,transparent)] p-6 text-center" data-testid="wakil-done">
+                          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--success)_18%,transparent)] text-[var(--success)]">
+                            <Icon name="check" className="h-6 w-6" />
+                          </span>
+                          <p className="mt-3 text-base font-black text-[var(--auth-ink)]">{t("ثبت‌نام شما کامل شد")}</p>
+                          <p className="mt-2 text-xs leading-6 text-[var(--auth-ink-soft)]">
+                            {t("شمارهٔ موبایل شما تأیید شد و درخواست عضویت به‌همراه مشخصات پروانه برای بررسی و تأیید مدیران ارسال شد؛ به‌محض تأیید، پنل وکیل شما فعال می‌شود.")}
+                          </p>
+                          <a
+                            href="/dashboard/client"
+                            className="btn-press mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--primary)] text-sm font-extrabold text-[var(--primary-foreground)] shadow-[0_14px_30px_-12px_rgba(21,54,93,0.55)] transition-all hover:bg-[var(--primary-hover)]"
+                          >
+                            <Icon name="home" className="h-4 w-4" />
+                            {t("ورود به پنل کاربری")}
+                          </a>
+                          <p className="mt-3 text-[11px] leading-5 text-[var(--auth-ink-soft)]">
+                            {t("وضعیت درخواست و نتیجهٔ بررسی از همین پنل قابل پیگیری است.")}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          {/* نوع عضویت — گزینهٔ تیک‌خور: کانون وکلا یا مرکز وکلا */}
+                          <fieldset>
+                            <legend className="mb-1.5 block text-[11px] font-extrabold text-[var(--auth-ink-soft)]">{t("نوع وکیل")} *</legend>
+                            <div role="radiogroup" aria-label={t("نوع وکیل")} className="grid grid-cols-2 gap-3">
+                              {([
+                                { id: "kanoon" as const, title: "وکیل کانون وکلا", desc: "عضو کانون وکلای دادگستری" },
+                                { id: "markaz" as const, title: "وکیل مرکز وکلا", desc: "عضو مرکز وکلای دادگستری" },
+                              ]).map((o) => {
+                                const checked = barType === o.id;
+                                return (
+                                  <button
+                                    key={o.id}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={checked}
+                                    onClick={() => setBarType(o.id)}
+                                    data-testid={`bar-${o.id}`}
+                                    className={`btn-press flex items-start gap-2.5 rounded-2xl border p-3.5 text-start transition-all duration-300 ${
+                                      checked
+                                        ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] shadow-[0_10px_24px_-14px_rgba(176,125,18,0.55)]"
+                                        : "border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_4%,transparent)] hover:border-[color-mix(in_oklab,var(--accent)_45%,transparent)]"
+                                    }`}
+                                  >
+                                    <span
+                                      aria-hidden
+                                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
+                                        checked ? "border-[var(--accent)] bg-[var(--accent)] text-white" : "border-[var(--auth-line)] bg-transparent"
+                                      }`}
+                                    >
+                                      {checked && <Icon name="check" className="h-3.5 w-3.5" />}
+                                    </span>
+                                    <span>
+                                      <span className={`block text-[13px] font-extrabold ${checked ? "text-[var(--auth-ink)]" : "text-[var(--auth-ink-soft)]"}`}>
+                                        {t(o.title)}
+                                      </span>
+                                      <span className="mt-0.5 block text-[11px] leading-5 text-[var(--auth-ink-soft)]">{t(o.desc)}</span>
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </fieldset>
+
+                          {/* شماره پروانه وکالت */}
+                          <AuthField label={t("شماره پروانه وکالت")} icon="id">
+                            <input
+                              value={licenseNo}
+                              onChange={(e) => setLicenseNo(e.target.value)}
+                              placeholder={t("مثال: 12345")}
+                              dir="ltr"
+                              style={{ textAlign: "right" }}
+                              maxLength={60}
+                              data-testid="wakil-license"
+                            />
+                          </AuthField>
+
+                          {/* استان — کومبوباکس با جستجوی زنده */}
+                          <div>
+                            <label htmlFor="wakil-province" className="mb-1.5 block text-[11px] font-extrabold text-[var(--auth-ink-soft)]">
+                              {t("استان")} *
+                            </label>
+                            <ProvinceCombobox id="wakil-province" value={province} onChange={setProvince} />
+                          </div>
+
+                          <AuthField label={t("نام و نام خانوادگی")} icon="user">
+                            <input
+                              value={name}
+                              onChange={(e) => setName(e.target.value)}
+                              placeholder={t("مثلاً رضا کریمی")}
+                              autoComplete="name"
+                              data-testid="wakil-name"
+                            />
+                          </AuthField>
+
+                          <AuthField label={t("شماره موبایل")} icon="phone">
+                            <input
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value)}
+                              placeholder="09123456789"
+                              inputMode="tel"
+                              autoComplete="tel"
+                              dir="ltr"
+                              style={{ textAlign: "right" }}
+                              data-testid="wakil-phone"
+                            />
+                          </AuthField>
+
+                          <AuthPwField idPrefix="wakil" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} autoComplete="new-password" />
+
+                          {regStage === "code" && (
+                            <RegisterOtpStep
+                              devCode={regDevCode}
+                              phoneFa={faNum(toEnDigits(phone).trim())}
+                              code={regCode}
+                              onCodeChange={setRegCode}
+                              cooldown={regCooldown}
+                              onResend={() => void requestRegisterOtp(toEnDigits(phone).trim())}
+                              onBack={backToRegisterForm}
+                            />
+                          )}
+
+                          {regStage === "form" && (
+                            <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-[11px] font-bold leading-6 text-[var(--auth-ink-soft)]">
+                              {t("با تأیید شماره، حساب شما ساخته و درخواست عضویت با مشخصات پروانه برای تأیید مدیران ارسال می‌شود؛ پس از تأیید، پنل وکیل شما فعال می‌گردد.")}
+                            </p>
+                          )}
+
+                          <AuthSubmit
+                            loading={loading}
+                            label={regStage === "form" ? t("تأیید شماره و ادامه") : t("تأیید کد و ثبت درخواست")}
+                            loadingLabel={regStage === "form" ? t("در حال ارسال کد…") : t("در حال بررسی کد…")}
+                          />
+                        </>
+                      )}
+                      <p className="text-center text-xs text-[var(--auth-ink-soft)]">
                         {t("پروانه‌تان قبلاً تأیید شده؟")}{" "}
                         <button type="button" onClick={() => sweepTo("login", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">
                           {t("ورود وکیل")}
                         </button>
                       </p>
-                    </div>
+                    </form>
                   ) : (
                     /* ── مسیر کارآموز وکالت — فرم ثبت‌نام مستقیم ── */
                     <form onSubmit={submitKaramooz} className="space-y-5" noValidate>
