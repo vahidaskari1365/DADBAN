@@ -61,7 +61,7 @@ jobs:
           echo "--- host deploy-agent.sh: restart-related lines ---"
           rg -n "restart|pkill|kill" fetched/deploy-agent.sh 2>/dev/null || echo "(no match)"
 
-      - name: Patch host deploy-agent.sh (hard restart after extract)
+      - name: Patch host deploy-agent.sh (hard restart on fresh restart.txt)
         if: ${{ github.event.inputs.patch_agent == 'true' }}
         env:
           FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
@@ -71,35 +71,48 @@ jobs:
           APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
         run: |
           set -e
-          # نسخهٔ میزبان را می‌گیریم و فقط بلوک ری‌استارت سخت را اضافه می‌کنیم
+          # ۱) نسخهٔ میزبان را می‌گیریم (باید دقیقاً v2.4 ریپو باشد — ۱۲۷۸۳ بایت)
           lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<'EOF' 2>&1
             set ftp:ssl-allow off
             set ftp:passive-mode on
             get -O /tmp deploy-agent.sh
             bye
           EOF
-          cp /tmp/deploy-agent.sh /tmp/deploy-agent.sh.orig
-          if ! rg -q "HARD-RESTART-BLOCK" /tmp/deploy-agent.sh; then
-            cat >> /tmp/deploy-agent.sh <<'BLOCK'
-
-          # ── HARD-RESTART-BLOCK (ops patch) ──
-          # اگر ری‌استارت Passenger با restart.txt اثر نکند، پروسه‌های node قدیمی
-          # همین کاربر را می‌کشیم تا Passenger با کد جدید دوباره spawn کند.
-          if [ -f "$APP/tmp/restart.txt" ] && [ "$APP/tmp/restart.txt" -nt "$HOME/.node-pid-stamp" ]; then
-            pkill -u "$USER" -f "server\.js" 2>/dev/null || true
-            pkill -u "$USER" -f "app\.js" 2>/dev/null || true
-            date -u +%FT%TZ > "$HOME/.node-pid-stamp"
-            echo "$(now) HARD-RESTART: stale node processes killed — Passenger will respawn with new code"
-          fi
-          BLOCK
-          fi
+          python3 - <<'PYEOF'
+          import io
+          src = io.open('/tmp/deploy-agent.sh', encoding='utf-8').read()
+          if 'HARD-RESTART-BLOCK' in src:
+              print('already patched — skip')
+          else:
+              anchor = "trap 'rmdir \"$LOCK\" 2>/dev/null' EXIT"
+              assert src.count(anchor) == 1, 'anchor not found uniquely: %d' % src.count(anchor)
+              block = '''
+# ── HARD-RESTART-BLOCK (ops patch) ──
+# اگر پروسهٔ node کهنه (فرایند دستی/یتیم) به‌جای Passenger در حال سرو باشد،
+# restart.txt روی آن اثر نمی‌کند؛ اینجا هر بار restart.txt تازه‌تر از مُهر قبلی
+# باشد، پروسه‌های node همین کاربر کشته می‌شوند تا Passenger با کد تازه spawn کند.
+HR_STAMP="$HOME/.hard-restart-stamp"
+HR_RESTART="$APP/tmp/restart.txt"
+if [ -f "$HR_RESTART" ] && { [ ! -f "$HR_STAMP" ] || [ "$HR_RESTART" -nt "$HR_STAMP" ]; }; then
+  pkill -u "$USER" -f 'server\\.js' 2>/dev/null || true
+  pkill -u "$USER" -f 'app\\.js' 2>/dev/null || true
+  date -u +%FT%TZ > "$HR_STAMP"
+  echo "$(now) HARD-RESTART: stale node processes killed — Passenger respawns with fresh code"
+fi
+# ── END HARD-RESTART-BLOCK ──'''
+              src = src.replace(anchor, anchor + '\n' + block, 1)
+              io.open('/tmp/deploy-agent.sh', 'w', encoding='utf-8').write(src)
+              print('patched OK — size:', len(src))
+          PYEOF
+          rg -q "HARD-RESTART-BLOCK" /tmp/deploy-agent.sh
+          # ۲) آپلود نسخهٔ پچ‌شده
           lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF2 2>&1
             set ftp:ssl-allow off
             set ftp:passive-mode on
             put -O . /tmp/deploy-agent.sh
             bye
           EOF2
-          echo "✓ patched deploy-agent.sh uploaded (with HARD-RESTART-BLOCK)"
+          echo "✓ patched deploy-agent.sh uploaded — next cron tick hard-restarts stale node"
 
       - name: Download fresh tarball from release
         if: ${{ github.event.inputs.force_install == 'true' }}
