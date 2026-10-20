@@ -1,0 +1,75 @@
+name: Host probe & force-install (cPanel)
+
+# ابزار عملیاتی: وضعیت هاست را از طریق FTP می‌خواند (لاگ deploy-agent و اینباکس)
+# و برای عبور از هر گیر احتمالی، تاربال تازه را دوباره آپلود و مارکر نصب را حذف
+# می‌کند تا تیک بعدی کرون، ریلیز را قطعاً نصب کند. تنها با workflow_dispatch اجرا می‌شود.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect host state (inbox, marker, agent log)
+        env:
+          FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
+          FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
+          FTP_USER: ${{ secrets.CPANEL_FTP_USER }}
+          FTP_PASS: ${{ secrets.CPANEL_FTP_PASS }}
+          APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
+        run: |
+          set -e
+          sudo apt-get update -y -qq >/dev/null 2>&1 || true
+          sudo apt-get install -y -qq lftp >/dev/null 2>&1 || sudo apt-get install -y lftp
+          echo "=== inbox / marker / restart.txt listing ==="
+          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF
+            set net:max-retries 5
+            set net:timeout 40
+            set ftp:ssl-allow off
+            set ftp:passive-mode on
+            ls -l "$APP_DIR/.release-inbox" || echo "(inbox missing)"
+            ls -l "$APP_DIR/.deploy-version" || echo "(marker missing)"
+            ls -l "$APP_DIR/tmp/restart.txt" || echo "(restart.txt missing)"
+            bye
+          EOF
+          echo "=== deploy-agent.log (tail 80) ==="
+          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF2
+            set ftp:ssl-allow off
+            set ftp:passive-mode on
+            get -O /tmp "$APP_DIR/deploy-agent.log" || true
+            bye
+          EOF2
+          tail -80 /tmp/deploy-agent.log 2>/dev/null || echo "(no agent log)"
+
+      - name: Download fresh tarball from release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download latest-cpanel --repo "$GITHUB_REPOSITORY" \
+            --pattern "release.tar.gz" --output release.tar.gz
+          ls -la release.tar.gz
+
+      - name: Force reinstall on next cron tick (fresh upload + remove marker)
+        env:
+          FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
+          FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
+          FTP_USER: ${{ secrets.CPANEL_FTP_USER }}
+          FTP_PASS: ${{ secrets.CPANEL_FTP_PASS }}
+          APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
+        run: |
+          set -e
+          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF
+            set net:max-retries 5
+            set net:timeout 40
+            set ftp:ssl-allow off
+            set ftp:passive-mode on
+            put -O "$APP_DIR/.release-inbox" release.tar.gz
+            rm -f "$APP_DIR/.deploy-version"
+            ls -l "$APP_DIR/.release-inbox"
+            bye
+          EOF
+          echo "✓ tarball re-uploaded + marker removed — next cron tick must install"
