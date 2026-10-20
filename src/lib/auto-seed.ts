@@ -2,7 +2,7 @@
 // Used by /api/seed (manual) and instrumentation (automatic on startup).
 
 import { db } from "@/db";
-import { articleData } from "@/data/articles-seed";
+import { articleData, ARTICLES_CONTENT_VERSION } from "@/data/articles-seed";
 import {
   lawyers,
   reviews,
@@ -542,8 +542,11 @@ export async function ensureLawyerPhotos(): Promise<void> {
 }
 
 /**
- * آپگرید محتوای مقالات: اگر نسخه‌ی seed جدیدتر/بلندتر از دیتابیس باشد،
- * مقالات موجود با محتوای تحریریه‌ی جدید بازنویسی می‌شوند (بدون دست‌زدن به بازدید و تاریخ).
+ * آپگرید محتوای مقالات — نسخه‌محور (نه مقایسه طول متن):
+ * نسخه تحریریه در جدول app_meta ذخیره می‌شود؛ اگر با ARTICLES_CONTENT_VERSION فرق داشته باشد،
+ * همه مقالات seed با محتوای جدید بازنویسی می‌شوند و updatedAt مقالات واقعاً ویرایش‌شده
+ * به امروز تنظیم می‌شود (مبنای dateModified در JSON-LD — E-E-A-T).
+ * هر دو مسیر (اعمال و رد شدن) در لاگ ثبت می‌شوند تا انتشار روی پروداکشن قابل‌رصد باشد.
  */
 async function upgradeArticles(): Promise<void> {
   if (!articleData.length) return;
@@ -554,17 +557,38 @@ async function upgradeArticles(): Promise<void> {
     await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_url TEXT`));
     await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS image_alt TEXT`));
     await db.execute(sql.raw(`ALTER TABLE articles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP`));
-    const probe = await db.execute(
-      sql`SELECT LENGTH(content) AS l FROM articles WHERE slug = ${articleData[0].slug} LIMIT 1`,
+    await db.execute(
+      sql.raw(`CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)`),
     );
-    const rows = (probe as { rows?: { l?: number }[] }).rows ?? [];
-    const dbLen = Number(rows[0]?.l ?? 0);
-    const seedLen = articleData[0].content.length;
-    if (dbLen >= seedLen) return; // قبلاً آپگرید شده
+    const stored = await db.execute(
+      sql`SELECT value FROM app_meta WHERE key = 'articles_content_version' LIMIT 1`,
+    );
+    const storedRows = (stored as { rows?: { value?: string }[] }).rows ?? [];
+    const storedVersion = storedRows[0]?.value ?? "";
+    if (storedVersion === ARTICLES_CONTENT_VERSION) {
+      console.log(`[auto-seed] articles already at content version ${ARTICLES_CONTENT_VERSION} — skip`);
+      return;
+    }
+    const revisedAt = new Date(); // تاریخ واقعی این بازبینی تحریریه‌ای
+    let changed = 0;
     for (const a of articleData) {
+      // فقط مقالاتی که واقعاً تغییر کرده‌اند بازنویسی می‌شوند تا dateModified صادقانه بماند (E-E-A-T)
+      const cur = await db.execute(
+        sql`SELECT title, excerpt, faq, content FROM articles WHERE slug = ${a.slug} LIMIT 1`,
+      );
+      const curRows = (cur as { rows?: { title?: string; excerpt?: string; faq?: string; content?: string }[] }).rows ?? [];
+      const prev = curRows[0];
+      const isUnchanged =
+        prev &&
+        prev.title === a.title &&
+        prev.excerpt === a.excerpt &&
+        prev.faq === (a.faq ?? "[]") &&
+        prev.content === a.content;
+      if (isUnchanged) continue;
+      changed++;
       await db
         .insert(articles)
-        .values(a)
+        .values({ ...a, updatedAt: revisedAt })
         .onConflictDoUpdate({
           target: articles.slug,
           set: {
@@ -577,11 +601,18 @@ async function upgradeArticles(): Promise<void> {
             imageUrl: a.imageUrl ?? null,
             imageAlt: a.imageAlt ?? null,
             readTime: a.readTime,
+            updatedAt: revisedAt,
           },
         });
     }
-  } catch {
-    /* non-fatal — push/seed بعداً انجام می‌شود */
+    await db.execute(
+      sql`INSERT INTO app_meta (key, value) VALUES ('articles_content_version', ${ARTICLES_CONTENT_VERSION}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+    );
+    console.log(
+      `[auto-seed] articles upgraded: ${storedVersion || "(none)"} → ${ARTICLES_CONTENT_VERSION} (${changed}/${articleData.length} changed, updatedAt=${revisedAt.toISOString()})`,
+    );
+  } catch (err) {
+    console.error("[auto-seed] upgradeArticles failed:", err);
   }
 }
 
@@ -654,6 +685,13 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
     try {
       await db.insert(articles).values(articleData).onConflictDoNothing({ target: articles.slug });
       await db.insert(qaQuestions).values(qaData).onConflictDoNothing({ target: qaQuestions.slug });
+      // ثبت نسخه محتوای درج‌شده تا بوت بعدی دوباره آپگرید نزند
+      await db.execute(
+        sql.raw(`CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)`),
+      );
+      await db.execute(
+        sql`INSERT INTO app_meta (key, value) VALUES ('articles_content_version', ${ARTICLES_CONTENT_VERSION}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+      );
     } catch {
       /* non-fatal */
     }

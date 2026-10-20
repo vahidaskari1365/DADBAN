@@ -8,6 +8,13 @@ import type { articles } from "@/db/schema";
 
 export type ArticleSeed = typeof articles.$inferInsert;
 
+/**
+ * نسخه تحریریه محتوای مقالات — هر تغییر تحریریه‌ای در articleData باید این رشته را bump کند.
+ * upgradeArticles در auto-seed بر اساس این نسخه (و نه طول متن) مقالات دیتابیس را بازنویسی می‌کند
+ * تا انتشار محتوای جدید روی پروداکشن قطعی و قابل‌مشاهده باشد.
+ */
+export const ARTICLES_CONTENT_VERSION = "2026-10-20-check-cluster-1";
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const daysAgo = (n: number) => new Date(Date.now() - n * DAY_MS);
 

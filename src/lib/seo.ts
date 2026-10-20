@@ -16,6 +16,7 @@ import { SITE_URL } from "./site";
 import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "./seo-landings";
 import { LAWS } from "./laws-content";
 import { faNum } from "./data";
+import { ARTICLES_CONTENT_VERSION } from "@/data/articles-seed";
 
 export const SEO_BASE = SITE_URL;
 
@@ -278,6 +279,7 @@ export function qaPageSchema(qa: {
 export const LLMS_TXT = `# ${SITE_NAME} (${SITE_NAME_EN})
 
 > ${SITE_DESCRIPTION}
+- نسخه محتوای مجله: ${ARTICLES_CONTENT_VERSION} (آخرین بازبینی تحریریه راهنماهای عمیق)
 
 ## درباره
 ${SITE_NAME} پلتفرم هوشمند خدمات حقوقی ایران است که وکیل‌یابی، مشاوره آنلاین،
