@@ -710,16 +710,12 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
     try {
       await db.insert(articles).values(articleData).onConflictDoNothing({ target: articles.slug });
       await db.insert(qaQuestions).values(qaData).onConflictDoNothing({ target: qaQuestions.slug });
-      // ثبت نسخه محتوای درج‌شده تا بوت بعدی دوباره آپگرید نزند
-      await db.execute(
-        sql.raw(`CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)`),
-      );
-      await db.execute(
-        sql`INSERT INTO app_meta (key, value) VALUES ('articles_content_version', ${ARTICLES_CONTENT_VERSION}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
-      );
     } catch {
       /* non-fatal */
     }
+    // آپگرید نسخه‌محور مقالات — در مسیر کامل هم اجرا می‌شود چون در پروداکشن
+    // فهرست وکلا عمداً خالی می‌ماند و این مسیر، مسیر اصلیِ هر بوت است.
+    await upgradeArticles();
     // Availability rules (شنبه تا پنجشنبه ۹ تا ۱۸ به وقت تهران) for lawyers
     // that have none yet — the real basis of the booking calendar.
     try {

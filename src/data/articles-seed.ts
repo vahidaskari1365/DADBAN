@@ -13,7 +13,7 @@ export type ArticleSeed = typeof articles.$inferInsert;
  * upgradeArticles در auto-seed بر اساس این نسخه (و نه طول متن) مقالات دیتابیس را بازنویسی می‌کند
  * تا انتشار محتوای جدید روی پروداکشن قطعی و قابل‌مشاهده باشد.
  */
-export const ARTICLES_CONTENT_VERSION = "2026-10-20-check-cluster-1";
+export const ARTICLES_CONTENT_VERSION = "2026-10-20-check-cluster-2";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const daysAgo = (n: number) => new Date(Date.now() - n * DAY_MS);
