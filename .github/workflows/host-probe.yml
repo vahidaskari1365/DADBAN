@@ -78,32 +78,7 @@ jobs:
             get -O /tmp deploy-agent.sh
             bye
           EOF
-          python3 - <<'PYEOF'
-          import io
-          src = io.open('/tmp/deploy-agent.sh', encoding='utf-8').read()
-          if 'HARD-RESTART-BLOCK' in src:
-              print('already patched — skip')
-          else:
-              anchor = "trap 'rmdir \"$LOCK\" 2>/dev/null' EXIT"
-              assert src.count(anchor) == 1, 'anchor not found uniquely: %d' % src.count(anchor)
-              block = '''
-# ── HARD-RESTART-BLOCK (ops patch) ──
-# اگر پروسهٔ node کهنه (فرایند دستی/یتیم) به‌جای Passenger در حال سرو باشد،
-# restart.txt روی آن اثر نمی‌کند؛ اینجا هر بار restart.txt تازه‌تر از مُهر قبلی
-# باشد، پروسه‌های node همین کاربر کشته می‌شوند تا Passenger با کد تازه spawn کند.
-HR_STAMP="$HOME/.hard-restart-stamp"
-HR_RESTART="$APP/tmp/restart.txt"
-if [ -f "$HR_RESTART" ] && { [ ! -f "$HR_STAMP" ] || [ "$HR_RESTART" -nt "$HR_STAMP" ]; }; then
-  pkill -u "$USER" -f 'server\\.js' 2>/dev/null || true
-  pkill -u "$USER" -f 'app\\.js' 2>/dev/null || true
-  date -u +%FT%TZ > "$HR_STAMP"
-  echo "$(now) HARD-RESTART: stale node processes killed — Passenger respawns with fresh code"
-fi
-# ── END HARD-RESTART-BLOCK ──'''
-              src = src.replace(anchor, anchor + '\n' + block, 1)
-              io.open('/tmp/deploy-agent.sh', 'w', encoding='utf-8').write(src)
-              print('patched OK — size:', len(src))
-          PYEOF
+          python3 scripts/patch-deploy-agent.py /tmp/deploy-agent.sh
           rg -q "HARD-RESTART-BLOCK" /tmp/deploy-agent.sh
           # ۲) آپلود نسخهٔ پچ‌شده
           lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF2 2>&1
