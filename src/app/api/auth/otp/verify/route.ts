@@ -6,6 +6,7 @@ import { eq, or } from "drizzle-orm";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { getCurrentUser, signUserSession, userCookieName } from "@/lib/user-auth";
 import { rateLimit, readJson } from "@/lib/api-security";
+import { persistAppError, errBrief } from "@/lib/error-persist";
 import { digitsOnly, normalizeIranPhone, phoneLookupVariants, verifyAndConsumeOtp } from "@/lib/otp";
 
 export const runtime = "nodejs";
@@ -73,7 +74,9 @@ export async function POST(req: Request) {
     }
     await db.update(users).set({ phoneVerified: true }).where(eq(users.id, me.id));
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    // ثبت در app_errors — برای عیب‌یابی پروداکشن در /admin/errors (لاگ هاست برای ادمین دیده نمی‌شود)
+    void persistAppError(`OTP verify failed: ${errBrief(err)}`, { purpose, phone: normalized }, "error");
     return NextResponse.json({ ok: false, error: "خطای داخلی رخ داد." }, { status: 500 });
   }
 }

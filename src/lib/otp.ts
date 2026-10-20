@@ -4,6 +4,7 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { otpCodes } from "@/db/schema";
 import { hashPassword, verifyPassword } from "@/lib/user-auth";
+import { persistAppError, errBrief } from "@/lib/error-persist";
 
 /**
  * ============================================================================
@@ -128,7 +129,9 @@ export async function verifyAndConsumeOtp(
     }
     await db.update(otpCodes).set({ consumedAt: now }).where(eq(otpCodes.id, row.id));
     return { ok: true };
-  } catch {
+  } catch (err) {
+    // ثبت در app_errors — خطای DB اینجا بلعیده می‌شود و به catch کلاینت/ادمین نمی‌رسد
+    void persistAppError(`OTP verifyAndConsume failed: ${errBrief(err)}`, { phone: phoneNormalized, purpose }, "error");
     return { ok: false, status: 500, error: "خطای داخلی رخ داد." };
   }
 }
