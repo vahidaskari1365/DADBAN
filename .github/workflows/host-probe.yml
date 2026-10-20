@@ -1,11 +1,16 @@
 name: Host probe & force-install (cPanel)
 
 # ابزار عملیاتی: وضعیت هاست را از طریق FTP می‌خواند (لاگ deploy-agent و اینباکس)
-# و برای عبور از هر گیر احتمالی، تاربال تازه را دوباره آپلود و مارکر نصب را حذف
-# می‌کند تا تیک بعدی کرون، ریلیز را قطعاً نصب کند. تنها با workflow_dispatch اجرا می‌شود.
+# و در صورت نیاز، تاربال تازه را دوباره آپلود و مارکر نصب را حذف می‌کند تا تیک
+# بعدی کرون، ریلیز را قطعاً نصب کند. تنها با workflow_dispatch اجرا می‌شود.
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force_install:
+        description: "re-upload tarball + remove install marker (force next cron tick)"
+        required: false
+        default: "true"
 
 permissions:
   contents: read
@@ -14,7 +19,7 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect host state (inbox, marker, agent log)
+      - name: Inspect host state (home, inbox, marker, agent log & script)
         env:
           FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
           FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
@@ -22,30 +27,44 @@ jobs:
           FTP_PASS: ${{ secrets.CPANEL_FTP_PASS }}
           APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
         run: |
-          set -e
+          set +e
           sudo apt-get update -y -qq >/dev/null 2>&1 || true
           sudo apt-get install -y -qq lftp >/dev/null 2>&1 || sudo apt-get install -y lftp
-          echo "=== inbox / marker / restart.txt listing ==="
-          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF
-            set net:max-retries 5
-            set net:timeout 40
+          LFTP="lftp -u $FTP_USER,$FTP_PASS -p $FTP_PORT ftp://$FTP_HOST"
+          echo "=== home root listing ==="
+          $LFTP <<'EOF' 2>&1
             set ftp:ssl-allow off
             set ftp:passive-mode on
-            ls -l "$APP_DIR/.release-inbox" || echo "(inbox missing)"
-            ls -l "$APP_DIR/.deploy-version" || echo "(marker missing)"
-            ls -l "$APP_DIR/tmp/restart.txt" || echo "(restart.txt missing)"
+            ls -la .
             bye
           EOF
-          echo "=== deploy-agent.log (tail 80) ==="
-          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF2
+          echo "=== inbox / marker / restart.txt ==="
+          $LFTP <<'EOF' 2>&1
             set ftp:ssl-allow off
             set ftp:passive-mode on
-            get -O /tmp "$APP_DIR/deploy-agent.log" || true
+            ls -la .release-inbox
+            ls -la .deploy-version
+            ls -la tmp/restart.txt
+            bye
+          EOF
+          echo "=== fetch deploy-agent.log + deploy-agent.sh + marker content ==="
+          mkdir -p fetched
+          $LFTP <<'EOF2' 2>&1
+            set ftp:ssl-allow off
+            set ftp:passive-mode on
+            get -O fetched deploy-agent.log
+            get -O fetched deploy-agent.sh
+            get -O fetched/.deploy-version .deploy-version
+            get -O fetched/restart.txt tmp/restart.txt
             bye
           EOF2
-          tail -80 /tmp/deploy-agent.log 2>/dev/null || echo "(no agent log)"
+          echo "--- .deploy-version content ---"; cat fetched/.deploy-version 2>/dev/null || echo "(missing)"
+          echo "--- tmp/restart.txt content ---"; cat fetched/restart.txt 2>/dev/null || echo "(missing)"
+          echo "--- deploy-agent.log tail 100 ---"; tail -100 fetched/deploy-agent.log 2>/dev/null || echo "(no log at FTP root — trying APP_DIR next)"
+          echo "--- deploy-agent.sh (first 40 lines) ---"; head -40 fetched/deploy-agent.sh 2>/dev/null || echo "(script not at FTP root)"
 
       - name: Download fresh tarball from release
+        if: ${{ github.event.inputs.force_install == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -54,6 +73,7 @@ jobs:
           ls -la release.tar.gz
 
       - name: Force reinstall on next cron tick (fresh upload + remove marker)
+        if: ${{ github.event.inputs.force_install == 'true' }}
         env:
           FTP_HOST: ${{ secrets.CPANEL_FTP_HOST }}
           FTP_PORT: ${{ secrets.CPANEL_FTP_PORT || 21 }}
@@ -61,7 +81,6 @@ jobs:
           FTP_PASS: ${{ secrets.CPANEL_FTP_PASS }}
           APP_DIR: ${{ secrets.CPANEL_APP_DIR }}
         run: |
-          set -e
           lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "ftp://$FTP_HOST" <<EOF
             set net:max-retries 5
             set net:timeout 40
