@@ -393,6 +393,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         setRegStage("code");
         setRegDevCode(data.dev ? String(data.devCode ?? "") : null);
         setNotice(data.dev ? "" : t("کد تأیید ۵ رقمی پیامک شد؛ صندوق پیامک را بررسی کنید."));
+        setLoading(false); // ⚠️ حیاتی: بدون این، دکمهٔ «تأیید و ورود» مرحلهٔ کد در «در حال بررسی…» گیر می‌کند و کاربر هرگز نمی‌تواند کد را ثبت کند (باگ گزارش‌شدهٔ پروداکشن)
         return;
       }
       setError(data.error ?? t("ارسال کد تأیید ناموفق بود."));
