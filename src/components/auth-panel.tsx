@@ -663,6 +663,29 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
               <span aria-hidden className="mt-3 block h-[3px] w-12 rounded-full bg-gradient-to-l from-[var(--accent)] to-[var(--auth-gold)]" />
               <p className="mt-3 text-[13px] leading-7 text-[var(--auth-ink-soft)]">{t(heading.sub)}</p>
 
+              {/* دکمهٔ بزرگ «درخواست عضویت و ثبت‌نام» — بالای فرم، بدون اسکرول کاملاً دیده می‌شود (بازخورد: پیدا کردنش سخت بود) */}
+              {mode === "login" && (
+                <button
+                  type="button"
+                  data-testid="register-cta"
+                  onClick={() => sweepTo("register", tab)}
+                  className="btn-press group mt-5 flex w-full items-center justify-between gap-3 rounded-2xl bg-gradient-to-l from-[var(--auth-gold)] via-[var(--accent)] to-[var(--accent-hover)] p-4 text-start shadow-[0_16px_36px_-14px_rgba(176,125,18,0.55)] transition-all hover:shadow-[0_20px_44px_-14px_rgba(176,125,18,0.7)] sm:p-5"
+                >
+                  <span className="flex items-center gap-3.5">
+                    <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/35 ring-1 ring-white/50">
+                      <Icon name="user-plus" className="h-6 w-6 text-[var(--accent-foreground)]" />
+                    </span>
+                    <span>
+                      <span className="block text-[15px] font-black leading-6 text-[var(--accent-foreground)] sm:text-base">{t("درخواست عضویت و ثبت‌نام")}</span>
+                      <span className="mt-0.5 block text-[11px] font-bold leading-5 text-[var(--accent-foreground)] opacity-80">{t("موکل، وکیل، کارآموز وکالت یا کارشناس حقوقی — رایگان")}</span>
+                    </span>
+                  </span>
+                  <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/35 ring-1 ring-white/50 transition-transform duration-300 group-hover:-translate-x-1">
+                    <Icon name="arrow" className="h-4 w-4 text-[var(--accent-foreground)]" />
+                  </span>
+                </button>
+              )}
+
               {/* بنر خطا / اطلاع */}
               {banner && (
                 <div
@@ -851,12 +874,6 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                       className="text-xs font-extrabold text-[var(--accent-text)] transition-colors hover:text-[var(--auth-gold)]"
                     >
                       {t("رمز عبور را فراموش کرده‌اید؟ بازیابی رمز")}
-                    </button>
-                  </p>
-                  <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-center text-xs leading-6 text-[var(--auth-ink-soft)]">
-                    {t("هنوز عضو دادورزان نشده‌اید؟")}{" "}
-                    <button type="button" onClick={() => sweepTo("register", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">
-                      {t("درخواست عضویت وکیل")}
                     </button>
                   </p>
                 </form>
@@ -1194,24 +1211,13 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                 </div>
               )}
 
-              {/* سوییچ ورود ↔ ثبت‌نام */}
-              {tab === "client" && (
+              {/* سوییچ بازگشت ثبت‌نام → ورود (در حالت ورود، دکمهٔ بزرگ بالای فرم نقش ثبت‌نام را دارد) */}
+              {tab === "client" && mode === "register" && (
                 <p className="mt-7 text-center text-xs text-[var(--auth-ink-soft)]">
-                  {mode === "login" ? (
-                    <>
-                      {t("تازه به دادورزان آمده‌اید؟")}{" "}
-                      <button type="button" onClick={() => sweepTo("register", tab)} className="auth-switch">
-                        {t("حساب بسازید")}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      {t("قبلاً ثبت‌نام کرده‌اید؟")}{" "}
-                      <button type="button" onClick={() => sweepTo("login", tab)} className="auth-switch">
-                        {t("وارد شوید")}
-                      </button>
-                    </>
-                  )}
+                  {t("قبلاً ثبت‌نام کرده‌اید؟")}{" "}
+                  <button type="button" onClick={() => sweepTo("login", tab)} className="auth-switch">
+                    {t("وارد شوید")}
+                  </button>
                 </p>
               )}
 
