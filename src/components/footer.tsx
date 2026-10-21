@@ -145,6 +145,28 @@ export async function Footer() {
               </ul>
             </div>
           ))}
+          {/* نماد اعتماد الکترونیکی (اینماد) — در فضای خالی زیر ستون‌های فوتر، سمت چپ (محل انتخاب کاربر). لینک رسمی trustseal با id و Code دست‌نخورده است */}
+          <div className="justify-self-start lg:col-span-2 lg:col-start-5 lg:justify-self-end">
+            <a
+              href="https://trustseal.enamad.ir/?id=8196650&Code=AqY8rJ3zls3XOs6nEqKQYBxLwScNxIUe"
+              target="_blank"
+              rel="noopener"
+              referrerPolicy="origin"
+              aria-label="نماد اعتماد الکترونیکی اینماد دادورزان"
+              className="inline-flex overflow-hidden rounded-xl bg-white p-1 shadow-sm ring-1 ring-border transition-transform hover:scale-105"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/enamad-seal.jpg"
+                alt="نماد اعتماد الکترونیکی اینماد"
+                referrerPolicy="origin"
+                width={110}
+                height={110}
+                decoding="async"
+                className="h-[110px] w-[110px] object-contain"
+              />
+            </a>
+          </div>
         </div>
 
         {/* نوار سئو — لینک‌سازی داخلی سراسری به صفحات فرود (تخصص‌ها × شهرها) */}
@@ -179,34 +201,13 @@ export async function Footer() {
           </nav>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-5 border-t border-border pt-6 sm:flex-row sm:items-center">
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
           <p className="text-xs text-muted">
             © {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(new Date().getFullYear())} {t("دادورزان — تمامی حقوق محفوظ است.")}
           </p>
-          <p className="text-xs leading-6 text-muted sm:max-w-md sm:text-center">
+          <p className="text-xs text-muted">
             {t("محتوای این پلتفرم صرفاً جنبه راهنمایی دارد و جایگزین مشاوره تخصصی وکیل نیست.")}
           </p>
-          {/* نماد اعتماد الکترونیکی (اینماد) — کد رسمی بدون تغییر؛ فقط متن جایگزین و اندازه اضافه شده */}
-          <a
-            href="https://trustseal.enamad.ir/?id=8196650&Code=AqY8rJ3zls3XOs6nEqKQYBxLwScNxIUe"
-            target="_blank"
-            rel="noopener"
-            referrerPolicy="origin"
-            aria-label="نماد اعتماد الکترونیکی ساماندهی و اینماد دادورزان"
-            className="inline-flex shrink-0 items-center rounded-md bg-white p-1.5 shadow-sm ring-1 ring-border transition-transform hover:scale-105"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://trustseal.enamad.ir/logo.aspx?id=8196650&Code=AqY8rJ3zls3XOs6nEqKQYBxLwScNxIUe"
-              alt="نماد اعتماد الکترونیکی اینماد"
-              referrerPolicy="origin"
-              width={110}
-              height={110}
-              loading="lazy"
-              decoding="async"
-              className="h-[58px] w-auto"
-            />
-          </a>
         </div>
       </Container>
     </footer>
