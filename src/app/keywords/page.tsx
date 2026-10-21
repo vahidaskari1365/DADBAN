@@ -7,7 +7,7 @@ import { templateT } from "@/lib/i18n/core";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("Keyword Universe — استراتژی سئو دادورزان"),
+    title: { absolute: t("Keyword Universe — استراتژی سئو دادورزان") },
     description: t("نقشه‌ی جامع کلمات کلیدی پلتفرم حقوقی دادورزان: ده‌ها هزار کلمه‌ی long-tail در حوزه‌ی وکالت، مشاوره حقوقی، قرارداد و دعاوی."),
     alternates: { canonical: "/keywords" },
     robots: { index: false, follow: false }, // صفحه‌ی داخلی

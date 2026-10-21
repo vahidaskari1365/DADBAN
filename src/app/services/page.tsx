@@ -16,7 +16,7 @@ import { PageContentBlocks } from "@/components/page-content-blocks";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("خدمات پیگیری و انجام امور — دادورزان"),
+    title: { absolute: t("خدمات پیگیری و انجام امور — دادورزان") },
     description: t("پیگیری پرونده‌ها، امور اداری، ثبتی، مالیاتی و اجرای احکام را به کارشناسان دادورزان بسپارید."),
   };
 }

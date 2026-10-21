@@ -12,7 +12,7 @@ import { getT } from "@/lib/i18n/server";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("احراز هویت وکلا — پنل مدیریت دادورزان"),
+    title: { absolute: t("احراز هویت وکلا — پنل مدیریت دادورزان") },
     description: t("بررسی مدارک احراز هویت وکلا: پروانهٔ وکالت، کارت ملی و مدرک تحصیلی — تأیید یا رد با پیغام به وکیل."),
   };
 }

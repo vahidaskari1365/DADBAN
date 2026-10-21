@@ -10,7 +10,7 @@ import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "@/lib/seo-landings";
 
 /** /lawyers/specialty — هاب تخصص‌های وکالت (نقطه ورود long-tail). */
 export const metadata: Metadata = {
-  title: "تخصص‌های وکالت | وکیل متخصص هر حوزه حقوقی — دادورزان",
+  title: { absolute: "تخصص‌های وکالت | وکیل متخصص هر حوزه حقوقی — دادورزان" },
   description:
     "فهرست کامل تخصص‌های وکالت: وکیل طلاق و خانواده، کیفری، ملکی، چک برگشتی، ارث، قرارداد، کار، مالیاتی، ثبت شرکت و برند. هر تخصص با وکلای تأییدشده، تعرفه شفاف و سوالات متداول.",
   alternates: { canonical: "/lawyers/specialty" },
@@ -78,7 +78,7 @@ export default function SpecialtyHubPage() {
 
         <SeoLinkGrid
           title="وکیل در شهرهای ایران"
-          links={CITY_LANDINGS.map((c) => ({ label: `وکیل در ${c.city}`, href: `/lawyers/city/${c.slug}` }))}
+          links={CITY_LANDINGS.map((c) => ({ label: c.city, href: `/lawyers/city/${c.slug}` }))}
         />
       </Container>
     </main>

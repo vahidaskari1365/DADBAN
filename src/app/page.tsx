@@ -272,7 +272,7 @@ export default async function HomePage() {
           <SeoLinkGrid
             title="وکیل در شهرهای ایران"
             links={CITY_LANDINGS.map((c) => ({
-              label: `وکیل در ${c.city}`,
+              label: c.city, // لنگر کوتاه — عنوان گرید زمینه را می‌سازد (ضد تراکم)
               href: `/lawyers/city/${c.slug}`,
             }))}
           />

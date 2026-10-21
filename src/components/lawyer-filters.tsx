@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Icon } from "./icons";
 import { SPECIALTIES, ALL_CITIES, ALL_PROVINCES, faNum } from "@/lib/data";
 import { useT } from "@/lib/i18n/provider";
-import { templateT } from "@/lib/i18n/core";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -30,7 +29,6 @@ export interface LawyerFiltersProps {
 export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
   const router = useRouter();
   const t = useT();
-  const tf = templateT(t);
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState(initial.q ?? "");
 
@@ -95,7 +93,7 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
               <option value="all">{t("همه استان‌ها و شهرها")}</option>
               <optgroup label={t("استان‌ها")}>
                 {ALL_PROVINCES.map((p) => (
-                  <option key={p} value={p}>{tf("استان {city}", { city: p })}</option>
+                  <option key={p} value={p}>{p}</option>
                 ))}
               </optgroup>
               <optgroup label={t("شهرها")}>

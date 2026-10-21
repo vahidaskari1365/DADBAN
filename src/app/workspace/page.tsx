@@ -10,7 +10,7 @@ import { getT } from "@/lib/i18n/server";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("جعبه‌ابزار وکیل — فضای کاری دادورزان"),
+    title: { absolute: t("جعبه‌ابزار وکیل — فضای کاری دادورزان") },
     description: t(
       "همهٔ ابزارهای کاری وکیل در یک جا: دادخواست‌ساز هوشمند، لایحه، بررسی قرارداد، پژوهش حقوقی، محاسبه‌گرها، میز پرونده و شبیه‌سازی دادگاه.",
     ),

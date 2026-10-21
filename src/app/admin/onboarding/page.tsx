@@ -14,7 +14,7 @@ import { templateT } from "@/lib/i18n/core";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("صف روی‌بوردینگ وکلا — پنل مدیریت دادورزان"),
+    title: { absolute: t("صف روی‌بوردینگ وکلا — پنل مدیریت دادورزان") },
     description: t("بررسی و تأیید درخواست‌های همکاری وکلای واقعی: مدارک، پروانه، تخصص‌ها و قرارداد همکاری."),
   };
 }

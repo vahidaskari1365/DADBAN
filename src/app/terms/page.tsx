@@ -10,7 +10,7 @@ import { PageContentBlocks } from "@/components/page-content-blocks";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("قوانین و مقررات استفاده — دادورزان"),
+    title: { absolute: t("قوانین و مقررات استفاده — دادورزان") },
     description: t("قوانین و شرایط استفاده از خدمات پلتفرم حقوقی دادورزان."),
   };
 }

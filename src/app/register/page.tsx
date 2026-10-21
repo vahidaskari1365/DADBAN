@@ -6,7 +6,7 @@ import { getT } from "@/lib/i18n/server";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("ثبت‌نام رایگان | دادورزان"),
+    title: { absolute: t("ثبت‌نام رایگان | دادورزان") },
     description: t(
       "ساخت حساب کاربری رایگان در دادورزان — ثبت پرونده، رزرو مشاوره و پیگیری آنلاین مراحل حقوقی.",
     ),

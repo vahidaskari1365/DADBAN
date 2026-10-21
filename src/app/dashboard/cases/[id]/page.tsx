@@ -21,7 +21,7 @@ import { templateT } from "@/lib/i18n/core";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("پرونده من — دادورزان"),
+    title: { absolute: t("پرونده من — دادورزان") },
     description: t("جزئیات واقعی پرونده، مراحل، مدارک و پرداخت‌های شما."),
   };
 }

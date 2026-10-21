@@ -173,6 +173,7 @@ export async function Footer() {
         <div className="mt-10 space-y-5 border-t border-border pt-8">
           <nav aria-label="تخصص‌های وکالت">
             <h3 className="text-xs font-bold text-foreground">تخصص‌های وکالت در دادورزان</h3>
+            {/* متن لنگر کوتاه — تکرار «وکیل X» در فوتر هر صفحه = تراکم غیرعادی؛ عنوان h3 زمینه را می‌سازد. */}
             <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
               {SPECIALTY_LANDINGS.map((s) => (
                 <Link
@@ -180,13 +181,14 @@ export async function Footer() {
                   href={`/lawyers/specialty/${s.slug}`}
                   className="text-xs text-muted transition-colors hover:text-primary"
                 >
-                  {s.h1}
+                  {s.h1.replace("وکیل ", "")}
                 </Link>
               ))}
             </div>
           </nav>
           <nav aria-label="وکیل در شهرهای ایران">
             <h3 className="text-xs font-bold text-foreground">وکیل در شهرهای ایران</h3>
+            {/* لنگر = نام شهر — عنوان h3 زمینه «وکیل در …» را حفظ می‌کند. */}
             <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
               {CITY_LANDINGS.map((c) => (
                 <Link
@@ -194,7 +196,7 @@ export async function Footer() {
                   href={`/lawyers/city/${c.slug}`}
                   className="text-xs text-muted transition-colors hover:text-primary"
                 >
-                  وکیل در {c.city}
+                  {c.city}
                 </Link>
               ))}
             </div>

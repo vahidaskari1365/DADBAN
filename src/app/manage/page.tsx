@@ -9,7 +9,7 @@ import { getT } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  return { title: t("پنل عملیات — خدمات و پیگیری‌ها — دادورزان") };
+  return { title: { absolute: t("پنل عملیات — خدمات و پیگیری‌ها — دادورزان") } };
 }
 export const dynamic = "force-dynamic";
 

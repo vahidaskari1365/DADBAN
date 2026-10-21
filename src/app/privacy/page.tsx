@@ -10,7 +10,7 @@ import { PageContentBlocks } from "@/components/page-content-blocks";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("حریم خصوصی — دادورزان"),
+    title: { absolute: t("حریم خصوصی — دادورزان") },
     description: t("سیاست حفظ حریم خصوصی کاربران پلتفرم حقوقی دادورزان."),
   };
 }

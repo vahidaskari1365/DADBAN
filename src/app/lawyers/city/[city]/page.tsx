@@ -34,7 +34,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const title = `وکیل در ${c.city} | بهترین وکلای ${c.city} با تعرفه شفاف — دادورزان`;
   const description = `جستجوی وکیل در ${c.city} و استان ${c.province}: وکلای احراز هویت‌شده خانواده، کیفری، ملکی، چک و سایر تخصص‌ها با امتیاز واقعی کاربران، تعرفه شفاف ۱۴۰۵ و مشاوره آنلاین در دادورزان.`;
   return {
-    title,
+    // absolute — رشته title خودش «— دادورزان» دارد؛ قالب layout ریشه برند را دوبار تکرار می‌کرد.
+    title: { absolute: title },
     description,
     keywords: [
       `وکیل در ${c.city}`, `بهترین وکیل ${c.city}`, `وکیل ${c.city}`,
@@ -224,14 +225,14 @@ export default async function CityLandingPage({ params }: { params: Params }) {
         <SeoLinkGrid
           title={`تخصص‌های حقوقی در ${c.city}`}
           links={SPECIALTY_LANDINGS.map((s) => ({
-            label: `${s.h1} در ${c.city}`,
+            label: s.h1.replace("وکیل ", ""), // لنگر کوتاه — شهر در عنوان گرید است (ضد تراکم)
             href: `/lawyers/specialty/${s.slug}/${c.slug}`,
           }))}
         />
         <SeoLinkGrid
           title="سایر شهرها"
           links={CITY_LANDINGS.filter((x) => x.slug !== c.slug).map((x) => ({
-            label: `وکیل در ${x.city}`,
+            label: x.city,
             href: `/lawyers/city/${x.slug}`,
           }))}
         />

@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     description: summary,
     alternates: { canonical: `/laws/${slug}` },
     openGraph: {
-      title: `${name} — توضیح کامل | دادورزان`,
+      title: { absolute: `${name} — توضیح کامل | دادورزان` },
       description: summary,
       url: `${SITE_URL}/laws/${slug}`,
     },

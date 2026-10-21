@@ -10,7 +10,7 @@ import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "@/lib/seo-landings";
 
 /** /lawyers/city — هاب شهرها («وکیل در [شهر]») — فاز اول ۱۵ شهر. */
 export const metadata: Metadata = {
-  title: "وکیل در شهرهای ایران | وکیل‌یابی آنلاین — دادورزان",
+  title: { absolute: "وکیل در شهرهای ایران | وکیل‌یابی آنلاین — دادورزان" },
   description:
     "وکیل در تهران، کرج، مشهد، اصفهان، شیراز و سایر شهرهای ایران: وکلای احراز هویت‌شده با امتیاز واقعی کاربران، تعرفه شفاف ۱۴۰۵ و مشاوره آنلاین در دادورزان.",
   alternates: { canonical: "/lawyers/city" },
@@ -64,7 +64,7 @@ export default function CityHubPage() {
                   وکیل در {c.city}
                 </Link>
               </h2>
-              <p className="mt-1 text-xs text-muted">استان {c.province}</p>
+              <p className="mt-1 text-xs text-muted">{c.province}</p>
               <p className="mt-2 line-clamp-3 flex-1 text-xs leading-6 text-muted">
                 وکلای احراز هویت‌شده {c.city} با امتیاز واقعی موکلان، تعرفه شفاف و مشاوره متنی و صوتی و تصویری.
               </p>
@@ -74,7 +74,7 @@ export default function CityHubPage() {
 
         <SeoLinkGrid
           title="تخصص‌های وکالت"
-          links={SPECIALTY_LANDINGS.map((s) => ({ label: s.h1, href: `/lawyers/specialty/${s.slug}` }))}
+          links={SPECIALTY_LANDINGS.map((s) => ({ label: s.h1.replace("وکیل ", ""), href: `/lawyers/specialty/${s.slug}` }))}
         />
       </Container>
     </main>

@@ -18,7 +18,7 @@ import { tdyn } from "@/lib/i18n/dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("پرونده‌های من — دادورزان"),
+    title: { absolute: t("پرونده‌های من — دادورزان") },
     description: t("فهرست واقعی پرونده‌های ثبت‌شده شما در دادورزان."),
   };
 }

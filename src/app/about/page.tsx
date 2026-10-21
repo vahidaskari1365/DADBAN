@@ -16,7 +16,7 @@ import { PageContentBlocks } from "@/components/page-content-blocks";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("درباره دادورزان"),
+    title: { absolute: t("درباره دادورزان") },
     description: t(
       "دادورزان پلتفرم هوشمند خدمات حقوقی برای اتصال موکلان به وکلای متخصص، با مشاوره آنلاین، مدیریت پرونده، تنظیم اسناد و دستیار حقوقی هوش مصنوعی.",
     ),

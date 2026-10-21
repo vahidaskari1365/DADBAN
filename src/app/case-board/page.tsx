@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ),
     alternates: { canonical: "/case-board" },
     openGraph: {
-      title: t("بازار پرونده‌های دادورزان"),
+      title: { absolute: t("بازار پرونده‌های دادورزان") },
       description: t(
         "مثل بازار کار، ولی برای پرونده‌های حقوقی: موکل ثبت می‌کند، وکلا قیمت می‌دهند، موکل بهترین را انتخاب می‌کند.",
       ),

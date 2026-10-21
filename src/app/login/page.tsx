@@ -6,7 +6,7 @@ import { getT } from "@/lib/i18n/server";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("ورود به حساب کاربری | دادورزان"),
+    title: { absolute: t("ورود به حساب کاربری | دادورزان") },
     description: t(
       "ورود امن به پنل موکل یا پنل وکیل دادورزان — پیگیری پرونده، مشاوره‌ها و اسناد حقوقی در یک نگاه.",
     ),

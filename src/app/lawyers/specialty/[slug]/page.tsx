@@ -83,7 +83,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const l = getSpecialtyLanding(slug);
   if (!l) return {};
   return {
-    title: l.title,
+    // absolute — عنوان داده‌ای خودش برند «دادورزان» را دارد؛ قالب `%s | دادورزان` در layout ریشه
+    // در غیر این صورت برند دوبار تکرار می‌شود (تشخیص stuffing در SERP).
+    title: { absolute: l.title },
     description: l.description,
     keywords: l.keywords,
     alternates: {
@@ -276,14 +278,14 @@ export default async function SpecialtyLandingPage({ params }: { params: Params 
         <SeoLinkGrid
           title={`${landing.h1} در شهرهای ایران`}
           links={CITY_LANDINGS.map((c) => ({
-            label: `${landing.h1} در ${c.city}`,
+            label: c.city, // لنگر = نام شهر — کلیدواژه کامل در عنوان گرید است (ضد تکرار زنجیره‌ای)
             href: `/lawyers/specialty/${landing.slug}/${c.slug}`,
           }))}
         />
         <SeoLinkGrid
           title="تخصص‌های دیگر"
           links={SPECIALTY_LANDINGS.filter((s) => s.slug !== landing.slug).map((s) => ({
-            label: s.h1,
+            label: s.h1.replace("وکیل ", ""),
             href: `/lawyers/specialty/${s.slug}`,
           }))}
         />
