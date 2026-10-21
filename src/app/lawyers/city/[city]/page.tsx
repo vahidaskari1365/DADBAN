@@ -92,6 +92,11 @@ export default async function CityLandingPage({ params }: { params: Params }) {
           { "@type": "ListItem", position: 3, name: c.city, item: `${SITE_URL}${canonical}` },
         ],
       },
+      // AEO — هوک Speakable به H1 و بلوک پاسخ سریع (بخش‌های AEO گام ۴)
+      {
+        "@type": "SpeakableSpecification",
+        cssSelector: ["h1", ".aeo-quick-answer"],
+      },
     ],
   };
 
@@ -128,7 +133,7 @@ export default async function CityLandingPage({ params }: { params: Params }) {
             <Icon name="location" className="h-5 w-5 text-primary" />
             {`چطور وکیل خوب در ${c.city} پیدا کنیم؟`}
           </h2>
-          <p className="text-sm leading-8 text-foreground-soft">{c.introLead}</p>
+          <p className="aeo-quick-answer text-sm leading-8 text-foreground-soft">{c.introLead}</p>
         </Card>
 
         <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
@@ -153,6 +158,36 @@ export default async function CityLandingPage({ params }: { params: Params }) {
             </div>
           </Card>
         </div>
+
+        {/* SXO — جدول مراجع قضایی محلی (فقط شهرهای عمیق‌شده گام ۴) */}
+        {c.localPlaces?.length ? (
+          <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
+            <h2 className="text-lg font-black text-foreground sm:text-xl">
+              مراجع قضایی مهم در {c.city} و چه پرونده‌ای می‌برید
+            </h2>
+            <div className="mt-4 overflow-x-auto nice-scroll">
+              <table className="w-full min-w-[560px] text-sm">
+                <thead>
+                  <tr className="border-b border-border text-start">
+                    <th className="pb-2 text-start font-semibold">مرجع</th>
+                    <th className="pb-2 text-start font-semibold">چه پرونده‌ای</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/70">
+                  {c.localPlaces.map((p) => (
+                    <tr key={p.name}>
+                      <td className="py-2.5 pe-3 font-semibold text-foreground">{p.name}</td>
+                      <td className="py-2.5 text-foreground-soft">{p.desc}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs leading-6 text-muted">
+              تقسیم‌بندی برای جهت‌گیری سریع است؛ صلاحیت دقیق مرجع، به نوع و مبلغ دعوا و محل اقامت خوانده بستگی دارد و وکیل شما در نخستین جلسه مشخص می‌کند.
+            </p>
+          </div>
+        ) : null}
 
         <section aria-labelledby="city-lawyers">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -180,6 +215,11 @@ export default async function CityLandingPage({ params }: { params: Params }) {
         </section>
 
         <FaqSection items={c.faqs} canonicalPath={canonical} />
+
+        {/* Hub/Spoke — لینک راهنماهای پایگاه دانش (شهرهای عمیق‌شده گام ۴) */}
+        {c.knowledgeLinks?.length ? (
+          <SeoLinkGrid title={`راهنماهای مرتبط با پرونده‌های ${c.city}`} links={c.knowledgeLinks} />
+        ) : null}
 
         <SeoLinkGrid
           title={`تخصص‌های حقوقی در ${c.city}`}
