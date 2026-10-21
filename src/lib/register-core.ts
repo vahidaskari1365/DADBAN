@@ -21,8 +21,8 @@ export type RegisterCoreInput = {
   mobile: string;
   email: string | null;
   password: string;
-  /** "karamooz" = ثبت‌نام مستقیم کارآموز وکالت + پروفایل وکیل؛ null = حساب موکل */
-  lawyerType: "karamooz" | null;
+  /** "karamooz" = ثبت‌نام مستقیم کارآموز وکالت + پروفایل وکیل؛ "expert" = کارشناس حقوقی؛ null = حساب موکل */
+  lawyerType: "karamooz" | "expert" | null;
   city: string;
   specialties: string[];
   employeeLawyer: boolean;
@@ -57,7 +57,7 @@ export async function createUserAccount(input: RegisterCoreInput): Promise<Regis
       return { ok: false, status: 409, error: "امکان ایجاد حساب با این مشخصات وجود ندارد." };
     }
 
-    if (lawyerType === "karamooz") {
+    if (lawyerType === "karamooz" || lawyerType === "expert") {
       if (!isUserAuthConfigured()) {
         return { ok: false, status: 503, error: "سامانه ثبت‌نام موقتاً در دسترس نیست؛ لطفاً بعداً تلاش کنید." };
       }
@@ -75,11 +75,11 @@ export async function createUserAccount(input: RegisterCoreInput): Promise<Regis
           .values({
             slug: karamoozSlug(name),
             name,
-            title: "کارآموز وکالت",
-            licenseNo: `K-${mobile}`,
+            title: lawyerType === "expert" ? "کارشناس حقوقی" : "کارآموز وکالت",
+            licenseNo: lawyerType === "expert" ? `E-${mobile}` : `K-${mobile}`,
             city,
             province: city,
-            lawyerType: "karamooz",
+            lawyerType,
             specialties: input.specialties,
             employeeLawyer,
             verified: false,

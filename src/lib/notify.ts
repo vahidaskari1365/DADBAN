@@ -29,7 +29,10 @@ export type NotificationType =
   | "offer_accepted"
   | "verification"
   | "case_message"
-  | "consultation";
+  | "consultation"
+  | "tovakil_request"
+  | "tovakil_assigned"
+  | "tovakil_taken";
 
 interface NotifyInput {
   type: NotificationType;
@@ -362,6 +365,73 @@ export async function notifyConsultationRequest(c: {
       },
       { sms: true },
     );
+  } catch {
+    /* non-fatal */
+  }
+}
+
+/* ───────────────── ۸) توکیل — واگذاری پرونده بین وکلا ───────────────── */
+
+/** درخواست جدید توکیل → اعلان به وکیل مالک پرونده */
+export async function notifyTovakilNewRequest(c: {
+  ownerLawyerId: number;
+  subject: string;
+  requesterName: string;
+  caseNumber: string;
+}): Promise<void> {
+  try {
+    await ensureProfileSchema();
+    const rows = await db
+      .select({ id: users.id, role: users.role, teamPermissions: users.teamPermissions })
+      .from(users)
+      .where(eq(users.lawyerId, c.ownerLawyerId));
+    const targets = rows.filter((r) => r.role === "lawyer").map((r) => r.id);
+    await insertFor(targets, {
+      type: "tovakil_request",
+      title: "درخواست توکیل جدید",
+      body: "وکیل «{name}» برای پروندهٔ «{subject}» درخواست توکیل ثبت کرد.",
+      link: "/dashboard/lawyer/tovakil",
+      meta: { name: c.requesterName, subject: c.subject, caseNumber: c.caseNumber },
+    });
+  } catch {
+    /* non-fatal */
+  }
+}
+
+/** واگذاری پرونده توکیل → اعلان به وکیل دریافت‌کننده + بقیه درخواست‌دهنده‌ها */
+export async function notifyTovakilAssigned(c: {
+  caseId: number;
+  subject: string;
+  caseNumber: string;
+  assignedLawyerId: number;
+  otherRequesterIds: number[];
+}): Promise<void> {
+  try {
+    await ensureProfileSchema();
+    const assigned = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.lawyerId, c.assignedLawyerId), eq(users.role, "lawyer")));
+    await insertFor(
+      assigned.map((r) => r.id),
+      {
+        type: "tovakil_assigned",
+        title: "پروندهٔ توکیل به شما واگذار شد",
+        body: "پروندهٔ «{subject}» در توکیل به شما واگذار شد — هماهنگی جزئیات با وکیل معرفی‌کننده.",
+        link: "/dashboard/lawyer/tovakil",
+        meta: { subject: c.subject, caseNumber: c.caseNumber },
+      },
+      { sms: true },
+    );
+    if (c.otherRequesterIds.length) {
+      await insertFor(c.otherRequesterIds, {
+        type: "tovakil_taken",
+        title: "پروندهٔ توکیل واگذار شد",
+        body: "پروندهٔ «{subject}» به وکیل دیگری واگذار شد؛ پرونده‌های باز دیگر را ببینید.",
+        link: "/dashboard/lawyer/tovakil",
+        meta: { subject: c.subject },
+      });
+    }
   } catch {
     /* non-fatal */
   }

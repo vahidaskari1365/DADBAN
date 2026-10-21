@@ -18,6 +18,8 @@ import { LAWYER_HIDDEN_STATUSES } from "@/lib/managed-services";
 import { CaseOffersPanel } from "@/components/lawyer/case-offers-panel";
 import { NotificationsPanel } from "@/components/notifications-panel";
 import { ConsultRequestsPanel } from "@/components/lawyer/consult-requests-panel";
+import { SpecialtiesOnboarding } from "@/components/lawyer/specialties-onboarding";
+import { getLawyerEligibility, pendingApprovalBanner } from "@/lib/lawyer-eligibility";
 import { ReferralPanel } from "@/components/lawyer/referral-panel";
 import { TeamPanel } from "@/components/lawyer/team-panel";
 import { RemindersPanel } from "@/components/lawyer/reminders-panel";
@@ -60,7 +62,7 @@ function StatTile({ s }: { s: { label: string; value: string; icon: IconKey; ton
 
 export const dynamic = "force-dynamic";
 
-type NavItem = { label: string; icon: "home" | "badge" | "briefcase" | "user" | "chat" | "shield" | "mail" | "clock" | "folder" | "link"; active?: boolean; badge?: string; href?: string };
+type NavItem = { label: string; icon: "home" | "badge" | "briefcase" | "user" | "chat" | "shield" | "mail" | "clock" | "folder" | "link" | "star"; active?: boolean; badge?: string; href?: string };
 type Tone = "primary" | "accent" | "success" | "neutral";
 
 /** چیپ آیکونی رنگی — پایهٔ گرافیک کارت‌های پنل */
@@ -91,10 +93,19 @@ export default async function LawyerDashboard() {
   const isTeam = user.role === "team";
   if (!isBoss && !isTeam) redirect("/dashboard/client");
 
+  // وضعیت وکیل مالک حساب — منبع بنر «در انتظار تأیید»، پاپاپ تخصص و گیت پنل‌ها (قابلیت ۱ و ۲)
+  const elig = isBoss && user.lawyerId ? await getLawyerEligibility(user.lawyerId) : null;
+  const pendingLawyer = !!(elig && !elig.verified);
+  const isExpert = !!elig?.isExpert;
+
   const lawyerId = isBoss ? user.lawyerId : user.parentLawyerId;
   const linked = !!lawyerId;
   const perms = (user.teamPermissions ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   const can = (p: string) => (isBoss ? true : perms.includes(p));
+
+  /** پنل‌های قضایی (پیشنهاد/ارجاع/توکیل) — وکیل احرازشدهٔ غیرکارشناس */
+  const showCasePanels = isBoss && !pendingLawyer && !isExpert;
+  const showConsultPanel = isTeam ? can("consultations") : !pendingLawyer;
 
   // هر کوئری مستقل است تا خطای یک بخش، بقیه داشبورد را خالی نکند (درس E2E:
   // خطای کوئری payments کل داشبورد را خالی می‌کرد و «هیچی» نشان می‌داد).
@@ -233,6 +244,7 @@ export default async function LawyerDashboard() {
     ...(isBoss ? [{ label: t("جعبه‌ابزار وکیل"), desc: t("دادخواست‌ساز، میز پرونده، شبیه‌سازی دادگاه"), icon: "briefcase" as IconKey, tone: "primary" as Tone, href: "/workspace" }] : []),
     ...(isBoss ? [{ label: t("سبک نگارش من"), desc: t("اسناد مثل خودت نوشته شود"), icon: "sparkles" as IconKey, tone: "accent" as Tone, href: "/dashboard/lawyer/style" }] : []),
     ...(isBoss ? [{ label: t("پروفایل حرفه‌ای"), desc: t("ویرایش اطلاعات عمومی"), icon: "badge" as IconKey, tone: "primary" as Tone, href: "/dashboard/lawyer/profile" }] : []),
+    ...(showCasePanels ? [{ label: t("توکیل — واگذاری پرونده"), desc: t("پرونده را به همکار واگذار کنید"), icon: "link" as IconKey, tone: "accent" as Tone, href: "/dashboard/lawyer/tovakil" }] : []),
     ...(can("consultations") ? [{ label: t("کارتابل مشاوره"), desc: t("تأیید و مدیریت درخواست‌ها"), icon: "chat" as IconKey, tone: "accent" as Tone, href: "#consult-requests" }] : []),
     { label: t("دایرکتوری وکلا"), desc: t("جستجوی همکاران"), icon: "search", tone: "primary", href: "/lawyers" },
     { label: t("همکاری و ارجاع"), desc: referralPending ? `${faNum(referralPending)} ${t("درخواست در انتظار پاسخ")}` : t("درخواست‌های همکاران"), icon: "link" as IconKey, tone: "accent" as Tone, href: "/dashboard/lawyer#collab" },
@@ -242,6 +254,8 @@ export default async function LawyerDashboard() {
 
   const nav: NavItem[] = [
     { label: t("نمای کلی"), icon: "home", active: true, href: "/dashboard/lawyer" },
+    ...(isBoss ? [{ label: t("تخصص‌های من"), icon: "star" as const, href: "/dashboard/lawyer/specialties" }] : []),
+    ...(isBoss ? [{ label: t("توکیل"), icon: "link" as const, href: "/dashboard/lawyer/tovakil" }] : []),
     { label: t("جعبه‌ابزار وکیل"), icon: "briefcase" as const, href: "/workspace" },
     ...(isBoss ? [{ label: t("پرونده‌های من"), icon: "folder" as const, href: "/dashboard/lawyer#my-cases" }] : []),
     ...(isBoss ? [{ label: t("پروفایل حرفه‌ای من"), icon: "badge" as const, href: "/dashboard/lawyer/profile" }] : []),
@@ -256,7 +270,7 @@ export default async function LawyerDashboard() {
     { label: t("پشتیبانی"), icon: "shield", href: "/support" },
   ];
 
-  const showConsultCards = can("consultations");
+  const showConsultCards = can("consultations") && !pendingLawyer;
   const showCasesCard = can("cases");
 
   // ترجمهٔ محتوای DB (موضوع/شهر پرونده، عنوان خدمت، نام موکل) برای زبان‌های غیرفارسی
@@ -288,6 +302,35 @@ export default async function LawyerDashboard() {
       nav={nav}
       back={{ fallback: "/" }}
     >
+      {/* بنر «در انتظار تأیید پروانه» — وکیل احرازنشده (قابلیت ۱) */}
+      {pendingLawyer && (
+        <div
+          role="status"
+          data-testid="pending-approval-banner"
+          className="rounded-2xl border border-warning/50 bg-warning/10 px-4 py-3 sm:px-5"
+        >
+          <p className="flex items-start gap-2.5 text-sm font-bold leading-7 text-warning">
+            <Icon name="alert" className="mt-1 h-4 w-4 shrink-0" />
+            {t("تا زمان تأیید شماره پروانه هیچ درخواستی نمی‌توانید قبول کنید.")}
+          </p>
+          <p className="mt-1 pr-7 text-xs leading-6 text-foreground-soft">
+            {pendingApprovalBanner(elig?.title ?? "وکیل")}{" "}
+            <Link href="/dashboard/lawyer/verification" className="font-bold text-primary underline underline-offset-4">
+              {t("پیگیری احراز")}
+            </Link>
+          </p>
+        </div>
+      )}
+      {/* بنر وضعیت کارشناس حقوقی (قابلیت ۲) */}
+      {isExpert && !pendingLawyer && (
+        <div role="status" className="rounded-2xl border border-primary/25 bg-primary-soft/50 px-4 py-3 sm:px-5">
+          <p className="flex items-start gap-2.5 text-sm leading-7 text-foreground-soft">
+            <Icon name="certificate" className="mt-1 h-4 w-4 shrink-0 text-primary" />
+            {t("شما با عنوان «کارشناس حقوقی» همکاری می‌کنید: مشاوره، تنظیم قرارداد و کمک به اسناد فعال است؛ پذیرش پرونده قضایی و توکیل مخصوص وکلای دادگستری است.")}
+          </p>
+        </div>
+      )}
+
       {/* سمت چپِ بالای صفحه: دکمهٔ موشن «خرید پلن» (فقط خود وکیل — پلن عضویت وکلاست) */}
       {isBoss && (
         <div className="flex justify-end">
@@ -531,10 +574,10 @@ export default async function LawyerDashboard() {
       )}
 
       {/* پیشنهادهای پروندهٔ استان — broadcast موکل‌ها */}
-      {can("offers") && <CaseOffersPanel />}
+      {showCasePanels && <CaseOffersPanel />}
 
       {/* همکاری و ارجاع پرونده — جریان وکیل↔وکیل از دایرکتوری همکاران */}
-      {can("offers") && <ReferralPanel />}
+      {showCasePanels && <ReferralPanel />}
 
       {/* درخواست‌های خدمات — با موضوع و جزئیات کامل */}
       {can("services") && (
@@ -585,7 +628,7 @@ export default async function LawyerDashboard() {
       {showConsultCards && (
         <div id="consults" className="grid gap-6 scroll-mt-24 lg:grid-cols-[1.6fr_1fr] [&>*]:min-w-0">
           {/* کارتابل مشاوره — درخواست‌های واقعی موکلان با اقدام تأیید/لغو/تکمیل */}
-          <ConsultRequestsPanel />
+        <ConsultRequestsPanel />
 
           {/* Upcoming schedule — real booked slots */}
           <Card hover={false}>
@@ -655,6 +698,11 @@ export default async function LawyerDashboard() {
             )}
           </div>
         </Card>
+      )}
+
+      {/* پاپاپ الزامی انتخاب تخصص — تازه‌ثبت‌نام و وکلای قدیمیِ بدون تخصص (قابلیت ۱) */}
+      {isBoss && elig?.needsSpecialties && (
+        <SpecialtiesOnboarding lawyerName={user.name} />
       )}
     </DashboardShell>
   );

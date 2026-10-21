@@ -6,6 +6,7 @@ import { rateLimit, readJson, text } from "@/lib/api-security";
 import { getLawyerActor } from "@/lib/lawyer-actor";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 import { notifyClientNewOffer } from "@/lib/notify";
+import { getLawyerEligibility } from "@/lib/lawyer-eligibility";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -165,6 +166,11 @@ export async function POST(req: Request) {
   const actor = await getLawyerActor("offers");
   if (!actor) {
     return NextResponse.json({ ok: false, error: "برای ثبت پیشنهاد، با حساب وکیل وارد شوید." }, { status: 401 });
+  }
+  // گیت وضعیت: وکیل احرازنشده و کارشناس حقوقی حق پیشنهاد روی پرونده قضایی ندارند
+  const eligibility = await getLawyerEligibility(actor.lawyerId);
+  if (eligibility?.caseActionBlock) {
+    return NextResponse.json({ ok: false, error: eligibility.caseActionBlock }, { status: 403 });
   }
   let body: { caseId?: number; message?: string; price?: number };
   try {

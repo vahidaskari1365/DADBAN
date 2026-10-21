@@ -30,14 +30,19 @@ export async function POST(req: Request) {
   if (!name || !validPhone(mobile) || (email && !emailOk.test(email)) || password.length < 8 || password.length > 1024) return NextResponse.json({ ok: false, error: "اطلاعات ثبت‌نام معتبر نیست." }, { status: 422 });
   // ثبت‌نام مستقیم «کارآموز وکالت»: حساب role=lawyer + پروفایل وکیل کارآموز + سشن؛
   // هر مقدار دیگری از lawyerType رفتار فعلی (ساخت حساب موکل) را حفظ می‌کند.
-  const lawyerType = body?.lawyerType === "karamooz" ? "karamooz" : null;
-  const city = lawyerType === "karamooz" ? text(body?.city, 60) ?? "" : "";
+  const lawyerType =
+    body?.lawyerType === "karamooz"
+      ? "karamooz"
+      : body?.lawyerType === "expert"
+        ? "expert"
+        : null;
+  const city = lawyerType ? text(body?.city, 60) ?? "" : "";
   // تخصص‌ها (الزامی ≥۱، حداکثر ۶) + گزینهٔ اختیاری «وکیل کارمندان و کارهای اداری»
-  const specialties = lawyerType === "karamooz" && Array.isArray(body?.specialties)
+  const specialties = lawyerType && Array.isArray(body?.specialties)
     ? Array.from(new Set((body.specialties as unknown[]).map((s) => text(s, 60)).filter((s): s is string => !!s))).slice(0, 6)
     : [];
-  if (lawyerType === "karamooz" && !isUserAuthConfigured()) return NextResponse.json({ ok: false, error: "سامانه ثبت‌نام موقتاً در دسترس نیست؛ لطفاً بعداً تلاش کنید." }, { status: 503 });
-  if (lawyerType === "karamooz" && !specialties.length) return NextResponse.json({ ok: false, error: "حداقل یک تخصص انتخاب کنید." }, { status: 422 });
+  if (lawyerType && !isUserAuthConfigured()) return NextResponse.json({ ok: false, error: "سامانه ثبت‌نام موقتاً در دسترس نیست؛ لطفاً بعداً تلاش کنید." }, { status: 503 });
+  if (lawyerType && !specialties.length) return NextResponse.json({ ok: false, error: "حداقل یک تخصص انتخاب کنید." }, { status: 422 });
 
   const result = await createUserAccount({
     name,
@@ -47,7 +52,7 @@ export async function POST(req: Request) {
     lawyerType,
     city,
     specialties,
-    employeeLawyer: lawyerType === "karamooz" && body?.employeeLawyer === true,
+    employeeLawyer: !!(lawyerType && body?.employeeLawyer === true),
   });
   if (!result.ok) return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
 

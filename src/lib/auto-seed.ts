@@ -492,6 +492,13 @@ export function ensureProfileSchema(): Promise<void> {
     // اعلان‌های درون‌برنامه‌ای همهٔ کاربران (ثبت پرونده → وکیل، پیشنهاد → موکل، پذیرش → وکیل)
     `CREATE TABLE IF NOT EXISTS user_notifications (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES app_users(id) ON DELETE CASCADE, type TEXT NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL DEFAULT '', link TEXT, meta JSONB, read BOOLEAN NOT NULL DEFAULT false, created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE INDEX IF NOT EXISTS user_notifications_user_idx ON user_notifications (user_id, read)`,
+    // توکیل — بازار واگذاری پرونده بین وکلا (فقط وکلا دسترسی دارند)
+    `CREATE TABLE IF NOT EXISTS tovakil_cases (id SERIAL PRIMARY KEY, case_number TEXT NOT NULL UNIQUE, owner_lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, subject TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', topic TEXT NOT NULL DEFAULT '', city TEXT NOT NULL DEFAULT '', budget TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'open', assigned_lawyer_id INTEGER REFERENCES lawyers(id) ON DELETE SET NULL, assigned_at TIMESTAMP, created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE INDEX IF NOT EXISTS tovakil_cases_status_idx ON tovakil_cases (status, id)`,
+    `CREATE INDEX IF NOT EXISTS tovakil_cases_owner_idx ON tovakil_cases (owner_lawyer_id, id)`,
+    `CREATE TABLE IF NOT EXISTS tovakil_requests (id SERIAL PRIMARY KEY, case_id INTEGER NOT NULL REFERENCES tovakil_cases(id) ON DELETE CASCADE, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, message TEXT NOT NULL DEFAULT '', price TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'pending', created_at TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS tovakil_requests_uniq ON tovakil_requests (case_id, lawyer_id)`,
+    `CREATE INDEX IF NOT EXISTS tovakil_requests_lawyer_idx ON tovakil_requests (lawyer_id, status)`,
   ];
   for (const stmt of stmts) {
     try {

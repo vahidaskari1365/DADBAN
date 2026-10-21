@@ -787,6 +787,51 @@ export const lawyerReferrals = pgTable("lawyer_referrals", {
 ]);
 export type LawyerReferral = typeof lawyerReferrals.$inferSelect;
 
+/* ---------------- توکیل (بازار واگذاری پرونده بین وکلا) ---------------- */
+// وکیل پرونده‌ای را که نمی‌گیرد یا در شهر دیگری است، در «توکیل» ثبت می‌کند؛
+// وکلای دیگر درخواست می‌دهند و مالک یکی را برمی‌گزیند. فقط وکلا دسترسی دارند.
+export const tovakilCases = pgTable("tovakil_cases", {
+  id: serial("id").primaryKey(),
+  caseNumber: text("case_number").notNull().unique(),
+  ownerLawyerId: integer("owner_lawyer_id")
+    .notNull()
+    .references(() => lawyers.id, { onDelete: "cascade" }),
+  subject: text("subject").notNull(),
+  description: text("description").notNull().default(""),
+  /** موضوع حقوقی — برچسب از LEGAL_TOPICS */
+  topic: text("topic").notNull().default(""),
+  city: text("city").notNull().default(""),
+  /** بودجه/حق‌الوکاله مورد انتظار (متن آزاد — تومان) */
+  budget: text("budget").notNull().default(""),
+  status: text("status").notNull().default("open"),
+  assignedLawyerId: integer("assigned_lawyer_id").references(() => lawyers.id, { onDelete: "set null" }),
+  assignedAt: timestamp("assigned_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [
+  index("tovakil_cases_status_idx").on(t.status, t.id),
+  index("tovakil_cases_owner_idx").on(t.ownerLawyerId, t.id),
+]);
+export type TovakilCase = typeof tovakilCases.$inferSelect;
+
+export const tovakilRequests = pgTable("tovakil_requests", {
+  id: serial("id").primaryKey(),
+  caseId: integer("case_id")
+    .notNull()
+    .references(() => tovakilCases.id, { onDelete: "cascade" }),
+  lawyerId: integer("lawyer_id")
+    .notNull()
+    .references(() => lawyers.id, { onDelete: "cascade" }),
+  message: text("message").notNull().default(""),
+  /** حق‌الوکاله پیشنهادی (متن آزاد — اختیاری) */
+  price: text("price").notNull().default(""),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex("tovakil_requests_uniq").on(t.caseId, t.lawyerId),
+  index("tovakil_requests_lawyer_idx").on(t.lawyerId, t.status),
+]);
+export type TovakilRequest = typeof tovakilRequests.$inferSelect;
+
 /* ---------------- Lawyer reminders (یادآورهای پنل وکیل) ---------------- */
 export const lawyerReminders = pgTable("lawyer_reminders", {
   id: serial("id").primaryKey(),

@@ -57,7 +57,7 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [licenseNo, setLicenseNo] = useState("");
-  const [lawyerType, setLawyerType] = useState<"wakil" | "karamooz">("wakil");
+  const [lawyerType, setLawyerType] = useState<"wakil" | "karamooz" | "expert">("wakil");
   const [province, setProvince] = useState("");
   const [city, setCity] = useState("");
   const [experienceYears, setExperienceYears] = useState("");
@@ -301,10 +301,12 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
             </div>
           </div>
 
-          {/* پروانه + نوع وکالت */}
+          {/* مدارک + نوع عضویت */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="jl-license" className={labelCls}>{t("شمارهٔ پروانهٔ وکالت *")}</label>
+              <label htmlFor="jl-license" className={labelCls}>
+                {lawyerType === "expert" ? t("شمارهٔ مدرک/کد حرفه‌ای *") : t("شمارهٔ پروانهٔ وکالت *")}
+              </label>
               <input
                 id="jl-license"
                 value={licenseNo}
@@ -314,14 +316,20 @@ export function JoinLawyerForm({ loggedIn, alreadyLinked, myRequest }: Props) {
                 className={`${fieldCls} tnum`}
                 maxLength={60}
               />
+              {lawyerType === "expert" && (
+                <p className="mt-1 text-[11px] leading-5 text-muted">
+                  {t("دانش‌آموختهٔ حقوق هستید؟ شمارهٔ مدرک یا کد کارشناسی خود را وارد کنید — دسترسی مشاوره، قرارداد و اسناد؛ بدون وکالت در دادگاه.")}
+                </p>
+              )}
             </div>
             <div>
-              <span className={labelCls}>{t("نوع *")}</span>
-              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t("نوع وکالت")}>
+              <span className={labelCls}>{t("نوع عضویت *")}</span>
+              <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={t("نوع عضویت")}>
                 {(
                   [
                     { value: "wakil", label: "وکیل رسمی", icon: "gavel" as const },
                     { value: "karamooz", label: "کارآموز وکالت", icon: "book" as const },
+                    { value: "expert", label: "کارشناس حقوقی", icon: "certificate" as const },
                   ] as const
                 ).map((opt) => {
                   const active = lawyerType === opt.value;

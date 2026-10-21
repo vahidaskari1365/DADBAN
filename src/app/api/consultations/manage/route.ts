@@ -4,6 +4,7 @@ import { consultations } from "@/db/schema";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { rateLimit, readJson, text } from "@/lib/api-security";
 import { getLawyerActor } from "@/lib/lawyer-actor";
+import { getLawyerEligibility } from "@/lib/lawyer-eligibility";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 
 export const runtime = "nodejs";
@@ -65,6 +66,7 @@ export async function PATCH(req: Request) {
   if (limited) return limited;
   const actor = await getLawyerActor("consultations");
   if (!actor) return NextResponse.json({ ok: false, error: "برای اقدام باید با حساب وکیل وارد شوید." }, { status: 401 });
+  // گیت وضعیت: وکیل/کارشناس احرازنشده هنوز نمی‌تواند درخواست مشاوره بپذیرد یا لغو/تکمیل کند
   try {
     await ensureProfileSchema();
     const body = await readJson(req, 2_048);
@@ -73,6 +75,10 @@ export async function PATCH(req: Request) {
     if (!Number.isInteger(id) || id <= 0) return NextResponse.json({ ok: false, error: "شناسه درخواست نامعتبر است." }, { status: 422 });
     if (!action || !["confirm", "cancel", "complete"].includes(action)) {
       return NextResponse.json({ ok: false, error: "اقدام نامعتبر است." }, { status: 422 });
+    }
+    const eligibility = await getLawyerEligibility(actor.lawyerId);
+    if (eligibility?.consultationBlock) {
+      return NextResponse.json({ ok: false, error: eligibility.consultationBlock }, { status: 403 });
     }
 
     const [row] = await db.select().from(consultations).where(eq(consultations.id, id)).limit(1);

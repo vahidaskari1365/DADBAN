@@ -103,7 +103,14 @@ export async function POST(req: Request) {
     const mobile = parseMobile(body.phone);
     const email = text(body.email, 254)?.toLowerCase() || null;
     const licenseNo = text(body.licenseNo, 60);
-    const lawyerType = body.lawyerType === "karamooz" ? "karamooz" : body.lawyerType === "wakil" ? "wakil" : null;
+    const lawyerType =
+      body.lawyerType === "karamooz"
+        ? "karamooz"
+        : body.lawyerType === "expert"
+          ? "expert"
+          : body.lawyerType === "wakil"
+            ? "wakil"
+            : null;
     const province = text(body.province, 60);
     const city = text(body.city, 60);
     const experienceYears = parseExperience(body.experienceYears);
@@ -123,7 +130,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "شمارهٔ پروانهٔ وکالت الزامی است." }, { status: 422 });
     }
     if (!lawyerType) {
-      return NextResponse.json({ ok: false, error: "نوع وکالت را انتخاب کنید." }, { status: 422 });
+      return NextResponse.json({ ok: false, error: "نوع عضویت را انتخاب کنید (وکیل، کارآموز یا کارشناس حقوقی)." }, { status: 422 });
     }
     if (!province || !city) {
       return NextResponse.json({ ok: false, error: "استان و شهر را انتخاب کنید." }, { status: 422 });
@@ -267,13 +274,15 @@ export async function PUT(req: Request) {
         .values({
           slug: lawyerProfileSlug(request.name),
           name: request.name,
-          // عنوان پروفایل از نوع عضویت: کانون وکلا / مرکز وکلا / کارآموز
+          // عنوان پروفایل از نوع عضویت: کانون وکلا / مرکز وکلا / کارآموز / کارشناس حقوقی
           title:
             request.barType === "markaz"
               ? "وکیل مرکز وکلا"
               : request.lawyerType === "karamooz"
                 ? "کارآموز وکالت"
-                : "وکیل پایه یک دادگستری",
+                : request.lawyerType === "expert"
+                  ? "کارشناس حقوقی"
+                  : "وکیل پایه یک دادگستری",
           lawyerType: request.lawyerType,
           licenseNo: request.licenseNo,
           city: request.city,

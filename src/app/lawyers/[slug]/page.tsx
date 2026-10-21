@@ -117,20 +117,26 @@ export default async function LawyerProfile({
   try {
     me = await getCurrentUser();
   } catch {}
-  // ستون lawyerType به‌زودی به جدول lawyers اضافه می‌شود؛ تا آن زمان با cast امن خوانده می‌شود تا tsc نشکند
-  const lawyerType = (l as { lawyerType?: string }).lawyerType;
+  // نوع عضویت: وکیل رسمی / کارآموز / کارشناس حقوقی (قابلیت ۲)
+  const lawyerType = l.lawyerType;
   const isKaramooz = lawyerType === "karamooz";
+  const isExpert = lawyerType === "expert";
   const isOwner =
     !!me &&
     ((me.role === "lawyer" && me.lawyerId === l.id) || (me.role === "team" && me.parentLawyerId === l.id));
   const isLawyerViewer = !!me && !isOwner && isLawyerSideRole(me.role);
+  /** مالک پروفایل که هنوز احراز نشده — پروفایل کامل را می‌بیند با بنر؛ اقدام‌ها قفل است */
+  const pendingOwner = isOwner && !l.verified;
+  /** رزرو/درخواست برای بازدیدکننده فقط وقتی وکیل احراز شده */
+  const bookingAllowed = l.verified;
 
   const badges = [
     l.verified && { label: t("وکیل تأییدشده"), icon: "badge" as const, tone: "primary" as const },
+    isExpert && { label: t("کارشناس حقوقی"), icon: "certificate" as const, tone: "accent" as const },
     l.topRated && { label: t("وکیل برتر"), icon: "star" as const, tone: "accent" as const },
     l.fastResponder && { label: t("پاسخ‌گویی سریع"), icon: "bolt" as const, tone: "success" as const },
     l.contractExpert && { label: t("متخصص قراردادها"), icon: "document" as const, tone: "neutral" as const },
-  ].filter(Boolean) as { label: string; icon: "badge" | "star" | "bolt" | "document"; tone: "primary" | "accent" | "success" | "neutral" }[];
+  ].filter(Boolean) as { label: string; icon: "badge" | "star" | "bolt" | "document" | "certificate"; tone: "primary" | "accent" | "success" | "neutral" }[];
 
   const pricing = [
     { key: "chat", label: t("مشاوره متنی"), price: l.priceChat, icon: "chat" as const, features: [t("پاسخ مکتوب"), t("ارسال فایل")] },
@@ -263,6 +269,15 @@ export default async function LawyerProfile({
                       {t("کارآموز وکالت")}
                     </span>
                   )}
+                  {isExpert && (
+                    <span
+                      title={t("کارشناس حقوقی — مشاوره، قرارداد و اسناد؛ بدون وکالت در دادگاه")}
+                      className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-bold text-primary ring-1 ring-primary/30"
+                    >
+                      <Icon name="certificate" className="h-3 w-3" />
+                      {t("کارشناس حقوقی")}
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 text-sm text-foreground-soft">{dTitle}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -288,6 +303,28 @@ export default async function LawyerProfile({
           </div>
         </Container>
       </section>
+
+      {/* بنر مالک پروفایلِ احرازنشده — قابلیت ۱: پروفایل کامل دیده می‌شود، اقدام‌ها قفل است */}
+      {pendingOwner && (
+        <Container className="pt-6">
+          <div
+            role="status"
+            data-testid="profile-pending-banner"
+            className="rounded-2xl border border-warning/50 bg-warning/10 px-5 py-4"
+          >
+            <p className="flex items-start gap-2.5 text-sm font-bold leading-7 text-warning">
+              <Icon name="alert" className="mt-1 h-4 w-4 shrink-0" />
+              {t("تا زمان تأیید شماره پروانه هیچ درخواستی نمی‌توانید قبول کنید.")}
+            </p>
+            <p className="mt-1 pr-7 text-xs leading-7 text-foreground-soft">
+              {t("پروفایل شما کامل و قابل ویرایش است؛ اما تا تأیید احراز توسط کارشناسان دادورزان، در فهرست عمومی نمایش داده نمی‌شود و موکلان نمی‌توانند از این صفحه برای شما درخواست ثبت کنند. پس از تأیید، این پیام حذف و پروفایل فعال می‌شود.")}{" "}
+              <Link href="/dashboard/lawyer/verification" className="font-bold text-primary underline underline-offset-4">
+                {t("پیگیری احراز")}
+              </Link>
+            </p>
+          </div>
+        </Container>
+      )}
 
       <Container className="grid gap-8 py-10 lg:grid-cols-[1fr_360px]">
         {/* Main */}
@@ -319,7 +356,9 @@ export default async function LawyerProfile({
               {[
                 isKaramooz
                   ? { icon: "book" as const, label: t("وضعیت"), value: t("کارآموز وکالت"), ltr: false }
-                  : { icon: "certificate" as const, label: t("پروانه"), value: l.licenseNo, ltr: true },
+                  : isExpert
+                    ? { icon: "certificate" as const, label: t("مدارک"), value: l.licenseNo, ltr: true }
+                    : { icon: "certificate" as const, label: t("پروانه"), value: l.licenseNo, ltr: true },
                 { icon: "clock" as const, label: t("زمان پاسخ"), value: l.responseTime, ltr: false },
                 { icon: "star" as const, label: t("امتیاز"), value: faNum(l.rating.toFixed(1)), ltr: false },
                 { icon: "search" as const, label: t("بازدید"), value: faNum(l.views.toLocaleString("en-US")), ltr: false },
@@ -450,7 +489,7 @@ export default async function LawyerProfile({
                   {t("درخواست در کارتابل «همکاری و ارجاع» این همکار ثبت می‌شود؛ پاسخ او در پنل شما نمایش داده می‌شود.")}
                 </p>
               </>
-            ) : (
+            ) : bookingAllowed ? (
               <>
                 <Button href={`/consultation/book?lawyer=${l.slug}`} icon="calendar" className="w-full">
                   {t("رزرو مشاوره")}
@@ -464,6 +503,12 @@ export default async function LawyerProfile({
                   </Button>
                 </div>
               </>
+            ) : (
+              /* وکیل احرازنشده — درخواست‌ها برای بازدیدکننده بسته است */
+              <p className="rounded-xl border border-warning/40 bg-warning/10 px-3 py-3 text-xs font-semibold leading-6 text-warning">
+                <Icon name="alert" className="ml-1.5 inline h-3.5 w-3.5" />
+                {t("این پروفایل در انتظار تأیید مدارک است و فعلاً پذیرش درخواست جدید ندارد.")}
+              </p>
             )}
             <TrustLine compact className="justify-start pt-1" />
           </Card>
