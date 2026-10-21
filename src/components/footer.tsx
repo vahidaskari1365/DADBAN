@@ -179,13 +179,34 @@ export async function Footer() {
           </nav>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-5 border-t border-border pt-6 sm:flex-row sm:items-center">
           <p className="text-xs text-muted">
             © {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(new Date().getFullYear())} {t("دادورزان — تمامی حقوق محفوظ است.")}
           </p>
-          <p className="text-xs text-muted">
+          <p className="text-xs leading-6 text-muted sm:max-w-md sm:text-center">
             {t("محتوای این پلتفرم صرفاً جنبه راهنمایی دارد و جایگزین مشاوره تخصصی وکیل نیست.")}
           </p>
+          {/* نماد اعتماد الکترونیکی (اینماد) — کد رسمی بدون تغییر؛ فقط متن جایگزین و اندازه اضافه شده */}
+          <a
+            href="https://trustseal.enamad.ir/?id=8196650&Code=AqY8rJ3zls3XOs6nEqKQYBxLwScNxIUe"
+            target="_blank"
+            rel="noopener"
+            referrerPolicy="origin"
+            aria-label="نماد اعتماد الکترونیکی ساماندهی و اینماد دادورزان"
+            className="inline-flex shrink-0 items-center rounded-md bg-white p-1.5 shadow-sm ring-1 ring-border transition-transform hover:scale-105"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://trustseal.enamad.ir/logo.aspx?id=8196650&Code=AqY8rJ3zls3XOs6nEqKQYBxLwScNxIUe"
+              alt="نماد اعتماد الکترونیکی اینماد"
+              referrerPolicy="origin"
+              width={110}
+              height={110}
+              loading="lazy"
+              decoding="async"
+              className="h-[58px] w-auto"
+            />
+          </a>
         </div>
       </Container>
     </footer>
