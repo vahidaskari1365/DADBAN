@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getT } from "@/lib/i18n/server";
+import { AiAssistantSeoContent } from "./seo-content";
 
 /**
  * Metadata برای صفحه‌ی دستیار حقوقی هوش مصنوعی.
@@ -38,5 +39,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function AiAssistantLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      {children}
+      {/* بخش سئو/AEO سرور-رندر — بعد از ابزار چت برای موتورهای پاسخ‌محور (گام ۳ خوشه AI) */}
+      <AiAssistantSeoContent />
+    </>
+  );
 }
