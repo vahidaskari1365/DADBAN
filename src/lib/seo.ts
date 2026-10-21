@@ -16,7 +16,7 @@ import { SITE_URL } from "./site";
 import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "./seo-landings";
 import { LAWS } from "./laws-content";
 import { faNum } from "./data";
-import { ARTICLES_CONTENT_VERSION } from "@/data/articles-seed";
+import { ARTICLES_CONTENT_VERSION, articleData } from "@/data/articles-seed";
 
 export const SEO_BASE = SITE_URL;
 
@@ -321,10 +321,8 @@ ${SPECIALTY_LANDINGS.map((s) => `- ${s.h1}: ${SEO_BASE}/lawyers/specialty/${s.sl
 - آرای قضایی: ${SEO_BASE}/judgments
 - واژه‌نامه حقوقی: ${SEO_BASE}/glossary
 
-## راهنماهای عمیق مجله (پاسخ‌های مستند به ماده قانونی)
-- چک برگشتی چگونه وصول می‌شود (گواهی عدم پرداخت، اجرای ماده ۱۰، شکایت کیفری ماده ۷ و جدول مهلت‌ها): ${SEO_BASE}/knowledge/check-bargasht-che-konim
-- شرایط طرح شکایت کیفری (عناصر چهارگانه ماده ۶۶ آیین دادرسی کیفری): ${SEO_BASE}/knowledge/sharayet-shekat-keifari
-- اجرای احکام مدنی (مرجع اجرا، توقیف اموال، مستثنیات دین، اعسار): ${SEO_BASE}/knowledge/hagh-ejra-ahkam
+## راهنماهای عمیق مجله (${faNum(articleData.length)} مقاله — هر مقاله: پاسخ سریع AEO، استناد به ماده قانون، جدول عملی SXO و پرسش‌های متداول)
+${articleData.map((a) => `- ${a.title}: ${SEO_BASE}/knowledge/${a.slug}`).join("\n")}
 
 ## مرکز قوانین — توضیح کامل هر قانون به زبان ساده (هر صفحه شامل مواد کلیدی و پرسش‌های متداول)
 ${LAWS.map((l) => `- ${l.name} (مصوب ${l.year}): ${SEO_BASE}/laws/${l.slug}`).join("\n")}

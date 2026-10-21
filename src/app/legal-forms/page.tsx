@@ -5,6 +5,7 @@ import { Container } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { getLegalForms } from "@/lib/content-store";
+import { SeoLinkGrid } from "@/components/seo/link-grid";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
 
@@ -49,6 +50,22 @@ export default async function LegalFormsPage() {
               </Link>
             </Reveal>
           ))}
+        </div>
+
+        {/* حلقه لینک فرم → راهنمای گام‌به‌گام (گام ۵ Hub/Spoke) */}
+        <div className="mt-8">
+          <SeoLinkGrid
+            title="راهنمای گام‌به‌گام تکمیل فرم‌ها"
+            links={[
+              { label: "چک برگشتی: از شکواییه تا وصول", href: "/knowledge/check-bargasht-che-konim" },
+              { label: "دادخواست مطالبه مهریه", href: "/knowledge/mehrieh-taklif-ghanooni" },
+              { label: "مراحل طلاق توافقی و توافق‌نامه", href: "/knowledge/marahel-talaq-tavafoghi" },
+              { label: "اجاره‌نامه امانی چه خطرهایی دارد؟", href: "/knowledge/aghrarname-ejare-amin" },
+              { label: "درخواست اجرای حکم (اجرای احکام)", href: "/knowledge/hagh-ejra-ahkam" },
+              { label: "گواهی انحصار وراثت چگونه بگیریم؟", href: "/knowledge/anhesar-verasat-rahnama" },
+              { label: "همه مقالات بانک دانش", href: "/knowledge" },
+            ]}
+          />
         </div>
       </Container>
     </>

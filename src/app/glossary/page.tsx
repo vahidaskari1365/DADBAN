@@ -7,6 +7,7 @@ import { Reveal } from "@/components/reveal";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { tdyn } from "@/lib/i18n/dynamic";
 import { getGlossary } from "@/lib/content-store";
+import { SeoLinkGrid } from "@/components/seo/link-grid";
 
 export const revalidate = 0;
 
@@ -64,6 +65,24 @@ export default async function GlossaryPage() {
               </Link>
             </Reveal>
           ))}
+        </div>
+
+        {/* حلقه لینک واژه‌نامه → راهنماهای مجله (گام ۵ Hub/Spoke) */}
+        <div className="mt-8">
+          <SeoLinkGrid
+            title="این اصطلاحات را در راهنماهای کاربردی ببینید"
+            links={[
+              { label: "چک برگشتی چگونه وصول می‌شود؟", href: "/knowledge/check-bargasht-che-konim" },
+              { label: "خیانت در امانت چیست؟", href: "/knowledge/khiyanat-amanat-jorm" },
+              { label: "تکلیف قانونی مهریه", href: "/knowledge/mehrieh-taklif-ghanooni" },
+              { label: "حضانت فرزند پس از جدایی", href: "/knowledge/hazant-farzand-pas-az-jodayi" },
+              { label: "مراحل طلاق توافقی", href: "/knowledge/marahel-talaq-tavafoghi" },
+              { label: "راهنمای انحصار وراثت", href: "/knowledge/anhesar-verasat-rahnama" },
+              { label: "اجرای احکام مدنی و اعسار", href: "/knowledge/hagh-ejra-ahkam" },
+              { label: "تفاوت وکیل پایه یک و مشاور حقوقی", href: "/knowledge/tafavot-vakil-payeh-yek-moshaver" },
+              { label: "همه مقالات بانک دانش", href: "/knowledge" },
+            ]}
+          />
         </div>
       </Container>
     </>

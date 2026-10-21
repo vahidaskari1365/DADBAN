@@ -3,6 +3,7 @@ import { PageHero } from "@/components/page-hero";
 import { Container } from "@/components/ui";
 import { getT } from "@/lib/i18n/server";
 import { CalculatorsClient } from "@/components/calculators/calculators-client";
+import { SeoLinkGrid } from "@/components/seo/link-grid";
 import { SITE_URL } from "@/lib/site";
 import { safeJsonLd } from "@/lib/jsonld";
 
@@ -116,6 +117,21 @@ export default async function CalculatorsPage() {
       />
       <Container className="py-12">
         <CalculatorsClient />
+
+        {/* حلقه لینک محاسبه‌گر → راهنمای مرتبط (گام ۵ Hub/Spoke) */}
+        <div className="mt-10">
+          <SeoLinkGrid
+            title="بعد از محاسبه، این راهنماها را بخوانید"
+            links={[
+              { label: "تکلیف قانونی مهریه و نحوه مطالبه", href: "/knowledge/mehrieh-taklif-ghanooni" },
+              { label: "هزینه وکیل و تعرفه وکالت ۱۴۰۵", href: "/knowledge/hazine-vakil-tarefe-vekalat" },
+              { label: "راهنمای انحصار وراثت", href: "/knowledge/anhesar-verasat-rahnama" },
+              { label: "تقسیم ارث چگونه است؟", href: "/knowledge/taghsim-ers" },
+              { label: "اجرای احکام و اعسار از محکوم‌به", href: "/knowledge/hagh-ejra-ahkam" },
+              { label: "همه مقالات بانک دانش", href: "/knowledge" },
+            ]}
+          />
+        </div>
       </Container>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(webAppJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />

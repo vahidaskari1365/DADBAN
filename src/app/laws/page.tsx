@@ -5,6 +5,7 @@ import { Container, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
 import { FaqSection } from "@/components/seo/faq-section";
+import { SeoLinkGrid } from "@/components/seo/link-grid";
 import { safeJsonLd } from "@/lib/jsonld";
 import { SITE_URL } from "@/lib/site";
 import { faNum } from "@/lib/data";
@@ -246,6 +247,20 @@ export default async function LawsPage() {
             </Link>
           ))}
         </section>
+        {/* حلقه لینک هاب قوانین → راهنماهای مجله (گام ۵ Hub/Spoke) */}
+        <SeoLinkGrid
+          title="راهنماهای کاربردی بر اساس این قوانین"
+          links={[
+            { label: "چک برگشتی چگونه وصول می‌شود؟ (قانون صدور چک)", href: "/knowledge/check-bargasht-che-konim" },
+            { label: "تکلیف قانونی مهریه (قانون حمایت خانواده)", href: "/knowledge/mehrieh-taklif-ghanooni" },
+            { label: "حضانت فرزند پس از جدایی", href: "/knowledge/hazant-farzand-pas-az-jodayi" },
+            { label: "مراحل طلاق توافقی", href: "/knowledge/marahel-talaq-tavafoghi" },
+            { label: "اجرای احکام مدنی (آیین دادرسی)", href: "/knowledge/hagh-ejra-ahkam" },
+            { label: "شکایت کیفری: شرایط و مراحل", href: "/knowledge/sharayet-shekat-keifari" },
+            { label: "تفاوت وکیل پایه یک و مشاور (قانون وکالت)", href: "/knowledge/tafavot-vakil-payeh-yek-moshaver" },
+            { label: "راهنمای انحصار وراثت (قانون امور حسبی)", href: "/knowledge/anhesar-verasat-rahnama" },
+          ]}
+        />
       </Container>
     </main>
   );

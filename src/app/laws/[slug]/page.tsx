@@ -5,6 +5,7 @@ import { PageHero } from "@/components/page-hero";
 import { Container, Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { FaqSection } from "@/components/seo/faq-section";
+import { SeoLinkGrid } from "@/components/seo/link-grid";
 import { safeJsonLd } from "@/lib/jsonld";
 import { SITE_URL } from "@/lib/site";
 import { getT, getServerLocale } from "@/lib/i18n/server";
@@ -13,6 +14,51 @@ import { getLawEntry, getLaws } from "@/lib/content-store";
 import { getLawCategory, getRelatedLaws, type Law } from "@/lib/laws-content";
 
 export const revalidate = 0;
+
+/**
+ * حلقه لینک داخلی قانون→مقاله (گام ۵ Hub/Spoke) — فقط قوانینی که راهنمای مرتبط دارند.
+ * اسلاگ‌ها از کاتالوگ قوانین؛ لینک‌ها به راهنماهای عمیق مجله با استناد به همین قوانین.
+ */
+const LAW_RELATED_ARTICLES: Record<string, { label: string; href: string }[]> = {
+  "ghanun-sodoor-check": [
+    { label: "چک برگشتی چگونه وصول می‌شود؟", href: "/knowledge/check-bargasht-che-konim" },
+    { label: "شکایت کیفری چک: شرایط و مراحل", href: "/knowledge/sharayet-shekat-keifari" },
+    { label: "اجرای حکم چک و توقیف اموال بدهکار", href: "/knowledge/hagh-ejra-ahkam" },
+  ],
+  "ghanun-vekalat": [
+    { label: "تفاوت وکیل پایه یک و مشاور حقوقی", href: "/knowledge/tafavot-vakil-payeh-yek-moshaver" },
+    { label: "هزینه وکیل و تعرفه وکالت ۱۴۰۵", href: "/knowledge/hazine-vakil-tarefe-vekalat" },
+    { label: "مشاوره حقوقی با هوش مصنوعی", href: "/knowledge/moshaver-hoghoghi-hoosh-masnooie" },
+  ],
+  "ghanun-madani": [
+    { label: "تکلیف قانونی مهریه", href: "/knowledge/mehrieh-taklif-ghanooni" },
+    { label: "حضانت فرزند پس از جدایی", href: "/knowledge/hazant-farzand-pas-az-jodayi" },
+    { label: "اجاره‌نامه امانی چه خطرهایی دارد؟", href: "/knowledge/aghrarname-ejare-amin" },
+    { label: "تقسیم ارث چگونه است؟", href: "/knowledge/taghsim-ers" },
+  ],
+  "ghanun-hemayat-khanevade": [
+    { label: "مراحل طلاق توافقی", href: "/knowledge/marahel-talaq-tavafoghi" },
+    { label: "تکلیف قانونی مهریه", href: "/knowledge/mehrieh-taklif-ghanooni" },
+    { label: "حضانت فرزند پس از جدایی", href: "/knowledge/hazant-farzand-pas-az-jodayi" },
+  ],
+  "ghanun-omoor-hasbi": [
+    { label: "راهنمای انحصار وراثت", href: "/knowledge/anhesar-verasat-rahnama" },
+    { label: "تقسیم ارث چگونه است؟", href: "/knowledge/taghsim-ers" },
+  ],
+  "aghname-dadrasi-madani": [
+    { label: "اجرای احکام مدنی گام‌به‌گام", href: "/knowledge/hagh-ejra-ahkam" },
+    { label: "چک برگشتی چگونه وصول می‌شود؟", href: "/knowledge/check-bargasht-che-konim" },
+  ],
+  "aghname-dadrasi-keyfari": [
+    { label: "شکایت کیفری: شرایط و مراحل", href: "/knowledge/sharayet-shekat-keifari" },
+    { label: "شکایت کلاهبرداری", href: "/knowledge/shakayat-kolahbardari" },
+  ],
+  "ghanun-mojazat-islami": [
+    { label: "شکایت کیفری: شرایط و مراحل", href: "/knowledge/sharayet-shekat-keifari" },
+    { label: "خیانت در امانت", href: "/knowledge/khiyanat-amanat-jorm" },
+    { label: "شکایت کلاهبرداری", href: "/knowledge/shakayat-kolahbardari" },
+  ],
+};
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -276,6 +322,14 @@ export default async function LawPage({ params }: { params: Promise<{ slug: stri
             ))}
           </div>
         </section>
+
+        {/* حلقه لینک قانون→مقاله (گام ۵ Hub/Spoke) — فقط قوانین دارای راهنمای مرتبط */}
+        {LAW_RELATED_ARTICLES[l.slug] && (
+          <SeoLinkGrid
+            title={`راهنماهای کاربردی مرتبط با ${l.name}`}
+            links={LAW_RELATED_ARTICLES[l.slug]}
+          />
+        )}
       </Container>
     </main>
   );

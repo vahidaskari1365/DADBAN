@@ -25,6 +25,57 @@ import {
  */
 export const dynamic = "force-dynamic";
 
+/**
+ * حلقه لینک داخلی تخصص→مقاله (گام ۵ Hub/Spoke) — راهنمای عمیق مرتبط با هر تخصص.
+ * تخصص‌های بدون مپ از پیش‌فرض عمومی استفاده می‌کنند.
+ */
+const SPEC_RELATED_ARTICLES: Record<string, { label: string; href: string }[]> = {
+  "talaq-khanavadeh": [
+    { label: "مراحل طلاق توافقی", href: "/knowledge/marahel-talaq-tavafoghi" },
+    { label: "حضانت فرزند پس از جدایی", href: "/knowledge/hazant-farzand-pas-az-jodayi" },
+    { label: "تکلیف قانونی مهریه", href: "/knowledge/mehrieh-taklif-ghanooni" },
+    { label: "هزینه وکیل طلاق و تعرفه", href: "/knowledge/hazine-vakil-tarefe-vekalat" },
+  ],
+  "mahriyeh": [
+    { label: "تکلیف قانونی مهریه", href: "/knowledge/mehrieh-taklif-ghanooni" },
+    { label: "اجرای حکم مهریه و اعسار از محکوم‌به", href: "/knowledge/hagh-ejra-ahkam" },
+    { label: "هزینه وکیل و تعرفه وکالت", href: "/knowledge/hazine-vakil-tarefe-vekalat" },
+  ],
+  "hezanat": [
+    { label: "حضانت فرزند پس از جدایی", href: "/knowledge/hazant-farzand-pas-az-jodayi" },
+    { label: "مراحل طلاق توافقی", href: "/knowledge/marahel-talaq-tavafoghi" },
+  ],
+  "keifari": [
+    { label: "شکایت کیفری: شرایط و مراحل", href: "/knowledge/sharayet-shekat-keifari" },
+    { label: "خیانت در امانت", href: "/knowledge/khiyanat-amanat-jorm" },
+    { label: "شکایت کلاهبرداری", href: "/knowledge/shakayat-kolahbardari" },
+    { label: "اجرای احکام مدنی", href: "/knowledge/hagh-ejra-ahkam" },
+  ],
+  "melki": [
+    { label: "اجاره‌نامه امانی چه خطرهایی دارد؟", href: "/knowledge/aghrarname-ejare-amin" },
+    { label: "اجرای احکام مدنی و توقیف اموال", href: "/knowledge/hagh-ejra-ahkam" },
+  ],
+  "chek": [
+    { label: "چک برگشتی چگونه وصول می‌شود؟", href: "/knowledge/check-bargasht-che-konim" },
+    { label: "شکایت کیفری چک: شرایط و مراحل", href: "/knowledge/sharayet-shekat-keifari" },
+    { label: "اجرای حکم چک و توقیف اموال", href: "/knowledge/hagh-ejra-ahkam" },
+  ],
+  "ers": [
+    { label: "راهنمای انحصار وراثت", href: "/knowledge/anhesar-verasat-rahnama" },
+    { label: "تقسیم ارث چگونه است؟", href: "/knowledge/taghsim-ers" },
+  ],
+  "gharardad": [
+    { label: "اجاره‌نامه امانی چه خطرهایی دارد؟", href: "/knowledge/aghrarname-ejare-amin" },
+    { label: "تفاوت وکیل پایه یک و مشاور حقوقی", href: "/knowledge/tafavot-vakil-payeh-yek-moshaver" },
+  ],
+};
+
+const SPEC_DEFAULT_ARTICLES = [
+  { label: "تفاوت وکیل پایه یک و مشاور حقوقی", href: "/knowledge/tafavot-vakil-payeh-yek-moshaver" },
+  { label: "هزینه وکیل و تعرفه وکالت ۱۴۰۵", href: "/knowledge/hazine-vakil-tarefe-vekalat" },
+  { label: "مشاوره حقوقی با هوش مصنوعی", href: "/knowledge/moshaver-hoghoghi-hoosh-masnooie" },
+];
+
 type Params = Promise<{ slug: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
@@ -235,6 +286,12 @@ export default async function SpecialtyLandingPage({ params }: { params: Params 
             label: s.h1,
             href: `/lawyers/specialty/${s.slug}`,
           }))}
+        />
+
+        {/* حلقه لینک تخصص→راهنمای مجله (گام ۵ Hub/Spoke) */}
+        <SeoLinkGrid
+          title={`راهنماهای تخصصی ${landing.h1.replace("وکیل ", "")}`}
+          links={SPEC_RELATED_ARTICLES[landing.slug] ?? SPEC_DEFAULT_ARTICLES}
         />
       </Container>
     </main>

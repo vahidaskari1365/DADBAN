@@ -335,6 +335,9 @@ export default async function ArticlePage({
                 <Link href="/legal-forms" className="text-foreground-soft transition-colors hover:text-primary">{t("فرم‌های حقوقی")}</Link>
                 <Link href="/qa" className="text-foreground-soft transition-colors hover:text-primary">{t("پرسش و پاسخ حقوقی")}</Link>
                 <Link href="/laws" className="text-foreground-soft transition-colors hover:text-primary">{t("مرکز قوانین")}</Link>
+                <Link href="/calculators" className="text-foreground-soft transition-colors hover:text-primary">{t("محاسبه‌گرهای حقوقی")}</Link>
+                <Link href="/glossary" className="text-foreground-soft transition-colors hover:text-primary">{t("واژه‌نامه حقوقی")}</Link>
+                <Link href="/fee-guide" className="text-foreground-soft transition-colors hover:text-primary">{t("جدول تعرفه وکالت")}</Link>
               </div>
             </Card>
           </aside>
