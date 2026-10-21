@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Trigger Vercel production deployment from main
         run: |
-          RESP=$(curl -s -X POST "https://api.vercel.com/v13/deployments?teamId=${{ secrets.VERCEL_TEAM_ID }}" \
+          RESP=$(curl -s -X POST "https://api.vercel.com/v13/deployments?teamId=${{ secrets.VERCEL_TEAM_ID }}&skipAutoDetectionConfirmation=1" \
             -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{
