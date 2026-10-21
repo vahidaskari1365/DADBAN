@@ -13,8 +13,8 @@ import { ProvinceCombobox } from "@/components/auth/province-combobox";
 
 type Tab = "client" | "lawyer";
 type Mode = "login" | "register";
-/** مسیر عضویت در تب وکیل — رسمی (احراز هویت) یا کارآموز (ثبت‌نام مستقیم) */
-type LawyerTrack = "wakil" | "karamooz";
+/** مسیر عضویت در تب وکیل — رسمی (احراز هویت) / کارآموز (ثبت‌نام مستقیم) / کارشناس حقوقی (ثبت‌نام مستقیم) */
+type LawyerTrack = "wakil" | "karamooz" | "expert";
 
 /** یکسان‌سازی ارقام فارسی/عربی به لاتین برای ارسال به API */
 const toEnDigits = (s: string) =>
@@ -501,7 +501,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
           phone: mobile,
           password,
           code: c,
-          lawyerType: "karamooz",
+          lawyerType: lawyerTrack === "expert" ? "expert" : "karamooz",
           specialties: lawyerSpecs,
           employeeLawyer,
           ...(lawyerCity ? { city: lawyerCity } : {}),
@@ -599,7 +599,9 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
         ? { title: "ورود وکلا", sub: "با شماره موبایل یا ایمیلِ حساب وکیل خود وارد شوید." }
         : lawyerTrack === "karamooz"
           ? { title: "عضویت کارآموز وکالت", sub: "حساب و پروفایل کارآموزی شما فوری ساخته می‌شود." }
-          : { title: "عضویت وکلا", sub: "فرم زیر را کامل کنید؛ پس از تأیید شمارهٔ موبایل، درخواستتان برای تأیید مدیران ارسال می‌شود و پنل وکیل فعال می‌گردد." }
+          : lawyerTrack === "expert"
+            ? { title: "عضویت کارشناس حقوقی", sub: "مشاوره، قرارداد و اسناد — بدون وکالت در دادگاه؛ حساب شما فوری ساخته می‌شود." }
+            : { title: "عضویت وکلا", sub: "فرم زیر را کامل کنید؛ پس از تأیید شمارهٔ موبایل، درخواستتان برای تأیید مدیران ارسال می‌شود و پنل وکیل فعال می‌گردد." }
       : forgotOpen
         ? { title: "بازیابی رمز عبور", sub: "کد تأیید بگیرید و رمز جدیدی برای حساب خود بگذارید." }
         : mode === "login" && loginFlow === "otp"
@@ -862,10 +864,11 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
               {tab === "lawyer" && mode === "register" && (
                 <div className="mt-7 space-y-5">
                   {/* انتخاب مسیر: وکیل رسمی (احراز هویت) یا کارآموز وکالت (ثبت‌نام مستقیم) */}
-                  <div role="radiogroup" aria-label={t("نوع عضویت وکیل")} className="grid grid-cols-2 gap-3">
+                  <div role="radiogroup" aria-label={t("نوع عضویت وکیل")} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     {([
                       { id: "wakil" as const, icon: "gavel" as const, title: "وکیل رسمی", desc: "دارای پروانه وکالت" },
                       { id: "karamooz" as const, icon: "book" as const, title: "کارآموز وکالت", desc: "ثبت‌نام فوری" },
+                      { id: "expert" as const, icon: "certificate" as const, title: "کارشناس حقوقی", desc: "مشاوره، قرارداد و اسناد" },
                     ]).map((o) => (
                       <button
                         key={o.id}
@@ -1121,7 +1124,8 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                         </div>
                       </fieldset>
 
-                      {/* گزینهٔ اختیاری — وکیل کارمندان و کارهای اداری */}
+                      {/* گزینهٔ اختیاری — وکیل کارمندان و کارهای اداری (فقط مسیر کارآموز؛ برای کارشناس بی‌معنی است) */}
+                      {lawyerTrack === "karamooz" && (
                       <button
                         type="button"
                         role="checkbox"
@@ -1151,6 +1155,13 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                           </span>
                         </span>
                       </button>
+                      )}
+
+                      {lawyerTrack === "expert" && (
+                        <p className="rounded-xl border border-[color-mix(in_oklab,var(--accent)_30%,transparent)] bg-[color-mix(in_oklab,var(--accent)_8%,transparent)] p-3 text-[11px] font-bold leading-6 text-[var(--auth-ink-soft)]">
+                          {t("کارشناس حقوقی: مشاوره متنی/صوتی/تصویری، تنظیم و بازبینی قرارداد و کمک به اسناد فعال است؛ پذیرش پرونده قضایی، پیشنهاد روی پرونده‌ها و توکیل مخصوص وکلای دادگستری است. پروفایل شما پس از تأیید مدارک در بخش کارشناسان نمایش داده می‌شود.")}
+                        </p>
+                      )}
 
                       <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-[11px] font-bold leading-6 text-[var(--auth-ink-soft)]">
                         {t("پس از ثبت‌نام وارد پنل وکیل می‌شوید؛ برای دیده‌شدن در فهرست وکلای سایت، مدارک را در بخش «احراز هویت» پنل بارگذاری کنید تا مدیر سایت بررسی و تأیید کند.")}

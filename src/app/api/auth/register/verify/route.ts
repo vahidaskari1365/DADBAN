@@ -46,12 +46,17 @@ export async function POST(req: Request) {
   const limitedPhone = rateLimit(req, "register-verify-phone", 8, 10 * 60_000, normalized);
   if (limitedPhone) return limitedPhone;
 
-  const lawyerType = body?.lawyerType === "karamooz" ? "karamooz" : null;
-  const city = lawyerType === "karamooz" ? text(body?.city, 60) ?? "" : "";
-  const specialties = lawyerType === "karamooz" && Array.isArray(body?.specialties)
+  const lawyerType =
+    body?.lawyerType === "karamooz"
+      ? "karamooz"
+      : body?.lawyerType === "expert"
+        ? "expert"
+        : null;
+  const city = lawyerType ? text(body?.city, 60) ?? "" : "";
+  const specialties = lawyerType && Array.isArray(body?.specialties)
     ? Array.from(new Set((body.specialties as unknown[]).map((s) => text(s, 60)).filter((s): s is string => !!s))).slice(0, 6)
     : [];
-  if (lawyerType === "karamooz" && !specialties.length) {
+  if (lawyerType && !specialties.length) {
     return NextResponse.json({ ok: false, error: "حداقل یک تخصص انتخاب کنید." }, { status: 422 });
   }
 
