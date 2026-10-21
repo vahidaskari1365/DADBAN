@@ -17,7 +17,9 @@ export type IconKey =
   /* آیکن دکمهٔ بزرگ «درخواست عضویت و ثبت‌نام» در صفحه ورود */
   | "user-plus"
   /* آیکن بارگذاری/تعویض عکس پروفایل وکیل */
-  | "camera";
+  | "camera"
+  /* آیکن‌های گزارش بازدید پنل مدیریت — نمودار و شمارش بازدیدکننده */
+  | "chart-bar" | "eye";
 
 /* ---------------- Legal topics (hero selector) ---------------- */
 export const LEGAL_TOPICS: { label: string; icon: IconKey; hint: string }[] = [

@@ -506,6 +506,13 @@ export function ensureProfileSchema(): Promise<void> {
     `CREATE TABLE IF NOT EXISTS tovakil_requests (id SERIAL PRIMARY KEY, case_id INTEGER NOT NULL REFERENCES tovakil_cases(id) ON DELETE CASCADE, lawyer_id INTEGER NOT NULL REFERENCES lawyers(id) ON DELETE CASCADE, message TEXT NOT NULL DEFAULT '', price TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'pending', created_at TIMESTAMP NOT NULL DEFAULT now())`,
     `CREATE UNIQUE INDEX IF NOT EXISTS tovakil_requests_uniq ON tovakil_requests (case_id, lawyer_id)`,
     `CREATE INDEX IF NOT EXISTS tovakil_requests_lawyer_idx ON tovakil_requests (lawyer_id, status)`,
+    // آمار بازدید روزانهٔ پنل مدیریت — تجمیع روزانهٔ هر صفحه + بازدیدکنندهٔ یکتا (به وقت تهران)
+    `CREATE TABLE IF NOT EXISTS page_view_daily (id SERIAL PRIMARY KEY, path TEXT NOT NULL, day TEXT NOT NULL, views INTEGER NOT NULL DEFAULT 0)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS page_view_daily_path_day_uniq ON page_view_daily (path, day)`,
+    `CREATE INDEX IF NOT EXISTS page_view_daily_day_idx ON page_view_daily (day)`,
+    `CREATE TABLE IF NOT EXISTS visitor_daily (id SERIAL PRIMARY KEY, day TEXT NOT NULL, visitor TEXT NOT NULL, hits INTEGER NOT NULL DEFAULT 1, last_path TEXT NOT NULL DEFAULT '', user_agent TEXT NOT NULL DEFAULT '', first_seen TIMESTAMP NOT NULL DEFAULT now(), last_seen TIMESTAMP NOT NULL DEFAULT now())`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS visitor_daily_day_visitor_uniq ON visitor_daily (day, visitor)`,
+    `CREATE INDEX IF NOT EXISTS visitor_daily_day_idx ON visitor_daily (day)`,
   ];
   for (const stmt of stmts) {
     try {

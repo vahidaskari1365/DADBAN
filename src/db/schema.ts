@@ -546,6 +546,41 @@ export const pageViews = pgTable("page_views", {
 });
 export type PageView = typeof pageViews.$inferSelect;
 
+/* ---------------- Daily page-view analytics (روز شمسی/تقویمی به وقت تهران) ---------------- */
+/**
+ * تجمیع روزانهٔ بازدید هر صفحه — منبع «گزارش بازدید روزانه» پنل مدیریت.
+ * ردیف‌گذاری بر کلید (path, day)؛ day به قالب YYYY-MM-DD به وقت آسیا/تهران.
+ */
+export const pageViewDaily = pgTable("page_view_daily", {
+  id: serial("id").primaryKey(),
+  path: text("path").notNull(),
+  day: text("day").notNull(),
+  views: integer("views").notNull().default(0),
+}, (t) => ({
+  pathDayUniq: uniqueIndex("page_view_daily_path_day_uniq").on(t.path, t.day),
+  dayIdx: index("page_view_daily_day_idx").on(t.day),
+}));
+export type PageViewDaily = typeof pageViewDaily.$inferSelect;
+
+/**
+ * بازدیدکنندهٔ یکتای روزانه — هر بازدیدکننده (کوکی ناشناس dvid) در هر روز
+ * فقط یک ردیف دارد؛ شمارش بازدیدکنندهٔ یکتا = شمارش ردیف‌های آن روز.
+ */
+export const visitorDaily = pgTable("visitor_daily", {
+  id: serial("id").primaryKey(),
+  day: text("day").notNull(),
+  visitor: text("visitor").notNull(),
+  hits: integer("hits").notNull().default(1),
+  lastPath: text("last_path").notNull().default(""),
+  userAgent: text("user_agent").notNull().default(""),
+  firstSeen: timestamp("first_seen").defaultNow().notNull(),
+  lastSeen: timestamp("last_seen").defaultNow().notNull(),
+}, (t) => ({
+  dayVisitorUniq: uniqueIndex("visitor_daily_day_visitor_uniq").on(t.day, t.visitor),
+  dayIdx: index("visitor_daily_day_idx").on(t.day),
+}));
+export type VisitorDaily = typeof visitorDaily.$inferSelect;
+
 /* ------------------------------ Users (auth) ------------------------------ */
 export const users = pgTable("app_users", {
   id: serial("id").primaryKey(),
