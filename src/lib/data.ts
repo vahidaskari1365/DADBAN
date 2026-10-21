@@ -15,7 +15,9 @@ export type IconKey =
   /* آیکن صدا — پخش صدای قاضی در شبیه‌سازی دادگاه */
   | "volume" | "volume-off"
   /* آیکن دکمهٔ بزرگ «درخواست عضویت و ثبت‌نام» در صفحه ورود */
-  | "user-plus";
+  | "user-plus"
+  /* آیکن بارگذاری/تعویض عکس پروفایل وکیل */
+  | "camera";
 
 /* ---------------- Legal topics (hero selector) ---------------- */
 export const LEGAL_TOPICS: { label: string; icon: IconKey; hint: string }[] = [

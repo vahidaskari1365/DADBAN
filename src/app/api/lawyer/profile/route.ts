@@ -76,11 +76,21 @@ export async function PUT(req: Request) {
     const title = text(body.title, 120);
     if (title !== null && title) patch.title = title;
 
-    const bio = text(body.bio, 300);
-    if (bio !== null) patch.bio = bio;
+    /** متن اختیاری — undefined یعنی دست‌نخورده، "" یعنی پاک‌کردن عمدی فیلد، null یعنی نامعتبر */
+    const optText = (value: unknown, max: number): string | null | undefined => {
+      if (value === undefined) return undefined;
+      if (typeof value !== "string") return null;
+      const v = value.trim();
+      return v.length > max ? null : v;
+    };
 
-    const about = text(body.about, 4000);
-    if (about !== null) patch.about = about;
+    const bio = optText(body.bio, 300);
+    if (bio === null) return NextResponse.json({ ok: false, error: "معرفی کوتاه حداکثر ۳۰۰ نویسه است." }, { status: 422 });
+    if (bio !== undefined) patch.bio = bio;
+
+    const about = optText(body.about, 4000);
+    if (about === null) return NextResponse.json({ ok: false, error: "متن «درباره وکیل» حداکثر ۴۰۰۰ نویسه است." }, { status: 422 });
+    if (about !== undefined) patch.about = about;
 
     const responseTime = text(body.responseTime, 60);
     if (responseTime !== null && responseTime) patch.responseTime = responseTime;

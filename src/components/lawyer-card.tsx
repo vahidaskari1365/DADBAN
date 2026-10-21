@@ -112,6 +112,11 @@ export function LawyerCard({
           <p className="mt-0.5 line-clamp-1 text-[11px] text-muted sm:text-xs">{lawyer.title}</p>
         </div>
 
+        {/* معرفی کوتاه وکیل — همان متنی که از پنل پروفایل ذخیره می‌شود */}
+        {lawyer.bio?.trim() ? (
+          <p className="line-clamp-2 text-[11px] leading-5 text-foreground-soft sm:text-xs sm:leading-6">{lawyer.bio}</p>
+        ) : null}
+
         <div className="hidden flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted sm:flex">
           <span className="inline-flex items-center gap-1">
             <Icon name="location" className="h-3.5 w-3.5" /> {t(lawyer.city)}
@@ -134,6 +139,26 @@ export function LawyerCard({
             <Badge tone="neutral">+{faNum(lawyer.specialties.length - 2)}</Badge>
           )}
         </div>
+
+        {/* فهرست خدمات — تا دو مورد اول + شمارنده باقی */}
+        {lawyer.services?.length ? (
+          <div className="flex flex-wrap gap-1">
+            {lawyer.services.slice(0, 2).map((s) => (
+              <span
+                key={s}
+                className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-semibold text-success"
+              >
+                <Icon name="check" className="h-3 w-3" />
+                {s}
+              </span>
+            ))}
+            {lawyer.services.length > 2 && (
+              <span className="inline-flex items-center rounded-full px-1 py-0.5 text-[10px] font-bold text-muted">
+                +{faNum(lawyer.services.length - 2)} {t("خدمت دیگر")}
+              </span>
+            )}
+          </div>
+        ) : null}
 
         <div className="mt-1 flex items-center justify-between gap-2 border-t border-border pt-2 sm:pt-3">
           <div>

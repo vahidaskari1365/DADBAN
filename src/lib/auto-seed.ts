@@ -465,6 +465,13 @@ export function ensureProfileSchema(): Promise<void> {
   const stmts = [
     // نوع وکیل — پیش‌نیاز ثبت‌نام مستقیم کارآموز وکالت (الگوی photo_url)
     `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS lawyer_type TEXT NOT NULL DEFAULT 'wakil'`,
+    // ستون‌های پروفایل حرفه‌ای — بیمهٔ دیتابیس‌های قدیمی‌تر: اگر جدول lawyers قبل از این ستون‌ها ساخته شده باشد،
+    // ذخیرهٔ معرفی کوتاه/درباره/خدمات/تخصص بدون این ALTERها با «column does not exist» شکست می‌خورد
+    `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS bio TEXT NOT NULL DEFAULT ''`,
+    `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS about TEXT NOT NULL DEFAULT ''`,
+    `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS services TEXT[] NOT NULL DEFAULT '{}'`,
+    `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS specialties TEXT[] NOT NULL DEFAULT '{}'`,
+    `ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS photo_url TEXT`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS province TEXT`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS city TEXT`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS avatar_color TEXT NOT NULL DEFAULT '#15365d'`,

@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Card, Badge, Button, EmptyState, StarRating } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { LawyerPhoto } from "@/components/lawyer-photo";
+import { LawyerPhotoManager } from "@/components/profile/lawyer-photo-manager";
 import { faNum, faPrice } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { ensureProfileSchema } from "@/lib/auto-seed";
@@ -119,7 +119,8 @@ export default async function LawyerProfileEditorPage() {
         <>
           {/* هدر پروفایل */}
           <Card hover={false} className="flex flex-wrap items-center gap-4">
-            <LawyerPhoto name={l.name} color={l.avatarColor} photoUrl={l.photoUrl} size="lg" />
+            {/* عکس + بارگذاری/تعویض هر زمان — خودکار به سایز استاندارد کارت تبدیل می‌شود */}
+            <LawyerPhotoManager name={l.name} color={l.avatarColor} photoUrl={l.photoUrl} />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-lg font-extrabold text-foreground">{nameT}</h2>
@@ -127,6 +128,7 @@ export default async function LawyerProfileEditorPage() {
                 {l.topRated && <Badge tone="accent" icon="star">{t("وکیل برتر")}</Badge>}
               </div>
               <p className="mt-1 text-sm text-foreground-soft">{titleT} • {cityT} — {provinceT}</p>
+              {l.bio?.trim() ? <p className="mt-2 max-w-xl text-xs leading-6 text-foreground-soft">{l.bio}</p> : null}
               <div className="mt-2">
                 <StarRating rating={l.rating} count={l.reviewCount} size="md" />
               </div>
@@ -222,7 +224,7 @@ function CompletenessCard({
     { label: t("حوزه‌های تخصص (حداقل ۲)"), done: fields.specialties.length >= 2, href: "#", icon: "scale" as const },
     { label: t("فهرست خدمات"), done: fields.services.length >= 3, href: "#", icon: "check" as const },
     { label: t("تعرفه هر سه نوع مشاوره"), done: fields.prices.every((p) => p > 0), href: "#", icon: "money" as const },
-    { label: t("عکس پروفایل"), done: !!fields.photo, href: "/support", icon: "id" as const },
+    { label: t("عکس پروفایل"), done: !!fields.photo, href: "#", icon: "id" as const },
   ];
   const done = items.filter((i) => i.done).length;
   const pct = Math.round((done / items.length) * 100);
