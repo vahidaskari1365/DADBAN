@@ -29,8 +29,8 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  if (!/^\d{6}$/.test(code)) {
-    return NextResponse.json({ ok: false, error: "کد ۶ رقمی را کامل وارد کنید." }, { status: 400 });
+  if (!/^\d{5}$/.test(code)) {
+    return NextResponse.json({ ok: false, error: "کد ۵ رقمی را کامل وارد کنید." }, { status: 400 });
   }
   if (password.length < 8 || password.length > 1024) {
     return NextResponse.json({ ok: false, error: "رمز عبور باید حداقل ۸ کاراکتر باشد." }, { status: 400 });

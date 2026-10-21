@@ -8,7 +8,8 @@ import { faNum, LEGAL_TOPICS } from "@/lib/data";
 import { isRedirectSafeForRole, isLawyerSideRole, panelHomeForRole } from "@/lib/roles";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
-import { DevCodeNotice, ForgotPasswordFlow, OtpLoginFlow, OtpCodeInput, ResendRow, useCooldown } from "@/components/auth/otp-flows";
+import { DevCodeNotice, OtpLoginFlow, OtpCodeInput, ResendRow, useCooldown } from "@/components/auth/otp-flows";
+import { ForgotPasswordDialog } from "@/components/auth/forgot-dialog";
 import { ProvinceCombobox } from "@/components/auth/province-combobox";
 
 type Tab = "client" | "lawyer";
@@ -602,9 +603,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
           : lawyerTrack === "expert"
             ? { title: "عضویت کارشناس حقوقی", sub: "مشاوره، قرارداد و اسناد — بدون وکالت در دادگاه؛ حساب شما فوری ساخته می‌شود." }
             : { title: "عضویت وکلا", sub: "فرم زیر را کامل کنید؛ پس از تأیید شمارهٔ موبایل، درخواستتان برای تأیید مدیران ارسال می‌شود و پنل وکیل فعال می‌گردد." }
-      : forgotOpen
-        ? { title: "بازیابی رمز عبور", sub: "کد تأیید بگیرید و رمز جدیدی برای حساب خود بگذارید." }
-        : mode === "login" && loginFlow === "otp"
+      : mode === "login" && loginFlow === "otp"
           ? { title: "ورود با کد پیامکی", sub: "به‌جای رمز عبور، یک کد ۶ رقمی به موبایل شما می‌فرستیم." }
           : mode === "login"
             ? { title: "ورود به حساب", sub: "به پرونده‌ها، مشاوره‌ها و اسناد خود دسترسی داشته باشید." }
@@ -758,18 +757,6 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                 />
               )}
 
-              {/* فراموشی رمز عبور — زیرجریان دو مسیره: پیامک یا ایمیل */}
-              {tab === "client" && mode === "login" && forgotOpen && (
-                <ForgotPasswordFlow
-                  onBack={() => {
-                    setForgotOpen(false);
-                    setLoginFlow("password");
-                    setError("");
-                    setNotice("");
-                  }}
-                />
-              )}
-
               {tab === "client" && mode === "register" && (
                 <form onSubmit={submitRegister} className="mt-7 space-y-5" noValidate>
                   <AuthField label={t("نام و نام خانوادگی")} icon="id">
@@ -852,6 +839,20 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
                   </AuthField>
                   <AuthPwField idPrefix="lawyer" value={password} onChange={setPassword} show={showPw} onToggle={() => setShowPw((v) => !v)} />
                   <AuthSubmit loading={loading} label={t("ورود به پنل وکیل")} loadingLabel={t("در حال ورود…")} />
+                  <p className="text-center">
+                    <button
+                      type="button"
+                      data-testid="lawyer-forgot-link"
+                      onClick={() => {
+                        setForgotOpen(true);
+                        setError("");
+                        setNotice("");
+                      }}
+                      className="text-xs font-extrabold text-[var(--accent-text)] transition-colors hover:text-[var(--auth-gold)]"
+                    >
+                      {t("رمز عبور را فراموش کرده‌اید؟ بازیابی رمز")}
+                    </button>
+                  </p>
                   <p className="rounded-xl border border-[var(--border)] bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3 text-center text-xs leading-6 text-[var(--auth-ink-soft)]">
                     {t("هنوز عضو دادورزان نشده‌اید؟")}{" "}
                     <button type="button" onClick={() => sweepTo("register", "lawyer")} className="font-extrabold text-[var(--accent-text)] hover:underline">
@@ -1237,6 +1238,19 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
           </div>
         </aside>
       </div>
+
+      {/* پنجرهٔ کوچک فراموشی رمز — مشترک بین موکل و وکیل (رسمی/کارآموز/کارشناس) */}
+      <ForgotPasswordDialog
+        open={forgotOpen}
+        onClose={() => setForgotOpen(false)}
+        onDone={(msg, phone) => {
+          setForgotOpen(false);
+          setLoginFlow("password");
+          setNotice(msg);
+          setError("");
+          if (phone) setIdentifier(phone); // فیلد ورود با شمارهٔ همان حساب پر می‌شود
+        }}
+      />
 
       {/* ══ تیغه — جاروی تمام‌صفحه هنگام سوییچ؛ بدون حتی یک fade ══ */}
       {sweep && (

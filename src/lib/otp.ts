@@ -20,11 +20,11 @@ import { persistAppError, errBrief } from "@/lib/error-persist";
 
 export type OtpPurpose = "login" | "verify" | "reset" | "register";
 
-/** طول کد برای هر هدف — ثبت‌نام ۵ رقمی (خواستهٔ محصول)، بقیه ۶ رقمی */
+/** طول کد برای هر هدف — ثبت‌نام و بازیابی رمز ۵ رقمی (خواستهٔ محصول)، ورود ۶ رقمی */
 const CODE_LENGTH: Record<OtpPurpose, number> = {
   login: 6,
   verify: 6,
-  reset: 6,
+  reset: 5,
   register: 5,
 };
 
@@ -69,7 +69,7 @@ export function phoneLookupVariants(normalized: string): [string, string] {
  */
 export async function issueOtp(phoneNormalized: string, purpose: OtpPurpose): Promise<string> {
   const len = CODE_LENGTH[purpose] ?? 6;
-  const code = String(randomInt(10 ** (len - 1), 10 ** len)); // تصادفی رمزنگارانه — ثبت‌نام ۵ رقم، بقیه ۶ رقم
+  const code = String(randomInt(10 ** (len - 1), 10 ** len)); // تصادفی رمزنگارانه — ثبت‌نام/بازیابی ۵ رقم، ورود ۶ رقم
   const now = new Date();
   try {
     // باطل‌کردن کدهای قبلی همان شماره+هدف (best-effort)
