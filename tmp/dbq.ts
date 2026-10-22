@@ -1,0 +1,10 @@
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+const pool = new Pool({ connectionString: "postgresql://postgres:postgres@127.0.0.1:5434/dadban", max: 2 });
+const u = await pool.query("SELECT id, name, role, lawyer_id FROM users ORDER BY id DESC LIMIT 5");
+console.log("USERS:", u.rows);
+const l = await pool.query("SELECT id, name, lawyer_type, verified, slug FROM lawyers ORDER BY id DESC LIMIT 5");
+console.log("LAWYERS:", l.rows);
+const v = await pool.query("SELECT id, lawyer_id, user_id, status FROM lawyer_verifications ORDER BY id DESC LIMIT 5");
+console.log("VERIFS:", v.rows);
+await pool.end();

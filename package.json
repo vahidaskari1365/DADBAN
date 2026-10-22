@@ -94,6 +94,8 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.11",
+    "@electric-sql/pglite-socket": "^0.2.14",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/jalaali-js": "^1.2.0",
     "@types/nodemailer": "^8.0.2",

@@ -1,0 +1,11 @@
+import { Pool } from "pg";
+const pool = new Pool({ connectionString: "postgresql://postgres:postgres@127.0.0.1:5434/dadban", max: 2 });
+const u = await pool.query("SELECT id, name, role, lawyer_id FROM app_users ORDER BY id DESC LIMIT 4");
+console.log("USERS:", u.rows);
+const l = await pool.query("SELECT id, name, lawyer_type, verified, slug, city FROM lawyers ORDER BY id DESC LIMIT 4");
+console.log("LAWYERS:", l.rows);
+const t2 = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name LIKE '%verif%'");
+console.log("VERIF_TABLES:", t2.rows);
+const v = await pool.query("SELECT id, lawyer_id, user_id, status FROM lawyer_verifications ORDER BY id DESC LIMIT 3").catch(e => ({ rows: ["ERR:" + e.message] }));
+console.log("VERIFS:", v.rows);
+await pool.end();
