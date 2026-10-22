@@ -22,6 +22,7 @@ const MENU_GROUPS: MenuGroup[] = [
     title: "مسیرهای اصلی",
     items: [
       { label: "وکیل‌یابی", href: "/lawyers", icon: "search", desc: "جست‌وجوی وکیل با فیلتر تخصص و شهر" },
+      { label: "کارشناس حقوقی", href: "/experts", icon: "certificate", desc: "مشاوره، قرارداد و اسناد" },
       { label: "رزرو مشاوره", href: "/consultation", icon: "calendar", desc: "متنی، صوتی و تصویری" },
       { label: "ثبت پرونده", href: "/case/new", icon: "folder", desc: "ارزیابی اولیه و معرفی وکیل" },
       { label: "پروژه‌ها", href: "/case-board", icon: "gavel", desc: "ثبت پروژه و پیشنهاد قیمت وکلا" },

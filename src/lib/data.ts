@@ -192,6 +192,7 @@ export const NAV: {
     href: "/lawyers",
     children: [
       { label: "همه وکلا", href: "/lawyers", desc: "جستجو با فیلتر پیشرفته" },
+      { label: "کارشناس حقوقی", href: "/experts", desc: "مشاوره، قرارداد و اسناد" },
       { label: "وکلای کارمندان", href: "/employee-lawyers", desc: "حقوق کار و تأمین اجتماعی" },
       { label: "وکلای خانواده", href: "/lawyers?sp=خانواده", desc: "طلاق، مهریه، حضانت" },
       { label: "وکلای ملکی", href: "/lawyers?sp=ملک", desc: "تخلیه، سند، تصرف" },

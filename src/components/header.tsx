@@ -30,6 +30,7 @@ const childIcon = (label: string): IconKey => {
     "همه قراردادها": "file",
     "خدمات ثبتی": "stamp",
     "همه وکلا": "search",
+    "کارشناس حقوقی": "certificate",
     "وکلای خانواده": "family",
     "وکلای ملکی": "home",
     "وکلای کیفری": "shield",

@@ -27,6 +27,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
     title: "وکیل‌یابی",
     links: [
       { label: "جستجوی وکیل", href: "/lawyers" },
+      { label: "کارشناسان حقوقی", href: "/experts" },
       { label: "تخصص‌های وکالت", href: "/lawyers/specialty" },
       { label: "وکیل طلاق و خانواده", href: "/lawyers/specialty/talaq-khanavadeh" },
       { label: "وکیل کیفری", href: "/lawyers/specialty/keifari" },
