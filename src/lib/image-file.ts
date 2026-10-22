@@ -29,3 +29,34 @@ export async function shrinkImageFile(file: File, maxDim = 1600, quality = 0.85)
     return file; // هر مشکلی بود، فایل اصلی می‌رود سرور
   }
 }
+
+/**
+ * برش مربع استاندارد برای عکس پروفایل/کارت (مثل عکس وکیل):
+ * مرکزِ تصویر به‌صورت مربع برش خورده و به ابعاد ثابت (پیش‌فرض ۸۰۰×۸۰۰) رسیده می‌شود؛
+ * خروجی JPEG یکدست — همه‌جا در کارت و پروفایل، بدون کشیدگی و بدون قاب خالی نمایش داده می‌شود.
+ * در حالت تعویض، آپلود بعدی همان فرآیند را تکرار می‌کند و عکس قبلی جایگزین می‌شود.
+ */
+export async function squareCropImageFile(file: File, dim = 800, quality = 0.85): Promise<File> {
+  if (typeof window === "undefined") return file;
+  if (file.type === "image/gif") return file; // gif متحرک را دست نمی‌زنیم
+  try {
+    const bitmap = await createImageBitmap(file);
+    const side = Math.min(bitmap.width, bitmap.height);
+    if (side < 2) return file;
+    const sx = Math.floor((bitmap.width - side) / 2);
+    const sy = Math.floor((bitmap.height - side) / 2);
+    const canvas = document.createElement("canvas");
+    canvas.width = dim;
+    canvas.height = dim;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, sx, sy, side, side, 0, 0, dim, dim);
+    bitmap.close?.();
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+    if (!blob) return file;
+    const base = (file.name.replace(/\.[^.]+$/, "") || "photo").slice(0, 60);
+    return new File([blob], `${base}-square.jpg`, { type: "image/jpeg" });
+  } catch {
+    return file; // هر مشکلی بود، فایل اصلی می‌رود سرور
+  }
+}

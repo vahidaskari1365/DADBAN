@@ -55,6 +55,33 @@ const PERMS: Record<string, string> = {
   "forum-replies": "forum",
 };
 
+/**
+ * نرمال‌سازی فیلدها قبل از نوشتن در دیتابیس:
+ * ستون‌های آرایه‌ای (text[]) فرم ادمین را رشتهٔ csv می‌فرستد («طلاق، مهریه»)؛
+ * درج رشتهٔ خام در ستون آرایهٔ PostgreSQL خطای malformed array literal می‌دهد و ذخیره شکست می‌خورد.
+ * این تابع هر فیلد آرایه‌ای را (رشته با «،» یا «,» یا خط جدید، یا آرایهٔ موجود) به آرایهٔ تمیز تبدیل می‌کند.
+ */
+function normalizeFields(table: any, fields: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    const col = table[key];
+    if (col && col.dataType === "array") {
+      if (Array.isArray(value)) {
+        out[key] = value.map((x) => String(x).trim()).filter(Boolean);
+      } else if (typeof value === "string") {
+        out[key] = value.split(/[،,\n]/).map((s) => s.trim()).filter(Boolean);
+      } else if (value === null || value === undefined || value === "") {
+        out[key] = [];
+      } else {
+        out[key] = value;
+      }
+    } else {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
 /** گارد مشترک — خروجی: NextResponse خطا یا null */
 async function guard(resource: string): Promise<NextResponse | null> {
   const session = await getAdminSession();
@@ -96,8 +123,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ resourc
   allowed.delete("id");
   const fields = Object.fromEntries(Object.entries(body.fields ?? {}).filter(([k]) => allowed.has(k)));
   if (!Object.keys(fields).length) return NextResponse.json({ ok: false, error: "no fields" }, { status: 400 });
+  const normalized = normalizeFields(cfg.table, fields);
   try {
-    const inserted = (await db.insert(cfg.table).values(fields as any).returning()) as any[];
+    const inserted = (await db.insert(cfg.table).values(normalized as any).returning()) as any[];
     return NextResponse.json({ ok: true, row: inserted[0] });
   } catch {
     return NextResponse.json({ ok: false, error: "create failed" }, { status: 500 });
@@ -120,8 +148,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ resour
   allowed.delete("id");
   const changes = Object.fromEntries(Object.entries(body.changes ?? {}).filter(([k]) => allowed.has(k)));
   if (!Object.keys(changes).length) return NextResponse.json({ ok: false, error: "no changes" }, { status: 400 });
+  const normalized = normalizeFields(cfg.table, changes);
   try {
-    await db.update(cfg.table).set(changes).where(eq(cfg.table.id, Number(body.id)));
+    await db.update(cfg.table).set(normalized).where(eq(cfg.table.id, Number(body.id)));
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: false, error: "update failed" }, { status: 500 });
