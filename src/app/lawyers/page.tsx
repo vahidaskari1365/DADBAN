@@ -201,7 +201,7 @@ export default async function LawyersPage({
       <PageContentBlocks page="lawyers" position="top" />
 
       <Container className="py-8">
-        <div className="sticky top-16 z-30 mb-6">
+        <div className="mb-6">
           <LawyerFilters initial={{ q, sp, city, gender, sort }} total={totalRow[0]?.c ?? 0} />
         </div>
 
