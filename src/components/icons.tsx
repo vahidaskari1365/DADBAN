@@ -77,6 +77,7 @@ const paths: Record<IconKey, (p: P) => ReactElement> = {
   "chart-bar": (p) => (<svg {...base(p)}><path d="M3 3v16a2 2 0 0 0 2 2h16" /><path d="M7 17v-6" /><path d="M12 17V7" /><path d="M17 17v-9" /></svg>),
   eye: (p) => (<svg {...base(p)}><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>),
   camera: (p) => (<svg {...base(p)}><path d="M3 8a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><circle cx="12" cy="13" r="3.5" /></svg>),
+  refresh: (p) => (<svg {...base(p)}><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>),
 };
 
 export function Icon({ name, ...props }: { name: IconKey } & P) {

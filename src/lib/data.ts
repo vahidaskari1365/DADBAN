@@ -19,7 +19,9 @@ export type IconKey =
   /* آیکن بارگذاری/تعویض عکس پروفایل وکیل */
   | "camera"
   /* آیکن‌های گزارش بازدید پنل مدیریت — نمودار و شمارش بازدیدکننده */
-  | "chart-bar" | "eye";
+  | "chart-bar" | "eye"
+  /* آیکن بروزرسانی آمار داشبورد ادمین */
+  | "refresh";
 
 /* ---------------- Legal topics (hero selector) ---------------- */
 export const LEGAL_TOPICS: { label: string; icon: IconKey; hint: string }[] = [

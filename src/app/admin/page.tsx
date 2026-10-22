@@ -1,15 +1,16 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/db";
-import { lawyers, articles, contracts, qaQuestions, cases, consultations, tickets, pageViews, pageViewDaily, visitorDaily, lawyerOnboarding, lawyerVerifications, qaSubmissions, appErrors } from "@/db/schema";
-import { count, desc, eq, gte, sql, sum } from "drizzle-orm";
+import { lawyers, articles, contracts, qaQuestions, cases, consultations, tickets, payments, pageViews, pageViewDaily, visitorDaily, lawyerOnboarding, lawyerVerifications, qaSubmissions, appErrors } from "@/db/schema";
+import { and, count, desc, eq, gte, sql, sum } from "drizzle-orm";
 import { getAdminSession, hasPerm } from "@/lib/admin-auth";
 import { roleLabel } from "@/lib/admin-permissions";
 import { Container, Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
-import { faNum } from "@/lib/data";
+import { faNum, faPrice } from "@/lib/data";
 import { PageHero } from "@/components/page-hero";
 import LogoutButton from "@/components/admin/logout-button";
+import DashboardRefreshButton from "@/components/admin/dashboard-refresh-button";
 import PendingLawyersAlert, { type PendingLawyerRow } from "@/components/admin/pending-lawyers-alert";
 import { DailyTrafficChart, type TrafficDayRow } from "@/components/admin/daily-traffic-chart";
 import { ADMIN_GROUPS, ADMIN_MENU } from "@/components/admin/nav-config";
@@ -22,7 +23,9 @@ export const dynamic = "force-dynamic";
 async function getStats() {
   const empty = { value: 0 };
   try {
-    const [l, a, c, q, cs, co, t, pv] = await Promise.all([
+    /* ابتدای ماه جاری به وقت تهران — Tehran بدون DST روی UTC+03:30 ثابت است */
+    const monthStart = new Date(`${tehranDay().slice(0, 7)}-01T00:00:00+03:30`);
+    const [l, a, c, q, cs, co, t, pv, pay] = await Promise.all([
       db.select({ value: count() }).from(lawyers),
       db.select({ value: count() }).from(articles),
       db.select({ value: count() }).from(contracts),
@@ -31,6 +34,13 @@ async function getStats() {
       db.select({ value: count() }).from(consultations),
       db.select({ value: count() }).from(tickets),
       db.select({ value: sum(pageViews.views) }).from(pageViews),
+      db
+        .select({
+          revenue: sql<string>`COALESCE(SUM(${payments.amount}), 0)::bigint`,
+          cnt: sql<number>`COUNT(*)::int`,
+        })
+        .from(payments)
+        .where(and(eq(payments.status, "verified"), gte(payments.createdAt, monthStart))),
     ]);
     return {
       dbOk: true,
@@ -42,9 +52,11 @@ async function getStats() {
       consultations: co[0]?.value ?? 0,
       tickets: t[0]?.value ?? 0,
       views: Number(pv[0]?.value ?? 0),
+      monthRevenue: Number(pay[0]?.revenue ?? 0),
+      monthPayments: Number(pay[0]?.cnt ?? 0),
     };
   } catch {
-    return { dbOk: false, lawyers: 0, articles: 0, contracts: 0, qa: 0, cases: 0, consultations: 0, tickets: 0, views: 0 };
+    return { dbOk: false, lawyers: 0, articles: 0, contracts: 0, qa: 0, cases: 0, consultations: 0, tickets: 0, views: 0, monthRevenue: 0, monthPayments: 0 };
   }
 }
 
@@ -194,17 +206,20 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     pendingLawyerRows = [];
   }
 
-  const stats = [
-    { label: "وکلا", value: s.lawyers, icon: "badge" as const, tone: "primary" as const, href: "/admin/lawyers" },
-    { label: "مقالات", value: s.articles, icon: "book" as const, tone: "accent" as const, href: "/admin/articles" },
-    { label: "قراردادها", value: s.contracts, icon: "file" as const, tone: "success" as const, href: "/admin/contracts" },
-    { label: "پرسش و پاسخ", value: s.qa, icon: "chat" as const, tone: "neutral" as const, href: "/admin/qa" },
-    { label: "پرونده‌ها", value: s.cases, icon: "folder" as const, tone: "primary" as const, href: "/admin/cases" },
-    { label: "مشاوره‌ها", value: s.consultations, icon: "calendar" as const, tone: "accent" as const, href: "/admin/consultations" },
-    { label: "تیکت‌ها", value: s.tickets, icon: "mail" as const, tone: "neutral" as const, href: "/admin/tickets" },
-    { label: "بازدید امروز", value: tr.today, icon: "eye" as const, tone: "success" as const, href: "/admin/analytics" },
-    { label: "بازدید دیروز", value: tr.yesterday, icon: "clock" as const, tone: "neutral" as const, href: "/admin/analytics" },
-    { label: "بازدیدکنندهٔ یکتای امروز", value: tr.uniqToday, icon: "user" as const, tone: "accent" as const, href: "/admin/analytics" },
+  type StatCard = { label: string; value: number; icon: Parameters<typeof Icon>[0]["name"]; tone: "primary" | "accent" | "success" | "neutral"; href: string; money?: boolean };
+  const stats: StatCard[] = [
+    { label: "وکلا", value: s.lawyers, icon: "badge", tone: "primary", href: "/admin/lawyers" },
+    { label: "مقالات", value: s.articles, icon: "book", tone: "accent", href: "/admin/articles" },
+    { label: "قراردادها", value: s.contracts, icon: "file", tone: "success", href: "/admin/contracts" },
+    { label: "پرسش و پاسخ", value: s.qa, icon: "chat", tone: "neutral", href: "/admin/qa" },
+    { label: "پرونده‌ها", value: s.cases, icon: "folder", tone: "primary", href: "/admin/cases" },
+    { label: "مشاوره‌ها", value: s.consultations, icon: "calendar", tone: "accent", href: "/admin/consultations" },
+    { label: "تیکت‌ها", value: s.tickets, icon: "mail", tone: "neutral", href: "/admin/tickets" },
+    { label: "درآمد تأییدشدهٔ این ماه", value: s.monthRevenue, icon: "coins", tone: "success", href: "/admin/payments", money: true },
+    { label: "تراکنش موفق این ماه", value: s.monthPayments, icon: "money", tone: "primary", href: "/admin/payments" },
+    { label: "بازدید امروز", value: tr.today, icon: "eye", tone: "success", href: "/admin/analytics" },
+    { label: "بازدید دیروز", value: tr.yesterday, icon: "clock", tone: "neutral", href: "/admin/analytics" },
+    { label: "بازدیدکنندهٔ یکتای امروز", value: tr.uniqToday, icon: "user", tone: "accent", href: "/admin/analytics" },
   ];
 
   const menu = ADMIN_MENU.filter((m) => !m.perm || hasPerm(session, m.perm));
@@ -232,6 +247,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           {canArticles && (
             <Link href="/admin/articles" className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-3 text-xs font-bold text-white transition-colors hover:bg-white/20"><Icon name="book" className="h-3.5 w-3.5" />{t("مدیریت مقالات")}</Link>
           )}
+          <DashboardRefreshButton />
           <LogoutButton />
         </div>
       </PageHero>
@@ -257,7 +273,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
                   <Icon name={st.icon} className="h-5 w-5" />
                 </span>
                 <span>
-                  <span className="block text-xl font-black text-foreground">{faNum(st.value)}</span>
+                  <span className={`block font-black text-foreground ${st.money ? "max-w-[11rem] truncate text-base lg:text-lg" : "text-xl"}`}>{st.money ? faPrice(st.value) : faNum(st.value)}</span>
                   <span className="text-xs font-semibold text-foreground-soft">{t(st.label)}</span>
                 </span>
               </Card>

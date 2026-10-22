@@ -6,6 +6,7 @@ import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
 import { shrinkImageFile } from "@/lib/image-file";
+import { faNum } from "@/lib/data";
 
 /**
  * جدول مدیریت محتوای وردپرس‌مانند — قابل استفادهٔ مجدد برای هر بخش محتوایی.
@@ -47,6 +48,9 @@ interface Row extends Record<string, unknown> {
 }
 
 const EMPTY: Record<string, unknown> = {};
+
+/** صفحه‌بندی سمت کلاینت — تعداد ردیف در هر صفحه */
+const PAGE_SIZE = 25;
 
 /** واکشی سبک ردیف‌ها از API عمومی ادمین — بدون setState، نتیجه به caller برمی‌گردد */
 async function fetchRows(resource: string): Promise<{ ok: boolean; rows?: Row[]; unauthorized?: boolean }> {
@@ -178,6 +182,7 @@ export function AdminCrudTable({
   const t = useT();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<Row | "new" | null>(null);
   const [form, setForm] = useState<Record<string, unknown>>(EMPTY);
   const [saving, setSaving] = useState(false);
@@ -225,6 +230,17 @@ export function AdminCrudTable({
       return typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv), "fa");
     });
   }, [rows, q, searchKeys, sortBy]);
+
+  const totalPages = filtered ? Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)) : 1;
+
+  /* clamp بدون effect — اگر فهرست کوچک شد، شمارهٔ صفحهٔ نمایشی به محدودهٔ مجاز محدود می‌شود */
+  const activePage = Math.min(page, totalPages);
+
+  const paged = useMemo(() => {
+    if (!filtered) return null;
+    const start = (activePage - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, activePage]);
 
   /** مقدار اولیهٔ فیلد هنگام «افزودن» — select بدون مقدار گزینهٔ اول را نشان می‌دهد ولی state خالی می‌ماند؛
       پس مقدار باید صریحاً گزینهٔ اول (یا defaultValue) باشد */
@@ -324,7 +340,10 @@ export function AdminCrudTable({
             <Icon name="search" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
             <input
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(1);
+              }}
               placeholder={t("جستجو…")}
               aria-label={t("جستجو")}
               className="h-10 w-44 rounded-xl border border-border bg-surface pr-9 pl-3 text-sm text-foreground outline-none transition focus:border-primary sm:w-56"
@@ -463,7 +482,7 @@ export function AdminCrudTable({
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((row) => (
+                {(paged ?? []).map((row) => (
                   <tr key={row.id} className="border-b border-border/60 transition hover:bg-surface-2/40">
                     {columns.map((c) => (
                       <td key={c.key} className="max-w-[26rem] px-4 py-3 align-top text-foreground-soft" title={displayValue(row, c)}>
@@ -495,6 +514,56 @@ export function AdminCrudTable({
           </div>
         )}
       </Card>
+
+      {/* صفحه‌بندی — فقط وقتی بیش از یک صفحه باشد */}
+      {filtered && filtered.length > PAGE_SIZE && (
+        <nav className="mt-4 flex flex-wrap items-center justify-between gap-3" aria-label={t("صفحه‌بندی فهرست")} data-testid="crud-pagination">
+          <span className="text-xs font-bold text-muted">
+            {t("نمایش")} {faNum((activePage - 1) * PAGE_SIZE + 1)}–{faNum(Math.min(activePage * PAGE_SIZE, filtered.length))} {t("از")} {faNum(filtered.length)}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setPage(totalPages)}
+              disabled={activePage === totalPages}
+              aria-label={t("صفحهٔ آخر")}
+              className="grid h-8 w-8 place-items-center rounded-lg border border-border text-muted transition hover:border-primary hover:text-primary disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted"
+            >
+              <Icon name="chevron" className="h-3.5 w-3.5 rotate-180" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={activePage === totalPages}
+              aria-label={t("صفحهٔ بعد")}
+              className="grid h-8 w-8 place-items-center rounded-lg border border-border text-muted transition hover:border-primary hover:text-primary disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted"
+            >
+              <Icon name="chevron" className="h-3.5 w-3.5 rotate-180" />
+            </button>
+            <span className="min-w-20 text-center text-xs font-black text-foreground">
+              {t("صفحهٔ")} {faNum(activePage)} {t("از")} {faNum(totalPages)}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={activePage === 1}
+              aria-label={t("صفحهٔ قبل")}
+              className="grid h-8 w-8 place-items-center rounded-lg border border-border text-muted transition hover:border-primary hover:text-primary disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted"
+            >
+              <Icon name="chevron" className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage(1)}
+              disabled={activePage === 1}
+              aria-label={t("صفحهٔ اول")}
+              className="grid h-8 w-8 place-items-center rounded-lg border border-border text-muted transition hover:border-primary hover:text-primary disabled:opacity-40 disabled:hover:border-border disabled:hover:text-muted"
+            >
+              <Icon name="chevron" className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </nav>
+      )}
 
       <p className="mt-4 flex items-center gap-1.5 text-xs text-muted">
         <Icon name="check" className="h-3.5 w-3.5 text-success" />
