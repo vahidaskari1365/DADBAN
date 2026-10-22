@@ -200,7 +200,7 @@ export default async function CityLandingPage({ params }: { params: Params }) {
             </Link>
           </div>
           {list.length ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {list.map((lw, i) => (
                 <LawyerCard key={lw.id} lawyer={lw} index={i} />
               ))}
