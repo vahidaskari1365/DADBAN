@@ -213,10 +213,20 @@ function RegisterOtpStep({
 
 /* ─────────────── صحنه تمام‌صفحه با برش مورب ─────────────── */
 
-export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
+export function AuthCard({
+  initialMode = "login",
+  initialTab,
+  initialTrack,
+}: {
+  initialMode?: Mode;
+  /** تب اولیه — برای دیپ‌لینک (مثلاً /register?role=expert مستقیماً تب وکیل را باز می‌کند) */
+  initialTab?: Tab;
+  /** مسیر عضویت اولیه در تب وکیل — wakil | karamooz | expert */
+  initialTrack?: LawyerTrack;
+}) {
   const t = useT();
   const tf = templateT(t);
-  const [tab, setTab] = useState<Tab>("client");
+  const [tab, setTab] = useState<Tab>(initialTab ?? "client");
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
@@ -228,7 +238,7 @@ export function AuthCard({ initialMode = "login" }: { initialMode?: Mode }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   /* مسیر عضویت وکیل — فقط در تب وکیلِ register استفاده می‌شود */
-  const [lawyerTrack, setLawyerTrack] = useState<LawyerTrack>("wakil");
+  const [lawyerTrack, setLawyerTrack] = useState<LawyerTrack>(initialTrack ?? "wakil");
   const [lawyerCity, setLawyerCity] = useState("");
   /* ثبت‌نام مستقیم وکیل رسمی — نوع عضویت (کانون/مرکز وکلا)، پروانه و استان */
   const [barType, setBarType] = useState<"kanoon" | "markaz" | null>(null);

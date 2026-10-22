@@ -197,7 +197,7 @@ export default async function ExpertsPage({
             title={t("کارشناس حقوقی با این فیلترها یافت نشد")}
             desc={t("فیلترها را تغییر دهید یا همه کارشناسان را مشاهده کنید.")}
             icon="certificate"
-            action={{ href: "/register", label: t("عضویت کارشناس حقوقی") }}
+            action={{ href: "/register?role=expert", label: t("عضویت کارشناس حقوقی") }}
           />
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

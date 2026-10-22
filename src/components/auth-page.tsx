@@ -8,10 +8,20 @@ import { AuthCard } from "@/components/auth-panel";
  * لوگو، توضیحات و عکس هیرو در پس‌زمینه + موشن سینمایی (ورود اسلایدی، کن‌برنز،
  * اورورا، شیمر درز طلایی و جاروی تیغه هنگام سوییچ).
  */
-export function AuthPage({ mode }: { mode: "login" | "register" }) {
+export function AuthPage({
+  mode,
+  initialTab,
+  initialTrack,
+}: {
+  mode: "login" | "register";
+  /** تب اولیه — دیپ‌لینک (/register?role=expert) */
+  initialTab?: "client" | "lawyer";
+  /** مسیر عضویت اولیه — wakil | karamooz | expert */
+  initialTrack?: "wakil" | "karamooz" | "expert";
+}) {
   return (
     <div className="auth-stage fixed inset-0 z-[95] overflow-x-hidden overflow-y-auto">
-      <AuthCard initialMode={mode} />
+      <AuthCard initialMode={mode} initialTab={initialTab} initialTrack={initialTrack} />
     </div>
   );
 }

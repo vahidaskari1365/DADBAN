@@ -39,12 +39,13 @@ export default async function LawyerVerificationPage() {
         verified: boolean;
         name: string;
         city: string;
+        lawyerType: string | null;
       }
     | undefined;
   let request: VerificationData["request"] = null;
   try {
     const lrows = await db
-      .select({ id: lawyers.id, slug: lawyers.slug, verified: lawyers.verified, name: lawyers.name, city: lawyers.city })
+      .select({ id: lawyers.id, slug: lawyers.slug, verified: lawyers.verified, name: lawyers.name, city: lawyers.city, lawyerType: lawyers.lawyerType })
       .from(lawyers)
       .where(eq(lawyers.id, user.lawyerId as number))
       .limit(1);
@@ -93,11 +94,17 @@ export default async function LawyerVerificationPage() {
     request,
   };
 
+  const isExpert = (l?.lawyerType ?? null) === "expert";
+
   return (
     <DashboardShell
       role="وکیل"
       title={t("احراز هویت")}
-      subtitle={t("مدارک حرفه‌ای خود را بارگذاری کنید تا پس از تأیید مدیر سایت، پروفایل شما در فهرست وکلای دادورزان نمایش داده شود.")}
+      subtitle={t(
+        isExpert
+          ? "مدارک حرفه‌ای خود را بارگذاری کنید تا پس از تأیید مدیر سایت، پروفایل شما در فهرست کارشناسان حقوقی دادورزان نمایش داده شود."
+          : "مدارک حرفه‌ای خود را بارگذاری کنید تا پس از تأیید مدیر سایت، پروفایل شما در فهرست وکلای دادورزان نمایش داده شود.",
+      )}
       nav={lawyerNav("verification")}
       name={user.name}
       back={{ fallback: "/dashboard/lawyer" }}

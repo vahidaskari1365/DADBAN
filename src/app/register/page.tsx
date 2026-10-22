@@ -14,6 +14,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RegisterPage() {
-  return <AuthPage mode="register" />;
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  // دیپ‌لینک مسیر عضویت — مثال: /register?role=expert از صفحهٔ کارشناسان حقوقی
+  const sp = await searchParams;
+  const role = sp?.role;
+  const track = role === "expert" || role === "wakil" || role === "karamooz" ? role : undefined;
+  return <AuthPage mode="register" initialTab={track ? "lawyer" : undefined} initialTrack={track} />;
 }

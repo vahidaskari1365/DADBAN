@@ -32,11 +32,12 @@ export type RegisterCoreResult =
   | { ok: true; user: { id: number; name: string; role: string }; lawyerSlug: string | null }
   | { ok: false; status: number; error: string };
 
-/** ساخت slug یکتا برای پروفایل کارآموز — لاتین‌سازی نام یا شناسهٔ تصادفی karamooz-… */
-function karamoozSlug(name: string): string {
+/** ساخت slug یکتا برای پروفایل کارآموز/کارشناس — لاتین‌سازی نام یا شناسهٔ تصادفی با پیشوند نوع */
+function profileSlug(name: string, kind: "karamooz" | "expert"): string {
   const latin = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   const rand = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-  return latin.length >= 3 ? `${latin}-${rand}` : `karamooz-${rand}`;
+  const prefix = kind === "expert" ? "expert" : "karamooz";
+  return latin.length >= 3 ? `${latin}-${rand}` : `${prefix}-${rand}`;
 }
 
 export async function createUserAccount(input: RegisterCoreInput): Promise<RegisterCoreResult> {
@@ -73,7 +74,7 @@ export async function createUserAccount(input: RegisterCoreInput): Promise<Regis
         const [profile] = await tx
           .insert(lawyers)
           .values({
-            slug: karamoozSlug(name),
+            slug: profileSlug(name, lawyerType),
             name,
             title: lawyerType === "expert" ? "کارشناس حقوقی" : "کارآموز وکالت",
             licenseNo: lawyerType === "expert" ? `E-${mobile}` : `K-${mobile}`,
