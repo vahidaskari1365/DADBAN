@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
-import { shrinkImageFile } from "@/lib/image-file";
+import { shrinkImageFile, squareCropImageFile } from "@/lib/image-file";
 import { faNum } from "@/lib/data";
 
 /**
@@ -33,6 +33,8 @@ export interface CrudField {
   default?: boolean;
   /** مقدار پیش‌فرض فیلد select هنگام ساخت رکورد جدید (پیش‌فرض: گزینهٔ اول) */
   defaultValue?: string;
+  /** فقط برای type="image" — عکس پروفایل/کارت: برش مربع استاندارد + پیش‌نمایش مربعی + تعویض سریع */
+  avatar?: boolean;
   span?: 1 | 2;
 }
 
@@ -69,10 +71,13 @@ function ImageField({
   value,
   onChange,
   onError,
+  avatar = false,
 }: {
   value: string;
   onChange: (url: string) => void;
   onError: (msg: string) => void;
+  /** عکس پروفایل/کارت: برش مربع استاندارد + پیش‌نمایش مربعی + دکمهٔ تعویض */
+  avatar?: boolean;
 }) {
   const t = useT();
   const [busy, setBusy] = useState(false);
@@ -83,8 +88,12 @@ function ImageField({
     setBusy(true);
     onError("");
     try {
-      /* فایل‌های سنگین سمت مرورگر کوچک می‌شوند — آپلود سریع‌تر و بدون خطای سقف حجم */
-      const out = file.size > 2_500_000 ? await shrinkImageFile(file, 1600, 0.85) : file;
+      /* عکس پروفایل: برش مربع استاندارد کارت — بقیه: فایل‌های سنگین کوچک می‌شوند */
+      const out = avatar
+        ? await squareCropImageFile(file, 800, 0.85)
+        : file.size > 2_500_000
+          ? await shrinkImageFile(file, 1600, 0.85)
+          : file;
       const fd = new FormData();
       fd.append("file", out);
       const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
@@ -106,18 +115,80 @@ function ImageField({
     }
   };
 
-  return (
-    <div className="flex flex-wrap items-start gap-3">
+  const preview = (
+    <div
+      className={`relative shrink-0 overflow-hidden border border-border bg-surface-2 ${
+        avatar ? "h-24 w-24 rounded-2xl" : "h-20 w-32 rounded-xl"
+      }`}
+    >
       {value ? (
-        <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-xl border border-border bg-surface-2">
-          {/* eslint-disable-next-line @next/next/no-img-element -- پیش‌نمایش url همان دامنه از رسانهٔ ادمین */}
-          <img src={value} alt="" className="h-full w-full object-cover" data-testid="crud-image-preview" />
-        </div>
+        /* eslint-disable-next-line @next/next/no-img-element -- پیش‌نمایش url همان دامنه از رسانهٔ ادمین */
+        <img src={value} alt="" className="h-full w-full object-cover" data-testid="crud-image-preview" />
       ) : (
-        <span className="inline-flex h-20 w-32 shrink-0 items-center justify-center rounded-xl border border-dashed border-border bg-surface-2 text-muted">
-          <Icon name="document" className="h-6 w-6" />
+        <span className="grid h-full w-full place-items-center text-muted">
+          <Icon name={avatar ? "user" : "document"} className="h-6 w-6" />
         </span>
       )}
+      {busy && (
+        <span className="absolute inset-0 grid place-items-center bg-background/70 text-[11px] font-bold text-foreground">
+          {t("در حال پردازش…")}
+        </span>
+      )}
+    </div>
+  );
+
+  if (avatar) {
+    return (
+      <div className="flex flex-wrap items-start gap-3">
+        {preview}
+        <div className="flex min-w-0 flex-col gap-2">
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            disabled={busy}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void upload(f);
+            }}
+            aria-label={t("انتخاب تصویر")}
+            data-testid="crud-image-input"
+            className="sr-only"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => inputRef.current?.click()}
+              data-testid="crud-image-pick"
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-primary-soft px-3.5 text-xs font-bold text-primary transition hover:bg-primary hover:text-primary-foreground disabled:opacity-50"
+            >
+              <Icon name="plus" className="h-3.5 w-3.5" />
+              {value ? t("تعویض عکس") : t("انتخاب عکس")}
+            </button>
+            {value && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => onChange("")}
+                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border px-3 text-xs font-bold text-muted transition hover:border-destructive hover:text-destructive disabled:opacity-50"
+              >
+                <Icon name="trash" className="h-3.5 w-3.5" />
+                {t("حذف")}
+              </button>
+            )}
+          </div>
+          <p className="max-w-56 text-[11px] leading-5 text-muted">
+            {t("عکس به‌صورت خودکار به مربع استاندارد کارت (۸۰۰×۸۰۰) برش و بهینه می‌شود.")}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap items-start gap-3">
+      {preview}
       <div className="flex flex-col gap-2">
         <input
           ref={inputRef}
@@ -151,6 +222,8 @@ function displayValue(row: Record<string, unknown>, col: CrudColumn): string {
   if (col.render) return col.render(row);
   const v = row[col.key];
   if (v === null || v === undefined || v === "") return "—";
+  /* ستون‌های آرایه‌ای دیتابیس (specialties/services و…) — نمایش خوانا با جداکنندهٔ فارسی */
+  if (Array.isArray(v)) return v.length ? v.join("، ") : "—";
   if (typeof v === "boolean") return v ? "✓" : "✗";
   return String(v).length > 80 ? `${String(v).slice(0, 80)}…` : String(v);
 }
@@ -269,7 +342,11 @@ export function AdminCrudTable({
 
   const startEdit = (row: Row) => {
     const initial: Record<string, unknown> = {};
-    for (const f of fields) initial[f.key] = row[f.key] ?? initialFor(f);
+    for (const f of fields) {
+      const v = row[f.key];
+      /* ستون‌های آرایه‌ای دیتابیس (specialties/services و…) در فرم csv نمایش داده می‌شوند؛ جداکنندهٔ «، » خواناترین حالت ویرایش است */
+      initial[f.key] = Array.isArray(v) ? v.join("، ") : (v ?? initialFor(f));
+    }
     setForm(initial);
     setEditing(row);
     setError("");
@@ -394,6 +471,7 @@ export function AdminCrudTable({
                     value={String(form[f.key] ?? "")}
                     onChange={(url) => setForm((s) => ({ ...s, [f.key]: url }))}
                     onError={(msg) => setError(msg)}
+                    avatar={f.avatar}
                   />
                 ) : f.type === "select" ? (
                   <select

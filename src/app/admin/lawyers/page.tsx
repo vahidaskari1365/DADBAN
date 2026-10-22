@@ -16,6 +16,7 @@ export default async function AdminLawyersPage() {
       columns={[
         { key: "name", label: "نام" },
         { key: "city", label: "شهر" },
+        { key: "specialties", label: "تخصص‌ها" },
         { key: "rating", label: "امتیاز" },
         { key: "case_count", label: "تعداد پرونده" },
         { key: "price_chat", label: "قیمت چت" },
@@ -38,7 +39,7 @@ export default async function AdminLawyersPage() {
           ],
         },
         { key: "experience_years", label: "سابقه (سال)", type: "number" },
-        { key: "specialties", label: "تخصص‌ها", type: "csv" },
+        { key: "specialties", label: "تخصص‌ها", type: "csv", hint: "موارد را با «،» جدا کنید — مثل: طلاق، مهریه، حضانت" },
         { key: "rating", label: "امتیاز", type: "number" },
         { key: "case_count", label: "تعداد پرونده", type: "number" },
         { key: "price_chat", label: "قیمت چت (تومان)", type: "number" },
@@ -50,10 +51,10 @@ export default async function AdminLawyersPage() {
         { key: "contract_expert", label: "کارشناس قرارداد", type: "boolean" },
         { key: "featured", label: "ویژه", type: "boolean" },
         { key: "response_time", label: "زمان پاسخ" },
-        { key: "bio", label: "بیوگرافی کوتاه", type: "textarea" },
-        { key: "about", label: "درباره وکیل", type: "textarea" },
-        { key: "services", label: "خدمات", type: "csv" },
-        { key: "photo_url", label: "تصویر", type: "image" },
+        { key: "bio", label: "معرفی کوتاه", type: "textarea", placeholder: "۲ تا ۳ جملهٔ کوتاه از سوابق و تمرکز کاری — نمایش در کارت وکیل", hint: "حداکثر ~۳۰۰ نویسه؛ این متن در کارت وکیل و نتیجهٔ جست‌وجو نمایش داده می‌شود." },
+        { key: "about", label: "درباره وکیل (معرفی کامل)", type: "textarea" },
+        { key: "services", label: "فهرست خدمات", type: "csv", hint: "هر خدمت یک مورد، با «،» جدا کنید — مثل: مشاوره حضوری، تنظیم دادخواست، پیگیری پرونده" },
+        { key: "photo_url", label: "عکس وکیل", type: "image", avatar: true },
       ]}
     />
   );
