@@ -102,9 +102,12 @@ export default function MatchingTable({ rows }: { rows: MatchingRow[] }) {
       });
       if (res.ok) {
         router.refresh();
+      } else {
+        /* شکست ذخیره بی‌صدا نباشد — همان مسیر نمایش خطای ردیف استفاده می‌شود */
+        setResults((prev) => ({ ...prev, [row.id]: { error: t("ذخیرهٔ نتیجهٔ تحلیل ناموفق بود — دوباره تلاش کنید.") } }));
       }
     } catch {
-      /* silent — refresh state remains */
+      setResults((prev) => ({ ...prev, [row.id]: { error: t("خطا در ذخیرهٔ نتیجهٔ تحلیل") } }));
     } finally {
       setSavingId(null);
     }

@@ -260,7 +260,7 @@ async function wikiFetch(query: string, num: number): Promise<WebSearchResult[]>
   try {
     const res = await fetch(
       `https://fa.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(bingKeywords(query).slice(0, 200))}&srlimit=${num}&format=json&origin=*`,
-      { headers: { "User-Agent": "DadvarzanBot/1.0 (dadban.ir)" }, signal: AbortSignal.timeout(6_000) },
+      { headers: { "User-Agent": "DadvarzanBot/1.0 (dadvarzan.com)" }, signal: AbortSignal.timeout(6_000) },
     );
     if (!res.ok) return [];
     const data = (await res.json()) as { query?: { search?: { title: string; snippet: string }[] } };

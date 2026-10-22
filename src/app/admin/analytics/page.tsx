@@ -9,6 +9,7 @@ import { faNum } from "@/lib/data";
 import { PageHero } from "@/components/page-hero";
 import { tehranDay, lastNDays, faDayLabel } from "@/lib/visit-analytics";
 import { DailyTrafficChart } from "@/components/admin/daily-traffic-chart";
+import { CsvExportButton } from "@/components/admin/csv-export-button";
 import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +37,8 @@ interface AnalyticsData {
   topToday: { path: string; views: number }[];
   top7: { path: string; views: number }[];
   ev7: { event: string; c: number }[];
+  /** تفکیک دستگاه بازدیدکننده‌ها در ۳۰ روز — از User-Agent ذخیره‌شده در visitor_daily */
+  devices: { mobile: number; tablet: number; desktop: number };
 }
 
 const EMPTY: AnalyticsData = {
@@ -53,7 +56,16 @@ const EMPTY: AnalyticsData = {
   topToday: [],
   top7: [],
   ev7: [],
+  devices: { mobile: 0, tablet: 0, desktop: 0 },
 };
+
+/** تشخیص دستگاه از User-Agent خام — موبایل / تبلت / دسکتاپ */
+function deviceOf(ua: string): "mobile" | "tablet" | "desktop" {
+  const s = ua || "";
+  if (/iPad|Tablet|PlayBook|Silk/i.test(s) || (/Android/i.test(s) && !/Mobile/i.test(s))) return "tablet";
+  if (/Mobi|iPhone|iPod|Windows Phone|IEMobile|Opera Mini/i.test(s)) return "mobile";
+  return "desktop";
+}
 
 const EVENT_LABELS: Record<string, string> = {
   landing_view: "مشاهدهٔ صفحهٔ اصلی",
@@ -91,7 +103,7 @@ async function getAnalytics(): Promise<AnalyticsData> {
   const since7 = new Date(Date.now() - 7 * 86400000);
 
   try {
-    const [viewRows, uniqRows, topTodayRows, top7Rows, uniqTodayRows, uniq7Rows, uniq30Rows, totalRows, evRows] =
+    const [viewRows, uniqRows, topTodayRows, top7Rows, uniqTodayRows, uniq7Rows, uniq30Rows, totalRows, evRows, uaRows] =
       await Promise.all([
         db
           .select({ day: pageViewDaily.day, views: sql<number>`SUM(${pageViewDaily.views})::int` })
@@ -137,7 +149,11 @@ async function getAnalytics(): Promise<AnalyticsData> {
           .groupBy(events.event)
           .orderBy(desc(sql`COUNT(*)`))
           .limit(8),
+        db.select({ ua: visitorDaily.userAgent }).from(visitorDaily).where(gte(visitorDaily.day, day30)),
       ]);
+
+    const devices = { mobile: 0, tablet: 0, desktop: 0 };
+    for (const r of uaRows) devices[deviceOf(r.ua)] += 1;
 
     const viewsMap = new Map(viewRows.map((r) => [r.day, Number(r.views) || 0]));
     const uniqMap = new Map(uniqRows.map((r) => [r.day, Number(r.uniq) || 0]));
@@ -165,6 +181,7 @@ async function getAnalytics(): Promise<AnalyticsData> {
       topToday: topTodayRows.map((r) => ({ path: r.path, views: Number(r.views) || 0 })),
       top7: top7Rows.map((r) => ({ path: r.path, views: Number(r.views) || 0 })),
       ev7: evRows.map((r) => ({ event: r.event, c: Number(r.c) || 0 })),
+      devices,
     };
   } catch {
     return EMPTY;
@@ -257,8 +274,16 @@ export default async function AdminAnalyticsPage() {
   if (!session) redirect("/admin/login");
   const t = await getT();
   const d = await getAnalytics();
+  const today = tehranDay();
 
   const delta = d.yesterday > 0 ? Math.round(((d.today - d.yesterday) / d.yesterday) * 100) : null;
+
+  const deviceTotal = Math.max(1, d.devices.mobile + d.devices.tablet + d.devices.desktop);
+  const deviceRows = [
+    { label: t("موبایل"), value: d.devices.mobile },
+    { label: t("دسکتاپ"), value: d.devices.desktop },
+    { label: t("تبلت"), value: d.devices.tablet },
+  ];
 
   return (
     <>
@@ -314,11 +339,12 @@ export default async function AdminAnalyticsPage() {
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
           {/* جدول گزارش روزانه */}
           <Card hover={false} className="lg:col-span-2">
-            <div className="border-b border-border/60 px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 px-4 py-3">
               <h3 className="flex items-center gap-2 text-sm font-black text-foreground">
                 <Icon name="calendar" className="h-4 w-4 text-primary" />
                 {t("گزارش روزانه — ۳۰ روز اخیر")}
               </h3>
+              <CsvExportButton rows={d.daily} filename={`dadvarzan-traffic-${today}.csv`} label={t("خروجی CSV")} />
             </div>
             <div className="max-h-96 overflow-y-auto [scrollbar-width:thin]">
               <table className="w-full text-right text-xs" data-testid="daily-table">
@@ -351,34 +377,63 @@ export default async function AdminAnalyticsPage() {
             </div>
           </Card>
 
-          {/* رویدادهای کلیدی ۷ روز اخیر */}
-          <Card hover={false}>
-            <div className="border-b border-border/60 px-4 py-3">
-              <h3 className="flex items-center gap-2 text-sm font-black text-foreground">
-                <Icon name="bolt" className="h-4 w-4 text-accent-text" />
-                {t("رویدادهای کلیدی — ۷ روز اخیر")}
-              </h3>
-            </div>
-            <div className="max-h-96 space-y-2.5 overflow-y-auto px-4 py-4 [scrollbar-width:thin]" data-testid="events-7d">
-              {d.ev7.length === 0 && (
-                <p className="py-6 text-center text-xs font-semibold text-foreground-soft">هنوز رویدادی ثبت نشده است.</p>
-              )}
-              {(() => {
-                const max = Math.max(1, ...d.ev7.map((e) => e.c));
-                return d.ev7.map((e) => (
-                  <div key={e.event}>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-xs font-bold text-foreground">{EVENT_LABELS[e.event] ?? e.event}</span>
-                      <Badge tone="neutral">{faNum(e.c)}</Badge>
+          {/* رویدادهای کلیدی + دستگاه‌ها — ستون کنار جدول روزانه */}
+          <div className="space-y-6">
+            <Card hover={false}>
+              <div className="border-b border-border/60 px-4 py-3">
+                <h3 className="flex items-center gap-2 text-sm font-black text-foreground">
+                  <Icon name="bolt" className="h-4 w-4 text-accent-text" />
+                  {t("رویدادهای کلیدی — ۷ روز اخیر")}
+                </h3>
+              </div>
+              <div className="max-h-96 space-y-2.5 overflow-y-auto px-4 py-4 [scrollbar-width:thin]" data-testid="events-7d">
+                {d.ev7.length === 0 && (
+                  <p className="py-6 text-center text-xs font-semibold text-foreground-soft">هنوز رویدادی ثبت نشده است.</p>
+                )}
+                {(() => {
+                  const max = Math.max(1, ...d.ev7.map((e) => e.c));
+                  return d.ev7.map((e) => (
+                    <div key={e.event}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-xs font-bold text-foreground">{EVENT_LABELS[e.event] ?? e.event}</span>
+                        <Badge tone="neutral">{faNum(e.c)}</Badge>
+                      </div>
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-2" dir="ltr">
+                        <div className="h-full rounded-full bg-accent/70" style={{ width: `${Math.max((e.c / max) * 100, 4)}%` }} />
+                      </div>
                     </div>
-                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-2" dir="ltr">
-                      <div className="h-full rounded-full bg-accent/70" style={{ width: `${Math.max((e.c / max) * 100, 4)}%` }} />
+                  ));
+                })()}
+              </div>
+            </Card>
+
+            <Card hover={false} data-testid="analytics-devices">
+              <div className="border-b border-border/60 px-4 py-3">
+                <h3 className="flex items-center gap-2 text-sm font-black text-foreground">
+                  <Icon name="user" className="h-4 w-4 text-accent-text" />
+                  {t("دستگاه بازدیدکنندگان — ۳۰ روز")}
+                </h3>
+              </div>
+              <div className="space-y-3 px-4 py-4">
+                {deviceRows.map((row) => {
+                  const pct = Math.round((row.value / deviceTotal) * 100);
+                  return (
+                    <div key={row.label}>
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className="font-bold text-foreground">{row.label}</span>
+                        <span className="font-black text-foreground-soft">
+                          {faNum(row.value)} · {faNum(pct)}٪
+                        </span>
+                      </div>
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-2" dir="ltr">
+                        <div className="h-full rounded-full bg-primary/60" style={{ width: `${Math.max(pct, 2)}%` }} />
+                      </div>
                     </div>
-                  </div>
-                ));
-              })()}
-            </div>
-          </Card>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
         </div>
       </Container>
     </>

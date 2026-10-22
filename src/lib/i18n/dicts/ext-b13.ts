@@ -74,9 +74,9 @@ const D: Record<string, Row> = {
   "خلاصه مقاله": ["Article Summary", "ملخص المقالة", "Makale Özeti", "文章摘要"],
 
   // ── پایش خطاها (admin/errors) ──
-  "پایش خطاهای داخلی — پنل مدیریت دادپیو": [
+  "پایش خطاهای داخلی — پنل مدیریت دادورزان": [
     "Internal Error Monitoring — Dadpayo Admin Panel",
-    "مراقبة الأخطاء الداخلية — لوحة إدارة دادپیو",
+    "مراقبة الأخطاء الداخلية — لوحة إدارة دادورزان",
     "Dahili Hata İzleme — Dadpayo Yönetim Paneli",
     "内部错误监控 — Dadpayo 管理面板",
   ],
@@ -127,15 +127,15 @@ const D: Record<string, Row> = {
   "در حال ورود...": ["Signing in...", "جارٍ الدخول...", "Giriş yapılıyor...", "登录中…"],
   "ورود به پنل": ["Sign in to Panel", "الدخول إلى اللوحة", "Panele Giriş", "登录面板"],
   // ── مالی ادمین (admin/finance) ──
-  "مالی، کمیسیون و تسویه — پنل مدیریت دادپیو": [
+  "مالی، کمیسیون و تسویه — پنل مدیریت دادورزان": [
     "Finance, Commission & Settlement — Dadpayo Admin Panel",
-    "المالية والعمولة والتسوية — لوحة إدارة دادپیو",
+    "المالية والعمولة والتسوية — لوحة إدارة دادورزان",
     "Finans, Komisyon ve Tahsilat — Dadpayo Yönetim Paneli",
     "财务、佣金与结算 — Dadpayo 管理面板",
   ],
-  "حجم پرداخت‌ها، کمیسیون پلتفرم، درخواست‌های برداشت وکلا و اقساط معوق مارکت‌پلیس دادپیو.": [
+  "حجم پرداخت‌ها، کمیسیون پلتفرم، درخواست‌های برداشت وکلا و اقساط معوق مارکت‌پلیس دادورزان.": [
     "Payment volume, platform commission, lawyer payout requests and overdue installments of the Dadpayo marketplace.",
-    "حجم المدفوعات وعمولة المنصة وطلبات سحب المحامين والأقساط المتأخرة في سوق دادپیو.",
+    "حجم المدفوعات وعمولة المنصة وطلبات سحب المحامين والأقساط المتأخرة في سوق دادورزان.",
     "Dadpayo pazar yerinde ödeme hacmi, platform komisyonu, avukat çekim talepleri ve gecikmiş taksitler.",
     "Dadpayo 市场的支付总额、平台佣金、律师提现申请及逾期分期。",
   ],
@@ -215,29 +215,29 @@ const D: Record<string, Row> = {
   ],
 
   // ── مانیتور تطبیق هوشمند (admin/matching) ──
-  "مانیتور تطبیق هوشمند — پنل مدیریت دادپیو": [
+  "مانیتور تطبیق هوشمند — پنل مدیریت دادورزان": [
     "Smart Matching Monitor — Dadpayo Admin Panel",
-    "مراقب المطابقة الذكية — لوحة إدارة دادپیو",
+    "مراقب المطابقة الذكية — لوحة إدارة دادورزان",
     "Akıllı Eşleştirme İzleyici — Dadpayo Yönetim Paneli",
     "智能匹配监控 — Dadpayo 管理面板",
   ],
-  "پایش موتور تطبیق هوشمند دادپیو: دسته‌بندی AI پرونده‌ها، درصد اطمینان، تخمین هزینه و تحلیل مجدد.": [
+  "پایش موتور تطبیق هوشمند دادورزان: دسته‌بندی AI پرونده‌ها، درصد اطمینان، تخمین هزینه و تحلیل مجدد.": [
     "Monitor the Dadpayo smart-matching engine: AI case categorization, confidence score, cost estimate and re-analysis.",
-    "راقب محرك المطابقة الذكية في دادپیو: تصنيف القضايا بالذكاء الاصطناعي ونسبة الثقة وتقدير التكلفة وإعادة التحليل.",
+    "راقب محرك المطابقة الذكية في دادورزان: تصنيف القضايا بالذكاء الاصطناعي ونسبة الثقة وتقدير التكلفة وإعادة التحليل.",
     "Dadpayo akıllı eşleştirme motorunu izleyin: AI dosya kategorilendirme, güven skoru, maliyet tahmini ve yeniden analiz.",
     "监控 Dadpayo 智能匹配引擎：案件 AI 分类、置信度、费用估算与重新分析。",
   ],
   "Admin · تطبیق AI": ["Admin · AI Matching", "Admin · المطابقة الذكية", "Admin · AI Eşleştirme", "Admin · AI 匹配"],
   "مانیتور تطبیق هوشمند": ["Smart Matching Monitor", "مراقب المطابقة الذكية", "Akıllı Eşleştirme İzleyici", "智能匹配监控"],
-  "پایش موتور تطبیق دادپیو — ترکیب تخصص وکلا، امتیاز و تحلیل هوش مصنوعی روی پرونده‌های بازار": [
+  "پایش موتور تطبیق دادورزان — ترکیب تخصص وکلا، امتیاز و تحلیل هوش مصنوعی روی پرونده‌های بازار": [
     "Monitor the Dadpayo matching engine — combining lawyer specialties, scores and AI analysis on marketplace cases",
-    "راقب محرك المطابقة في دادپیو — يجمع بين تخصص المحامين والنقاط وتحليل الذكاء الاصطناعي على قضايا السوق",
+    "راقب محرك المطابقة في دادورزان — يجمع بين تخصص المحامين والنقاط وتحليل الذكاء الاصطناعي على قضايا السوق",
     "Dadpayo eşleştirme motorunu izleyin — avukat uzmanlıkları, puanlar ve AI analizini pazar dosyalarında birleştirir",
     "监控 Dadpayo 匹配引擎 — 综合律师专长、评分与 AI 分析处理市场案件",
   ],
   "تطبیق هوشمند": ["Smart Matching", "المطابقة الذكية", "Akıllı Eşleştirme", "智能匹配"],
   "عمومی": ["General", "عام", "Genel", "通用"],
-  "موتور تطبیق هوشمند دادپیو": ["Dadpayo Smart Matching Engine", "محرك المطابقة الذكية في دادپیو", "Dadpayo Akıllı Eşleştirme Motoru", "Dadpayo 智能匹配引擎"],
+  "موتور تطبیق هوشمند دادورزان": ["Dadpayo Smart Matching Engine", "محرك المطابقة الذكية في دادورزان", "Dadpayo Akıllı Eşleştirme Motoru", "Dadpayo 智能匹配引擎"],
   "هر پرونده هنگام ثبت، با تحلیل متن (LLM + قواعد قطعی) دسته‌بندی و بر اساس تخصص وکلا، امتیاز و رتبه، سابقه و شهر، به بهترین وکلای پلتفرم تطبیق داده می‌شود. درصد اطمینان و تخمین هزینه/مدت نیز تولید می‌شود؛ مدیر می‌تواند هر پرونده را «تحلیل مجدد» کند.": [
     "When a case is submitted it is categorized by text analysis (LLM + deterministic rules) and matched to the platform's best lawyers based on specialty, score and rank, track record and city. A confidence score and cost/duration estimate are also produced; admins can re-analyze any case.",
     "عند تسجيل القضية تُصنَّف بتحليل النص (نموذج لغوي + قواعد قطعية) وتُطابَق مع أفضل محامي المنصة بناءً على التخصص والنقاط والترتيب والخبرة والمدينة. كما تُنتَج نسبة ثقة وتقدير للتكلفة/المدة؛ ويمكن للمشرف «إعادة تحليل» أي قضية.",
@@ -411,9 +411,9 @@ const D: Record<string, Row> = {
   "آخرین {n} عضو از مجموع {m} عضو.": ["Latest {n} of {m} members.", "أحدث {n} عضوًا من إجمالي {m}.", "Toplam {m} üyeden son {n} üye.", "共 {m} 名成员，显示最近 {n} 名。"],
 
   // ── تأمین‌کنندگان اعتبار (admin/providers) ──
-  "تأمین‌کنندگان اعتبار — پنل مدیریت دادپیو": [
+  "تأمین‌کنندگان اعتبار — پنل مدیریت دادورزان": [
     "Credit Providers — Dadpayo Admin Panel",
-    "مزوّدو الائتمان — لوحة إدارة دادپیو",
+    "مزوّدو الائتمان — لوحة إدارة دادورزان",
     "Kredi Sağlayıcıları — Dadpayo Yönetim Paneli",
     "信用服务提供方 — Dadpayo 管理面板",
   ],
@@ -474,23 +474,23 @@ const D: Record<string, Row> = {
   "تأیید اعتبار": ["Credit approved", "تم اعتماد الائتمان", "Kredi onaylandı", "信贷已批准"],
 
   // ── تنظیمات پلتفرم (admin/settings) ──
-  "تنظیمات پلتفرم — پنل مدیریت دادپیو": [
+  "تنظیمات پلتفرم — پنل مدیریت دادورزان": [
     "Platform Settings — Dadpayo Admin Panel",
-    "إعدادات المنصة — لوحة إدارة دادپیو",
+    "إعدادات المنصة — لوحة إدارة دادورزان",
     "Platform Ayarları — Dadpayo Yönetim Paneli",
     "平台设置 — Dadpayo 管理面板",
   ],
-  "نرخ کمیسیون، حداقل برداشت، امتیاز تطبیق، تأمین‌کنندگان اعتبار و مدل موتور تطبیق دادپیو.": [
+  "نرخ کمیسیون، حداقل برداشت، امتیاز تطبیق، تأمین‌کنندگان اعتبار و مدل موتور تطبیق دادورزان.": [
     "Commission rate, minimum payout, matching score, credit providers and the Dadpayo matching-engine model.",
-    "نسبة العمولة والحد الأدنى للسحب ودرجة المطابقة ومزوّدو الائتمان ونموذج محرك المطابقة في دادپیو.",
+    "نسبة العمولة والحد الأدنى للسحب ودرجة المطابقة ومزوّدو الائتمان ونموذج محرك المطابقة في دادورزان.",
     "Komisyon oranı, minimum çekim, eşleştirme puanı, kredi sağlayıcıları ve Dadpayo eşleştirme motoru modeli.",
     "佣金比例、最低提现、匹配评分、信用服务提供方及 Dadpayo 匹配引擎模型。",
   ],
   "Admin · تنظیمات": ["Admin · Settings", "Admin · الإعدادات", "Admin · Ayarlar", "Admin · 设置"],
   "تنظیمات پلتفرم": ["Platform Settings", "إعدادات المنصة", "Platform Ayarları", "平台设置"],
-  "پارامترهای کلیدی مارکت‌پلیس دادپیو — کمیسیون، تسویه، آستانهٔ تطبیق و تأمین‌کنندگان": [
+  "پارامترهای کلیدی مارکت‌پلیس دادورزان — کمیسیون، تسویه، آستانهٔ تطبیق و تأمین‌کنندگان": [
     "Key parameters of the Dadpayo marketplace — commission, settlement, matching threshold and providers",
-    "المعاملات الأساسية لسوق دادپیو — العمولة والتسوية وعتبة المطابقة والمزوّدون",
+    "المعاملات الأساسية لسوق دادورزان — العمولة والتسوية وعتبة المطابقة والمزوّدون",
     "Dadpayo pazar yerinin temel parametreleri — komisyon, tahsilat, eşleştirme eşiği ve sağlayıcılar",
     "Dadpayo 市场的关键参数 — 佣金、结算、匹配阈值与服务提供方",
   ],
@@ -501,9 +501,9 @@ const D: Record<string, Row> = {
   "حداقل امتیاز تطبیق وکیل": ["Lawyer minimum matching score", "الحد الأدنى لدرجة مطابقة المحامي", "Avukat minimum eşleştirme puanı", "律师最低匹配评分"],
   "تأمین‌کنندگان اعتبار فعال": ["Active credit providers", "مزوّدو الائتمان النشطون", "Aktif kredi sağlayıcıları", "启用的信用服务提供方"],
   "مدل موتور تطبیق": ["Matching engine model", "نموذج محرك المطابقة", "Eşleştirme motoru modeli", "匹配引擎模型"],
-  "درصدی که دادپیو از هر پرداخت موکل به‌عنوان کارمزد برمی‌دارد (۰ تا ۱۰۰).": [
+  "درصدی که دادورزان از هر پرداخت موکل به‌عنوان کارمزد برمی‌دارد (۰ تا ۱۰۰).": [
     "The percentage Dadpayo takes from each client payment as a fee (0–100).",
-    "النسبة التي يأخذها دادپیو من كل دفعة موكل كرسوم (٠ إلى ١٠٠).",
+    "النسبة التي يأخذها دادورزان من كل دفعة موكل كرسوم (٠ إلى ١٠٠).",
     "Dadpayo'nun her müvekkil ödemesinden ücret olarak aldığı yüzde (0–100).",
     "Dadpayo 从每笔客户付款中收取的手续费比例（0–100）。",
   ],
@@ -578,24 +578,24 @@ const D: Record<string, Row> = {
   ],
 
   // ── کاربران و وکلا (admin/users) ──
-  "کاربران و وکلا — پنل مدیریت دادپیو": [
+  "کاربران و وکلا — پنل مدیریت دادورزان": [
     "Users & Lawyers — Dadpayo Admin Panel",
-    "المستخدمون والمحامون — لوحة إدارة دادپیو",
+    "المستخدمون والمحامون — لوحة إدارة دادورزان",
     "Kullanıcılar ve Avukatlar — Dadpayo Yönetim Paneli",
     "用户与律师 — Dadpayo 管理面板",
   ],
-  "مدیریت کاربران ثبت‌نام‌شده و پروفایل وکلای مارکت‌پلیس دادپیو.": [
+  "مدیریت کاربران ثبت‌نام‌شده و پروفایل وکلای مارکت‌پلیس دادورزان.": [
     "Manage registered users and Dadpayo marketplace lawyer profiles.",
-    "إدارة المستخدمين المسجَّلين وملفات محامي سوق دادپیو.",
+    "إدارة المستخدمين المسجَّلين وملفات محامي سوق دادورزان.",
     "Kayıtlı kullanıcıları ve Dadpayo pazar yeri avukat profillerini yönetin.",
     "管理注册用户与 Dadpayo 市场律师资料。",
   ],
   "مدیر": ["Admin", "مشرف", "Yönetici", "管理员"],
   "Admin · کاربران": ["Admin · Users", "Admin · المستخدمون", "Admin · Kullanıcılar", "Admin · 用户"],
   "کاربران و وکلا": ["Users & Lawyers", "المستخدمون والمحامون", "Kullanıcılar ve Avukatlar", "用户与律师"],
-  "کاربران ثبت‌نام‌شدهٔ پلتفرم، وضعیت تأیید وکلا و آمار رشد جامعهٔ دادپیو": [
+  "کاربران ثبت‌نام‌شدهٔ پلتفرم، وضعیت تأیید وکلا و آمار رشد جامعهٔ دادورزان": [
     "Registered platform users, lawyer verification status and community growth stats",
-    "المستخدمون المسجَّلون في المنصة وحالة اعتماد المحامين وإحصاءات نمو مجتمع دادپیو",
+    "المستخدمون المسجَّلون في المنصة وحالة اعتماد المحامين وإحصاءات نمو مجتمع دادورزان",
     "Kayıtlı platform kullanıcıları, avukat onay durumu ve topluluk büyüme istatistikleri",
     "平台注册用户、律师认证状态与社区增长统计",
   ],
@@ -755,9 +755,9 @@ const D: Record<string, Row> = {
 
   // ── داشبورد وکیل: بازار (dashboard/lawyer/market) ──
   "پنل وکیل — پرونده‌های پیشنهادی": ["Lawyer Panel — Suggested Cases", "لوحة المحامي — القضايا المقترحة", "Avukat Paneli — Önerilen Dosyalar", "律师面板 — 推荐案件"],
-  "بازار پرونده‌های جدید دادپیو با تطبیق هوشمند تخصص و ارسال پیشنهاد قیمت.": [
+  "بازار پرونده‌های جدید دادورزان با تطبیق هوشمند تخصص و ارسال پیشنهاد قیمت.": [
     "Dadpayo's new-case marketplace with smart specialty matching and price-offer submission.",
-    "سوق القضايا الجديدة في دادپیو بمطابقة ذكية للتخصص وإرسال عروض الأسعار.",
+    "سوق القضايا الجديدة في دادورزان بمطابقة ذكية للتخصص وإرسال عروض الأسعار.",
     "Dadpayo'nun akıllı uzmanlık eşleştirmeli yeni dosya pazarı ve fiyat teklifi gönderimi.",
     "Dadpayo 新案件市场，智能匹配专长并提交报价。",
   ],
@@ -844,15 +844,15 @@ const D: Record<string, Row> = {
   "تیم و کارآموزان": ["Team & Trainees", "الفريق والمتدربون", "Ekip ve Stajyerler", "团队与实习生"],
 
   // ── داشبورد کارآموز (dashboard/trainee) ──
-  "پنل کارآموز — کارتابل ارجاعی دادپیو": [
+  "پنل کارآموز — کارتابل ارجاعی دادورزان": [
     "Trainee Panel — Dadpayo Referral Desk",
-    "لوحة المتدرب — مكتب الإحالة في دادپیو",
+    "لوحة المتدرب — مكتب الإحالة في دادورزان",
     "Stajyer Paneli — Dadpayo Sevk Masası",
     "实习生面板 — Dadpayo 转办工作台",
   ],
-  "کارتابل کارآموزان و همکاران حقوقی دادپیو: پرونده‌های ارجاعی، ثبت اقدام، مهلت‌ها و مسیر یادگیری.": [
+  "کارتابل کارآموزان و همکاران حقوقی دادورزان: پرونده‌های ارجاعی، ثبت اقدام، مهلت‌ها و مسیر یادگیری.": [
     "Work desk for Dadpayo trainees and legal collaborators: referred cases, recorded actions, deadlines and learning path.",
-    "مكتب عمل للمتدربين والمعاونين القانونيين في دادپیو: القضايا المُحالة وتسجيل الإجراءات والمهلال ومسار التعلم.",
+    "مكتب عمل للمتدربين والمعاونين القانونيين في دادورزان: القضايا المُحالة وتسجيل الإجراءات والمهلال ومسار التعلم.",
     "Dadpayo stajyerleri ve hukuk iş birlikçileri için çalışma masası: sevk edilen dosyalar, kaydedilen işlemler, süreler ve öğrenme yolu.",
     "Dadpayo 实习生与法律协作者的工作台：转办案件、行动记录、期限与学习路径。",
   ],
@@ -895,7 +895,7 @@ const D: Record<string, Row> = {
   "مهلت‌ها و جلسات پیش‌رو": ["Upcoming Deadlines & Sessions", "المهلال والجلسات القادمة", "Yaklaşan Süreler ve Duruşmalar", "即将到来的期限与庭审"],
   "جلسه یا مهلتی در روزهای آینده ثبت نشده است.": ["No sessions or deadlines recorded for the coming days.", "لا جلسات أو مهلال مسجَّلة للأيام القادمة.", "Önümüzdeki günler için duruşma veya süre kaydedilmedi.", "未来数日暂无庭审或期限记录。"],
   "ساعت {t}": ["at {t}", "الساعة {t}", "saat {t}", "{t} 时"],
-  "در حال یادگیری — آکادمی دادپیو": ["Currently Learning — Dadpayo Academy", "قيد التعلم — أكاديمية دادپیو", "Öğreniyor — Dadpayo Akademisi", "正在学习 — Dadpayo 学院"],
+  "در حال یادگیری — آکادمی دادورزان": ["Currently Learning — Dadpayo Academy", "قيد التعلم — أكاديمية دادورزان", "Öğreniyor — Dadpayo Akademisi", "正在学习 — Dadpayo 学院"],
   "مسیرهای پیشنهادی برای ارتقای مهارت‌های حقوقی و ابزارهای هوش مصنوعی": [
     "Suggested paths to advance legal skills and AI tools",
     "مسارات مقترحة لتطوير المهارات القانونية وأدوات الذكاء الاصطناعي",
@@ -911,9 +911,9 @@ const D: Record<string, Row> = {
   ],
   "مشاهدهٔ مسیرها": ["View Paths", "عرض المسارات", "Yolları Görüntüle", "查看路径"],
   "مقالات آکادمی": ["Academy Articles", "مقالات الأكاديمية", "Akademi Makaleleri", "学院文章"],
-  "مطالب آموزشی حقوقی دادپیو برای کارآموزان و همکاران": [
+  "مطالب آموزشی حقوقی دادورزان برای کارآموزان و همکاران": [
     "Dadpayo legal learning materials for trainees and collaborators",
-    "مواد تعليمية قانونية من دادپیو للمتدربين والمعاونين",
+    "مواد تعليمية قانونية من دادورزان للمتدربين والمعاونين",
     "Stajyerler ve iş birlikçileri için Dadpayo hukuk eğitim içerikleri",
     "面向实习生与协作者的 Dadpayo 法律学习资料",
   ],

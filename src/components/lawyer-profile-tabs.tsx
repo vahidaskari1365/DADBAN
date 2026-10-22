@@ -202,7 +202,7 @@ export function LawyerProfileTabs(props: ProfileTabsProps) {
               <div className="dp-timeline-item done relative pr-8">
                 <span className="dp-timeline-dot" aria-hidden />
                 <p className="text-sm font-bold text-foreground">{t("احراز هویت و تأیید پروانه")}</p>
-                <p className="mt-1 text-xs leading-6 text-muted">{tf("پروانه وکالت شماره {no} توسط کارشناسان دادپیو راستی‌آزمایی شده است.", { no: props.licenseNo })}</p>
+                <p className="mt-1 text-xs leading-6 text-muted">{tf("پروانه وکالت شماره {no} توسط کارشناسان دادورزان راستی‌آزمایی شده است.", { no: props.licenseNo })}</p>
               </div>
               <div className="dp-timeline-item done relative pr-8">
                 <span className="dp-timeline-dot" aria-hidden />

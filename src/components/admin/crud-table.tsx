@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
+import { shrinkImageFile } from "@/lib/image-file";
 
 /**
  * جدول مدیریت محتوای وردپرس‌مانند — قابل استفادهٔ مجدد برای هر بخش محتوایی.
@@ -47,6 +48,18 @@ interface Row extends Record<string, unknown> {
 
 const EMPTY: Record<string, unknown> = {};
 
+/** واکشی سبک ردیف‌ها از API عمومی ادمین — بدون setState، نتیجه به caller برمی‌گردد */
+async function fetchRows(resource: string): Promise<{ ok: boolean; rows?: Row[]; unauthorized?: boolean }> {
+  try {
+    const res = await fetch(`/api/admin/${resource}`, { cache: "no-store" });
+    if (res.status === 401) return { ok: false, unauthorized: true };
+    const data = await res.json();
+    return data.ok ? { ok: true, rows: data.rows as Row[] } : { ok: false };
+  } catch {
+    return { ok: false };
+  }
+}
+
 /** آپلود تصویر به /api/admin/upload — خروجی: url عمومی /api/media/{id} */
 function ImageField({
   value,
@@ -66,8 +79,10 @@ function ImageField({
     setBusy(true);
     onError("");
     try {
+      /* فایل‌های سنگین سمت مرورگر کوچک می‌شوند — آپلود سریع‌تر و بدون خطای سقف حجم */
+      const out = file.size > 2_500_000 ? await shrinkImageFile(file, 1600, 0.85) : file;
       const fd = new FormData();
-      fd.append("file", file);
+      fd.append("file", out);
       const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
       if (res.status === 401) {
         uploadRouter.push("/admin/login");
@@ -122,7 +137,7 @@ function ImageField({
             {t("حذف تصویر")}
           </button>
         )}
-        <p className="text-[11px] leading-5 text-muted">{t("PNG، JPEG، WebP یا GIF — حداکثر ۳ مگابایت")}</p>
+        <p className="text-[11px] leading-5 text-muted">{t("PNG، JPEG، WebP یا GIF — حداکثر ۵ مگابایت (تصاویر بزرگ خودکار کوچک می‌شوند)")}</p>
       </div>
     </div>
   );
@@ -167,38 +182,28 @@ export function AdminCrudTable({
   const [notice, setNotice] = useState("");
 
   const load = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/admin/${resource}`, { cache: "no-store" });
-      if (res.status === 401) {
+    const r = await fetchRows(resource);
+    if (r.unauthorized) {
+      router.replace("/admin/login");
+      return;
+    }
+    if (r.ok && r.rows) setRows(r.rows);
+    else setError(t("خطا در دریافت داده‌ها"));
+  }, [resource, router, t]);
+
+  /* بارگذاری اولیه — فقط یک درخواست (قبلاً دو fetch هم‌زمان و تکراری شلیک می‌شد) */
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      const r = await fetchRows(resource);
+      if (!alive) return;
+      if (r.unauthorized) {
         router.replace("/admin/login");
         return;
       }
-      const data = await res.json();
-      if (data.ok) setRows(data.rows as Row[]);
+      if (r.ok && r.rows) setRows(r.rows);
       else setError(t("خطا در دریافت داده‌ها"));
-    } catch {
-      setError(t("خطا در دریافت داده‌ها"));
-    }
-  }, [resource, router, t]);
-
-  useEffect(() => {
-    let alive = true;
-    fetch(`/api/admin/${resource}`, { cache: "no-store" })
-      .then((res) => {
-        if (res.status === 401) {
-          router.replace("/admin/login");
-          return null;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (!alive || !data) return;
-        if (data.ok) setRows(data.rows as Row[]);
-        else setError(t("خطا در دریافت داده‌ها"));
-      })
-      .catch(() => {
-        if (alive) setError(t("خطا در دریافت داده‌ها"));
-      });
+    })();
     return () => {
       alive = false;
     };

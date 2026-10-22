@@ -1,5 +1,5 @@
 /* ============================================================================
- * دادپیو — Marketplace schema migration + demo data (idempotent)
+ * دادورزان — Marketplace schema migration + demo data (idempotent)
  * ---------------------------------------------------------------------------
  * در هر بوت سرور (instrumentation) اجرا می‌شود:
  *  ۱) CREATE TABLE IF NOT EXISTS برای جداول مارکت‌پلیس

@@ -50,7 +50,7 @@ export async function GET(req: Request, { params }: RouteCtx) {
       return {
         id: p.id,
         lawyerId: p.lawyerId,
-        lawyerName: l?.name ?? "وکیل دادپیو",
+        lawyerName: l?.name ?? "وکیل دادورزان",
         lawyerTitle: l?.title ?? "وکیل پایه یک دادگستری",
         lawyerRating: l?.rating ?? 0,
         lawyerCity: l?.city ?? "",

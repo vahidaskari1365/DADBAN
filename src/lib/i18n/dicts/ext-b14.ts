@@ -96,7 +96,7 @@ const D: Record<string, Row> = {
   "پرداخت چه زمانی انجام می‌شود؟": ["When is payment made?", "متى يتم الدفع؟", "Ödeme ne zaman yapılır?", "什么时候付款？"],
   "پرداخت‌شده:": ["Paid:", "مدفوع:", "Ödendi:", "已支付："],
   "پرداخت‌شده: ": ["Paid: ", "مدفوع: ", "Ödendi: ", "已支付："],
-  "پروانه وکالت شماره {no} توسط کارشناسان دادپیو راستی‌آزمایی شده است.": ["License no. {no} has been verified by Dadpio experts.", "تم التحقق من رخصة المحاماة رقم {no} من قبل خبراء دادپیو.", "{no} numaralı ruhsat Dadpio uzmanlarınca doğrulanmıştır.", "执照编号 {no} 已经 Dadpio 专家核验。"],
+  "پروانه وکالت شماره {no} توسط کارشناسان دادورزان راستی‌آزمایی شده است.": ["License no. {no} has been verified by DADVARZAN experts.", "تم التحقق من رخصة المحاماة رقم {no} من قبل خبراء دادورزان.", "{no} numaralı ruhsat DADVARZAN uzmanlarınca doğrulanmıştır.", "执照编号 {no} 已经 DADVARZAN 专家核验。"],
   "پرونده موفق": ["Successful case", "ملف ناجح", "Başarılı dosya", "成功案件"],
   "پیام بنویسید...": ["Write a message...", "اكتب رسالة...", "Bir mesaj yazın...", "输入消息……"],
   "پیام خود را بنویسید…": ["Write your message…", "اكتب رسالتك…", "Mesajınızı yazın…", "写下您的消息……"],

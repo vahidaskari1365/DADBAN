@@ -104,7 +104,7 @@ export default function ContactPage() {
             <h3 className="font-bold text-foreground">{t("راه‌های ارتباطی")}</h3>
             <div className="mt-3 space-y-3 text-sm">
               <div className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary"><Icon name="phone" className="h-4 w-4" /></span><div><p className="text-xs text-muted">{t("تلفن پشتیبانی")}</p><p className="font-bold text-foreground" dir="ltr">۰۲۱-۹۱۰۰۲۰۳۰</p></div></div>
-              <div className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary"><Icon name="mail" className="h-4 w-4" /></span><div><p className="text-xs text-muted">{t("ایمیل")}</p><p className="font-bold text-foreground" dir="ltr">support@dadban.ir</p></div></div>
+              <div className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary"><Icon name="mail" className="h-4 w-4" /></span><div><p className="text-xs text-muted">{t("ایمیل")}</p><p className="font-bold text-foreground" dir="ltr">support@dadvarzan.com</p></div></div>
               <div className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary"><Icon name="clock" className="h-4 w-4" /></span><div><p className="text-xs text-muted">{t("ساعات پاسخگویی")}</p><p className="font-bold text-foreground">{t("۲۴ ساعته، ۷ روز هفته")}</p></div></div>
             </div>
           </Card>

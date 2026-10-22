@@ -25,7 +25,10 @@ export default function AdminLoginPage() {
       });
       const data = await res.json();
       if (res.ok && data.ok) {
-        router.push("/admin");
+        /* بازگشت به مقصد درخواستی (پارامتر redirect) با مقاوم‌سازی در برابر open-redirect */
+        const dest = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("redirect") : null;
+        const target = dest && dest.startsWith("/") && !dest.startsWith("//") ? dest : "/admin";
+        router.push(target);
         router.refresh();
       } else {
         setError(data.error ?? "خطا در ورود");
@@ -62,7 +65,7 @@ export default function AdminLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={`${fieldCls} mt-2`}
-                  placeholder="admin@dadban.ir"
+                  placeholder="admin@dadvarzan.com"
                   required
                 />
               </label>

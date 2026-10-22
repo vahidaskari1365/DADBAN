@@ -101,40 +101,52 @@ async function getTraffic(): Promise<TrafficStats> {
   }
 }
 
-/** منوی کامل مدیریت — هر آیتم با کلید دسترسی محافظت می‌شود و فقط با اجازه نمایش می‌آید */
-const MENU: { label: string; href: string; icon: Parameters<typeof Icon>[0]["name"]; perm: string }[] = [
-  { label: "مدیریت مقالات", href: "/admin/articles", icon: "book", perm: "articles" },
-  { label: "مقاله جدید", href: "/admin/articles/new", icon: "plus", perm: "articles" },
-  { label: "مدیریت وکلا", href: "/admin/lawyers", icon: "badge", perm: "lawyers" },
-  { label: "روی‌بوردینگ وکلا", href: "/admin/onboarding", icon: "badge", perm: "lawyers" },
-  { label: "احراز هویت وکلا", href: "/admin/verifications", icon: "fingerprint", perm: "lawyers" },
-  { label: "مدیریت قراردادها", href: "/admin/contracts", icon: "file", perm: "contracts" },
-  { label: "مدیریت پرسش و پاسخ", href: "/admin/qa", icon: "chat", perm: "qa" },
-  { label: "درخواست‌های پرسش", href: "/admin/qa-submissions", icon: "chat", perm: "qa" },
-  { label: "مدیریت واژه‌نامه حقوقی", href: "/admin/glossary", icon: "book", perm: "knowledge" },
-  { label: "مدیریت قوانین", href: "/admin/laws", icon: "scale", perm: "knowledge" },
-  { label: "مدیریت آرای قضایی", href: "/admin/judgments", icon: "gavel", perm: "knowledge" },
-  { label: "مدیریت فرم‌های حقوقی", href: "/admin/legal-forms", icon: "file", perm: "knowledge" },
-  { label: "مدیریت پلن‌های عضویت", href: "/admin/plans", icon: "briefcase", perm: "knowledge" },
-  { label: "محتوای صفحات سایت", href: "/admin/content", icon: "document", perm: "content" },
-  { label: "تقویم محتوای سئو", href: "/admin/content-calendar", icon: "calendar", perm: "content" },
-  { label: "تالار گفتگو", href: "/admin/forum", icon: "chat", perm: "forum" },
-  { label: "پاسخ‌های تالار گفتگو", href: "/admin/forum/replies", icon: "chat", perm: "forum" },
-  { label: "مدیریت پرونده‌ها", href: "/admin/cases", icon: "folder", perm: "cases" },
-  { label: "مدیریت مشاوره‌ها", href: "/admin/consultations", icon: "calendar", perm: "consultations" },
-  { label: "مدیریت تیکت‌ها", href: "/admin/tickets", icon: "mail", perm: "tickets" },
-  { label: "خدمات مدیریت‌شده", href: "/admin/managed-services", icon: "briefcase", perm: "services" },
-  { label: "کاربران سایت", href: "/admin/users", icon: "user", perm: "users" },
-  { label: "پرداخت‌ها", href: "/admin/payments", icon: "money", perm: "finance" },
-  { label: "مالی و تسویه", href: "/admin/finance", icon: "calculator", perm: "finance" },
-  { label: "تامین‌کنندگان اعتبار", href: "/admin/providers", icon: "landmark", perm: "finance" },
-  { label: "تطبیق هوشمند", href: "/admin/matching", icon: "sparkles", perm: "matching" },
-  { label: "تنظیمات پلتفرم", href: "/admin/settings", icon: "shield", perm: "settings" },
-  { label: "مدیریت ادمین‌ها و دسترسی‌ها", href: "/admin/admins", icon: "id", perm: "admins" },
-  { label: "صندوق ایمیل و خبرنامه", href: "/admin/outbox", icon: "send", perm: "outbox" },
-  { label: "مانیتور خطاها", href: "/admin/errors", icon: "alert", perm: "errors" },
-  { label: "گزارش بازدید سایت", href: "/admin/analytics", icon: "chart-bar", perm: "" },
-  { label: "بازگشت به سایت", href: "/", icon: "home", perm: "" },
+/** گروه‌های منوی مدیریت — منوی «مدیریت سریع» داشبورد به‌جای فهرست بلند، دسته‌بندی‌شده نمایش داده می‌شود */
+type MenuGroupKey = "content" | "lawyers" | "engage" | "money" | "system";
+
+const GROUP_LABELS: { key: MenuGroupKey; label: string; icon: Parameters<typeof Icon>[0]["name"] }[] = [
+  { key: "content", label: "محتوا و دانایی", icon: "book" },
+  { key: "lawyers", label: "وکلا و احراز هویت", icon: "badge" },
+  { key: "engage", label: "تعامل و خدمات", icon: "chat" },
+  { key: "money", label: "مالی و کاربران", icon: "money" },
+  { key: "system", label: "سیستم و نظارت", icon: "shield" },
+];
+
+/* منوی کامل مدیریت — هر آیتم با کلید دسترسی محافظت می‌شود و فقط با اجازه نمایش می‌آید */
+const MENU: { label: string; href: string; icon: Parameters<typeof Icon>[0]["name"]; perm: string; group: MenuGroupKey }[] = [
+  { label: "مدیریت مقالات", href: "/admin/articles", icon: "book", perm: "articles", group: "content" },
+  { label: "مقاله جدید", href: "/admin/articles/new", icon: "plus", perm: "articles", group: "content" },
+  { label: "مدیریت واژه‌نامه حقوقی", href: "/admin/glossary", icon: "book", perm: "knowledge", group: "content" },
+  { label: "مدیریت قوانین", href: "/admin/laws", icon: "scale", perm: "knowledge", group: "content" },
+  { label: "مدیریت آرای قضایی", href: "/admin/judgments", icon: "gavel", perm: "knowledge", group: "content" },
+  { label: "مدیریت فرم‌های حقوقی", href: "/admin/legal-forms", icon: "file", perm: "knowledge", group: "content" },
+  { label: "مدیریت پلن‌های عضویت", href: "/admin/plans", icon: "briefcase", perm: "knowledge", group: "content" },
+  { label: "محتوای صفحات سایت", href: "/admin/content", icon: "document", perm: "content", group: "content" },
+  { label: "تقویم محتوای سئو", href: "/admin/content-calendar", icon: "calendar", perm: "content", group: "content" },
+  { label: "مدیریت قراردادها", href: "/admin/contracts", icon: "file", perm: "contracts", group: "content" },
+  { label: "مدیریت وکلا", href: "/admin/lawyers", icon: "badge", perm: "lawyers", group: "lawyers" },
+  { label: "روی‌بوردینگ وکلا", href: "/admin/onboarding", icon: "badge", perm: "lawyers", group: "lawyers" },
+  { label: "احراز هویت وکلا", href: "/admin/verifications", icon: "fingerprint", perm: "lawyers", group: "lawyers" },
+  { label: "مدیریت پرسش و پاسخ", href: "/admin/qa", icon: "chat", perm: "qa", group: "engage" },
+  { label: "درخواست‌های پرسش", href: "/admin/qa-submissions", icon: "chat", perm: "qa", group: "engage" },
+  { label: "تالار گفتگو", href: "/admin/forum", icon: "chat", perm: "forum", group: "engage" },
+  { label: "پاسخ‌های تالار گفتگو", href: "/admin/forum/replies", icon: "chat", perm: "forum", group: "engage" },
+  { label: "مدیریت پرونده‌ها", href: "/admin/cases", icon: "folder", perm: "cases", group: "engage" },
+  { label: "مدیریت مشاوره‌ها", href: "/admin/consultations", icon: "calendar", perm: "consultations", group: "engage" },
+  { label: "مدیریت تیکت‌ها", href: "/admin/tickets", icon: "mail", perm: "tickets", group: "engage" },
+  { label: "خدمات مدیریت‌شده", href: "/admin/managed-services", icon: "briefcase", perm: "services", group: "engage" },
+  { label: "کاربران سایت", href: "/admin/users", icon: "user", perm: "users", group: "money" },
+  { label: "پرداخت‌ها", href: "/admin/payments", icon: "money", perm: "finance", group: "money" },
+  { label: "مالی و تسویه", href: "/admin/finance", icon: "calculator", perm: "finance", group: "money" },
+  { label: "تامین‌کنندگان اعتبار", href: "/admin/providers", icon: "landmark", perm: "finance", group: "money" },
+  { label: "تطبیق هوشمند", href: "/admin/matching", icon: "sparkles", perm: "matching", group: "system" },
+  { label: "تنظیمات پلتفرم", href: "/admin/settings", icon: "shield", perm: "settings", group: "system" },
+  { label: "مدیریت ادمین‌ها و دسترسی‌ها", href: "/admin/admins", icon: "id", perm: "admins", group: "system" },
+  { label: "کتابخانه رسانه", href: "/admin/media", icon: "camera", perm: "media", group: "system" },
+  { label: "صندوق ایمیل و خبرنامه", href: "/admin/outbox", icon: "send", perm: "outbox", group: "system" },
+  { label: "مانیتور خطاها", href: "/admin/errors", icon: "alert", perm: "errors", group: "system" },
+  { label: "گزارش بازدید سایت", href: "/admin/analytics", icon: "chart-bar", perm: "", group: "system" },
+  { label: "بازگشت به سایت", href: "/", icon: "home", perm: "", group: "system" },
 ];
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ denied?: string }> }) {
@@ -343,15 +355,29 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-black text-foreground">{t("مدیریت سریع")}</h2>
             </div>
-            <div className="max-h-[32rem] space-y-3 overflow-y-auto pl-1 [scrollbar-width:thin]" data-testid="admin-menu">
-              {menu.map((m) => (
-                <Link key={m.label + m.href} href={m.href}>
-                  <Card hover className="flex items-center gap-3">
-                    <Icon name={m.icon} className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-bold text-foreground">{t(m.label)}</span>
-                  </Card>
-                </Link>
-              ))}
+            <div className="nice-scroll max-h-[40rem] space-y-5 overflow-y-auto pl-1" data-testid="admin-menu">
+              {GROUP_LABELS.map((g) => {
+                const items = menu.filter((m) => m.group === g.key);
+                if (items.length === 0) return null;
+                return (
+                  <div key={g.key}>
+                    <p className="mb-2 flex items-center gap-1.5 px-1 text-[11px] font-black uppercase tracking-wide text-muted">
+                      <Icon name={g.icon} className="h-3.5 w-3.5 text-primary" />
+                      {t(g.label)}
+                    </p>
+                    <div className="space-y-1.5">
+                      {items.map((m) => (
+                        <Link key={m.label + m.href} href={m.href} className="flex items-center gap-2.5 rounded-xl border border-border bg-surface px-3 py-2 transition-all hover:border-primary/40 hover:bg-primary-soft/40">
+                          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
+                            <Icon name={m.icon} className="h-3.5 w-3.5" />
+                          </span>
+                          <span className="text-[13px] font-bold text-foreground">{t(m.label)}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

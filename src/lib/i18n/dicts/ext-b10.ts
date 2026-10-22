@@ -17,7 +17,7 @@ const D: Record<string, Row> = {
   "امضاکننده:": ["Signatory:", "الموقِّع:", "İmzalayan:", "签署人："],
   "موکل (امضای الکترونیکی)": ["Client (electronic signature)", "الموكل (توقيع إلكتروني)", "Müvekkil (elektronik imza)", "客户（电子签名）"],
   "امضای الکترونیکی قرارداد": ["Electronically sign contract", "التوقيع الإلكتروني للعقد", "Sözleşmeyi elektronik imzala", "合同电子签署"],
-  "قرارداد امضا شده است. نسخهٔ نهایی برای وکیل و پشتیبانی دادپیو ثبت شد و روند پرونده آغاز می‌شود.": [
+  "قرارداد امضا شده است. نسخهٔ نهایی برای وکیل و پشتیبانی دادورزان ثبت شد و روند پرونده آغاز می‌شود.": [
     "The contract is signed. The final version has been registered for the lawyer and DadPayo support, and the case process begins.",
     "تم توقيع العقد. سُجّلت النسخة النهائية للمحامي ودعم دادبيو وتبدأ إجراءات القضية.",
     "Sözleşme imzalandı. Nihai kopya avukat ve DadPayo desteği için kaydedildi ve dava süreci başlıyor.",
@@ -89,7 +89,7 @@ const D: Record<string, Row> = {
   "قسط {n}": ["Installment {n}", "القسط {n}", "Taksit {n}", "第 {n} 期"],
   "پرداخت:": ["Paid:", "مدفوع:", "Ödendi:", "已支付："],
   "تأمین اعتبار حق‌الوکاله": ["Fee financing", "تمويل الأتعاب", "Vekâlet ücreti finansmanı", "代理费融资"],
-  "هزینهٔ وکالت را می‌توانید به‌صورت اقساطی از طریق تأمین‌کنندگان اعتبار دادپیو پرداخت کنید. نرخ و شرایط نهایی از پنل تأمین‌کننده اعلام می‌شود.": [
+  "هزینهٔ وکالت را می‌توانید به‌صورت اقساطی از طریق تأمین‌کنندگان اعتبار دادورزان پرداخت کنید. نرخ و شرایط نهایی از پنل تأمین‌کننده اعلام می‌شود.": [
     "You can pay the legal fee in installments through DadPayo's credit providers. The final rate and terms are announced by the provider panel.",
     "يمكنك سداد أتعاب المحاماة على أقساط عبر ممولي دادبيو، ويُعلَن السعر النهائي والشروط من لوحة المموّل.",
     "Vekâlet ücretini DadPayo kredi sağlayıcıları üzerinden taksitlerle ödeyebilirsiniz. Nihai oran ve koşullar sağlayıcı panelinden bildirilir.",
@@ -108,9 +108,9 @@ const D: Record<string, Row> = {
   "ثبت درخواست اعتبار": ["Request credit", "طلب الائتمان", "Kredi talebi", "申请信用"],
 
   /* ─── مقایسه پیشنهادها (case-proposals) ─── */
-  "وکیل دادپیو (#{n})": ["DadPayo lawyer (#{n})", "محامي دادبيو (#{n})", "DadPayo avukatı (#{n})", "DadPayo 律师（#{n}）"],
+  "وکیل دادورزان (#{n})": ["DadPayo lawyer (#{n})", "محامي دادبيو (#{n})", "DadPayo avukatı (#{n})", "DadPayo 律师（#{n}）"],
   "انجام عملیات ناموفق بود.": ["The operation failed.", "فشلت العملية.", "İşlem başarısız oldu.", "操作失败。"],
-  "پیشنهاد پذیرفته شد؛ کارشناسان دادپیو برای نهایی‌سازی قرارداد و معرفی وکیل با شما تماس می‌گیرند.": [
+  "پیشنهاد پذیرفته شد؛ کارشناسان دادورزان برای نهایی‌سازی قرارداد و معرفی وکیل با شما تماس می‌گیرند.": [
     "The proposal was accepted; DadPayo specialists will contact you to finalize the contract and introduce the lawyer.",
     "تم قبول العرض؛ سيتواصل معك خبراء دادبيو لإنهاء العقد وتعريف المحامي.",
     "Teklif kabul edildi; DadPayo uzmanları sözleşmeyi tamamlamak ve avukatı tanıtmak için sizinle iletişime geçecek.",
@@ -160,7 +160,7 @@ const D: Record<string, Row> = {
   "اقدام": ["Action", "إجراء", "İşlem", "事项"],
 
   /* ─── تایم‌لاین موکل (case-timeline) ─── */
-  "دادپیو": ["DadPayo", "دادبيو", "DadPayo", "DadPayo"],
+  "دادورزان": ["DadPayo", "دادبيو", "DadPayo", "DadPayo"],
   "دریافت روند پرونده ناموفق بود.": ["Fetching the case timeline failed.", "فشل جلب مسار القضية.", "Dava süreci alınamadı.", "获取案件进展失败。"],
   "هنوز رخدادی برای نمایش ثبت نشده است؛ به‌محض ثبت اقدام جدید در همین بخش اطلاع‌رسانی می‌شود.": [
     "No events to show yet; as soon as a new action is recorded, it will be announced in this section.",

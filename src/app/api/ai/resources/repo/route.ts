@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
  *   ۲) اسکرپ HTML صفحه‌ی عمومی + raw README — وقتی api.github.com مسدود باشد
  */
 
-const UA = "Mozilla/5.0 (compatible; DadvarzanBot/1.0; +https://dadban.ir)";
+const UA = "Mozilla/5.0 (compatible; DadvarzanBot/1.0; +https://dadvarzan.com)";
 
 export interface RepoResult {
   fullName: string;

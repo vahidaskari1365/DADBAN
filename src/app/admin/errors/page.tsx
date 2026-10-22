@@ -17,7 +17,7 @@ import SmsTestCard from "./sms-test";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("پایش خطاهای داخلی — پنل مدیریت دادپیو"),
+    title: t("پایش خطاهای داخلی — پنل مدیریت دادورزان"),
     description: t("خطاهای ثبت‌شدهٔ سمت سرور و کلاینت در جدول app_errors — جایگزین داخلی Sentry بدون کلید خارجی."),
   };
 }

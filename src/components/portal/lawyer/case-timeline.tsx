@@ -5,7 +5,7 @@ import { templateT } from "@/lib/i18n/core";
 import type { EventItem } from "./portal-server";
 
 /**
- * تایم‌لاین عمودی روند پرونده — کلاس‌های امضای دادپیو:
+ * تایم‌لاین عمودی روند پرونده — کلاس‌های امضای دادورزان:
  * dp-timeline + dp-timeline-item (done|doing) + dp-timeline-dot
  */
 export async function CaseTimeline({

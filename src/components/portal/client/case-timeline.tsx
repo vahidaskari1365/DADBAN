@@ -10,7 +10,7 @@ import type { EventItem } from "./types";
 const ACTOR_LABEL: Record<string, string> = {
   lawyer: "وکیل",
   trainee: "کارآموز",
-  system: "دادپیو",
+  system: "دادورزان",
   client: "موکل",
 };
 
@@ -112,7 +112,7 @@ export default function CaseTimeline({ caseId, initialEvents }: { caseId: number
                 <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
                   <span className="flex items-center gap-1 font-semibold text-foreground-soft">
                     <Icon name={ev.actor === "system" ? "sparkles" : ev.actor === "client" ? "user" : "gavel"} className="h-3 w-3" />
-                    {ev.actorName || t(ACTOR_LABEL[ev.actor] ?? "دادپیو")}
+                    {ev.actorName || t(ACTOR_LABEL[ev.actor] ?? "دادورزان")}
                   </span>
                   <span>{formatJalaliLong(ev.createdAt)}</span>
                   <span>{t("ساعت")} {formatTime(ev.createdAt)}</span>

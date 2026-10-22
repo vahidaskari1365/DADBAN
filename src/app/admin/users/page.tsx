@@ -14,8 +14,8 @@ import { templateT } from "@/lib/i18n/core";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("کاربران و وکلا — پنل مدیریت دادپیو"),
-    description: t("مدیریت کاربران ثبت‌نام‌شده و پروفایل وکلای مارکت‌پلیس دادپیو."),
+    title: t("کاربران و وکلا — پنل مدیریت دادورزان"),
+    description: t("مدیریت کاربران ثبت‌نام‌شده و پروفایل وکلای مارکت‌پلیس دادورزان."),
   };
 }
 export const dynamic = "force-dynamic";
@@ -111,7 +111,7 @@ export default async function AdminUsersPage({
       <PageHero
         badge={t("Admin · کاربران")}
         title={t("کاربران و وکلا")}
-        desc={t("کاربران ثبت‌نام‌شدهٔ پلتفرم، وضعیت تأیید وکلا و آمار رشد جامعهٔ دادپیو")}
+        desc={t("کاربران ثبت‌نام‌شدهٔ پلتفرم، وضعیت تأیید وکلا و آمار رشد جامعهٔ دادورزان")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("کاربران و وکلا") }]}
       />
       <Container className="py-10">

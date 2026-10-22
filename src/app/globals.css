@@ -106,6 +106,9 @@
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
+  /* نام مستعار destructive — تا کلاس‌های text/bg/border-destructive (بنرهای خطای پنل ادمین و
+     حذف‌های CRUD) به همان قرمز تم نگاشت شوند؛ پیش‌تر تعریف‌نشده بود و بی‌رنگ رندر می‌شدند */
+  --color-destructive: var(--danger);
 
   --font-sans: var(--font-vazirmatn), ui-sans-serif, system-ui, sans-serif;
 
@@ -116,8 +119,13 @@
   --shadow-lift: 0 4px 12px rgb(var(--shadow-color) / 0.10), 0 24px 48px -16px rgb(var(--shadow-color) / 0.22);
 }
 
-* {
-  border-color: var(--border);
+/* رنگ پیش‌فرض حاشیه — باید داخل @layer base باشد؛ در غیر این صورت (قانون unlayered)
+   بر همهٔ utilityهای border-color (مثل border-primary/30، border-success/30 و…) غلبه
+   می‌کند و تمام حاشیه‌های رنگی سایت خاکستری رندر می‌شوند. */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
 }
 
 html {
@@ -599,6 +607,20 @@ input, select, textarea {
   header.sticky > div {
     height: 56px !important;
   }
+}
+
+/* دکمهٔ طلایی — رنگ و سایه فقط از این کلاس می‌آید؛ چیدمان/گردی/فونت از کلاس‌های کنارش.
+   مصرف: پنل ادمین (کاربران، صندوق ایمیل، تنظیمات) + پیشنهادهای پرونده + خبرنامه + داشبورد وکیل */
+.btn-gold {
+  background-image: linear-gradient(to left, var(--accent), var(--accent-hover));
+  color: var(--accent-foreground);
+  box-shadow: 0 10px 24px -12px rgb(176 125 18 / 0.55);
+}
+.btn-gold:hover {
+  filter: brightness(1.06);
+}
+.btn-gold:active {
+  transform: scale(0.98);
 }
 
 /* دکمه‌های لمسی — feedback فوری */

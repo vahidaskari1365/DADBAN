@@ -12,8 +12,8 @@ import FinanceClient from "./finance-client";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("مالی، کمیسیون و تسویه — پنل مدیریت دادپیو"),
-    description: t("حجم پرداخت‌ها، کمیسیون پلتفرم، درخواست‌های برداشت وکلا و اقساط معوق مارکت‌پلیس دادپیو."),
+    title: t("مالی، کمیسیون و تسویه — پنل مدیریت دادورزان"),
+    description: t("حجم پرداخت‌ها، کمیسیون پلتفرم، درخواست‌های برداشت وکلا و اقساط معوق مارکت‌پلیس دادورزان."),
   };
 }
 export const dynamic = "force-dynamic";

@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       .update(caseOffers)
       .set({ status: "declined" })
       .where(and(eq(caseOffers.caseId, c.id), ne(caseOffers.id, offerId), eq(caseOffers.status, "sent")));
-    // ── همگرایی دو سیستم مزایده: پذیرش در «بازار پرونده‌ها» هم مثل دادپیو وکیل را رسمی
+    // ── همگرایی دو سیستم مزایده: پذیرش در «بازار پرونده‌ها» هم مثل دادورزان وکیل را رسمی
     // به پرونده اختصاص می‌دهد (حق‌الوکالهٔ توافقی + قرارداد sent + رویداد سیستمی) تا
     // داشبوردها/مالی/تقویم همه از یک منبع حقیقت بخوانند.
     try {

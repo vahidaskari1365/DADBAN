@@ -1445,7 +1445,7 @@ export const forumReplies = pgTable("forum_replies", {
 });
 export type ForumReplyRow = typeof forumReplies.$inferSelect;
 
-/* جداول بازار پرونده‌ها (دادپیو) — در همین ماژول re-export می‌شوند تا همهٔ کد از "@/db/schema" مصرف کند */
+/* جداول بازار پرونده‌ها (دادورزان) — در همین ماژول re-export می‌شوند تا همهٔ کد از "@/db/schema" مصرف کند */
 export * from "@/db/schema-marketplace";
 
 /* --------------------- ادمین‌های پنل (چند-کاربره با تعیین دسترسی) --------------------- */

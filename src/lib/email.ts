@@ -42,7 +42,7 @@ export function isEmailConfigured(): boolean {
 }
 
 export function emailFrom(): string {
-  return process.env.EMAIL_FROM || "دادورزان <noreply@dadban.ir>";
+  return process.env.EMAIL_FROM || "دادورزان <noreply@dadvarzan.com>";
 }
 
 /* ─── ارسال با Resend (HTTP API) ─────────────────────────────────────────── */

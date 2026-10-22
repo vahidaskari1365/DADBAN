@@ -14,8 +14,8 @@ import MatchingTable, { type MatchingRow } from "./matching-table";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("مانیتور تطبیق هوشمند — پنل مدیریت دادپیو"),
-    description: t("پایش موتور تطبیق هوشمند دادپیو: دسته‌بندی AI پرونده‌ها، درصد اطمینان، تخمین هزینه و تحلیل مجدد."),
+    title: t("مانیتور تطبیق هوشمند — پنل مدیریت دادورزان"),
+    description: t("پایش موتور تطبیق هوشمند دادورزان: دسته‌بندی AI پرونده‌ها، درصد اطمینان، تخمین هزینه و تحلیل مجدد."),
   };
 }
 export const dynamic = "force-dynamic";
@@ -77,7 +77,7 @@ export default async function AdminMatchingPage() {
       <PageHero
         badge={t("Admin · تطبیق AI")}
         title={t("مانیتور تطبیق هوشمند")}
-        desc={t("پایش موتور تطبیق دادپیو — ترکیب تخصص وکلا، امتیاز و تحلیل هوش مصنوعی روی پرونده‌های بازار")}
+        desc={t("پایش موتور تطبیق دادورزان — ترکیب تخصص وکلا، امتیاز و تحلیل هوش مصنوعی روی پرونده‌های بازار")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("تطبیق هوشمند") }]}
       />
       <Container className="py-10">
@@ -88,7 +88,7 @@ export default async function AdminMatchingPage() {
               <Icon name="sparkles" className="h-6 w-6" />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="text-base font-extrabold text-foreground">{t("موتور تطبیق هوشمند دادپیو")}</h2>
+              <h2 className="text-base font-extrabold text-foreground">{t("موتور تطبیق هوشمند دادورزان")}</h2>
               <p className="mt-1 text-sm leading-7 text-muted">
                 {t(
                   "هر پرونده هنگام ثبت، با تحلیل متن (LLM + قواعد قطعی) دسته‌بندی و بر اساس تخصص وکلا، امتیاز و رتبه، سابقه و شهر، به بهترین وکلای پلتفرم تطبیق داده می‌شود. درصد اطمینان و تخمین هزینه/مدت نیز تولید می‌شود؛ مدیر می‌تواند هر پرونده را «تحلیل مجدد» کند.",

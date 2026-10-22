@@ -18,8 +18,8 @@ import TraineeActionForm from "./trainee-action-form";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("پنل کارآموز — کارتابل ارجاعی دادپیو"),
-    description: t("کارتابل کارآموزان و همکاران حقوقی دادپیو: پرونده‌های ارجاعی، ثبت اقدام، مهلت‌ها و مسیر یادگیری."),
+    title: t("پنل کارآموز — کارتابل ارجاعی دادورزان"),
+    description: t("کارتابل کارآموزان و همکاران حقوقی دادورزان: پرونده‌های ارجاعی، ثبت اقدام، مهلت‌ها و مسیر یادگیری."),
   };
 }
 export const dynamic = "force-dynamic";
@@ -316,7 +316,7 @@ export default async function TraineeDashboard() {
         <Card hover={false}>
           <h2 className="mb-1 flex items-center gap-2 text-base font-extrabold text-foreground">
             <Icon name="book" className="h-4.5 w-4.5 text-accent" />
-            {t("در حال یادگیری — آکادمی دادپیو")}
+            {t("در حال یادگیری — آکادمی دادورزان")}
           </h2>
           <p className="mb-4 text-sm text-muted">{t("مسیرهای پیشنهادی برای ارتقای مهارت‌های حقوقی و ابزارهای هوش مصنوعی")}</p>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -331,7 +331,7 @@ export default async function TraineeDashboard() {
               {
                 icon: "book" as const,
                 title: t("مقالات آکادمی"),
-                desc: t("مطالب آموزشی حقوقی دادپیو برای کارآموزان و همکاران"),
+                desc: t("مطالب آموزشی حقوقی دادورزان برای کارآموزان و همکاران"),
                 href: "/knowledge",
                 cta: t("ورود به آکادمی"),
               },

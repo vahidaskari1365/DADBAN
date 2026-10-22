@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
     title: t("پنل وکیل — پرونده‌های پیشنهادی"),
-    description: t("بازار پرونده‌های جدید دادپیو با تطبیق هوشمند تخصص و ارسال پیشنهاد قیمت."),
+    description: t("بازار پرونده‌های جدید دادورزان با تطبیق هوشمند تخصص و ارسال پیشنهاد قیمت."),
   };
 }
 export const dynamic = "force-dynamic";

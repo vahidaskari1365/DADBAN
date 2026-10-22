@@ -79,7 +79,7 @@ export async function POST(req: Request, { params }: RouteCtx) {
     await db.insert(caseEvents).values({
       caseId,
       actor: "system",
-      actorName: "دادپیو",
+      actorName: "دادورزان",
       title: "وکیل منتخب شد",
       description: `پیشنهاد قیمت موکل پذیرفته شد و قرارداد الکترونیکی با کد ${code} برای امضا ارسال گردید.`,
       progress: Math.max(c.progress, 20),

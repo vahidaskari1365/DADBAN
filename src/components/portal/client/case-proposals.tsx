@@ -29,7 +29,7 @@ export default function CaseProposals({
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
-  const nameOf = (p: ProposalItem) => p.lawyerName || lawyers.find((l) => l.id === p.lawyerId)?.name || tf("وکیل دادپیو (#{n})", { n: toFa(p.lawyerId) });
+  const nameOf = (p: ProposalItem) => p.lawyerName || lawyers.find((l) => l.id === p.lawyerId)?.name || tf("وکیل دادورزان (#{n})", { n: toFa(p.lawyerId) });
   const ratingOf = (p: ProposalItem) => lawyers.find((l) => l.id === p.lawyerId)?.rating ?? 0;
 
   const minAmount = Math.min(
@@ -68,7 +68,7 @@ export default function CaseProposals({
         return;
       }
       if (action === "accept") {
-        setMsg(t("پیشنهاد پذیرفته شد؛ کارشناسان دادپیو برای نهایی‌سازی قرارداد و معرفی وکیل با شما تماس می‌گیرند."));
+        setMsg(t("پیشنهاد پذیرفته شد؛ کارشناسان دادورزان برای نهایی‌سازی قرارداد و معرفی وکیل با شما تماس می‌گیرند."));
       } else {
         setMsg(t("پیشنهاد رد شد."));
       }

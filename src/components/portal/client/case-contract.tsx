@@ -126,7 +126,7 @@ export default function CaseContract({
       {status === "signed" && (
         <p className="flex items-center gap-2 rounded-xl bg-success/10 p-4 text-sm font-semibold text-success">
           <Icon name="badge" className="h-5 w-5 shrink-0" />
-          {t("قرارداد امضا شده است. نسخهٔ نهایی برای وکیل و پشتیبانی دادپیو ثبت شد و روند پرونده آغاز می‌شود.")}
+          {t("قرارداد امضا شده است. نسخهٔ نهایی برای وکیل و پشتیبانی دادورزان ثبت شد و روند پرونده آغاز می‌شود.")}
         </p>
       )}
       {(status === "none" || status === "draft") && (

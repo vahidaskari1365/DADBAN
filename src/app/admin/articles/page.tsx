@@ -3,6 +3,7 @@ import { formatJalali } from "@/lib/jalali";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Container, Card, Badge, Button } from "@/components/ui";
+import { PageHero } from "@/components/page-hero";
 import { faNum } from "@/lib/data";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
@@ -25,35 +26,66 @@ export default function AdminArticlesPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/admin/articles")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((d) => {
+    let alive = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/admin/articles", { cache: "no-store" });
+        if (!alive) return;
+        /* فقط ۴۰۱ به لاگین می‌رود — خطاهای دیگر (مثلاً ۵۰۰ دیتابیس) پیام می‌گیرند، نه redirect */
+        if (r.status === 401) {
+          router.replace("/admin/login");
+          return;
+        }
+        const d = await r.json();
+        if (!alive) return;
         if (d.ok) setArticles(d.articles);
-        else router.replace("/admin/login");
-      })
-      .catch(() => router.replace("/admin/login"));
-  }, [router]);
+        else setError(d.error || t("خطا در دریافت مقالات"));
+      } catch {
+        if (alive) setError(t("خطا در ارتباط با سرور"));
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [router, t]);
 
   const remove = async (id: number) => {
     if (!confirm(t("این مقاله حذف شود؟"))) return;
-    const res = await fetch(`/api/admin/articles/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      setArticles((a) => (a ? a.filter((x) => x.id !== id) : a));
-      router.refresh();
+    try {
+      const res = await fetch(`/api/admin/articles/${id}`, { method: "DELETE" });
+      if (res.status === 401) {
+        router.replace("/admin/login");
+        return;
+      }
+      const d = await res.json().catch(() => null);
+      if (res.ok && d?.ok) {
+        setArticles((a) => (a ? a.filter((x) => x.id !== id) : a));
+        router.refresh();
+      } else {
+        setError(d?.error || t("حذف مقاله ناموفق بود"));
+      }
+    } catch {
+      setError(t("خطا در ارتباط با سرور"));
     }
   };
 
   return (
-    <Container className="py-10">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-black text-foreground">{t("مدیریت مقالات")}</h1>
-          <p className="mt-1 text-sm text-foreground-soft">{t("ایجاد، ویرایش و حذف مقالات دانشنامه حقوقی")}</p>
-        </div>
-        <Button href="/admin/articles/new" icon="plus" size="sm">{t("مقاله جدید")}</Button>
-      </div>
-      {error && <p className="mb-4 text-sm font-semibold text-danger">{error}</p>}
-      {!articles && <p className="text-sm text-foreground-soft">{t("در حال بارگذاری...")}</p>}
+    <>
+      <PageHero
+        variant="market"
+        image="/images/hero-admin.png"
+        badge={t("Admin · مقالات")}
+        title={t("مدیریت مقالات")}
+        desc={t("ایجاد، ویرایش و حذف مقالات دانشنامه حقوقی")}
+        breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("مقالات") }]}
+      >
+        <Button href="/admin/articles/new" icon="plus" size="sm" variant="accent">{t("مقاله جدید")}</Button>
+      </PageHero>
+      <Container className="py-10">
+        {error && (
+          <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-bold text-destructive">{error}</div>
+        )}
+        {!articles && <p className="text-sm text-foreground-soft">{t("در حال بارگذاری...")}</p>}
       <div className="space-y-3">
         {(articles ?? []).map((a) => (
           <Card key={a.id} hover className="flex flex-wrap items-center justify-between gap-3">
@@ -78,6 +110,7 @@ export default function AdminArticlesPage() {
           </Card>
         )}
       </div>
-    </Container>
+      </Container>
+    </>
   );
 }

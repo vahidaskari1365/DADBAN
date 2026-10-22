@@ -13,8 +13,8 @@ import SettingsClient from "./settings-client";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("تنظیمات پلتفرم — پنل مدیریت دادپیو"),
-    description: t("نرخ کمیسیون، حداقل برداشت، امتیاز تطبیق، تأمین‌کنندگان اعتبار و مدل موتور تطبیق دادپیو."),
+    title: t("تنظیمات پلتفرم — پنل مدیریت دادورزان"),
+    description: t("نرخ کمیسیون، حداقل برداشت، امتیاز تطبیق، تأمین‌کنندگان اعتبار و مدل موتور تطبیق دادورزان."),
   };
 }
 export const dynamic = "force-dynamic";
@@ -64,7 +64,7 @@ export default async function AdminSettingsPage() {
       <PageHero
         badge={t("Admin · تنظیمات")}
         title={t("تنظیمات پلتفرم")}
-        desc={t("پارامترهای کلیدی مارکت‌پلیس دادپیو — کمیسیون، تسویه، آستانهٔ تطبیق و تأمین‌کنندگان")}
+        desc={t("پارامترهای کلیدی مارکت‌پلیس دادورزان — کمیسیون، تسویه، آستانهٔ تطبیق و تأمین‌کنندگان")}
         breadcrumb={[{ label: t("خانه"), href: "/" }, { label: t("پنل مدیریت"), href: "/admin" }, { label: t("تنظیمات") }]}
       />
       <Container className="py-10">

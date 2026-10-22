@@ -167,7 +167,7 @@ export default function AdminsClient() {
         setError(data.error || t("عملیات ناموفق بود"));
         return;
       }
-      setNotice(data.ok ? "" : "");
+      setNotice(t("وضعیت ادمین به‌روزرسانی شد."));
       await load();
     } catch {
       setError(t("خطا در ارتباط با سرور"));

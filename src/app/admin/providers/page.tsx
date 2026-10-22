@@ -15,7 +15,7 @@ import ProvidersClient from "./providers-client";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    title: t("تأمین‌کنندگان اعتبار — پنل مدیریت دادپیو"),
+    title: t("تأمین‌کنندگان اعتبار — پنل مدیریت دادورزان"),
     description: t("وضعیت اتصال ازکی‌وام و بانک همکار، و پیگیری درخواست‌های تأمین اعتبار حق‌الوکاله."),
   };
 }
