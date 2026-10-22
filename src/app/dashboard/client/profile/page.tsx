@@ -4,13 +4,14 @@ import { db } from "@/db";
 import { cases, consultations, documents, favoriteLawyers, payments } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { DashboardShell } from "@/components/dashboard-shell";
-import { Card, Badge, Button, Avatar } from "@/components/ui";
+import { Card, Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { faNum, faPrice } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
 import { ensureProfileSchema, ensureExtendedSchema } from "@/lib/auto-seed";
 import { PersonalInfoForm, PasswordForm, PhoneVerificationRow } from "@/components/profile/profile-forms";
+import { LawyerPhotoManager } from "@/components/profile/lawyer-photo-manager";
 import { TelegramConnect } from "@/components/profile/telegram-connect";
 import { FavoritesPanel } from "@/components/profile/favorites-panel";
 import { formatJalaliLong as faDate } from "@/lib/jalali";
@@ -79,6 +80,7 @@ export default async function ClientProfilePage() {
       role="موکل"
       title={t("پروفایل من")}
       name={user.name}
+      photoUrl={user.photoUrl ?? null}
       back={{ fallback: "/dashboard/client", label: t("بازگشت به داشبورد") }}
       nav={[
         { label: t("نمای کلی"), icon: "home", href: "/dashboard/client" },
@@ -93,7 +95,13 @@ export default async function ClientProfilePage() {
     >
       {/* هدر پروفایل */}
       <Card hover={false} className="flex flex-wrap items-center gap-4">
-        <Avatar name={user.name} color={user.avatarColor || "#15365d"} size="lg" />
+        {/* عکس پروفایل موکل — بارگذاری/تعویض هر زمان؛ برش مربع استاندارد سمت سرور */}
+        <LawyerPhotoManager
+          name={user.name}
+          color={user.avatarColor || "#15365d"}
+          photoUrl={user.photoUrl ?? null}
+          endpoint="/api/profile/photo"
+        />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-extrabold text-foreground">{user.name}</h2>

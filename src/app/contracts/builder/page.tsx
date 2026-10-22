@@ -5,6 +5,7 @@ import { PageHero } from "@/components/page-hero";
 import { Container, Card, Button, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
+import { MoneyInput } from "@/components/money-input";
 import { templateT } from "@/lib/i18n/core";
 
 const TYPES = [
@@ -86,7 +87,7 @@ export default function ContractBuilderPage() {
             {step === 3 && (
               <div className="space-y-3">
                 <label className="block"><span className="text-sm font-bold text-foreground">{t("موضوع قرارداد")}</span><input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={t("موضوع قرارداد")} className={`${fieldCls} mt-2`} /></label>
-                <label className="block"><span className="text-sm font-bold text-foreground">{t("مبلغ")}</span><input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={t("مبلغ به تومان")} className={`${fieldCls} mt-2`} /></label>
+                <label className="block"><span className="text-sm font-bold text-foreground">{t("مبلغ")}</span><MoneyInput value={amount} onValueChange={setAmount} placeholder={t("مبلغ به تومان")} className={`${fieldCls} mt-2`} /></label>
               </div>
             )}
             {step === 4 && (

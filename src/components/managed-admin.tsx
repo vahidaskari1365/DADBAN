@@ -6,6 +6,7 @@ import { Icon } from "@/components/icons";
 import { CLASSIFICATION_LABELS, PRICE_TYPE_LABELS, CATEGORY_LABELS } from "@/lib/managed-labels";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
+import { MoneyInput } from "@/components/money-input";
 
 const inputCls =
   "w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary";
@@ -259,7 +260,7 @@ export default function ManagedServicesAdmin() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className={labelCls}>{t("قیمت پایه (تومان)")}</label><input type="number" className={inputCls} value={form.basePrice ?? ""} onChange={(e) => set("basePrice", e.target.value)} /></div>
+                  <div><label className={labelCls}>{t("قیمت پایه (تومان)")}</label><MoneyInput className={inputCls} value={String(form.basePrice ?? "")} onValueChange={(raw) => set("basePrice", raw)} /></div>
                   <div><label className={labelCls}>{t("زمان تقریبی")}</label><input className={inputCls} value={form.estimatedTime ?? ""} onChange={(e) => set("estimatedTime", e.target.value)} /></div>
                 </div>
                 <div><label className={labelCls}>{t("توضیح کوتاه")}</label><input className={inputCls} value={form.shortDescription ?? ""} onChange={(e) => set("shortDescription", e.target.value)} /></div>

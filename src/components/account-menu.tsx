@@ -21,6 +21,7 @@ export type MeUser = {
   phone?: string;
   role?: string;
   avatarColor?: string | null;
+  photoUrl?: string | null;
 };
 
 const initial = (name: string) => name.trim().charAt(0) || "؟";
@@ -168,13 +169,23 @@ export function AccountMenu({ user, loaded }: { user: MeUser | null; loaded: boo
         data-testid="account-trigger"
         className="group flex items-center gap-2 rounded-full border border-border bg-surface py-1 pl-3 pr-1 transition-all hover:border-primary/40 hover:shadow-sm active:scale-[0.98]"
       >
-        <span
-          className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-extrabold text-white shadow-sm ring-2 ring-background"
-          style={{ backgroundColor: color }}
-          aria-hidden
-        >
-          {initial(user.name)}
-        </span>
+        {user.photoUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element -- آواتار ۳۲px همان دامنه از رسانهٔ کاربر */
+          <img
+            src={user.photoUrl}
+            alt=""
+            className="h-8 w-8 rounded-full object-cover shadow-sm ring-2 ring-background"
+            aria-hidden
+          />
+        ) : (
+          <span
+            className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-extrabold text-white shadow-sm ring-2 ring-background"
+            style={{ backgroundColor: color }}
+            aria-hidden
+          >
+            {initial(user.name)}
+          </span>
+        )}
         <Icon name="chevron" className={`h-3.5 w-3.5 rotate-90 text-muted transition-transform duration-200 ${open ? "rotate-[-90deg]" : ""}`} />
       </button>
 

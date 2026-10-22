@@ -10,20 +10,24 @@ import { shrinkImageFile } from "@/lib/image-file";
 import { useT } from "@/lib/i18n/provider";
 
 /**
- * مدیریت عکس پروفایل وکیل — بارگذاری و تعویض هر زمان.
+ * مدیریت عکس پروفایل — بارگذاری و تعویض هر زمان (وکیل و موکل).
  * عکس پیش از ارسال سمت مرورگر کوچک می‌شود و سرور آن را به مربعِ استاندارد
  * ۵۱۲×۵۱۲ (سایز کارت‌های سایت) با برش هوشمند تبدیل می‌کند؛ بنابراین خروجی
- * همیشه دقیقاً روی کارت وکلا و پروفایل عمومی می‌نشیند. پس از ذخیره، همین صفحه
- * و همه کارت‌های سایت با عکس تازه به‌روزرسانی می‌شوند.
+ * همیشه دقیقاً روی کارت‌ها و پروفایل می‌نشیند. پس از ذخیره، همین صفحه
+ * و همهٔ آواتارهای سایت با عکس تازه به‌روزرسانی می‌شوند.
+ * endpoint: /api/lawyer/photo (وکیل) یا /api/profile/photo (موکل و بقیهٔ حساب‌ها)
  */
 export function LawyerPhotoManager({
   name,
   color,
   photoUrl,
+  endpoint = "/api/lawyer/photo",
 }: {
   name: string;
   color: string;
   photoUrl: string | null;
+  /** مسیر آپلود — پیش‌فرض عکس وکیل؛ برای موکل: /api/profile/photo */
+  endpoint?: string;
 }) {
   const router = useRouter();
   const t = useT();
@@ -45,7 +49,7 @@ export function LawyerPhotoManager({
       const small = await shrinkImageFile(file, 1024, 0.9);
       const fd = new FormData();
       fd.append("file", small);
-      const res = await fetch("/api/lawyer/photo", { method: "POST", body: fd });
+      const res = await fetch(endpoint, { method: "POST", body: fd });
       const data = (await res.json()) as { ok: boolean; url?: string; error?: string };
       if (data.ok) {
         toast.success(t("تغییرات اعمال شد"), { duration: 3000, className: "dadban-toast" });
@@ -88,7 +92,7 @@ export function LawyerPhotoManager({
       </Button>
       <p className="max-w-[240px] text-center text-[11px] leading-5 text-muted">
         <Icon name="check" className="me-1 inline h-3 w-3 text-success" />
-        {t("عکس به‌صورت خودکار به سایز استاندارد کارت (مربع) تبدیل می‌شود — هر وقت بخواهید می‌توانید عوضش کنید.")}
+        {t("عکس به‌صورت خودکار به سایز استاندارد (مربع) تبدیل می‌شود — هر وقت بخواهید می‌توانید عوضش کنید.")}
       </p>
     </div>
   );

@@ -68,8 +68,8 @@ export default async function LawyersPage({
   const st = makeT(locale);
   const tf = templateT(t);
   const { sp, city, gender, sort, q, type } = params;
-  // فیلتر نوع وکیل: همه | وکیل رسمی (wakil) | کارآموز (karamooz) — سمت سرور روی ستون lawyer_type
-  const typeFilter = type === "karamooz" || type === "wakil" ? type : null;
+  // فیلتر نوع: همه | وکیل رسمی (wakil) | کارآموز (karamooz) | کارشناس حقوقی (expert) — سمت سرور روی ستون lawyer_type
+  const typeFilter = type === "karamooz" || type === "wakil" || type === "expert" ? type : null;
 
   // نقش کاربر — برای وکیل/همکار: دایرکتوری همکاران (نه جریان «انتخاب وکیل» موکل‌ها)
   let meRole: string | null = null;
@@ -146,6 +146,7 @@ export default async function LawyersPage({
     { id: "", label: "همه" },
     { id: "wakil", label: "وکیل رسمی" },
     { id: "karamooz", label: "کارآموز" },
+    { id: "expert", label: "کارشناس حقوقی" },
   ];
 
   const heading = sp
@@ -222,6 +223,7 @@ export default async function LawyersPage({
               >
                 {tChips.id === "karamooz" && <Icon name="book" className="h-3.5 w-3.5" />}
                 {tChips.id === "wakil" && <Icon name="gavel" className="h-3.5 w-3.5" />}
+                {tChips.id === "expert" && <Icon name="certificate" className="h-3.5 w-3.5" />}
                 {t(tChips.label)}
               </Link>
             );
@@ -242,6 +244,27 @@ export default async function LawyersPage({
             ))}
           </div>
         )}
+
+        {/* کارشناسان حقوقی — دسترسی مستقیم از پایین فهرست وکلا (خواستهٔ مالک) */}
+        <Link
+          href="/experts"
+          data-testid="experts-entry"
+          className="group mt-8 flex flex-wrap items-center gap-4 rounded-3xl border border-border bg-surface p-5 card-shadow transition-all duration-300 hover:border-primary/30 hover:shadow-[var(--shadow-lift)] sm:p-6"
+        >
+          <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-accent-text">
+            <Icon name="certificate" className="h-7 w-7" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-base font-extrabold text-foreground sm:text-lg">{t("کارشناسان حقوقی دادورزان")}</span>
+            <span className="mt-0.5 block text-xs leading-6 text-muted sm:text-sm">
+              {t("مشاوره، تنظیم و بازبینی قرارداد و کمک به اسناد — بدون وکالت در دادگاه؛ با فیلتر استان و شهر.")}
+            </span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-primary-soft px-4 py-2.5 text-xs font-bold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+            {t("مشاهده کارشناسان")}
+            <Icon name="arrow" className="h-3.5 w-3.5" />
+          </span>
+        </Link>
 
         {/* بازدیدهای اخیر + پیشنهاد برای شما (شخصی‌سازی، سبک آمازون) */}
         <div className="mt-10">

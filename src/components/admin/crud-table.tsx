@@ -7,6 +7,7 @@ import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
 import { shrinkImageFile, squareCropImageFile } from "@/lib/image-file";
 import { formatJalali, formatJalaliDateTime } from "@/lib/jalali";
+import { MoneyInput } from "@/components/money-input";
 import { faNum } from "@/lib/data";
 
 /**
@@ -36,6 +37,8 @@ export interface CrudField {
   defaultValue?: string;
   /** فقط برای type="image" — عکس پروفایل/کارت: برش مربع استاندارد + پیش‌نمایش مربعی + تعویض سریع */
   avatar?: boolean;
+  /** فقط برای type="number" — ورودی مبلغ با گروه‌بندی سه‌رقمی حین تایپ (20,000,000) */
+  money?: boolean;
   span?: 1 | 2;
 }
 
@@ -525,14 +528,32 @@ export function AdminCrudTable({
                     <Icon name={form[f.key] ? "check" : "x"} className="h-4 w-4" />
                     {form[f.key] ? t("فعال") : t("غیرفعال")}
                   </button>
+                ) : f.type === "number" && f.money ? (
+                  /* ورودی مبلغ — گروه‌بندی سه‌رقمی زنده؛ state همیشه رقم خام */
+                  <MoneyInput
+                    id={`crud-${f.key}`}
+                    value={String(form[f.key] ?? "")}
+                    onValueChange={(raw) => setForm((s) => ({ ...s, [f.key]: raw === "" ? 0 : Number(raw) }))}
+                    placeholder={f.placeholder ? t(f.placeholder) : undefined}
+                    className="h-10 w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground outline-none transition focus:border-primary"
+                  />
+                ) : f.type === "number" ? (
+                  <input
+                    id={`crud-${f.key}`}
+                    type="number"
+                    value={String(form[f.key] ?? "")}
+                    onChange={(e) =>
+                      setForm((s) => ({ ...s, [f.key]: Number(e.target.value || 0) }))
+                    }
+                    placeholder={f.placeholder ? t(f.placeholder) : undefined}
+                    className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary"
+                  />
                 ) : (
                   <input
                     id={`crud-${f.key}`}
-                    type={f.type === "number" ? "number" : "text"}
+                    type="text"
                     value={String(form[f.key] ?? "")}
-                    onChange={(e) =>
-                      setForm((s) => ({ ...s, [f.key]: f.type === "number" ? Number(e.target.value || 0) : e.target.value }))
-                    }
+                    onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
                     placeholder={f.placeholder ? t(f.placeholder) : undefined}
                     className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary"
                   />

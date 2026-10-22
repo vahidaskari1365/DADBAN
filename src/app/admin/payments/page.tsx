@@ -22,7 +22,7 @@ export default async function AdminPaymentsPage() {
       fields={[
         { key: "reference", label: "شناسه ارجاع", required: true },
         { key: "order_type", label: "نوع سفارش" },
-        { key: "amount", label: "مبلغ (تومان)", type: "number" },
+        { key: "amount", label: "مبلغ (تومان)", type: "number", money: true },
         { key: "provider", label: "درگاه پرداخت" },
         {
           key: "status",

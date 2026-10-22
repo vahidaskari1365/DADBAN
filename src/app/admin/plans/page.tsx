@@ -22,7 +22,7 @@ export default async function AdminPlansPage() {
       fields={[
         { key: "name", label: "نام پلن", required: true, placeholder: "مثلاً حرفه‌ای" },
         { key: "key", label: "کلید یکتا (key)", required: true, placeholder: "pro", hint: "کلید یکتای انگلیسی (مثل pro یا gold) — پس از ساخت تغییرش ندهید" },
-        { key: "price", label: "قیمت ماهانه (تومان — ۰ = رایگان)", type: "number", hint: "فقط عدد؛ مثلاً 490000 — صفر یعنی پلن رایگان" },
+        { key: "price", label: "قیمت ماهانه (تومان — ۰ = رایگان)", type: "number", money: true, hint: "مثلاً 490,000 — صفر یعنی پلن رایگان" },
         { key: "desc", label: "توضیح کوتاه", span: 2 },
         { key: "features", label: "مزایا", type: "csv", hint: "هر مزیت با «،» جدا شود" },
         { key: "cta", label: "متن دکمه", placeholder: "فعال‌سازی پلن حرفه‌ای" },

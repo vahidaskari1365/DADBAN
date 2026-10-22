@@ -365,13 +365,18 @@ export function Header() {
               {meLoaded && me ? (
                 <div className="mt-3 space-y-2 rounded-2xl border border-border bg-surface-2/60 p-3">
                   <div className="flex items-center gap-3">
-                    <span
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-extrabold text-white shadow-sm"
-                      style={{ backgroundColor: me.avatarColor || "#15365d" }}
-                      aria-hidden
-                    >
-                      {(me.name || "؟").trim().charAt(0)}
-                    </span>
+                    {me.photoUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element -- آواتار ۴۰px همان دامنه از رسانهٔ کاربر */
+                      <img src={me.photoUrl} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover shadow-sm" aria-hidden />
+                    ) : (
+                      <span
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-base font-extrabold text-white shadow-sm"
+                        style={{ backgroundColor: me.avatarColor || "#15365d" }}
+                        aria-hidden
+                      >
+                        {(me.name || "؟").trim().charAt(0)}
+                      </span>
+                    )}
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-bold text-foreground">{me.name}</span>
                       <span className="block text-[11px] text-muted">{t("حساب کاربری فعال")}</span>

@@ -35,8 +35,10 @@ export function LawyerCard({
     .slice(-2)
     .map((w) => w[0])
     .join("");
-  // نوع وکیل — ستون lawyer_type ممکن است هنوز مهاجرت نشده باشد؛ اختیاری خوانده می‌شود
-  const isKaramooz = (lawyer as { lawyerType?: string }).lawyerType === "karamooz";
+  // نوع — ستون lawyer_type ممکن است هنوز مهاجرت نشده باشد؛ اختیاری خوانده می‌شود
+  const lawyerType = (lawyer as { lawyerType?: string }).lawyerType;
+  const isKaramooz = lawyerType === "karamooz";
+  const isExpert = lawyerType === "expert";
 
   return (
     <Link
@@ -96,6 +98,16 @@ export function LawyerCard({
         <div>
           <div className="flex items-center gap-1.5">
             <h3 className="min-w-0 flex-1 truncate text-sm font-bold text-foreground sm:text-base">{lawyer.name}</h3>
+            {/* نشان کارشناس حقوقی — مشاوره/قرارداد/اسناد بدون وکالت قضایی */}
+            {isExpert && (
+              <span
+                className="inline-flex shrink-0 items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-extrabold text-accent-text ring-1 ring-[color-mix(in_oklab,var(--accent)_35%,transparent)]"
+                title={t("کارشناس حقوقی — مشاوره، قرارداد و اسناد")}
+              >
+                <Icon name="certificate" className="h-3 w-3" />
+                {t("کارشناس حقوقی")}
+              </span>
+            )}
             {/* نشان طلایی کارآموز وکالت — شماره پروانه (K-…) برای کارآموز نمایش داده نمی‌شود */}
             {isKaramooz && (
               <span

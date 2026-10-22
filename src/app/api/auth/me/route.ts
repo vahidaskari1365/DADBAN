@@ -25,6 +25,7 @@ export async function GET() {
       province: user.province ?? null,
       city: user.city ?? null,
       avatarColor: user.avatarColor ?? "#15365d",
+      photoUrl: user.photoUrl ?? null,
     },
   });
 }

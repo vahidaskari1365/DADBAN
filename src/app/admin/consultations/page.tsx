@@ -36,7 +36,7 @@ export default async function AdminConsultationsPage() {
         { key: "lawyer_name", label: "وکیل" },
         { key: "duration", label: "مدت (دقیقه)", type: "number" },
         { key: "scheduled_at", label: "زمان جلسه" },
-        { key: "price", label: "قیمت (تومان)", type: "number" },
+        { key: "price", label: "قیمت (تومان)", type: "number", money: true },
         {
           key: "status",
           label: "وضعیت",

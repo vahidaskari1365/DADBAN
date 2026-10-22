@@ -475,6 +475,8 @@ export function ensureProfileSchema(): Promise<void> {
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS province TEXT`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS city TEXT`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS avatar_color TEXT NOT NULL DEFAULT '#15365d'`,
+    // عکس پروفایل موکل — مربع استاندارد (الگوی lawyers.photo_url)
+    `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS photo_url TEXT`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS lawyer_id INTEGER REFERENCES lawyers(id) ON DELETE SET NULL`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS parent_lawyer_id INTEGER REFERENCES lawyers(id) ON DELETE CASCADE`,
     `ALTER TABLE app_users ADD COLUMN IF NOT EXISTS team_permissions TEXT NOT NULL DEFAULT ''`,

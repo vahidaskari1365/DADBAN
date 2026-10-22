@@ -181,6 +181,7 @@ export default async function ClientDashboard() {
       role="موکل"
       title={t("داشبورد حقوقی من")}
       name={user.name}
+      photoUrl={user.photoUrl ?? null}
       back={{ fallback: "/" }}
       nav={[
         { label: t("نمای کلی"), icon: "home", active: true, href: "/dashboard/client" },

@@ -594,6 +594,8 @@ export const users = pgTable("app_users", {
   city: text("city"),
   /** رنگ آواتار (بدون آپلود تصویر؛ از پالت برند) */
   avatarColor: text("avatar_color").notNull().default("#15365d"),
+  /** عکس پروفایل کاربر (موکل) — مربع استاندارد ۵۱۲×۵۱۲ مثل عکس وکلا */
+  photoUrl: text("photo_url"),
   /** اتصال حساب به پروفایل عمومی وکیل (فقط برای role=lawyer) */
   lawyerId: integer("lawyer_id").references(() => lawyers.id, { onDelete: "set null" }),
   /** شمارهٔ موبایل با کد یکبارمصرف تأیید شده است (ورود OTP / تأیید شماره) */

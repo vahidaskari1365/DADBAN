@@ -24,9 +24,11 @@ export interface LawyerFiltersProps {
     sort?: string;
   };
   total: number;
+  /** پایهٔ مسیر فیلترها — پیش‌فرض /lawyers؛ برای کارشناسان: /experts */
+  basePath?: string;
 }
 
-export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
+export function LawyerFilters({ initial, total, basePath = "/lawyers" }: LawyerFiltersProps) {
   const router = useRouter();
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -36,12 +38,13 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
     const params = new URLSearchParams(window.location.search);
     if (value && value !== "all") params.set(key, value);
     else params.delete(key);
-    router.push(`/lawyers?${params.toString()}`);
+    const s = params.toString();
+    router.push(s ? `${basePath}?${s}` : basePath);
   };
 
   const reset = () => {
     setQ("");
-    router.push("/lawyers");
+    router.push(basePath);
   };
 
   const selectCls =
@@ -147,7 +150,7 @@ export function LawyerFilters({ initial, total }: LawyerFiltersProps) {
         </div>
 
         <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-          <span className="text-xs text-muted">{total > 0 ? `${faNum(total)} ${t("وکیل")}` : t("نتیجه‌ای یافت نشد")}</span>
+          <span className="text-xs text-muted">{total > 0 ? `${faNum(total)} ${t("نتیجه")}` : t("نتیجه‌ای یافت نشد")}</span>
           <button
             type="button"
             onClick={reset}
