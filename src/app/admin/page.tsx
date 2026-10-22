@@ -263,7 +263,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          <div className="lg:order-2 lg:col-span-2">
             {/* نمودار بازدید ۱۴ روز اخیر — گزارش کامل در /admin/analytics */}
             <Card hover={false} className="mb-8" data-testid="dashboard-traffic">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -339,7 +339,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             )}
           </div>
 
-          <div id="tracking">
+          <div id="tracking" className="lg:order-1">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-black text-foreground">{t("مدیریت سریع")}</h2>
             </div>
