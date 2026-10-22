@@ -62,12 +62,38 @@ export async function GET() {
  *   { id, action: "approve" | "reject", adminNote? }
  * approve → lawyers.verified=true (ورود به فهرست عمومی وکلا) + اعلان به وکیل
  * reject  → ذخیرهٔ دلیل (الزامی) + اعلان به وکیل برای ارسال مجدد
+ *   { action: "direct-approve", lawyerId }
+ * direct-approve → تأیید دستی ثبت‌نامی که هنوز مدارک بارگذاری نکرده
+ * (مدارک خارج از سامانه بررسی شده؛ پروفایل مستقیم وارد فهرست عمومی می‌شود + اعلان)
  */
 export async function PATCH(req: Request) {
   const _denied = await permDenied("lawyers"); if (_denied) return _denied;
   const limited = rateLimit(req, "admin-verify", 60, 15 * 60_000);
   if (limited) return limited;
   const body = await readJson(req, 4096);
+
+  /* ── تأیید دستی ثبت‌نامِ بدون مدرک (action=direct-approve) ── */
+  if (body?.action === "direct-approve") {
+    const lawyerId = Number(body?.lawyerId);
+    if (!lawyerId) return NextResponse.json({ ok: false, error: "lawyerId الزامی است" }, { status: 400 });
+    try {
+      await ensureExtendedSchema();
+      const rows = await db
+        .select({ id: lawyers.id, verified: lawyers.verified })
+        .from(lawyers)
+        .where(eq(lawyers.id, lawyerId))
+        .limit(1);
+      const row = rows[0];
+      if (!row) return NextResponse.json({ ok: false, error: "not found" }, { status: 404 });
+      await db.update(lawyers).set({ verified: true }).where(eq(lawyers.id, lawyerId));
+      const notifyUserId = (await db.select({ id: users.id }).from(users).where(eq(users.lawyerId, lawyerId)).limit(1))[0]?.id ?? null;
+      await notifyVerificationResult(notifyUserId, true, null);
+      return NextResponse.json({ ok: true });
+    } catch {
+      return NextResponse.json({ ok: false, error: "update failed" }, { status: 500 });
+    }
+  }
+
   const id = Number(body?.id);
   const action = body?.action === "approve" ? "approve" : body?.action === "reject" ? "reject" : null;
   const adminNote = text(body?.adminNote, 500) || null;

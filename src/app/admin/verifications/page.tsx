@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { db } from "@/db";
 import { lawyers, lawyerVerifications, users } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and, inArray, sql } from "drizzle-orm";
 import { guardAdminPage } from "@/lib/admin-auth";
 import { ensureExtendedSchema } from "@/lib/auto-seed";
 import { Container, Card } from "@/components/ui";
@@ -29,11 +29,19 @@ export default async function AdminVerificationsPage() {
   }
 
   let rows: Awaited<ReturnType<typeof loadRows>> = [];
+  let pendingRegs: Awaited<ReturnType<typeof loadPendingRegistrations>> = [];
   let degraded = false;
   try {
     rows = await loadRows();
   } catch {
     degraded = true;
+  }
+  if (!degraded) {
+    try {
+      pendingRegs = await loadPendingRegistrations();
+    } catch {
+      /* best-effort — بخش ثبت‌نام‌های بدون مدرک مخفی می‌ماند */
+    }
   }
 
   const pendingCount = rows.filter((r) => r.status === "pending").length;
@@ -50,6 +58,9 @@ export default async function AdminVerificationsPage() {
         </p>
         <p className="mt-2 text-xs font-bold text-foreground-soft" data-testid="verifications-count">
           {t("در انتظار بررسی")}: {pendingCount.toLocaleString("fa-IR")}
+          {pendingRegs.length > 0 && (
+            <span className="ms-3 text-warning">{t("ثبت‌نام بدون مدرک")}: {pendingRegs.length.toLocaleString("fa-IR")}</span>
+          )}
         </p>
       </div>
       {degraded ? (
@@ -59,6 +70,7 @@ export default async function AdminVerificationsPage() {
       ) : (
         <VerificationsClient
           initialRows={rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString(), reviewedAt: r.reviewedAt ? r.reviewedAt.toISOString() : null }))}
+          pendingRegs={pendingRegs.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }))}
         />
       )}
     </Container>
@@ -96,4 +108,36 @@ async function loadRows() {
     .leftJoin(users, eq(users.id, lawyerVerifications.userId))
     .orderBy(desc(lawyerVerifications.createdAt))
     .limit(200);
+}
+
+/**
+ * ثبت‌نام‌شده‌های بدون مدارک — حلقهٔ قبلاً قطع:
+ * کاربر به‌عنوان وکیل/کارشناس ثبت‌نام کرده (پروفایل verified=false) ولی هنوز
+ * هیچ درخواست احراز هویتی (آپلود مدارک) ثبت نکرده؛ قبلاً هیچ‌جای پنل دیده نمی‌شد
+ * و مدیر از وجودش بی‌خبر می‌ماند. حالا بالای همین صفحه با امکان تماس و تأیید دستی.
+ */
+async function loadPendingRegistrations() {
+  return db
+    .select({
+      lawyerId: lawyers.id,
+      name: lawyers.name,
+      slug: lawyers.slug,
+      city: lawyers.city,
+      lawyerType: lawyers.lawyerType,
+      specialties: lawyers.specialties,
+      employeeLawyer: lawyers.employeeLawyer,
+      createdAt: lawyers.createdAt,
+      phone: users.phone,
+    })
+    .from(lawyers)
+    .leftJoin(users, eq(users.lawyerId, lawyers.id))
+    .where(
+      and(
+        eq(lawyers.verified, false),
+        inArray(lawyers.lawyerType, ["expert", "karamooz"]),
+        sql`NOT EXISTS (SELECT 1 FROM lawyer_verifications v WHERE v.lawyer_id = ${lawyers.id})`,
+      ),
+    )
+    .orderBy(desc(lawyers.createdAt))
+    .limit(100);
 }

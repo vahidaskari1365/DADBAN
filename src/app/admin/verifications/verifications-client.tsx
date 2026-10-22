@@ -9,6 +9,8 @@ import { useT } from "@/lib/i18n/provider";
 
 /**
  * صف احراز هویت وکلا — پنل ادمین:
+ *  • بخش «ثبت‌نام‌شده‌های بدون مدارک»: کسانی که به‌عنوان وکیل/کارشناس ثبت‌نام کرده‌اند
+ *    ولی هنوز مدارک بارگذاری نکرده‌اند (قبلاً دیده نمی‌شدند!) — تماس + تأیید دستی
  *  • مشاهدهٔ مدارک (پروانه/کارت ملی/مدرک) در تب جدید
  *  • تأیید → وکیل وارد فهرست عمومی می‌شود + پیغام به وکیل
  *  • رد → نوشتن دلیل الزامی + پیغام به وکیل برای ارسال مجدد
@@ -45,12 +47,25 @@ const STATUS_FA: Record<string, { label: string; tone: "accent" | "success" | "d
   rejected: { label: "رد شده", tone: "danger" },
 };
 
+/** ثبت‌نامی که هنوز هیچ درخواست احراز هویتی نداشته */
+type PendingReg = {
+  lawyerId: number;
+  name: string;
+  slug: string;
+  city: string;
+  lawyerType: string | null;
+  specialties: string[];
+  employeeLawyer: boolean | null;
+  createdAt: string;
+  phone: string | null;
+};
+
 function fmtSize(n: number): string {
   if (!n) return "—";
   return `${(n / 1024).toFixed(0)} KB`;
 }
 
-export default function VerificationsClient({ initialRows }: { initialRows: Row[] }) {
+export default function VerificationsClient({ initialRows, pendingRegs: initialPendingRegs }: { initialRows: Row[]; pendingRegs: PendingReg[] }) {
   const t = useT();
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>(initialRows);
@@ -59,6 +74,12 @@ export default function VerificationsClient({ initialRows }: { initialRows: Row[
   if (initialRows !== seenInitial) {
     setSeenInitial(initialRows);
     setRows(initialRows);
+  }
+  const [pendingRegs, setPendingRegs] = useState<PendingReg[]>(initialPendingRegs);
+  const [seenPendingRegs, setSeenPendingRegs] = useState<PendingReg[]>(initialPendingRegs);
+  if (initialPendingRegs !== seenPendingRegs) {
+    setSeenPendingRegs(initialPendingRegs);
+    setPendingRegs(initialPendingRegs);
   }
   const [busyId, setBusyId] = useState<number | null>(null);
   const [rejectId, setRejectId] = useState<number | null>(null);
@@ -93,7 +114,34 @@ export default function VerificationsClient({ initialRows }: { initialRows: Row[
     }
   };
 
-  if (!rows.length) {
+  /** تأیید دستی ثبت‌نام بدون مدرک — مدارک خارج از سامانه بررسی شده */
+  const directApprove = async (lawyerId: number, name: string) => {
+    if (!window.confirm(`«${name}» بدون بررسی مدارک در سامانه، مستقیماً وارد فهرست عمومی شود؟ (مثلاً وقتی مدارک را خارج از سایت بررسی کرده‌اید)`)) return;
+    setBusyId(lawyerId);
+    setError("");
+    setNotice("");
+    try {
+      const res = await fetch("/api/admin/verifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "direct-approve", lawyerId }),
+      });
+      const d = await res.json().catch(() => null);
+      if (res.ok && d?.ok) {
+        setPendingRegs((rs) => rs.filter((r) => r.lawyerId !== lawyerId));
+        setNotice(t("تأیید شد — پروفایل وارد فهرست عمومی سایت شد و پیغام برایش ثبت شد."));
+        router.refresh();
+      } else {
+        setError(d?.error ?? t("عملیات ناموفق بود"));
+      }
+    } catch {
+      setError(t("خطای ارتباط با سرور"));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  if (!rows.length && !pendingRegs.length) {
     return (
       <Card hover={false} className="p-10 text-center" data-testid="verifications-empty">
         <Icon name="fingerprint" className="mx-auto h-8 w-8 text-muted" />
@@ -114,6 +162,84 @@ export default function VerificationsClient({ initialRows }: { initialRows: Row[
       {error && (
         <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive" data-testid="verifications-error">
           {error}
+        </div>
+      )}
+
+      {/* ── ثبت‌نام‌شده‌های بدون مدارک — قبلاً کاملاً نامرئی بودند ── */}
+      {pendingRegs.length > 0 && (
+        <section data-testid="pending-registrations">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <Icon name="user-plus" className="h-4.5 w-4.5 text-warning" />
+            <h2 className="text-sm font-black text-foreground">{t("ثبت‌نام‌شده‌های بدون مدارک")}</h2>
+            <Badge tone="accent">{pendingRegs.length.toLocaleString("fa-IR")}</Badge>
+          </div>
+          <p className="mb-3 text-xs leading-6 text-muted">
+            {t("این کاربران به‌عنوان وکیل/کارشناس ثبت‌نام کرده‌اند ولی هنوز مدارک احراز هویت بارگذاری نکرده‌اند (پروفایلشان در فهرست عمومی نیست). با آن‌ها تماس بگیرید یا اگر مدارک را خارج از سامانه بررسی کرده‌اید، دستی تأیید کنید.")}
+          </p>
+          <div className="space-y-3">
+            {pendingRegs.map((r) => (
+              <Card key={r.lawyerId} hover={false} className="p-5" data-testid={`pending-reg-${r.lawyerId}`}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-black text-foreground">{r.name}</p>
+                      <Badge tone="accent">{t("بدون مدرک")}</Badge>
+                      {r.lawyerType === "expert" ? (
+                        <Badge tone="primary" icon="certificate">{t("کارشناس حقوقی")}</Badge>
+                      ) : (
+                        <Badge tone="primary">{t("کارآموز وکالت")}</Badge>
+                      )}
+                      {r.employeeLawyer && <Badge tone="accent" icon="briefcase">{t("وکیل کارمندان و کارهای اداری")}</Badge>}
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                      {r.phone ? (
+                        <a href={`tel:${r.phone}`} dir="ltr" className="font-bold text-primary underline-offset-4 hover:underline">
+                          {r.phone}
+                        </a>
+                      ) : (
+                        <span dir="ltr">—</span>
+                      )}
+                      {r.city && <span>{r.city}</span>}
+                      <span>{t("ثبت‌نام")}: {formatJalaliDateTime(r.createdAt)}</span>
+                    </div>
+                    {!!r.specialties?.length && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {r.specialties.slice(0, 6).map((s) => (
+                          <span key={s} className="rounded-full bg-primary-soft px-2.5 py-0.5 text-[11px] font-bold text-primary">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {r.phone && (
+                      <Button href={`tel:${r.phone}`} variant="outline" size="sm" icon="phone">
+                        {t("تماس")}
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => directApprove(r.lawyerId, r.name)}
+                      disabled={busyId === r.lawyerId}
+                      icon="check"
+                      size="sm"
+                      data-testid={`pending-reg-approve-${r.lawyerId}`}
+                    >
+                      {busyId === r.lawyerId ? t("…") : t("تأیید دستی")}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── صف درخواست‌های احراز هویت (با مدارک) ── */}
+      {rows.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+          <Icon name="fingerprint" className="h-4.5 w-4.5 text-primary" />
+          <h2 className="text-sm font-black text-foreground">{t("درخواست‌های احراز هویت (با مدارک)")}</h2>
         </div>
       )}
 

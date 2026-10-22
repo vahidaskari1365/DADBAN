@@ -39,6 +39,9 @@ export function LawyerCard({
   const lawyerType = (lawyer as { lawyerType?: string }).lawyerType;
   const isKaramooz = lawyerType === "karamooz";
   const isExpert = lawyerType === "expert";
+  // عنوان پیش‌فرضِ ثبت‌نام با نشانِ نوع یکسان می‌شود («کارشناس حقوقی / کارشناس حقوقی») — تکرار نمایش داده نشود
+  const titleDuplicatesBadge =
+    (isExpert && lawyer.title === "کارشناس حقوقی") || (isKaramooz && lawyer.title === "کارآموز وکالت");
 
   return (
     <Link
@@ -119,7 +122,7 @@ export function LawyerCard({
               </span>
             )}
           </div>
-          <p className="mt-0.5 line-clamp-1 text-[11px] text-muted sm:text-xs">{lawyer.title}</p>
+          {!titleDuplicatesBadge && <p className="mt-0.5 line-clamp-1 text-[11px] text-muted sm:text-xs">{lawyer.title}</p>}
         </div>
 
         {/* معرفی کوتاه وکیل — همان متنی که از پنل پروفایل ذخیره می‌شود */}
