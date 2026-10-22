@@ -11,6 +11,7 @@ export default async function AdminPaymentsPage() {
       title="مدیریت پرداخت‌ها"
       itemLabel="پرداخت"
       searchKeys={["reference", "order_type", "provider"]}
+      emptyText="هنوز پرداختی ثبت نشده است. پرداخت‌های آنلاین به‌صورت خودکار اینجا ثبت می‌شوند؛ برای ثبت پرداخت حضوری/دستی از «افزودن پرداخت» استفاده کنید."
       columns={[
         { key: "reference", label: "شناسه ارجاع" },
         { key: "order_type", label: "نوع سفارش" },

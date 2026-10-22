@@ -160,6 +160,7 @@ export function AdminCrudTable({
   columns,
   searchKeys,
   sortBy,
+  emptyText,
 }: {
   resource: string;
   title: string;
@@ -170,6 +171,8 @@ export function AdminCrudTable({
   searchKeys: string[];
   /** مرتب‌سازی پیش‌فرض فهرست بر اساس این کلید (صعودی) */
   sortBy?: string;
+  /** متن سفارشی حالت خالی — پیش‌فرض متن عمومی «افزودن» */
+  emptyText?: string;
 }) {
   const router = useRouter();
   const t = useT();
@@ -444,7 +447,7 @@ export function AdminCrudTable({
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted">
-            {q ? t("چیزی یافت نشد") : t("هنوز موردی ثبت نشده — با دکمهٔ «افزودن» اولین مورد را بسازید.")}
+            {q ? t("چیزی یافت نشد") : emptyText ? t(emptyText) : t("هنوز موردی ثبت نشده — با دکمهٔ «افزودن» اولین مورد را بسازید.")}
           </div>
         ) : (
           <div className="overflow-x-auto">
