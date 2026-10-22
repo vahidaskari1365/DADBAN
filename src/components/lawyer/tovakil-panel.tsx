@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/icons";
 import { LEGAL_TOPICS } from "@/lib/data";
+import { formatJalali } from "@/lib/jalali";
 
 /* ================= شکل داده‌ها (هماهنگ با GET /api/tovakil) ================= */
 type MarketCase = {
@@ -51,8 +52,7 @@ type Incoming = {
   lawyerVerified: boolean;
 };
 
-const faDate = (d: string) =>
-  new Intl.DateTimeFormat("fa-IR", { dateStyle: "short" }).format(new Date(d));
+const faDate = (d: string) => formatJalali(d);
 
 const STATUS_FA: Record<string, { label: string; cls: string }> = {
   open: { label: "باز — منتظر وکیل", cls: "bg-success/15 text-success" },

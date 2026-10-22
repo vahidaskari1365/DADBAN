@@ -2,6 +2,8 @@
 // «یک روز» در همه‌جا یعنی روز تقویمی تهران؛ day همیشه YYYY-MM-DD (برای مقایسهٔ
 // لغوی در SQL و گروه‌بندی). هیچ PII ذخیره نمی‌شود — شناسهٔ بازدیدکننده تصادفی است.
 
+import { toJalali, JALALI_MONTHS, toPersianDigits } from "@/lib/jalali";
+
 export const TEHRAN_TZ = "Asia/Tehran";
 
 /** روز تقویمی تهران برای یک لحظه — YYYY-MM-DD */
@@ -22,21 +24,22 @@ export function lastNDays(n: number, now: number = Date.now()): string[] {
   return out;
 }
 
-/** برچسب فارسی روز — «۱۴ آبان» (تقویم شمسی برای نمایش) */
+/** برچسب شمسی روز — «۱۴ آبان» (همیشه تقویم جلالی، مستقل از ICU مرورگر/سرور) */
 export function faDayLabel(day: string): string {
   try {
-    return new Intl.DateTimeFormat("fa-IR", {
-      timeZone: TEHRAN_TZ,
-      month: "long",
-      day: "numeric",
-    }).format(new Date(`${day}T12:00:00+03:30`));
+    const { jm, jd } = toJalali(`${day}T12:00:00+03:30`);
+    return `${toPersianDigits(jd)} ${JALALI_MONTHS[jm - 1]}`;
   } catch {
     return day;
   }
 }
 
-/** برچسب فارسی کوتاه — «۱۴/۸» برای زیر ستون‌های نمودار */
+/** برچسب کوتاه شمسی — «۷/۸» (روز/ماه جلالی) برای زیر ستون‌های نمودار */
 export function faDayShort(day: string): string {
-  const [, m, d] = day.split("-");
-  return `${Number(d)}/${Number(m)}`;
+  try {
+    const { jm, jd } = toJalali(`${day}T12:00:00+03:30`);
+    return `${jd}/${jm}`;
+  } catch {
+    return day;
+  }
 }

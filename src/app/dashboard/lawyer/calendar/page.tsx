@@ -8,7 +8,6 @@ import { getT } from "@/lib/i18n/server";
 import { getMyCases, getLawyerAppointments, resolveLawyerContext } from "@/components/portal/lawyer/portal-server";
 import { lawyerNav } from "@/components/portal/lawyer/nav-items";
 import { CalendarManager } from "@/components/portal/lawyer/calendar-manager";
-import { DpToaster } from "@/components/portal/lawyer/toaster";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -41,10 +40,10 @@ export default async function LawyerCalendarPage() {
       title={t("تقویم و مهلت‌ها")}
       subtitle={t("جلسات رسیدگی، مشاوره‌ها و مهلت‌های قانونی در یک نگاه")}
       userName={ctx.lawyer?.name ?? user.name}
+      photoUrl={ctx.lawyer?.photoUrl ?? null}
       userRole={ctx.demo ? t("وکیل · حالت نمایش") : t(ctx.lawyerTitle)}
       nav={lawyerNav("calendar")}
     >
-      <DpToaster />
 
       <Card hover={false}>
         <h2 className="mb-4 flex items-center gap-2 text-[16px] font-bold text-foreground">

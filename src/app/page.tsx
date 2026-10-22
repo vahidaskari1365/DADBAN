@@ -20,7 +20,6 @@ import { HowItWorks } from "@/components/home/journey";
 import { CaseMarketplace } from "@/components/home/case-marketplace";
 import { AISpotlight } from "@/components/home/ai-spotlight";
 import { LawyerCard } from "@/components/lawyer-card";
-import { PinMasonry } from "@/components/pin-masonry";
 import { ReviewsSpotlight } from "@/components/amazon/reviews-spotlight";
 import { SiteMenu } from "@/components/home/site-menu";
 import { SeoLinkGrid } from "@/components/seo/link-grid";
@@ -151,13 +150,13 @@ export default async function HomePage() {
                 </Button>
               </div>
             </Reveal>
-            <PinMasonry className="mt-8">
+            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {featured.map((l, i) => (
                 <Reveal key={l.id} delay={i * 60}>
-                  <LawyerCard lawyer={l} index={i} priority={i === 0} />
+                  <LawyerCard lawyer={l} priority={i === 0} />
                 </Reveal>
               ))}
-            </PinMasonry>
+            </div>
           </Container>
         </section>
       )}

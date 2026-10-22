@@ -737,35 +737,8 @@ input, select, textarea {
   }
 }
 
-/* ===== کارت‌های پینترستی وکلا — چیدمان masonry با CSS Columns ===== */
-/* ترتیب ستون‌ها در RTL خودکار از راست شروع می‌شود */
-/* موبایل هم ۲ ستون (مثل اپ پینترست) تا کارت‌ها جمع‌وجور بمانند */
-.pin-columns {
-  columns: 2;
-  column-gap: 0.75rem;
-}
-@media (min-width: 40rem) {
-  .pin-columns {
-    columns: 3;
-    column-gap: 1rem;
-  }
-}
-@media (min-width: 64rem) {
-  .pin-columns { columns: 4; }
-}
-.pin-item {
-  break-inside: avoid;
-  margin-bottom: 0.75rem;
-}
-@media (min-width: 40rem) {
-  .pin-item {
-    margin-bottom: 1rem;
-  }
-}
-/* نسبت‌های متفاوت عکس برای ارتفاع پله‌ای کارت‌ها */
-.pin-photo-a { aspect-ratio: 3 / 4; }
-.pin-photo-b { aspect-ratio: 1 / 1; }
-.pin-photo-c { aspect-ratio: 4 / 5; }
+/* کارت‌های وکیل حالا یکدست و هم‌اندازه‌اند (گرید معمولی با عکس مربع استاندارد) —
+   چیدمان پینترستی (masonry/ستون‌های CSS) و نسبت‌های متفاوت عکس حذف شد. */
 
 /* ============================================================
    Auth — لاگین تمام‌صفحه با برش مورب (سبک رفرنس VERSO ولی با
@@ -1558,5 +1531,35 @@ input, select, textarea {
   .logo-motion,
   .logo-motion::after {
     animation: none !important;
+  }
+}
+
+/* ============================================================
+   توست سراسری (sonner) — بالای صفحه، ۳ ثانیه ماندگاری با محو آرام.
+   نکتهٔ فنی: sonner فقط ۲۰۰ms بعد از انقضا المنت را از DOM حذف می‌کند،
+   پس محو آرام باید «داخل» عمر توست اتفاق بیفتد: ~۰٫۲s ورود نرم +
+   ~۱٫۸s کاملاً پیدا + ~۱s محو آرام تا پایان ۳ ثانیه.
+   کلاس .dadban-toast فقط روی توست‌های موفقیتِ تغییرات پروفایل است.
+   ============================================================ */
+[data-sonner-toast].dadban-toast[data-front="true"] {
+  animation: dadban-toast-slow-life 3s cubic-bezier(0.33, 0, 0.2, 1) forwards;
+}
+@keyframes dadban-toast-slow-life {
+  0% {
+    opacity: 0;
+  }
+  7% {
+    opacity: 1;
+  }
+  66% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-sonner-toast].dadban-toast[data-front="true"] {
+    animation-duration: 0.3s;
   }
 }

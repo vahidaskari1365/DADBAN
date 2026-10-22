@@ -48,7 +48,7 @@ export function LawyerPhotoManager({
       const res = await fetch("/api/lawyer/photo", { method: "POST", body: fd });
       const data = (await res.json()) as { ok: boolean; url?: string; error?: string };
       if (data.ok) {
-        toast.success(t("عکس پروفایل با سایز استاندارد کارت ذخیره شد."));
+        toast.success(t("تغییرات اعمال شد"), { duration: 3000, className: "dadban-toast" });
         router.refresh();
       } else {
         toast.error(data.error ?? t("آپلود عکس ناموفق بود."));

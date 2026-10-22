@@ -9,7 +9,6 @@ import { resolveLawyerContext } from "@/components/portal/lawyer/portal-server";
 import { getTeamMembersView } from "@/components/portal/lawyer/portal-team";
 import { lawyerNav } from "@/components/portal/lawyer/nav-items";
 import { TeamManager } from "@/components/portal/lawyer/team-manager";
-import { DpToaster } from "@/components/portal/lawyer/toaster";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -34,10 +33,10 @@ export default async function LawyerTeamPage() {
       title={t("کارآموز و تیم")}
       subtitle={t("دعوت کارآموزان و همکاران و مدیریت دامنه دسترسی آن‌ها")}
       userName={ctx.lawyer?.name ?? user.name}
+      photoUrl={ctx.lawyer?.photoUrl ?? null}
       userRole={ctx.demo ? t("وکیل · حالت نمایش") : t(ctx.lawyerTitle)}
       nav={lawyerNav("team")}
     >
-      <DpToaster />
 
       <Card hover={false}>
         <h2 className="mb-4 flex items-center gap-2 text-[16px] font-bold text-foreground">

@@ -12,7 +12,6 @@ import { templateT } from "@/lib/i18n/core";
 import { getMyCases, getMyProposals, resolveLawyerContext } from "@/components/portal/lawyer/portal-server";
 import { lawyerNav } from "@/components/portal/lawyer/nav-items";
 import { SignContractButton } from "@/components/portal/lawyer/sign-contract-button";
-import { DpToaster } from "@/components/portal/lawyer/toaster";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -40,10 +39,10 @@ export default async function LawyerProposalsPage() {
       title={t("پیشنهادهای قیمت")}
       subtitle={t("وضعیت پیشنهادهای شما و قراردادهای حاصل از پذیرش موکل")}
       userName={ctx.lawyer?.name ?? user.name}
+      photoUrl={ctx.lawyer?.photoUrl ?? null}
       userRole={ctx.demo ? t("وکیل · حالت نمایش") : t(ctx.lawyerTitle)}
       nav={lawyerNav("proposals", { proposals: pendingCount ? toFa(pendingCount) : undefined })}
     >
-      <DpToaster />
 
       <section id="proposals" className="scroll-mt-24">
         <Card hover={false}>

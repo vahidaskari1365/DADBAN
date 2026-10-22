@@ -10,19 +10,18 @@ import type { Lawyer } from "@/db/schema";
 import { useT } from "@/lib/i18n/provider";
 
 /**
- * کارت معرفی وکیل — سبک پینترست (تصویرمحور، عمودی، آماده چیدمان masonry).
- * نسبت عکس بر اساس index بین سه حالت می‌چرخد تا ارتفاع کارت‌ها پله‌ای شود.
- * کلاس نسبت‌ها (.pin-photo-a/b/c) در globals.css تعریف شده‌اند.
+ * کارت معرفی وکیل — چیدمان یکدست و هم‌اندازه (همهٔ کارت‌ها یک شکل و یک ارتفاع).
+ * عکس همیشه مربع استاندارد است (سرور به ۸۰۰×۸۰۰ برش می‌زند)؛
+ * بزرگ/کوچک شدن با هاور ندارد — فقط بازخورد ظریف سایه/حاشیه.
  */
-const PHOTO_ASPECTS = ["pin-photo-a", "pin-photo-b", "pin-photo-c"] as const;
 
 export function LawyerCard({
   lawyer,
-  index = 0,
   priority = false,
   className = "",
 }: {
   lawyer: Lawyer;
+  /** برای سازگاری با فراخواننده‌های قدیمی — در چیدمان یکدست دیگر استفاده نمی‌شود */
   index?: number;
   priority?: boolean;
   className?: string;
@@ -30,7 +29,6 @@ export function LawyerCard({
   const [failed, setFailed] = useState(false);
   const t = useT();
   const hasPhoto = !!lawyer.photoUrl && !failed;
-  const aspect = PHOTO_ASPECTS[index % PHOTO_ASPECTS.length];
   const initials = lawyer.name
     .trim()
     .split(" ")
@@ -43,10 +41,10 @@ export function LawyerCard({
   return (
     <Link
       href={`/lawyers/${lawyer.slug}`}
-      className={`group relative block overflow-hidden rounded-3xl border border-border bg-surface card-shadow transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/30 hover:shadow-[var(--shadow-lift)] ${className}`}
+      className={`group relative block h-full overflow-hidden rounded-3xl border border-border bg-surface card-shadow transition-all duration-300 hover:border-primary/30 hover:shadow-[var(--shadow-lift)] ${className}`}
     >
-      {/* عکس پین‌مانند */}
-      <div className={`relative w-full overflow-hidden ${aspect}`}>
+      {/* عکس مربع استاندارد — یکدست در همهٔ کارت‌ها */}
+      <div className="relative aspect-square w-full overflow-hidden">
         {hasPhoto ? (
           <Image
             src={lawyer.photoUrl as string}
@@ -54,7 +52,7 @@ export function LawyerCard({
             fill
             priority={priority}
             sizes="(min-width: 80rem) 25vw, (min-width: 64rem) 33vw, (min-width: 40rem) 50vw, 100vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover"
             onError={() => setFailed(true)}
           />
         ) : (

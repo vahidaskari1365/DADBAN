@@ -10,6 +10,7 @@ import { Icon } from "@/components/icons";
 import { ArticleBody } from "@/components/article-body";
 import { ShareButtons } from "@/components/share-buttons";
 import { faNum } from "@/lib/data";
+import { formatJalaliLong } from "@/lib/jalali";
 import { getT, getServerLocale } from "@/lib/i18n/server";
 import { makeT } from "@/lib/i18n/core";
 import { tdyn, tdynArticle } from "@/lib/i18n/dynamic";
@@ -140,7 +141,7 @@ export default async function ArticlePage({
   const articleUrl = `${SEO_BASE}/knowledge/${a.slug}`;
 
   // تاریخ‌های واقعی انتشار/بازبینی — مبنای بلوک اعتماد E-E-A-T و dateModified
-  const faDate = (d: Date) => new Intl.DateTimeFormat("fa-IR", { dateStyle: "long" }).format(d);
+  const faDate = (d: Date) => formatJalaliLong(d);
   const publishedLabel = original.publishedAt ? faDate(original.publishedAt) : null;
   const reviewedLabel = original.updatedAt ? faDate(original.updatedAt) : publishedLabel;
 

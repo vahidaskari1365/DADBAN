@@ -52,7 +52,7 @@ export function PersonalInfoForm({ initial }: { initial: ProfileInput }) {
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
-        toast.success(t("اطلاعات شخصی ذخیره شد."));
+        toast.success(t("تغییرات اعمال شد"), { duration: 3000, className: "dadban-toast" });
         router.refresh();
       } else {
         toast.error(data.error ?? t("ذخیره اطلاعات ناموفق بود."));
@@ -185,7 +185,7 @@ export function PasswordForm() {
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
-        toast.success(t("رمز عبور با موفقیت تغییر کرد."));
+        toast.success(t("تغییرات اعمال شد"), { duration: 3000, className: "dadban-toast" });
         setCurrent("");
         setNext("");
         setConfirm("");
@@ -356,7 +356,7 @@ export function PhoneVerificationRow({ phone, verified }: { phone: string; verif
         setOpen(false);
         setMsg(null);
         setCode("");
-        toast.success(t("شماره موبایل شما تأیید شد."));
+        toast.success(t("تغییرات اعمال شد"), { duration: 3000, className: "dadban-toast" });
         router.refresh(); // رندر مجدد سرورساید برای نشان سبز «تأییدشده»
       } else {
         setMsg({ tone: "danger", text: data.error ?? t("تأیید کد ناموفق بود.") });

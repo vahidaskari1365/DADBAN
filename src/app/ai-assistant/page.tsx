@@ -15,6 +15,7 @@ import type { IconKey } from "@/lib/data";
 import { shrinkImageFile } from "@/lib/image-file";
 import { ocrImageFileClient } from "@/lib/ocr-client";
 import { faNum } from "@/lib/data";
+import { toJalali, JALALI_MONTHS, toPersianDigits } from "@/lib/jalali";
 
 interface ClauseFinding {
   type: "risk" | "info";
@@ -91,10 +92,11 @@ function saveSessions(sessions: ChatSession[]): void {
   }
 }
 
-/** تاریخ کوتاه شمسی برای فهرست گفتگوها */
+/** تاریخ کوتاه شمسی برای فهرست گفتگوها — همیشه تقویم جلالی */
 const faDate = (ts: number): string => {
   try {
-    return new Intl.DateTimeFormat("fa-IR", { month: "short", day: "numeric" }).format(new Date(ts));
+    const { jm, jd } = toJalali(new Date(ts));
+    return `${toPersianDigits(jd)} ${JALALI_MONTHS[jm - 1]}`;
   } catch {
     return "";
   }

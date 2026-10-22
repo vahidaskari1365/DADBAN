@@ -11,6 +11,7 @@
 //  - No PII is written into analytics/audit metadata.
 
 import { db } from "@/db";
+import { currentJalaliYear } from "@/lib/jalali";
 import {
   managedServices,
   serviceRequests,
@@ -99,7 +100,7 @@ export async function generateRequestNumber(): Promise<string> {
   const raw: any = await db.execute(sql`SELECT nextval('service_request_seq')::bigint AS n`);
   const rows = Array.isArray(raw) ? raw : raw?.rows ?? [];
   const n = Number(rows[0]?.n ?? Date.now());
-  const year = new Date().getFullYear();
+  const year = currentJalaliYear();
   return `SH-OPS-${year}-${String(n).padStart(6, "0")}`;
 }
 

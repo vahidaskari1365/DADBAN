@@ -6,6 +6,8 @@ import NewsletterForm from "./newsletter-form";
 import type { IconKey } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
 import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "@/lib/seo-landings";
+import { currentJalaliYear, toPersianDigits } from "@/lib/jalali";
+import { JalaliYear } from "./jalali-year";
 
 const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -205,7 +207,7 @@ export async function Footer() {
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
           <p className="text-xs text-muted">
-            © {new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(new Date().getFullYear())} {t("دادورزان — تمامی حقوق محفوظ است.")}
+            © <JalaliYear initial={toPersianDigits(currentJalaliYear())} /> {t("دادورزان — تمامی حقوق محفوظ است.")}
           </p>
           <p className="text-xs text-muted">
             {t("محتوای این پلتفرم صرفاً جنبه راهنمایی دارد و جایگزین مشاوره تخصصی وکیل نیست.")}

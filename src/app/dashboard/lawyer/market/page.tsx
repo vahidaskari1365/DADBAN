@@ -10,7 +10,6 @@ import { templateT } from "@/lib/i18n/core";
 import { fetchMarketItems, resolveLawyerContext } from "@/components/portal/lawyer/portal-server";
 import { lawyerNav } from "@/components/portal/lawyer/nav-items";
 import { MarketBrowser } from "@/components/portal/lawyer/market-browser";
-import { DpToaster } from "@/components/portal/lawyer/toaster";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -36,10 +35,10 @@ export default async function LawyerMarketPage() {
       title={t("پرونده‌های پیشنهادی")}
       subtitle={t("بازار پرونده‌های جدید — با توجه به تخصص خود پیشنهاد قیمت ارسال کنید")}
       userName={ctx.lawyer?.name ?? user.name}
+      photoUrl={ctx.lawyer?.photoUrl ?? null}
       userRole={ctx.demo ? t("وکیل · حالت نمایش") : t(ctx.lawyerTitle)}
       nav={lawyerNav("market")}
     >
-      <DpToaster />
 
       <Card hover={false}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

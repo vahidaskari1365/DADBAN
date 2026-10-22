@@ -7,6 +7,7 @@ import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
 import { ADMIN_PERMISSIONS, ADMIN_ROLES, roleLabel } from "@/lib/admin-permissions";
+import { formatJalaliDateTime } from "@/lib/jalali";
 
 /**
  * مدیریت ادمین‌های پنل — ساخت/ویرایش/غیرفعال‌سازی + تعیین دقیق دسترسی‌ها.
@@ -404,7 +405,7 @@ export default function AdminsClient() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-xs text-muted" dir="ltr">
-                      {row.lastLoginAt ? new Date(row.lastLoginAt).toLocaleDateString("fa-IR") : "—"}
+                      {row.lastLoginAt ? formatJalaliDateTime(row.lastLoginAt) : "—"}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
                       <div className="flex items-center gap-1.5">

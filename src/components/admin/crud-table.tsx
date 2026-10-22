@@ -6,6 +6,7 @@ import { Container, Card, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
 import { shrinkImageFile, squareCropImageFile } from "@/lib/image-file";
+import { formatJalali, formatJalaliDateTime } from "@/lib/jalali";
 import { faNum } from "@/lib/data";
 
 /**
@@ -218,10 +219,31 @@ function ImageField({
   );
 }
 
+/** نمایش شمسی مقدار تاریخ (ISO رشته‌ای از API یا Date) — null یعنی «تاریخ نیست» */
+function jalaliDisplayIfDate(v: unknown): string | null {
+  if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : formatJalaliDateTime(v);
+  if (typeof v !== "string") return null;
+  /* تاریخ+ساعت — ISO کامل (پارس استاندارد، خودش آفست دارد) */
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:/.test(v) || /^\d{4}-\d{2}-\d{2} \d{2}:/.test(v)) {
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? null : formatJalaliDateTime(d);
+  }
+  /* تاریخ خالص YYYY-MM-DD — پارس محلی تا با آفست UTC یک روز جابه‌جا نشود */
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+    const [y, m, d] = v.split("-").map(Number);
+    const dt = new Date(y, m - 1, d);
+    return Number.isNaN(dt.getTime()) ? null : formatJalali(dt);
+  }
+  return null;
+}
+
 function displayValue(row: Record<string, unknown>, col: CrudColumn): string {
   if (col.render) return col.render(row);
   const v = row[col.key];
   if (v === null || v === undefined || v === "") return "—";
+  /* تاریخ‌ها — همیشه شمسی (تقویم جلالی) */
+  const dateStr = jalaliDisplayIfDate(v);
+  if (dateStr) return dateStr;
   /* ستون‌های آرایه‌ای دیتابیس (specialties/services و…) — نمایش خوانا با جداکنندهٔ فارسی */
   if (Array.isArray(v)) return v.length ? v.join("، ") : "—";
   if (typeof v === "boolean") return v ? "✓" : "✗";

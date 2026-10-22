@@ -4,13 +4,14 @@ import { Container, Button, Avatar } from "./ui";
 import { Icon } from "./icons";
 import { BackButton } from "./back-button";
 import { TodayChip } from "./today-chip";
+import { LawyerPhoto } from "./lawyer-photo";
 import type { IconKey } from "@/lib/data";
 import { getT } from "@/lib/i18n/server";
 import { templateT } from "@/lib/i18n/core";
 
 /**
  * پوستهٔ گرافیکی پنل‌ها (وکیل / موکل):
- *  - بنر گرادیانی با آواتار، تاریخ شمسی امروز، دکمهٔ بازگشت و خروج
+ *  - بنر گرادیانی با آواتار (عکس واقعی در صورت وجود)، تاریخ شمسی امروز، دکمهٔ بازگشت و خروج
  *  - منوی کناری گرافیکی با آیتم فعال گرادیانی و چیپ آیکونی
  *  - چندزبانه: تیتر/سلام/خروج با t() ترجمه می‌شوند (کلید = رشتهٔ فارسی منبع)
  */
@@ -24,6 +25,7 @@ export async function DashboardShell({
   userName,
   userRole: _userRole,
   back,
+  photoUrl,
 }: {
   role: "موکل" | "وکیل" | "کارآموز";
   title: string;
@@ -37,6 +39,8 @@ export async function DashboardShell({
   /** نام/نقش کاربر — نام‌های متغیر رایج صفحات (هم‌ارز name) */
   userName?: string;
   userRole?: string;
+  /** عکس پروفایل — اگر موجود باشد به‌جای حرف اول نام نشان داده می‌شود (همان عکس کارت‌ها) */
+  photoUrl?: string | null;
   /** دکمهٔ بازگشت — برای زیرصفحه‌ها (fallback مقصدی که اگر تاریخچه نبود می‌رود) */
   back?: { fallback?: string; label?: string };
 }) {
@@ -90,11 +94,21 @@ export async function DashboardShell({
           </div>
 
           <div className="mt-5 flex items-center gap-4">
-            {who && (
-              <span className="rounded-2xl ring-2 ring-white/35" aria-hidden>
-                <Avatar name={who} color={isLawyer ? "#b07d12" : "#3f5f8a"} size="lg" />
-              </span>
-            )}
+            {who &&
+              (photoUrl ? (
+                /* عکس واقعی پروفایل — همان عکسی که در کارت‌های سایت نمایش داده می‌شود */
+                <LawyerPhoto
+                  name={who}
+                  color={isLawyer ? "#b07d12" : "#3f5f8a"}
+                  photoUrl={photoUrl}
+                  size="lg"
+                  className="ring-2 ring-white/40"
+                />
+              ) : (
+                <span className="rounded-2xl ring-2 ring-white/35" aria-hidden>
+                  <Avatar name={who} color={isLawyer ? "#b07d12" : "#3f5f8a"} size="lg" />
+                </span>
+              ))}
             <div className="min-w-0">
               <p className="text-sm text-white/80">{who ? tf("سلام، {name}", { name: who }) : t("خوش آمدید")}</p>
               <h1 className="mt-0.5 truncate text-xl font-extrabold sm:text-2xl">{title}</h1>

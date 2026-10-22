@@ -4,7 +4,7 @@ import { payments, consultations, serviceRequests } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { logger } from "@/lib/logger";
-import { formatJalaliDateTime } from "@/lib/jalali";
+import { formatJalaliDateTime, currentJalaliYear } from "@/lib/jalali";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,7 +78,7 @@ export async function GET(req: Request) {
     }
 
     const invoice = {
-      invoiceNumber: `SHM-${payment.id}-${new Date(payment.createdAt).getFullYear()}`,
+      invoiceNumber: `SHM-${payment.id}-${currentJalaliYear()}`,
       date: formatJalaliDateTime(payment.createdAt),
       payment: {
         reference: payment.reference,

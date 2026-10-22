@@ -6,7 +6,6 @@ import { Container, Button, EmptyState, Badge } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
-import { PinMasonry } from "@/components/pin-masonry";
 import { LawyerFilters } from "@/components/lawyer-filters";
 import { LawyerDiscovery } from "@/components/amazon/recently-viewed";
 import { StickyCta } from "@/components/amazon/sticky-cta";
@@ -237,11 +236,11 @@ export default async function LawyersPage({
             action={lawyerSide ? { href: "/support", label: t("تماس با پشتیبانی") } : { href: "/consultation", label: t("درخواست معرفی وکیل") }}
           />
         ) : (
-          <PinMasonry>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {list.map((l, i) => (
-              <LawyerCard key={l.id} lawyer={l} index={i} priority={i === 0} />
+              <LawyerCard key={l.id} lawyer={l} priority={i === 0} />
             ))}
-          </PinMasonry>
+          </div>
         )}
 
         {/* بازدیدهای اخیر + پیشنهاد برای شما (شخصی‌سازی، سبک آمازون) */}

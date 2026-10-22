@@ -9,6 +9,7 @@ import { Icon } from "@/components/icons";
 import { getCurrentUser } from "@/lib/user-auth";
 import { getT } from "@/lib/i18n/server";
 import { lawyerNav } from "@/components/portal/lawyer/nav-items";
+import { formatJalaliDateTime } from "@/lib/jalali";
 import { CourtSimClient, type PastSession, type SimCaseOption, type SimMessage } from "@/components/lawyer/court-sim-client";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -159,7 +160,7 @@ export default async function CourtSimPage({
                   <div className="min-w-0">
                     <div className="truncate text-[13px] font-semibold text-foreground">{p.title || t("جلسهٔ تمرین")}</div>
                     <div className="text-[11px] text-foreground-soft">
-                      {new Date(p.createdAt).toLocaleString("fa-IR")} • {t("نوبت‌ها")}: {p.turns.toLocaleString("fa-IR")} •{" "}
+                      {formatJalaliDateTime(p.createdAt)} • {t("نوبت‌ها")}: {p.turns.toLocaleString("fa-IR")} •{" "}
                       {p.status === "active" ? t("در جریان") : t("پایان‌یافته")}
                     </div>
                   </div>

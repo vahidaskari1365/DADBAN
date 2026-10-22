@@ -94,7 +94,7 @@ export function LawyerProfileForm({ initial, slug }: { initial: LawyerProfileInp
       });
       const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
-        toast.success(t("پروفایل حرفه‌ای ذخیره شد و بلافاصله در صفحه عمومی اعمال می‌شود."));
+        toast.success(t("تغییرات اعمال شد"), { duration: 3000, className: "dadban-toast" });
         router.refresh();
       } else {
         toast.error(data.error ?? t("ذخیره پروفایل ناموفق بود."));

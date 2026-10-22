@@ -11,7 +11,6 @@ import { templateT } from "@/lib/i18n/core";
 import { computeLawyerFinance, resolveLawyerContext } from "@/components/portal/lawyer/portal-server";
 import { lawyerNav } from "@/components/portal/lawyer/nav-items";
 import { PayoutPanel } from "@/components/portal/lawyer/payout-panel";
-import { DpToaster } from "@/components/portal/lawyer/toaster";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -44,10 +43,10 @@ export default async function LawyerFinancePage() {
       title={t("مالی و برداشت")}
       subtitle={t("شفافیت کامل تراکنش‌ها، کمیسیون و تسویهٔ حق‌الوکاله")}
       userName={ctx.lawyer?.name ?? user.name}
+      photoUrl={ctx.lawyer?.photoUrl ?? null}
       userRole={ctx.demo ? t("وکیل · حالت نمایش") : t(ctx.lawyerTitle)}
       nav={lawyerNav("finance")}
     >
-      <DpToaster />
 
       {/* کارت‌های مالی */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

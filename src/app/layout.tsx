@@ -12,6 +12,7 @@ import { Tracker } from "@/components/tracker";
 import { BottomNav } from "@/components/pwa/bottom-nav";
 import { ConsultCompanion } from "@/components/consult-companion";
 import { LiveActivity } from "@/components/amazon/live-activity";
+import { Toaster } from "@/components/ui/sonner";
 import { SW_REGISTER_SCRIPT } from "@/components/pwa/sw-register-script";
 import { LocaleProvider } from "@/lib/i18n/provider";
 import { DigitSweeper } from "@/components/digit-sweeper";
@@ -264,6 +265,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           {/* اثبات اجتماعی زنده — فقط فعالیت واقعی پلتفرم (سبک آمازون) */}
           <LiveActivity />
           </MotionProvider>
+          {/* توست سراسری — بالای صفحه، ۳ ثانیه، محو شدن آرام (CSS انتهای globals) */}
+          <Toaster position="top-center" dir={dirFor(locale)} richColors closeButton duration={3000} />
           </LocaleProvider>
         </ThemeProvider>
       </body>

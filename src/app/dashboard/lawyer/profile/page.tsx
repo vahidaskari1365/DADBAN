@@ -58,6 +58,7 @@ export default async function LawyerProfileEditorPage() {
       role="وکیل"
       title={t("پروفایل حرفه‌ای من")}
       name={user.name}
+      photoUrl={l?.photoUrl ?? null}
       back={{ fallback: "/dashboard/lawyer", label: t("بازگشت به داشبورد") }}
       nav={[
         { label: t("نمای کلی"), icon: "home", href: "/dashboard/lawyer" },

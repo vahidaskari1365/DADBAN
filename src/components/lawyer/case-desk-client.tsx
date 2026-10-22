@@ -14,6 +14,7 @@ import { Card, Button, Badge } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { useT } from "@/lib/i18n/provider";
 import { templateT } from "@/lib/i18n/core";
+import { formatJalaliDateTime } from "@/lib/jalali";
 import type { CaseDeskDoc } from "@/lib/case-desk";
 import {
   CASE_KINDS,
@@ -518,7 +519,7 @@ export function CaseDeskClient({
             <p className="text-[11px] text-foreground-soft sm:col-span-2">
               {tt("مبنای این تحلیل: {n} سند استخراج‌شده + شرح پرونده — ثبت در {date}", {
                 n: String(analysis.docCount),
-                date: new Date(analysis.createdAt).toLocaleString("fa-IR"),
+                date: formatJalaliDateTime(analysis.createdAt),
               })}
             </p>
           </div>
