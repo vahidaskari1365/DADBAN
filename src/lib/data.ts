@@ -192,11 +192,11 @@ export const NAV: {
     href: "/lawyers",
     children: [
       { label: "همه وکلا", href: "/lawyers", desc: "جستجو با فیلتر پیشرفته" },
-      { label: "کارشناس حقوقی", href: "/experts", desc: "مشاوره، قرارداد و اسناد" },
       { label: "وکلای کارمندان", href: "/employee-lawyers", desc: "حقوق کار و تأمین اجتماعی" },
       { label: "وکلای خانواده", href: "/lawyers?sp=خانواده", desc: "طلاق، مهریه، حضانت" },
       { label: "وکلای ملکی", href: "/lawyers?sp=ملک", desc: "تخلیه، سند، تصرف" },
       { label: "وکلای کیفری", href: "/lawyers?sp=کیفری", desc: "دفاع کیفری" },
+      { label: "کارشناس حقوقی", href: "/experts", desc: "مشاوره، قرارداد و اسناد" },
     ],
   },
   { label: "مشاوره", href: "/consultation" },
