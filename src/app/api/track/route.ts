@@ -4,6 +4,7 @@ import { pageViews, events, pageViewDaily, visitorDaily } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import { EVENTS } from "@/lib/analytics";
 import { tehranDay } from "@/lib/visit-analytics";
+import { rateLimit, readJson } from "@/lib/api-security";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,10 @@ function readCookie(req: Request, name: string): string | null {
  */
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => null);
+    // سخت‌سازی: انباشت جعلی آمار — نرخ‌سنجی + سقف بایت استریمی (قبلاً بدون هر دو بود)
+    const limited = rateLimit(req, "track", 120, 60_000);
+    if (limited) return limited;
+    const body = (await readJson(req, 2_048)) ?? {};
     const path = String(body?.path ?? "").slice(0, 300);
     const eventName = String(body?.event ?? "");
     const ua = (req.headers.get("user-agent") ?? "").slice(0, 200);

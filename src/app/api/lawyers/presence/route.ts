@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { db, isDbConfigured } from "@/db";
-import { lawyerPresence } from "@/db/schema";
+import { lawyerPresence, lawyers } from "@/db/schema";
 import { ensureConsultSchema } from "@/lib/auto-seed";
 import { rateLimit, readJson, text } from "@/lib/api-security";
-import { sql } from "drizzle-orm";
+import { getLawyerActor } from "@/lib/lawyer-actor";
+import { eq, sql } from "drizzle-orm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,6 +59,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "شناسه وکیل الزامی است." }, { status: 400 });
   }
 
+  // فیکس جعل حضور: فقط وکیلِ واردشده می‌تواند «آنلاین» بودنِ پروفایل خودش را اعلام کند
+  const mySlug = await actorSlugOrNull();
+  if (!mySlug || mySlug !== slug) {
+    return NextResponse.json(
+      { ok: false, error: "برای تغییر وضعیت آنلاین، با حساب وکیل خود وارد شوید." },
+      { status: 403 },
+    );
+  }
+
   if (!isDbConfigured()) {
     memPresence.set(slug, { name, state, lastPing: Date.now() });
     return NextResponse.json({ ok: true });
@@ -74,5 +84,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: true });
+  }
+}
+
+/** slug وکیلِ واردشده از پیوند حساب (users.lawyerId) — null یعنی وکیل نیست */
+async function actorSlugOrNull(): Promise<string | null> {
+  const actor = await getLawyerActor();
+  if (!actor) return null;
+  try {
+    const [lw] = await db.select({ slug: lawyers.slug }).from(lawyers).where(eq(lawyers.id, actor.lawyerId)).limit(1);
+    return lw?.slug ?? null;
+  } catch {
+    return null;
   }
 }

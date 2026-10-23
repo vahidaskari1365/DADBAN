@@ -331,7 +331,11 @@ export function AuthCard({
 
   const safeRedirect = () => {
     const wanted = new URLSearchParams(window.location.search).get("redirect");
-    return wanted && wanted.startsWith("/") && !wanted.startsWith("//") ? wanted : null;
+    if (!wanted) return null;
+    // همان قواعد isRedirectSafeForRole — «/\evil.com» و نویسهٔ کنترلی هم رد شود
+    if (!wanted.startsWith("/") || wanted.startsWith("//")) return null;
+    if (wanted.includes("\\") || wanted.includes("%5C") || wanted.includes("%5c")) return null;
+    return wanted;
   };
 
   /** بعد از احراز هویت، ناوبری کامل (نه SPA) تا کوکی سشن حتماً در درخواست RSC داشبورد اعمال شود */

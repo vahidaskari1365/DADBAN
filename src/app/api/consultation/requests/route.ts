@@ -3,17 +3,18 @@ import { db } from "@/db";
 import { consultations, lawyers } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { rateLimit } from "@/lib/api-security";
+import { getLawyerActor } from "@/lib/lawyer-actor";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/consultation/requests?lawyer=<slug>
- * کارتابل وکیل — درخواست‌های مشاورهٔ ثبت‌شده برای پروفایل وکیل
- * (همان پنلی که در /consultation/live با انتخاب پروفایل باز می‌شود).
+ * GET /api/consultation/requests — کارتابل درخواست‌های مشاورهٔ وکیلِ واردشده.
  *
- * نکتهٔ حریم خصوصی: این endpoint بدون احراز هویت است (هم‌معماری صندوق گفتگوها)،
- * بنابراین شمارهٔ تماس موکل عمداً ماسک می‌شود و شمارهٔ کامل از این مسیر خارج نمی‌شود.
+ * فیکس امنیتی (قبلاً نشت اطلاعات بود): این endpoint بدون احراز هویت، نام/موضوع/مبلغ
+ * موکل‌های هر وکیل را با دانستن slug برمی‌گرداند. حالا فقط وکیل/عضو تیمِ واردشده
+ * می‌تواند کارتابلِ «خودش» را ببیند — slug همیشه از پیوند حساب (users.lawyerId)
+ * گرفته می‌شود و پارامتر query نادیده گرفته می‌شود.
  */
 
 const ACTIVE_STATUSES = ["paid", "confirmed", "scheduled", "in_progress", "completed"];
@@ -28,25 +29,26 @@ export async function GET(req: Request) {
   const limited = rateLimit(req, "lawyer-requests", 60, 60_000);
   if (limited) return limited;
 
-  const slug = (new URL(req.url).searchParams.get("lawyer") ?? "").trim().slice(0, 64);
-  if (!/^[a-z0-9-]{3,64}$/i.test(slug)) {
-    return NextResponse.json({ ok: false, error: "شناسه وکیل نامعتبر است" }, { status: 422 });
+  // فیکس: فقط وکیل واردشده؛ slug از پیوند حساب — نه از ورودی کلاینت
+  const actor = await getLawyerActor();
+  if (!actor) {
+    return NextResponse.json({ ok: false, error: "برای مشاهدهٔ کارتابل، با حساب وکیل خود وارد شوید." }, { status: 401 });
   }
 
   try {
-    const lw = await db
+    const [lw] = await db
       .select({ id: lawyers.id })
       .from(lawyers)
-      .where(eq(lawyers.slug, slug))
+      .where(eq(lawyers.id, actor.lawyerId))
       .limit(1);
-    if (!lw[0]) {
+    if (!lw) {
       return NextResponse.json({ ok: true, requests: [], counts: { total: 0, paid: 0, active: 0 } });
     }
 
     const rows = await db
       .select()
       .from(consultations)
-      .where(eq(consultations.lawyerId, lw[0].id))
+      .where(eq(consultations.lawyerId, lw.id))
       .orderBy(desc(consultations.createdAt))
       .limit(50);
 

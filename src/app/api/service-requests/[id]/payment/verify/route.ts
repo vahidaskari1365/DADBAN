@@ -4,6 +4,8 @@ import { serviceRequests, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isSandboxPayments } from "@/lib/payments";
+import { rateLimit } from "@/lib/api-security";
+import { originGuard } from "@/lib/api-security";
 import { recordEvent, auditAction, notifyUser, resolveRequestFor } from "@/lib/managed-services";
 import { sendPaymentReceiptEmail } from "@/lib/email";
 
@@ -21,6 +23,10 @@ export const dynamic = "force-dynamic";
  *  - No fake "paid" state is ever shown in production.
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const crossSite = originGuard(req);
+  if (crossSite) return crossSite;
+  const limited = rateLimit(req, "sr-payment-verify", 10, 10 * 60_000);
+  if (limited) return limited;
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   const { id: idStr } = await params;
@@ -31,8 +37,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!reqRow) return NextResponse.json({ ok: false, error: "درخواست یافت نشد" }, { status: 404 });
   if (reqRow.userId !== user.id) return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
 
-  // Sandbox/demo only: auto-confirm the payment (no real money moves).
-  if (isSandboxPayments()) {
+  // Sandbox/demo فقط خارج از تولید: در production هیچ «پرداخت آزمایشی» تأیید نمی‌شود
+  // (اگر پیکربندی sandbox اشتباهاً در production فعال شده باشد، همیشه وضعیت واقعی گزارش می‌شود)
+  if (isSandboxPayments() && process.env.NODE_ENV !== "production") {
     await db.update(serviceRequests).set({ paymentStatus: "paid", status: reqRow.assignedStaffId ? "ASSIGNED" : "IN_PROGRESS", updatedAt: new Date() }).where(eq(serviceRequests.id, id));
     await recordEvent({ requestId: id, type: "payment_required", title: "پرداخت (آزمایشی) تأیید شد", createdBy: user.id, createdByName: user.name, visibleToUser: true });
     await auditAction({ requestId: id, action: "verify_payment_sandbox", actorRole: user.role, actorId: user.id });

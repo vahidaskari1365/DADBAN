@@ -22,7 +22,7 @@ import {
 } from "@/db/schema";
 import { GLOSSARY, LAWS, JUDGMENTS, LEGAL_FORMS } from "@/lib/content";
 import { PLANS_CATALOG } from "@/lib/plans-catalog";
-import { sql } from "drizzle-orm";
+import { sql, inArray, isNull, and } from "drizzle-orm";
 import { hashPassword } from "@/lib/user-auth";
 import { CATALOG_CATEGORIES, CATALOG_SERVICES } from "@/lib/managed-catalog";
 
@@ -556,10 +556,12 @@ export async function ensureLawyerPhotos(): Promise<void> {
   try {
     if (!lawyerData.length) return; // وکلای نمونه حذف شده‌اند — کاری برای انجام دادن نیست
     await db.execute(sql.raw(`ALTER TABLE lawyers ADD COLUMN IF NOT EXISTS photo_url TEXT`));
-    const slugList = lawyerData.map((l) => `'${l.slug}'`).join(", ");
-    await db.execute(
-      sql.raw(`UPDATE lawyers SET photo_url = '/lawyers/' || slug || '.jpg' WHERE photo_url IS NULL AND slug IN (${slugList})`),
-    );
+    // فیکس الگوی ناامن: به‌جای رشته‌سازی SQL خام با درون‌یابی، کوئری پارامتری دریزل
+    const slugs = lawyerData.map((l) => String(l.slug));
+    await db
+      .update(lawyers)
+      .set({ photoUrl: sql`'/lawyers/' || slug || '.jpg'` })
+      .where(and(inArray(lawyers.slug, slugs), isNull(lawyers.photoUrl)));
   } catch {
     /* non-fatal */
   }

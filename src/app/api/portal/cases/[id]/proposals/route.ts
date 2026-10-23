@@ -6,6 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
 import { rateLimit, readJson, text, publicError } from "@/lib/api-security";
 import {
+  canAccessCase,
   computeMatchScore,
   getCaseRow,
   isLawyerRole,
@@ -33,6 +34,13 @@ export async function GET(req: Request, { params }: RouteCtx) {
     const caseId = Number(id);
     if (!Number.isFinite(caseId) || caseId <= 0) {
       return NextResponse.json({ ok: false, error: "شناسه پرونده نامعتبر است." }, { status: 422 });
+    }
+
+    // فیکس IDOR: فقط مالک پرونده، وکیلِ پرونده یا نقش داخلی حق دیدن پیشنهادها را دارد
+    const c = await getCaseRow(caseId);
+    if (!c) return NextResponse.json({ ok: false, error: "پرونده یافت نشد." }, { status: 404 });
+    if (!canAccessCase(c, user)) {
+      return NextResponse.json({ ok: false, error: "دسترسی به این پرونده مجاز نیست." }, { status: 403 });
     }
 
     const rows = (await db
@@ -92,6 +100,11 @@ export async function POST(req: Request, { params }: RouteCtx) {
     }
     const c: CaseRow | null = await getCaseRow(caseId);
     if (!c) return NextResponse.json({ ok: false, error: "پرونده یافت نشد." }, { status: 404 });
+
+    // فیکس نشت اطلاعات: روی پروندهٔ خصوصی (غیرعمومی) پیشنهاد ثبت نمی‌شود
+    if (!c.isPublic) {
+      return NextResponse.json({ ok: false, error: "پرونده یافت نشد." }, { status: 404 });
+    }
 
     if (c.assignedLawyerId) {
       return NextResponse.json({ ok: false, error: "وکیل این پرونده قبلاً تعیین شده است." }, { status: 409 });

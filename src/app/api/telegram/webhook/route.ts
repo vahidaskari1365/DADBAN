@@ -17,13 +17,17 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(req: Request) {
   try {
-    // ۱) تأیید وبهوک (اگر SECRET تنظیم شده باشد)
+    // ۱) تأیید وبهوک — در تولید fail-closed: بدون TELEGRAM_WEBHOOK_SECRET ورود ممنوع است
+    //    (وگرنه هر کسی می‌تواند آپدیت جعلی بفرستد و ردیف انباشت کند)
     const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    const isProd = process.env.NODE_ENV === "production";
     if (secret) {
       const got = req.headers.get("x-telegram-bot-api-secret-token");
       if (got !== secret) {
         return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
       }
+    } else if (isProd) {
+      return NextResponse.json({ ok: false, error: "webhook secret not configured" }, { status: 401 });
     }
 
     // ۲) بدون توکن ربات — صادقانه ولی با 200 (قرار وبهوک تلگرام)

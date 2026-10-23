@@ -41,6 +41,13 @@ export const isRedirectSafeForRole = (
 ): boolean => {
   if (!target) return true;
   if (!target.startsWith("/") || target.startsWith("//")) return false;
+  // بای‌پس پارس WHATWG: «/\evil.com» به دامنهٔ بیرونی می‌رود (بک‌اسلش = اسلش)؛
+  // نویسه‌های کنترلی هم مسیر را می‌شکنند — هر دو رد می‌شوند
+  if (target.includes("\\") || target.includes("%5C") || target.includes("%5c")) return false;
+  for (let i = 0; i < target.length; i++) {
+    const code = target.charCodeAt(i);
+    if (code < 0x20 || code === 0x7f) return false;
+  }
   const clientArea = ["/dashboard/client", "/dashboard/cases", "/dashboard/documents"];
   const lawyerArea = ["/dashboard/lawyer"];
   const hits = (prefixes: string[]) => prefixes.some((p) => target === p || target.startsWith(p + "/") || target.startsWith(p + "#") || target.startsWith(p + "?"));

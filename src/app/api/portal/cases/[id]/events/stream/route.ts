@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { caseMessages } from "@/db/schema-marketplace";
 import { getCurrentUser } from "@/lib/user-auth";
 import { rateLimit } from "@/lib/api-security";
-import { getCaseRow } from "@/components/portal/lawyer/portal-server";
+import { canAccessCase, getCaseRow } from "@/components/portal/lawyer/portal-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,6 +64,10 @@ export async function GET(req: Request, { params }: RouteCtx) {
     }
     const c = await getCaseRow(caseId);
     if (!c) return NextResponse.json({ ok: false, error: "پرونده یافت نشد." }, { status: 404 });
+    // فیکس IDOR: استریم زندهٔ پیام‌ها همان مجوزدستی REST را دارد (مالک/وکیلِ پرونده/داخلی)
+    if (!canAccessCase(c, user)) {
+      return NextResponse.json({ ok: false, error: "دسترسی به این پرونده مجاز نیست." }, { status: 403 });
+    }
   } catch {
     return NextResponse.json({ ok: false, error: "خطای داخلی رخ داد." }, { status: 500 });
   }

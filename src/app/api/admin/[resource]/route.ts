@@ -82,12 +82,13 @@ function normalizeFields(table: any, fields: Record<string, unknown>): Record<st
   return out;
 }
 
-/** گارد مشترک — خروجی: NextResponse خطا یا null */
+/** گارد مشترک — خروجی: NextResponse خطا یا null (fail-closed: منبع بدون Perm تعریف‌شده = 403) */
 async function guard(resource: string): Promise<NextResponse | null> {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   const perm = PERMS[resource];
-  if (perm && !hasPerm(session, perm)) {
+  if (!perm) return NextResponse.json({ ok: false, error: "unknown resource" }, { status: 404 });
+  if (!hasPerm(session, perm)) {
     return NextResponse.json({ ok: false, error: "شما دسترسی به این بخش را ندارید." }, { status: 403 });
   }
   return null;

@@ -71,7 +71,10 @@ export async function POST(req: Request) {
       const cid = Number(body.caseId);
       if (Number.isFinite(cid) && cid > 0) {
         const c = await getCaseRow(cid);
-        if (c) caseId = cid;
+        // فیکس IDOR: رویداد فقط به پروندهٔ خودِ وکیل لینک می‌شود، نه پروندهٔ وکیل دیگر
+        if (c && c.assignedLawyerId != null && ctx.lawyerId > 0 && c.assignedLawyerId === ctx.lawyerId) {
+          caseId = cid;
+        }
       }
     }
 

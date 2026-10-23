@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { users, favoriteLawyers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
-import { rateLimit, readJson, text, publicError } from "@/lib/api-security";
+import { rateLimit, readJson, text, publicError, originGuard } from "@/lib/api-security";
 import { ALL_PROVINCES, LOCATIONS } from "@/lib/data";
 import { ensureProfileSchema } from "@/lib/auto-seed";
 
@@ -54,6 +54,8 @@ export async function GET(req: Request) {
  */
 export async function PUT(req: Request) {
   try {
+    const crossSite = originGuard(req);
+    if (crossSite) return crossSite;
     const limited = rateLimit(req, "profile-put", 20, 60_000);
     if (limited) return limited;
     const user = await getCurrentUser();

@@ -4,6 +4,7 @@ import { cases } from "@/db/schema";
 import { caseEvents, appointments } from "@/db/schema-marketplace";
 import { count, desc, eq, gte, isNotNull, or } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/user-auth";
+import { isLawyerSideRole } from "@/lib/roles";
 import { rateLimit, publicError } from "@/lib/api-security";
 
 export const runtime = "nodejs";
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
  * GET /api/portal/trainee/summary
  * خلاصهٔ کارتابل کارآموز/همکار دادورزان: آمار + پرونده‌های ارجاعی + اقدامات ثبت‌شدهٔ من
  * + مهلت‌ها و جلسات پیش‌رو (تقویم تیم).
- * گیت: هر کاربر لاگین‌شده (کارتابل ارجاعی — حالت نمایشی).
+ * گیت: فقط نقش‌های وکیل‌سمت (lawyer/trainee/team) — کاربر عادی دادهٔ واقعی پرونده‌ها را نمی‌بیند.
  */
 export async function GET(req: Request) {
   const limited = rateLimit(req, "trainee-summary", 60, 60_000);
@@ -22,6 +23,10 @@ export async function GET(req: Request) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ ok: false, error: "برای مشاهدهٔ کارتابل ابتدا وارد حساب شوید." }, { status: 401 });
+  }
+  // فیکس مجوزدستی: دادهٔ واقعی پرونده‌ها فقط برای نقش‌های وکیل‌سمت
+  if (!isLawyerSideRole(user.role)) {
+    return NextResponse.json({ ok: false, error: "این کارتابل فقط برای وکلا و کارآموزان است." }, { status: 403 });
   }
 
   try {

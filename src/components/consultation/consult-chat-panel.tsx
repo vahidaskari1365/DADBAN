@@ -73,13 +73,18 @@ interface SignalRow {
 }
 
 function newRoomId(slug: string) {
-  const rand = Math.random().toString(36).slice(2, 8);
+  // entropy بالا (رمزنگارانه) — roomId قابل حدس نباشد چون polling اتاق برای موکل عمومی است
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  const rand = Array.from(bytes).map((b) => b.toString(36).padStart(2, "0")).join("").slice(0, 12);
   return `consult-${slug}-${rand}`.slice(0, 60);
 }
 
-/** شناسهٔ اتاق تماس — call- + ۱۲ کاراکتر base36 */
+/** شناسهٔ اتاق تماس — call- + ۱۲ کاراکتر base36 (رمزنگارانه) */
 function newCallRoom() {
-  return `call-${Math.random().toString(36).slice(2, 14)}`;
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return `call-${Array.from(bytes).map((b) => b.toString(36).padStart(2, "0")).join("").slice(0, 12)}`.slice(0, 60);
 }
 
 /** mm:ss با ارقام فارسی */

@@ -25,12 +25,11 @@ export async function POST(req: Request) {
 
   const body = await readJson(req, 4_096);
   const consultationId = Number(body?.consultationId);
-  const lawyerId = Number(body?.lawyerId);
   const rating = Math.min(5, Math.max(1, Number(body?.rating) || 0));
   const comment = text(body?.comment, 1000);
   const service = text(body?.service, 100);
 
-  if (!consultationId || !lawyerId || !rating) {
+  if (!consultationId || !rating) {
     return NextResponse.json({ ok: false, error: "اطلاعات ناقص" }, { status: 400 });
   }
 
@@ -61,13 +60,20 @@ export async function POST(req: Request) {
       );
     }
 
+    // فیکس امنیتی: lawyerId همیشه از ردیف مشاورهٔ خود کاربر گرفته می‌شود، نه بدنهٔ کلاینت —
+    // وگرنه کاربرِ دارای یک مشاوره می‌توانست برای «هر وکیل دلخواه» امتیاز ثبت کند
+    const reviewLawyerId = Number(consultation[0].lawyerId);
+    if (!reviewLawyerId) {
+      return NextResponse.json({ ok: false, error: "اطلاعات ناقص" }, { status: 400 });
+    }
+
     // بررسی نقد تکراری
     const existing = await db
       .select()
       .from(reviews)
       .where(
         and(
-          eq(reviews.lawyerId, lawyerId),
+          eq(reviews.lawyerId, reviewLawyerId),
           eq(reviews.clientName, user.name)
         )
       )
@@ -84,7 +90,7 @@ export async function POST(req: Request) {
     const [review] = await db
       .insert(reviews)
       .values({
-        lawyerId,
+        lawyerId: reviewLawyerId,
         clientName: user.name,
         rating,
         comment: comment || "",
@@ -92,7 +98,7 @@ export async function POST(req: Request) {
       })
       .returning();
 
-    logger.info("review submitted", { reviewId: review.id, lawyerId, rating });
+    logger.info("review submitted", { reviewId: review.id, lawyerId: reviewLawyerId, rating });
 
     return NextResponse.json({ ok: true, reviewId: review.id });
   } catch (err) {

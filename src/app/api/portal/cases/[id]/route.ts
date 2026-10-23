@@ -164,6 +164,7 @@ export async function PATCH(req: Request, { params }: RouteCtx) {
     // می‌تواند خودش را به پروندهٔ بدون وکیل «انتصاب» کند — نه وکیل دیگری را.
     if (!isInternalRole(user.role) && !isCaseLawyerSide(c, user)) {
       const selfAssignOk =
+        !!c.isPublic && // فیکس: انتساب خود فقط روی پروندهٔ عمومی مارکت — نه پروندهٔ خصوصی
         !c.assignedLawyerId &&
         user.lawyerId != null &&
         Object.keys(patch).length === 1 &&

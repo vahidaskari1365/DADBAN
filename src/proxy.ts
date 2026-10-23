@@ -79,6 +79,18 @@ export default function proxy(req: NextRequest) {
     return res;
   }
 
+  // ─── صفحات عملیاتی/اعلان‌ها — گارد صفحه‌ای هم دارد؛ این لایهٔ دوم است ─────
+  if (pathname.startsWith("/manage") || pathname.startsWith("/notifications")) {
+    const token = req.cookies.get(USER_COOKIE)?.value;
+    if (!token) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return res;
+  }
+
   return res;
 }
 
@@ -86,5 +98,5 @@ export const config = {
   /**
    * فقط مسیرهای حساس middleware رو اجرا می‌کنه (نه static assets).
    */
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/developer/:path*", "/keywords/:path*", "/workspace/:path*", "/court-sim/:path*", "/case-desk/:path*"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/developer/:path*", "/keywords/:path*", "/workspace/:path*", "/court-sim/:path*", "/case-desk/:path*", "/manage/:path*", "/notifications/:path*"],
 };

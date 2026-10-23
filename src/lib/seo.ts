@@ -16,6 +16,7 @@ import { SITE_URL } from "./site";
 import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "./seo-landings";
 import { LAWS } from "./laws-content";
 import { faNum } from "./data";
+import { safeJsonLd } from "./jsonld";
 import { ARTICLES_CONTENT_VERSION, articleData } from "@/data/articles-seed";
 
 export const SEO_BASE = SITE_URL;
@@ -382,7 +383,9 @@ export function aiSummarySchema(data: {
  * ۳. Helper: ساخت JSON-LD script tag
  * ========================================================================== */
 
-/** تبدیل schema به <script type="application/ld+json"> آماده‌ی درج در صفحه. */
+/** تبدیل schema به <script type="application/ld+json"> آماده‌ی درج در صفحه.
+ *  فیکس امنیتی: قبلاً JSON.stringify خام بود («</script>» در داده می‌توانست
+ *  بلاک اسکریپت را بشکند — Stored XSS). حالا همان escape امن safeJsonLd. */
 export function jsonLd(schema: object | object[]) {
-  return JSON.stringify(Array.isArray(schema) ? schema : [schema]);
+  return safeJsonLd(Array.isArray(schema) ? schema : [schema]);
 }

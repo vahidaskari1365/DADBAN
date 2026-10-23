@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { payments } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getPaymentProvider } from "@/lib/payments";
-import { rateLimit, readJson, text } from "@/lib/api-security";
+import { rateLimit, readJson, text, originGuard } from "@/lib/api-security";
 
 export const runtime = "nodejs";
 
@@ -13,6 +13,8 @@ export const runtime = "nodejs";
  * Creation happens inside /api/consultations (transactional with the order).
  */
 export async function POST(req: Request) {
+  const crossSite = originGuard(req);
+  if (crossSite) return crossSite;
   const limited = rateLimit(req, "payments", 30, 10 * 60_000);
   if (limited) return limited;
 
