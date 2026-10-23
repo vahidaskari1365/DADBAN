@@ -11,10 +11,12 @@ import { useT } from "@/lib/i18n/provider";
 
 /**
  * کارت فشردهٔ وکیل — استاندارد کارت‌های فهرست (Directory Card):
- * آواتار گرد کوچک (۵۶px) + هویت، یک ردیف متا، تخصص‌ها و نوار قیمت.
+ * آواتار گرد کوچک (۴۸px) + هویت، یک ردیف متا، تخصص‌ها و نوار قیمت.
  * عکس به‌جای بلوک مربع تمام‌عرض، آواتار کوچک است تا کارت کوتاه بماند و
  * کاربر بتواند چند کارت را در یک نگاه مقایسه کند؛ بیو و فهرست کامل خدمات
  * در صفحهٔ پروفایل دیده می‌شود.
+ * مقیاس: نسبت به نسخهٔ اولیه یک پله کوچک‌تر (پدینگ، آواتار، فونت‌ها)
+ * اما با همان ساختار و طراحی قبلی.
  */
 
 export function LawyerCard({
@@ -48,24 +50,24 @@ export function LawyerCard({
   return (
     <Link
       href={`/lawyers/${lawyer.slug}`}
-      className={`group relative flex h-full flex-col rounded-2xl border border-border bg-surface p-3.5 card-shadow transition-all duration-300 hover:border-primary/30 hover:shadow-[var(--shadow-lift)] ${className}`}
+      className={`group relative flex h-full flex-col rounded-2xl border border-border bg-surface p-3 card-shadow transition-all duration-300 hover:border-primary/30 hover:shadow-[var(--shadow-lift)] ${className}`}
     >
       {/* هدر — آواتار گرد کوچک + هویت */}
-      <div className="flex items-start gap-2.5">
-        <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-border/70">
+      <div className="flex items-start gap-2">
+        <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-border/70">
           {hasPhoto ? (
             <Image
               src={lawyer.photoUrl as string}
               alt={`${t("عکس")} ${lawyer.name}`}
               fill
               priority={priority}
-              sizes="56px"
+              sizes="48px"
               className="object-cover"
               onError={() => setFailed(true)}
             />
           ) : (
             <span
-              className="absolute inset-0 flex items-center justify-center text-base font-bold text-white/90"
+              className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white/90"
               style={{
                 background: `linear-gradient(160deg, ${lawyer.avatarColor}, color-mix(in oklab, ${lawyer.avatarColor} 45%, #000))`,
               }}
@@ -78,11 +80,11 @@ export function LawyerCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1">
-            <h3 className="min-w-0 truncate text-sm font-bold text-foreground">{lawyer.name}</h3>
+            <h3 className="min-w-0 truncate text-[13px] font-bold text-foreground">{lawyer.name}</h3>
             {/* تیک احراز هویت — کنار نام */}
             {lawyer.verified && (
               <span className="shrink-0 text-primary" title={t("احراز هویت‌شده")} aria-label={t("احراز هویت‌شده")}>
-                <Icon name="badge" className="h-4 w-4" />
+                <Icon name="badge" className="h-3.5 w-3.5" />
               </span>
             )}
           </div>
@@ -106,13 +108,13 @@ export function LawyerCard({
             </span>
           ) : (
             !titleDuplicatesBadge && (
-              <p className="mt-0.5 truncate text-[11px] text-muted">{lawyer.title}</p>
+              <p className="mt-0.5 truncate text-[10px] text-muted">{lawyer.title}</p>
             )
           )}
 
           {/* امتیاز — یک خط جمع‌وجور */}
-          <span className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-foreground-soft">
-            <Icon name="star" className="h-3.5 w-3.5 text-amber-500" />
+          <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold text-foreground-soft">
+            <Icon name="star" className="h-3 w-3 text-amber-500" />
             {faNum(lawyer.rating.toFixed(1))}
             <span className="font-normal text-muted">({faNum(lawyer.reviewCount)})</span>
           </span>
@@ -120,20 +122,20 @@ export function LawyerCard({
       </div>
 
       {/* متا — شهر، سابقه، پرونده (در موبایل مخفی برای کوتاه‌ماندن کارت) */}
-      <div className="mt-2.5 hidden flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted sm:flex">
+      <div className="mt-2 hidden flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[10px] text-muted sm:flex">
         <span className="inline-flex items-center gap-1">
-          <Icon name="location" className="h-3.5 w-3.5" /> {t(lawyer.city)}
+          <Icon name="location" className="h-3 w-3" /> {t(lawyer.city)}
         </span>
         <span className="inline-flex items-center gap-1">
-          <Icon name="briefcase" className="h-3.5 w-3.5" /> {faNum(lawyer.experienceYears)} {t("سال سابقه")}
+          <Icon name="briefcase" className="h-3 w-3" /> {faNum(lawyer.experienceYears)} {t("سال سابقه")}
         </span>
         <span className="inline-flex items-center gap-1">
-          <Icon name="folder" className="h-3.5 w-3.5" /> {faNum(lawyer.caseCount)} {t("پرونده")}
+          <Icon name="folder" className="h-3 w-3" /> {faNum(lawyer.caseCount)} {t("پرونده")}
         </span>
       </div>
 
       {/* تخصص‌ها — حداکثر دو مورد + شمارندهٔ باقی */}
-      <div className="mb-2.5 mt-2 flex flex-wrap gap-1">
+      <div className="mb-2 mt-1.5 flex flex-wrap gap-1">
         {lawyer.specialties.slice(0, 2).map((s) => (
           <Badge key={s} tone="primary">
             {t(s)}
@@ -145,14 +147,14 @@ export function LawyerCard({
       </div>
 
       {/* نوار قیمت — چسبیده به پایین کارت تا همهٔ کارت‌های یک ردیف هم‌تراز باشند */}
-      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-2.5">
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-2">
         <div>
           <p className="text-[10px] text-muted">{t("مشاوره متنی از")}</p>
-          <p className="text-xs font-bold text-foreground">{faPrice(lawyer.priceChat)}</p>
+          <p className="text-[11px] font-bold text-foreground">{faPrice(lawyer.priceChat)}</p>
         </div>
-        <span className="hidden items-center gap-1 rounded-lg bg-primary-soft px-2.5 py-1.5 text-xs font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground sm:inline-flex">
+        <span className="hidden items-center gap-1 rounded-lg bg-primary-soft px-2 py-1 text-[11px] font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground sm:inline-flex">
           {t("مشاهده پروفایل")}
-          <Icon name="arrow" className="h-3.5 w-3.5" />
+          <Icon name="arrow" className="h-3 w-3" />
         </span>
       </div>
     </Link>

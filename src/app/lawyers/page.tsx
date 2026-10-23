@@ -8,7 +8,6 @@ import { Icon } from "@/components/icons";
 import { LawyerCard } from "@/components/lawyer-card";
 import { LawyerFilters } from "@/components/lawyer-filters";
 import { LawyerDiscovery } from "@/components/amazon/recently-viewed";
-import { StickyCta } from "@/components/amazon/sticky-cta";
 import { LOCATIONS, faNum } from "@/lib/data";
 import { getCurrentUser } from "@/lib/user-auth";
 import { isLawyerSideRole } from "@/lib/roles";
@@ -238,7 +237,7 @@ export default async function LawyersPage({
             action={lawyerSide ? { href: "/support", label: t("تماس با پشتیبانی") } : { href: "/consultation", label: t("درخواست معرفی وکیل") }}
           />
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {list.map((l, i) => (
               <LawyerCard key={l.id} lawyer={l} priority={i === 0} />
             ))}
@@ -271,15 +270,6 @@ export default async function LawyersPage({
           <LawyerDiscovery />
         </div>
       </Container>
-
-      {/* CTA چسبان موبایل — فقط برای موکل‌ها (برای همکاران جریان پروندهٔ موکل معنا ندارد) */}
-      {!lawyerSide && (
-        <StickyCta
-          href="/case/new"
-          label={t("پرونده‌ات را ثبت کن")}
-          sub={t("ارزیابی اولیه • محرمانگی کامل • بدون هزینه اولیه")}
-        />
-      )}
 
       <Container className="py-12">
         <div className="rounded-3xl border border-border bg-surface p-8 text-center card-shadow">
