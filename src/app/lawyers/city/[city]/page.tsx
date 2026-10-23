@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { lawyers } from "@/db/schema";
-import { and, desc, eq, count } from "drizzle-orm";
+import { and, desc, eq, ne, count } from "drizzle-orm";
 import { Container, Button, Card, EmptyState } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
@@ -54,7 +54,8 @@ export default async function CityLandingPage({ params }: { params: Params }) {
   let list: typeof lawyers.$inferSelect[] = [];
   let total = 0;
   try {
-    const conds = [eq(lawyers.verified, true), eq(lawyers.city, c.city)];
+    // تفکیک: این صفحات «وکلا» هستند — کارشناس حقوقی فقط در /experts
+    const conds = [eq(lawyers.verified, true), ne(lawyers.lawyerType, "expert"), eq(lawyers.city, c.city)];
     const [rows, totalRow] = await Promise.all([
       db.select().from(lawyers).where(and(...conds)).orderBy(desc(lawyers.rating), desc(lawyers.experienceYears)).limit(12),
       db.select({ c: count() }).from(lawyers).where(and(...conds)),

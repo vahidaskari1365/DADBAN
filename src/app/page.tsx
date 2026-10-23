@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/db";
 import { lawyers, articles } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and, ne } from "drizzle-orm";
 import { Container, SectionHeading, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { Reveal } from "@/components/reveal";
@@ -44,7 +44,8 @@ export default async function HomePage() {
   let recentArticles: typeof articles.$inferSelect[] = [];
   try {
     [featured, recentArticles] = await Promise.all([
-      db.select().from(lawyers).where(eq(lawyers.featured, true)).limit(4),
+      // تفکیک: بخش «وکلای دادورزان» صفحهٔ اصلی فقط وکیل — کارشناس حقوقی فقط در /experts
+      db.select().from(lawyers).where(and(eq(lawyers.featured, true), ne(lawyers.lawyerType, "expert"))).limit(4),
       db.select().from(articles).orderBy(desc(articles.publishedAt)).limit(3),
     ]);
   } catch (err) {

@@ -35,6 +35,8 @@ export type ViewedLawyer = {
   specialties: string[];
   avatarColor: string;
   photoUrl?: string | null;
+  /** نوع — برای تفکیک «وکیل / کارشناس حقوقی» در ویجت‌های شخصی‌سازی */
+  lawyerType?: string;
   ts?: number;
 };
 
@@ -131,15 +133,19 @@ function Rail({
 }
 
 /**
- * LawyerDiscovery — ردیف‌های شخصی‌سازی‌شده؛ در خانه، وکیل‌یابی و پروفایل وکیل.
- * excludeSlug: در پروفایل، خودِ وکیل از فهرست حذف می‌شود.
+ * LawyerDiscovery — ردیف‌های شخصی‌سازی‌شده؛ در وکیل‌یابی و پروفایل وکیل/کارشناس.
+ * excludeSlug: خودِ آن پروفایل از فهرست حذف می‌شود.
+ * scope: تفکیک صفحات — "lawyers" (پیش‌فرض) فقط وکیل/کارآموز،
+ * "experts" فقط کارشناس حقوقی، "all" بدون فیلتر.
  */
 export function LawyerDiscovery({
   excludeSlug,
   hideRecent = false,
+  scope = "lawyers",
 }: {
   excludeSlug?: string;
   hideRecent?: boolean;
+  scope?: "lawyers" | "experts" | "all";
 }) {
   const t = useT();
   const tf = templateT(t);
@@ -147,21 +153,24 @@ export function LawyerDiscovery({
   const [top, setTop] = useState<ViewedLawyer[] | null>(null);
 
   const load = useCallback(() => {
-    // سابقه بازدید
+    const inScope = (x: { lawyerType?: string }) =>
+      scope === "all" ? true : scope === "experts" ? x.lawyerType === "expert" : x.lawyerType !== "expert";
+    // سابقه بازدید — با تفکیک نوع (رکوردهای قدیمی بدون lawyerType، در scope وکلا نمایش داده می‌شوند)
     try {
-      const list = readHistory().filter((x) => x.slug !== excludeSlug);
+      const list = readHistory().filter((x) => x.slug !== excludeSlug).filter(inScope);
       setRecent(list);
     } catch {
       setRecent([]);
     }
-    // وکلای برتر واقعی
+    // منتخبان واقعی — سمت سرور هم با type تفکیک می‌شود
     const params = new URLSearchParams({ limit: "8" });
     if (excludeSlug) params.set("exclude", excludeSlug);
+    if (scope === "lawyers" || scope === "experts") params.set("type", scope);
     fetch(`/api/lawyers/top?${params.toString()}`)
       .then((r) => r.json())
       .then((d) => setTop(Array.isArray(d?.lawyers) ? d.lawyers : []))
       .catch(() => setTop([]));
-  }, [excludeSlug]);
+  }, [excludeSlug, scope]);
 
   useEffect(() => {
     // با تاخیر میکروتسکی اجرا می‌شود تا خواندن localStorage و setState
@@ -172,7 +181,9 @@ export function LawyerDiscovery({
 
   if (recent === null && top === null) return null;
 
-  const recentList = (recent ?? []).filter((x) => x.slug !== excludeSlug);
+  const recentList = (recent ?? []).filter((x) => x.slug !== excludeSlug).filter((x) =>
+    scope === "all" ? true : scope === "experts" ? x.lawyerType === "expert" : x.lawyerType !== "expert",
+  );
   const topList = top ?? [];
 
   // شخصی‌سازی: وکلای هم‌تخصص با بازدیدهای اخیر اول دیده شوند

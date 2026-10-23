@@ -213,6 +213,7 @@ export default async function LawyerProfile({
           priceChat: l.priceChat,
           experienceYears: l.experienceYears,
           verified: l.verified,
+          lawyerType: l.lawyerType,
           specialties: dSpecialties,
           avatarColor: l.avatarColor,
           photoUrl: l.photoUrl,
@@ -554,7 +555,7 @@ export default async function LawyerProfile({
 
       {/* شخصی‌سازی: بازدیدهای اخیر + پیشنهاد بر اساس همین پروفایل (سبک آمازون) */}
       <Container className="pb-6">
-        <LawyerDiscovery excludeSlug={l.slug} />
+        <LawyerDiscovery excludeSlug={l.slug} scope={l.lawyerType === "expert" ? "experts" : "lawyers"} />
       </Container>
 
       {/* CTA چسبان موبایل — نقش‌محور: وکیل‌سمت ← درخواست همکاری، موکل ← رزرو */}

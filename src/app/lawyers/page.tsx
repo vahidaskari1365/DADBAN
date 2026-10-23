@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { db } from "@/db";
 import { lawyers } from "@/db/schema";
-import { and, desc, asc, eq, inArray, sql, count } from "drizzle-orm";
+import { and, desc, asc, eq, ne, inArray, sql, count } from "drizzle-orm";
 import { Container, Button, EmptyState, Badge } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
@@ -67,8 +67,8 @@ export default async function LawyersPage({
   const st = makeT(locale);
   const tf = templateT(t);
   const { sp, city, gender, sort, q, type } = params;
-  // فیلتر نوع: همه | وکیل رسمی (wakil) | کارآموز (karamooz) | کارشناس حقوقی (expert) — سمت سرور روی ستون lawyer_type
-  const typeFilter = type === "karamooz" || type === "wakil" || type === "expert" ? type : null;
+  // فیلتر نوع: همه | وکیل رسمی (wakil) | کارآموز (karamooz) — کارشناسان حقوقی فقط در /experts (تفکیک کامل صفحات)
+  const typeFilter = type === "karamooz" || type === "wakil" ? type : null;
 
   // نقش کاربر — برای وکیل/همکار: دایرکتوری همکاران (نه جریان «انتخاب وکیل» موکل‌ها)
   let meRole: string | null = null;
@@ -89,7 +89,9 @@ export default async function LawyersPage({
     else conds.push(eq(lawyers.city, city));
   }
   if (gender) conds.push(eq(lawyers.gender, gender));
+  // تفکیک: در «همه وکلا» کارشناس حقوقی هرگز نمایش داده نمی‌شود — صفحهٔ اختصاصی او /experts است
   if (typeFilter) conds.push(eq(lawyers.lawyerType, typeFilter));
+  else conds.push(ne(lawyers.lawyerType, "expert"));
   if (q) conds.push(sql`${lawyers.name} ilike ${`%${q}%`}`);
 
   const order =
@@ -141,11 +143,11 @@ export default async function LawyersPage({
     const s = qs.toString();
     return s ? `/lawyers?${s}` : "/lawyers";
   };
+  // کارشناس حقوقی در این فهرست نیست — صفحهٔ اختصاصی /experts دارد
   const TYPE_CHIPS: { id: string; label: string }[] = [
     { id: "", label: "همه" },
     { id: "wakil", label: "وکیل رسمی" },
     { id: "karamooz", label: "کارآموز" },
-    { id: "expert", label: "کارشناس حقوقی" },
   ];
 
   const heading = sp

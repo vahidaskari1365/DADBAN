@@ -11,12 +11,9 @@ import { useT } from "@/lib/i18n/provider";
 
 /**
  * کارت فشردهٔ وکیل — استاندارد کارت‌های فهرست (Directory Card):
- * آواتار گرد کوچک (۴۸px) + هویت، یک ردیف متا، تخصص‌ها و نوار قیمت.
- * عکس به‌جای بلوک مربع تمام‌عرض، آواتار کوچک است تا کارت کوتاه بماند و
- * کاربر بتواند چند کارت را در یک نگاه مقایسه کند؛ بیو و فهرست کامل خدمات
- * در صفحهٔ پروفایل دیده می‌شود.
- * مقیاس: نسبت به نسخهٔ اولیه یک پله کوچک‌تر (پدینگ، آواتار، فونت‌ها)
- * اما با همان ساختار و طراحی قبلی.
+ * آواتار گرد بزرگ (۷۲px) + هویت، یک ردیف متا، تخصص‌ها و نوار قیمت.
+ * عکس — به درخواست مالک — بزرگ و واضح رندر می‌شود (quality بالا + sizes هم‌اندازهٔ نمایش
+ * تا در نمایشگرهای رتینا هم تار نشود)؛ بیو و فهرست کامل خدمات در صفحهٔ پروفایل دیده می‌شود.
  */
 
 export function LawyerCard({
@@ -52,22 +49,23 @@ export function LawyerCard({
       href={`/lawyers/${lawyer.slug}`}
       className={`group relative flex h-full flex-col rounded-2xl border border-border bg-surface p-3 card-shadow transition-all duration-300 hover:border-primary/30 hover:shadow-[var(--shadow-lift)] ${className}`}
     >
-      {/* هدر — آواتار گرد کوچک + هویت */}
+      {/* هدر — آواتار گرد بزرگ و واضح + هویت */}
       <div className="flex items-start gap-2">
-        <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-border/70">
+        <span className="relative h-18 w-18 shrink-0 overflow-hidden rounded-full ring-2 ring-border/70">
           {hasPhoto ? (
             <Image
               src={lawyer.photoUrl as string}
               alt={`${t("عکس")} ${lawyer.name}`}
               fill
               priority={priority}
-              sizes="48px"
+              sizes="72px"
+              quality={90}
               className="object-cover"
               onError={() => setFailed(true)}
             />
           ) : (
             <span
-              className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white/90"
+              className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white/90"
               style={{
                 background: `linear-gradient(160deg, ${lawyer.avatarColor}, color-mix(in oklab, ${lawyer.avatarColor} 45%, #000))`,
               }}

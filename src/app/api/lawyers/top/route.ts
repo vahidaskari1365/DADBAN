@@ -7,8 +7,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/lawyers/top?limit=8&exclude=slug&sp=تخصص
+ * GET /api/lawyers/top?limit=8&exclude=slug&sp=تخصص&type=lawyers|experts
  * فهرست وکلای تأییدشده بر اساس امتیاز واقعی — برای «پیشنهاد برای شما».
+ * type=lawyers فقط وکیل/کارآموز، type=experts فقط کارشناس حقوقی (تفکیک صفحات).
  * فقط فیلدهای عمومی و غیرحساس برمی‌گردد.
  */
 export async function GET(req: Request) {
@@ -16,11 +17,14 @@ export async function GET(req: Request) {
   const limit = Math.min(12, Math.max(1, Number(url.searchParams.get("limit")) || 8));
   const exclude = url.searchParams.get("exclude") || "";
   const sp = (url.searchParams.get("sp") || "").slice(0, 60);
+  const type = url.searchParams.get("type") || "";
 
   try {
     const conds = [eq(lawyers.verified, true)];
     if (exclude) conds.push(ne(lawyers.slug, exclude));
     if (sp) conds.push(sql`${lawyers.specialties} @> ARRAY[${sp}]::text[]`);
+    if (type === "lawyers") conds.push(ne(lawyers.lawyerType, "expert"));
+    else if (type === "experts") conds.push(eq(lawyers.lawyerType, "expert"));
 
     const rows = await db
       .select({
@@ -35,6 +39,7 @@ export async function GET(req: Request) {
         priceChat: lawyers.priceChat,
         experienceYears: lawyers.experienceYears,
         verified: lawyers.verified,
+        lawyerType: lawyers.lawyerType,
         specialties: lawyers.specialties,
         avatarColor: lawyers.avatarColor,
         photoUrl: lawyers.photoUrl,

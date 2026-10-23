@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { lawyers } from "@/db/schema";
-import { and, desc, eq, sql, count } from "drizzle-orm";
+import { and, desc, eq, ne, sql, count } from "drizzle-orm";
 import { Container, Button, Card, EmptyState } from "@/components/ui";
 import { PageHero } from "@/components/page-hero";
 import { Icon } from "@/components/icons";
@@ -62,6 +62,7 @@ export default async function SpecialtyCityPage({ params }: { params: Params }) 
   try {
     const conds = [
       eq(lawyers.verified, true),
+      ne(lawyers.lawyerType, "expert"), // تفکیک: کارشناس حقوقی فقط در /experts
       sql`${lawyers.specialties} @> ARRAY[${sp.sp}]::text[]`,
       eq(lawyers.city, c.city),
     ];
