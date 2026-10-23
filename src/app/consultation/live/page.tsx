@@ -88,12 +88,10 @@ export default function LiveConsultationPage() {
   const [lawyers, setLawyers] = useState<LawyerOpt[]>([]);
   const [mySlug, setMySlug] = useState("");
   const [panelOn, setPanelOn] = useState(false);
+  const [authError, setAuthError] = useState("");
   const [threads, setThreads] = useState<Thread[]>([]);
   const [requests, setRequests] = useState<ConsultReq[]>([]);
   const [openThread, setOpenThread] = useState<Thread | null>(null);
-  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const inboxRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
   const me = lawyers.find((l) => l.slug === mySlug) ?? null;
   const paidCount = requests.filter((r) => r.status === "paid").length;
 
@@ -105,58 +103,67 @@ export default function LiveConsultationPage() {
       .catch(() => {});
   }, []);
 
-  const ping = useCallback((state: "online" | "offline") => {
-    if (!mySlug) return;
-    const lw = lawyers.find((l) => l.slug === mySlug);
-    fetch("/api/lawyers/presence", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug: mySlug, name: lw?.name ?? "", state }),
-      keepalive: state === "offline",
-    }).catch(() => {});
-  }, [mySlug, lawyers]);
-
-  /* heartbeat حضور + صندوق گفتگوها */
-  const loadThreads = useCallback(() => {
-    if (!mySlug) return;
-    fetch(`/api/consultation/chat?lawyerSlug=${encodeURIComponent(mySlug)}&threads=1`)
-      .then((r) => r.json())
-      .then((d) => { if (d.ok) setThreads(d.threads ?? []); })
-      .catch(() => {});
-  }, [mySlug]);
-
-  /* کارتابل درخواست‌های مشاوره — هر poll همراه صندوق گفتگوها تازه می‌شود */
-  const loadRequests = useCallback(() => {
-    if (!mySlug) return;
-    fetch(`/api/consultation/requests?lawyer=${encodeURIComponent(mySlug)}`)
-      .then((r) => r.json())
-      .then((d) => { if (d.ok) setRequests(d.requests ?? []); })
-      .catch(() => {});
-  }, [mySlug]);
-
+  /* heartbeat حضور + صندوق گفتگوها + کارتابل — همه درون effect تا React Compiler بتواند memoize کند */
   useEffect(() => {
     if (!panelOn || !mySlug) return;
+    const reject = (msg: string) => {
+      setPanelOn(false);
+      setAuthError(msg);
+    };
+    const lw = lawyers.find((l) => l.slug === mySlug);
+    const ping = (state: "online" | "offline") => {
+      fetch("/api/lawyers/presence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: mySlug, name: lw?.name ?? "", state }),
+        keepalive: state === "offline",
+      })
+        .then((r) => {
+          if (state === "online" && (r.status === 401 || r.status === 403)) {
+            reject("برای آنلاین شدن و دیدن صندوق گفتگوها، باید با حساب وکیل خودتان وارد شوید.");
+          }
+        })
+        .catch(() => {});
+    };
+    const loadThreads = () => {
+      fetch(`/api/consultation/chat?lawyerSlug=${encodeURIComponent(mySlug)}&threads=1`)
+        .then(async (r) => {
+          if (r.status === 401 || r.status === 403) {
+            reject("برای مشاهدهٔ صندوق گفتگوها، با حساب وکیل خودتان وارد شوید.");
+            return null;
+          }
+          return r.json();
+        })
+        .then((d) => { if (d?.ok) setThreads(d.threads ?? []); })
+        .catch(() => {});
+    };
+    const loadRequests = () => {
+      fetch(`/api/consultation/requests?lawyer=${encodeURIComponent(mySlug)}`)
+        .then(async (r) => {
+          if (r.status === 401 || r.status === 403) {
+            reject("برای مشاهدهٔ کارتابل درخواست‌ها، با حساب وکیل خودتان وارد شوید.");
+            return null;
+          }
+          return r.json();
+        })
+        .then((d) => { if (d?.ok) setRequests(d.requests ?? []); })
+        .catch(() => {});
+    };
     ping("online");
-    heartbeatRef.current = setInterval(() => ping("online"), HEARTBEAT_MS);
+    const hb = setInterval(() => ping("online"), HEARTBEAT_MS);
     loadThreads();
     loadRequests();
-    inboxRef.current = setInterval(() => { loadThreads(); loadRequests(); }, INBOX_POLL_MS);
-    return () => {
-      if (heartbeatRef.current) clearInterval(heartbeatRef.current);
-      if (inboxRef.current) clearInterval(inboxRef.current);
-    };
-  }, [panelOn, mySlug, ping, loadThreads, loadRequests]);
-
-  /* خروج با بستن تب — بهترین تلاش با keepalive */
-  useEffect(() => {
-    if (!panelOn || !mySlug) return;
+    const inbox = setInterval(() => { loadThreads(); loadRequests(); }, INBOX_POLL_MS);
+    /* خروج/بستن — بهترین تلاش با keepalive */
     const onLeave = () => ping("offline");
     window.addEventListener("pagehide", onLeave);
     return () => {
+      clearInterval(hb);
+      clearInterval(inbox);
       window.removeEventListener("pagehide", onLeave);
       ping("offline");
     };
-  }, [panelOn, mySlug, ping]);
+  }, [panelOn, mySlug, lawyers]);
 
   /* ─── نمای تماس تصویری موکل (بدون تغییر) ─── */
   if (mode === "client" && started && roomId && name) {
@@ -199,7 +206,7 @@ export default function LiveConsultationPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => { ping("offline"); setPanelOn(false); }}
+            onClick={() => setPanelOn(false)}
           >
             {t("خروج و آفلاین شدن")}
           </Button>
@@ -326,7 +333,7 @@ export default function LiveConsultationPage() {
             role="lawyer"
             initialRoomId={openThread.roomId}
             clientDisplayName={openThread.clientName}
-            onClose={() => { setOpenThread(null); loadThreads(); }}
+            onClose={() => setOpenThread(null)}
           />
         )}
 
@@ -416,6 +423,12 @@ export default function LiveConsultationPage() {
             </div>
           ) : (
             <div className="space-y-4">
+              {authError && (
+                <p role="alert" className="rounded-xl border border-[color-mix(in_oklab,var(--danger)_35%,transparent)] bg-[color-mix(in_oklab,var(--danger)_8%,transparent)] px-3 py-2.5 text-xs font-bold leading-6 text-danger">
+                  {authError} {" "}
+                  <a href="/login?redirect=/consultation/live" className="underline underline-offset-4">{t("ورود به حساب وکیل")}</a>
+                </p>
+              )}
               <div>
                 <label htmlFor="lc-profile" className="mb-1.5 block text-sm font-medium text-foreground">{t("پروفایل وکیل خود را انتخاب کنید")}</label>
                 <select
