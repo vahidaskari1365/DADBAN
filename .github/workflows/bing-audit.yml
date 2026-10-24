@@ -1,0 +1,47 @@
+name: Bing Webmaster Audit
+
+# ─────────────────────────────────────────────────────────────────────────────
+# آدیت کامل Bing Webmaster از طریق API رسمی با BING_API_KEY:
+#  ۱) GetSites — کدام پراپرتی (www / non-www) وریفای شده و وضعیت IndexNow
+#  ۲) GetSitemaps — وضعیت sitemap سابمیت‌شده
+#  ۳) GetCrawlStats — آمار خزش بینگ (خالی = بینگ نمی‌خزد)
+#  ۴) GetQueryStats / GetLinkCounts — ترافیک و بک‌لینک‌ها
+#  ۵) GetUrlStatistics — وضعیت ایندکس صفحات کلیدی در Index Explorer
+#  ۶) SubmitSitemap — تست سابمیت روی پراپرتی درست
+# کلید هرگز در لاگ چاپ نمی‌شود؛ فقط نتیجهٔ غیرحساس به Artifact می‌رود.
+# اجرای دستی: Actions → Bing Webmaster Audit → Run workflow
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: bing-audit
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run Bing audit
+        env:
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}
+        run: node scripts/bing-audit.mjs
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: bing-audit-results
+          path: bing-audit-results.json
+          retention-days: 90
+          if-no-files-found: error
