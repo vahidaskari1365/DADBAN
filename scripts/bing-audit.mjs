@@ -34,10 +34,22 @@ const sites = await api('GetSites');
 out.sites = sites.body?.d?.map(s => ({ url: s.Url, verified: !!s.IsVerified, cat: s.AssociatedAggregationService ?? null, indexNowEnabled: s.IndexNowEnabled ?? null })) ?? { status: sites.status, raw: sites.body };
 console.log('GetSites →', JSON.stringify(out.sites));
 
-// کدام واریانت پراپرتی وریفای شده؟
-const candidates = ['https://dadvarzan.com', 'https://www.dadvarzan.com', 'http://dadvarzan.com', 'http://www.dadvarzan.com'];
-const verified = (out.sites.d ? out.sites.d : []).find(s => s.IsVerified);
-const SITE_URL = verified?.Url ?? 'https://dadvarzan.com';
+// GetSites یک‌بار دیگر (اگر 404 موقتی بود) + تست هر دو واریانت پراپرتی
+const sites2 = await api('GetSites');
+out.sitesRetry = { status: sites2.status, body: sites2.body };
+console.log('GetSites retry →', sites2.status, JSON.stringify(sites2.body).slice(0, 300));
+
+// کدام واریانت واقعاً با این کلید شناخته می‌شود؟ (CrawlStats حتی برای سایت ناشناخته خطای مشخص می‌دهد)
+const variants = ['https://dadvarzan.com', 'https://www.dadvarzan.com'];
+out.variantProbe = {};
+for (const v of variants) {
+  const cs = await api('GetCrawlStats', { siteUrl: v });
+  out.variantProbe[v] = { status: cs.status, hasData: Array.isArray(cs.body?.d) && cs.body.d.length > 0, error: cs.body?.ErrorCode ?? null, message: cs.body?.Message ?? null };
+  console.log(`variant ${v} → HTTP ${cs.status}`, JSON.stringify(cs.body).slice(0, 150));
+}
+const workingVariant = Object.entries(out.variantProbe).find(([, p]) => p.hasData)?.[0] ?? 'https://dadvarzan.com';
+
+const SITE_URL = workingVariant;
 console.log('→ using siteUrl:', SITE_URL);
 
 // ── ۲) sitemapها ──
@@ -78,13 +90,15 @@ for (const u of sampleUrls) {
   console.log(`GetUrlStatistics ${u} →`, JSON.stringify(us.body).slice(0, 250));
 }
 
-// ── ۷) تست SubmitSitemap روی پراپرتی درست ──
-const ss = await api('SubmitSitemap', {
-  siteUrl: SITE_URL,
-  feedUrl: `${SITE_URL}/sitemap.xml`,
-}, 'POST');
-out.submitTests.sitemap = { siteUrl: SITE_URL, status: ss.status, body: ss.body };
-console.log('SubmitSitemap →', JSON.stringify(ss.body).slice(0, 300));
+// ── ۷) تست SubmitSitemap روی هر دو واریانت پراپرتی ──
+for (const v of variants) {
+  const ss = await api('SubmitSitemap', {
+    siteUrl: v,
+    feedUrl: `${v}/sitemap.xml`,
+  }, 'POST');
+  out.submitTests[`sitemap_${v}`] = { status: ss.status, body: ss.body };
+  console.log(`SubmitSitemap ${v} →`, JSON.stringify(ss.body).slice(0, 300));
+}
 
 writeFileSync('bing-audit-results.json', JSON.stringify(out, null, 2));
 console.log('✓ written bing-audit-results.json');
