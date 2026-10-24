@@ -45,9 +45,18 @@ const SITE_URL = main.Url.replace(/\/$/, ''); // API siteUrl param بدون اس
 console.log(`- site: ${main.Url} | verified: ${main.IsVerified}`);
 
 // ── ۲) SubmitFeed — رفرش روزانه sitemap ──
-const sf = await api('SubmitFeed', { siteUrl: SITE_URL, feedUrl: `${SITE_URL}/sitemap.xml` }, 'POST');
-const sfOk = sf.status === 200 && !sf.body?.ErrorCode;
-console.log(`- SubmitFeed sitemap.xml → HTTP ${sf.status} ${sfOk ? '✅' : `ErrorCode ${sf.body?.ErrorCode} ${sf.body?.Message ?? ''}`}`);
+// ⚠️ نکته حیاتی (کشف‌شده 2026-10-24): SubmitFeed پارامترها را باید در body JSON
+// بپذیرد؛ پاس دادن آن‌ها در query string خطای ErrorCode 14/2 می‌دهد.
+const sfRes = await fetch(`${API}/SubmitFeed?apikey=${KEY}`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json; charset=utf-8' },
+  body: JSON.stringify({ siteUrl: SITE_URL, feedUrl: `${SITE_URL}/sitemap.xml` }),
+  signal: AbortSignal.timeout(30_000),
+});
+const sfText = await sfRes.text();
+let sfBody; try { sfBody = JSON.parse(sfText); } catch { sfBody = { raw: sfText.slice(0, 150) }; }
+const sfOk = sfRes.status === 200 && !sfBody?.ErrorCode;
+console.log(`- SubmitFeed sitemap.xml → HTTP ${sfRes.status} ${sfOk ? '✅' : `ErrorCode ${sfBody?.ErrorCode} ${sfBody?.Message ?? ''}`}`);
 
 // ── ۳) SubmitUrlBatch — سهمیه ۱۰۰/روز؛ صف اولویت‌دار ──
 const queuePath = 'seo/indexing-queue.txt';
