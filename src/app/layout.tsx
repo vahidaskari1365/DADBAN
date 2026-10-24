@@ -77,7 +77,10 @@ export async function generateMetadata(): Promise<Metadata> {
     email: false,
   },
   alternates: {
-    canonical: "/",
+    // canonical پیش‌فرض حذف شد — به دلیل بات OK و ریدایرکت ۳۰۱ www → اصلی، هر صفحه
+    // باید canonical خودش را داشته باشد؛ ورثت «/» توسط layout باعث می‌شد صفحات
+    // بدون canonical (services/[slug], contact, …) به صفحه اصلی canonical شوند
+    // (پس از آدیت GSC 2026-10-24: «Duplicate without user-selected canonical»).
     // کشف فید RSS در <head> — استاندارد signals سئو (خبرخوان‌ها و موتورها فید را خودکار پیدا می‌کنند)
     types: {
       "application/rss+xml": "/knowledge/feed",

@@ -35,6 +35,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${title} — ${t("دادورزان")}`,
     description: svc.shortDescription ? await tdyn(locale, svc.shortDescription, 400) : undefined,
+    // canonical خودارجاع — بدون آن، صفحات خدمت به صفحه اصلی canonical می‌شدند (آدیت GSC 2026-10-24)
+    alternates: { canonical: `/services/${slug}` },
   };
 }
 

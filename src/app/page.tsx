@@ -44,6 +44,10 @@ import { PageContentBlocks } from "@/components/page-content-blocks";
 
 export const dynamic = "force-dynamic";
 
+// canonical صریح صفحه اصلی — پس از حذف canonical پیش‌فرض layout ریشه
+// (صفحاتی که خودشان canonical ندارند نباید به «/» ورثت ببرند)
+export const metadata = { alternates: { canonical: "/" } };
+
 export default async function HomePage() {
   const t = await getT();
   let featured: typeof lawyers.$inferSelect[] = [];
