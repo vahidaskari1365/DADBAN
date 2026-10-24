@@ -1,17 +1,21 @@
 #!/usr/bin/env node
 /**
- * Bing daily ops — جایگزین curl ساده در daily-indexing:
- *  ۱) SubmitSitemap روی هر دو واریانت (non-www اول) — تا وقتی وریفیکیشن کامل نشده
- *     خطای مشخص ثبت می‌شود؛ بعد از وریفیکیشن خودکار موفق می‌شود.
- *  ۲) GetCrawlStats snapshot — روند CrawledPages/InIndex برای GitHub Step Summary
+ * Bing daily ops — v2 (بعد از تأیید وریفیکیشن با Import از GSC در 2026-10-24)
+ *  ۱) GetUserSites → یافتن siteUrl «دقیقاً» به همان فرمتی که بینگ ذخیره کرده
+ *     (بینگ «https://dadvarzan.com/» با اسلش انتهایی نگه می‌دارد — هر فرمت دیگری
+ *     در SubmitFeed خطای NotAuthorized/ErrorCode 14 می‌دهد!)
+ *  ۲) SubmitFeed — سابمیت/رفرش sitemap.xml
+ *  ۳) SubmitUrlBatch — سابمیت گروهی (سهمیه رسمی: ۱۰۰ URL در روز) از صف اولویت‌دار
+ *  ۴) GetCrawlStats snapshot — روند CrawledPages/InIndex برای GitHub Step Summary
  *  خروجی هیچ داده حساسی ندارد (کلید هرگز چاپ نمی‌شود).
  * Usage: BING_API_KEY=... node scripts/bing-daily.mjs
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 const KEY = process.env.BING_API_KEY;
 if (!KEY) { console.error('BING_API_KEY required'); process.exit(1); }
 const API = 'https://ssl.bing.com/webmaster/api.svc/json';
+const HOST = 'dadvarzan.com';
 
 async function api(endpoint, params = {}, method = 'GET') {
   const url = new URL(`${API}/${endpoint}`);
@@ -27,22 +31,48 @@ async function api(endpoint, params = {}, method = 'GET') {
   }
 }
 
-const variants = ['https://dadvarzan.com', 'https://www.dadvarzan.com'];
-let anySuccess = false;
-
 console.log('## Bing daily — ' + new Date().toISOString().slice(0, 16) + 'Z');
-for (const v of variants) {
-  const ss = await api('SubmitSitemap', { siteUrl: v, feedUrl: `${v}/sitemap.xml` }, 'POST');
-  const code = ss.body?.ErrorCode ?? null;
-  const msg = ss.body?.Message ?? (ss.body?.d === null || ss.body?.d === '' ? 'OK (null = accepted)' : JSON.stringify(ss.body).slice(0, 100));
-  console.log(`- SubmitSitemap \`${v}\` → HTTP ${ss.status} ${code !== null ? `ErrorCode ${code}` : ''} ${msg}`);
-  if (ss.status === 200 && ss.body && !ss.body.ErrorCode) anySuccess = true;
-}
-console.log(anySuccess ? '- ✅ sitemap به بینگ سابمیت شد' : '- ⚠️ سابمیت ناموفق — وریفیکیشن BWT هنوز کامل نشده (docs/geo/bing-verification-steps.md)');
 
-// CrawlStats snapshot — ۱۴ روز اخیر برای روند InIndex
-const cs = await api('GetCrawlStats', { siteUrl: variants[0] });
-if (cs.body?.d?.length) {
+// ── ۱) siteUrl دقیق از خود بینگ ──
+const us = await api('GetUserSites');
+const sites = Array.isArray(us.body?.d) ? us.body.d : [];
+const main = sites.find(s => s.Url?.replace(/\/$/, '') === `https://${HOST}`);
+if (!main) {
+  console.log(`- ⚠️ ${HOST} در GetUserSites یافت نشد — HTTP ${us.status} ${JSON.stringify(us.body).slice(0, 150)}`);
+  process.exit(0);
+}
+const SITE_URL = main.Url.replace(/\/$/, ''); // API siteUrl param بدون اسلش، اما از مقدار خود بینگ
+console.log(`- site: ${main.Url} | verified: ${main.IsVerified}`);
+
+// ── ۲) SubmitFeed — رفرش روزانه sitemap ──
+const sf = await api('SubmitFeed', { siteUrl: SITE_URL, feedUrl: `${SITE_URL}/sitemap.xml` }, 'POST');
+const sfOk = sf.status === 200 && !sf.body?.ErrorCode;
+console.log(`- SubmitFeed sitemap.xml → HTTP ${sf.status} ${sfOk ? '✅' : `ErrorCode ${sf.body?.ErrorCode} ${sf.body?.Message ?? ''}`}`);
+
+// ── ۳) SubmitUrlBatch — سهمیه ۱۰۰/روز؛ صف اولویت‌دار ──
+const queuePath = 'seo/indexing-queue.txt';
+if (existsSync(queuePath)) {
+  const urls = readFileSync(queuePath, 'utf8').split('\n').map(l => l.trim())
+    .filter(l => l && !l.startsWith('#'))
+    .map(l => l.startsWith('http') ? l : `https://${HOST}${l}`)
+    .slice(0, 100); // سقف رسمی سهمیه روزانه
+  const res = await fetch(`${API}/SubmitUrlBatch?apikey=${KEY}&siteUrl=${encodeURIComponent(SITE_URL)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    body: JSON.stringify({ siteUrl: SITE_URL, urlList: urls }),
+    signal: AbortSignal.timeout(60_000),
+  });
+  const text = await res.text();
+  let body; try { body = JSON.parse(text); } catch { body = { raw: text.slice(0, 150) }; }
+  const ok = res.status === 200 && !body?.ErrorCode;
+  console.log(`- SubmitUrlBatch (${urls.length} URLs) → HTTP ${res.status} ${ok ? '✅' : `ErrorCode ${body?.ErrorCode} ${body?.Message ?? ''}`}`);
+} else {
+  console.log(`- SubmitUrlBatch skipped — ${queuePath} not found`);
+}
+
+// ── ۴) CrawlStats snapshot ──
+const cs = await api('GetCrawlStats', { siteUrl: SITE_URL });
+if (Array.isArray(cs.body?.d) && cs.body.d.length) {
   const rows = cs.body.d.slice(-14);
   console.log('\n| روز | خزش | خطا | 2xx | InIndex |');
   console.log('|---|---|---|---|---|');
@@ -52,7 +82,6 @@ if (cs.body?.d?.length) {
   }
   const latest = rows[rows.length - 1];
   console.log(`\nآخرین وضعیت: crawled=${latest.CrawledPages} inIndex=${latest.InIndex}`);
-  if (latest.InIndex === 0) console.log('\n⚠️ InIndex = 0 — تا وریفیکیشن کامل نشود بینگ سایت را ایندکس نمی‌کند.');
 } else {
   console.log(`- GetCrawlStats: HTTP ${cs.status} ${JSON.stringify(cs.body).slice(0, 120)}`);
 }

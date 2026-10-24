@@ -12,7 +12,7 @@
  *   GetCrawlIssues → فهرست مشکلات SEO که بینگ گزارش می‌کند (هدف اصلی آدیت)
  *   SubmitUrlBatch → سابمیت گروهی URL برای ایندکس (POST)
  */
-import { writeFileSync, existsSync, readFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 
 const KEY = process.env.BING_API_KEY;
 if (!KEY) { console.error('BING_API_KEY required'); process.exit(1); }
@@ -52,7 +52,7 @@ if (main) {
   out.site = { url: main.Url, verified: !!main.IsVerified, indexNowEnabled: main.IndexNowEnabled ?? null };
   out.verified = !!main.IsVerified;
 }
-const SITE_URL = main?.Url?.replace(/\/$/, '') ?? `https://${HOST}`;
+const SITE_URL = main?.Url?.replace(/\/$/, '') ?? `https://${HOST}`; // مقدار دقیق از خود بینگ (اسلش انتهایی حذف می‌شود فقط برای پارامتر API)
 console.log('→ using siteUrl:', SITE_URL, '| verified:', out.verified);
 
 // ── ۲) GetCrawlIssues — لیست مشکلاتی که خود بینگ گزارش کرده ──
@@ -67,29 +67,8 @@ const feeds = Array.isArray(gf.body?.d) ? gf.body.d : null;
 out.feeds = { status: gf.status, count: feeds?.length ?? null, feeds: feeds?.map(f => ({ url: f.Url ?? f.FeedUrl, status: f.Status, lastMod: f.LastModifiedDate ?? null, discovered: f.DiscoveredUrlsCount ?? f.DiscoveredCount ?? null, indexed: f.InIndexCount ?? null })) ?? gf.body };
 console.log('GetFeeds →', JSON.stringify(out.feeds).slice(0, 600));
 
-// ── ۴) SubmitFeed — سابمیت sitemap اصلی (در هر صورت اجرا می‌کنیم — idempotent) ──
-const sf = await api('SubmitFeed', { siteUrl: SITE_URL, feedUrl: `${SITE_URL}/sitemap.xml` }, 'POST');
-out.submitFeed.sitemap = { status: sf.status, body: sf.body };
-console.log('SubmitFeed sitemap.xml →', JSON.stringify(sf.body).slice(0, 300));
-
-// ── ۵) SubmitUrlBatch — سابمیت گروهی URLهای اولویت‌دار (۲۵۰ سقف هر batch) ──
-const queuePath = 'seo/indexing-queue.txt';
-if (existsSync(queuePath)) {
-  const urls = readFileSync(queuePath, 'utf8').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#')).map(l => l.startsWith('http') ? l : `https://${HOST}${l}`);
-  const batch = urls.slice(0, 250);
-  const res = await fetch(`${API}/SubmitUrlBatch?apikey=${KEY}&siteUrl=${encodeURIComponent(SITE_URL)}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    body: JSON.stringify({ siteUrl: SITE_URL, urlList: batch }),
-    signal: AbortSignal.timeout(60_000),
-  });
-  const text = await res.text();
-  let body; try { body = JSON.parse(text); } catch { body = { raw: text.slice(0, 200) }; }
-  out.submitBatch = { status: res.status, submitted: batch.length, body };
-  console.log(`SubmitUrlBatch (${batch.length} URLs) → HTTP ${res.status}`, JSON.stringify(body).slice(0, 300));
-} else {
-  console.log('SubmitUrlBatch skipped —', queuePath, 'not found');
-}
+// توجه: SubmitFeed/SubmitUrlBatch اینجا اجرا نمی‌شوند (فقط-خواندنی؛ سهمیه ۱۰۰/روز
+// SubmitUrlBatch هدر نمی‌رود) — آن عملیات در scripts/bing-daily.mjs است.
 
 // ── ۶) آمار خزش/ترافیک/بک‌لینک ──
 const cs = await api('GetCrawlStats', { siteUrl: SITE_URL });
@@ -108,4 +87,4 @@ console.log('GetLinkCounts →', JSON.stringify(out.linkCounts));
 
 writeFileSync('bing-audit-results.json', JSON.stringify(out, null, 2));
 console.log('✓ written bing-audit-results.json');
-console.log('SUMMARY:', JSON.stringify({ verified: out.verified, site: out.site?.url, crawlIssues: out.crawlIssues.count, feeds: out.feeds.count, submitFeed: out.submitFeed.sitemap?.status, submitBatch: out.submitBatch?.status }));
+console.log('SUMMARY:', JSON.stringify({ verified: out.verified, site: out.site?.url, crawlIssues: out.crawlIssues.count, feeds: out.feeds.count }));
