@@ -61,6 +61,23 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/dashboard/", "/admin"],
       },
       {
+        // Perplexity-User — fetch لحظه‌ای وقتی کاربر Perplexity روی لینک سایت کلیک می‌کند؛
+        // بستنش یعنی استناد Perplexity صفحه را نمی‌تواند بخواند (استاندارد geo-optimizer)
+        userAgent: "Perplexity-User",
+        allow: "/",
+        disallow: ["/api/", "/dashboard/", "/admin"],
+      },
+      {
+        userAgent: "Meta-ExternalAgent", // Meta AI (فیس‌بوک/اینستاگرام/واتساپ)
+        allow: "/",
+        disallow: ["/api/", "/dashboard/", "/admin"],
+      },
+      {
+        userAgent: "Amazonbot", // Alexa / Amazon AI — کشف و استناد
+        allow: "/",
+        disallow: ["/api/", "/dashboard/", "/admin"],
+      },
+      {
         userAgent: "CCBot", // Common Crawl — خزنده‌ی آموزشی غیرجستجو
         allow: "/",
         disallow: ["/api/", "/dashboard/", "/admin"],

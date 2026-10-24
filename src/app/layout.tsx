@@ -78,6 +78,10 @@ export async function generateMetadata(): Promise<Metadata> {
   },
   alternates: {
     canonical: "/",
+    // کشف فید RSS در <head> — استاندارد signals سئو (خبرخوان‌ها و موتورها فید را خودکار پیدا می‌کنند)
+    types: {
+      "application/rss+xml": "/knowledge/feed",
+    },
     // توجه: hreflang en-US→/en حذف شد — چنین مسیری وجود ندارد و در
     // Search Console خطای ۴۰۴ نسخهٔ جایگزین می‌دهد. تغییر زبان با کوکی است
     // (URL یکسان)؛ پس alternates.languages معنا ندارد.

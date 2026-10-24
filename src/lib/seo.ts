@@ -355,7 +355,7 @@ ${LAWS.map((l) => `- [${l.name} (مصوب ${l.year})](${SEO_BASE}/laws/${l.slug}
 ## لینک‌های مهم
 - [sitemap](${SEO_BASE}/sitemap.xml)
 - [robots](${SEO_BASE}/robots.txt)
-- [manifest](${SEO_BASE}/manifest.webmanifest)
+- [manifest PWA](${SEO_BASE}/manifest.webmanifest)
 
 ## آخرین به‌روزرسانی
 - تعرفه‌ها بر اساس سال ۱۴۰۵ و هر ساعت بازتولید می‌شود.
