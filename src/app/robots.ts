@@ -2,6 +2,13 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 
 /**
+ * revalidate ساعتی — درس واقعی تولید: نسخهٔ بدون revalidate در ISR-cache
+ * سرور قفل می‌شد و با deploy تازه هم به‌روز نمی‌شد. با revalidate صریح،
+ * هر ساعت از نو تولید می‌شود (مثل llms.txt).
+ */
+export const revalidate = 3600;
+
+/**
  * robots.txt — مدیریت crawl برای موتورهای جستجو و AI.
  *
  * استراتژی:
