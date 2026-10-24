@@ -8,11 +8,17 @@ const KEY = process.env.BING_API_KEY;
 if (!KEY) { console.error('BING_API_KEY required'); process.exit(1); }
 const API = 'https://ssl.bing.com/webmaster/api.svc/json';
 
-async function call(endpoint, params, method = 'GET') {
+async function call(endpoint, params, method = 'GET', bodyMode = 'empty-json') {
   const url = new URL(`${API}/${endpoint}`);
   url.searchParams.set('apikey', KEY);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  const res = await fetch(url, { method, signal: AbortSignal.timeout(30_000) });
+  const init = { method, signal: AbortSignal.timeout(30_000) };
+  if (method === 'POST') {
+    if (bodyMode === 'empty-json') { init.headers = { 'Content-Type': 'application/json; charset=utf-8' }; init.body = JSON.stringify({}); }
+    else if (bodyMode === 'no-body') { /* nothing */ }
+    else if (bodyMode === 'params-json') { init.headers = { 'Content-Type': 'application/json; charset=utf-8' }; init.body = JSON.stringify(params); }
+  }
+  const res = await fetch(url, init);
   const text = await res.text();
   let body; try { body = JSON.parse(text); } catch { body = { raw: text.slice(0, 150) }; }
   return { status: res.status, body };
@@ -33,11 +39,13 @@ for (const v of variants) {
   console.log(`GetFeeds ${v} → HTTP ${r.status} | feeds: ${d?.length ?? 'null'}`, d?.[0] ? `| status: "${d[0].Status ?? d[0].status ?? '?'}"` : '');
 }
 
-// ۳) SubmitFeed با هر واریانت
-console.log('\n=== SubmitFeed variants ===');
-for (const v of variants) {
-  const r = await call('SubmitFeed', { siteUrl: v, feedUrl: 'https://dadvarzan.com/sitemap.xml' }, 'POST');
-  const ok = r.status === 200 && !r.body?.ErrorCode;
-  console.log(`SubmitFeed siteUrl=${v} → HTTP ${r.status} ${ok ? '✅ ACCEPTED' : `ErrorCode ${r.body?.ErrorCode} ${r.body?.Message ?? JSON.stringify(r.body).slice(0, 100)}`}`);
+// ۳) SubmitFeed با هر واریانت + سه حالت body
+console.log('\n=== SubmitFeed variants (siteUrl x bodyMode) ===');
+for (const v of variants.slice(0, 2)) {
+  for (const bm of ['empty-json', 'no-body', 'params-json']) {
+    const r = await call('SubmitFeed', { siteUrl: v, feedUrl: 'https://dadvarzan.com/sitemap.xml' }, 'POST', bm);
+    const ok = r.status === 200 && !r.body?.ErrorCode;
+    console.log(`SubmitFeed siteUrl=${v} body=${bm} → HTTP ${r.status} ${ok ? '✅ ACCEPTED' : `ErrorCode ${r.body?.ErrorCode} ${r.body?.Message ?? JSON.stringify(r.body).slice(0, 100)}`}`);
+  }
 }
 console.log('\n✓ probe done');
