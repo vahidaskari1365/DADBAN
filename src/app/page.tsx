@@ -24,6 +24,12 @@ import { ReviewsSpotlight } from "@/components/amazon/reviews-spotlight";
 import { SiteMenu } from "@/components/home/site-menu";
 import { SeoLinkGrid } from "@/components/seo/link-grid";
 import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "@/lib/seo-landings";
+import { FaqSection } from "@/components/seo/faq-section";
+import { safeJsonLd } from "@/lib/jsonld";
+import { HOME_FAQS, CONTENT_REVIEWED_AT } from "@/lib/ai-discovery";
+import { formatJalali } from "@/lib/jalali";
+import { SITE_URL } from "@/lib/site";
+import { SITE_NAME } from "@/lib/brand";
 import { getT } from "@/lib/i18n/server";
 import { PageContentBlocks } from "@/components/page-content-blocks";
 
@@ -52,8 +58,57 @@ export default async function HomePage() {
     console.error("[dadban] homepage query failed:", err);
   }
 
+  /* ── Freshness + AEO — تاریخ واقعی آخرین به‌روزرسانی محتوا (آخرین مقاله)
+     در WebPage schema تا موتورهای AI/جستجو تازگی را مستقیم بخوانند.
+     + ItemList مقالات اخیر (BlogPosting با dateModified) برای کشف مقالات. */
+  const lastContentUpdate =
+    recentArticles[0]?.publishedAt
+      ? new Date(recentArticles[0].publishedAt).toISOString()
+      : CONTENT_REVIEWED_AT;
+  const homeSchemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": `${SITE_URL}/#webpage`,
+      url: SITE_URL,
+      name: `${SITE_NAME} | پلتفرم هوشمند خدمات حقوقی`,
+      isPartOf: { "@id": `${SITE_URL}/#website` },
+      about: { "@id": `${SITE_URL}/#organization` },
+      inLanguage: "fa-IR",
+      dateModified: lastContentUpdate,
+    },
+    ...(recentArticles.length > 0
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "@id": `${SITE_URL}/#latest-articles`,
+            name: "آخرین مقالات مجلهٔ حقوقی دادورزان",
+            itemListElement: recentArticles.map((a, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              url: `${SITE_URL}/knowledge/${a.slug}`,
+              item: {
+                "@type": "BlogPosting",
+                headline: a.title,
+                url: `${SITE_URL}/knowledge/${a.slug}`,
+                datePublished: a.publishedAt ? new Date(a.publishedAt).toISOString() : undefined,
+                dateModified: a.publishedAt ? new Date(a.publishedAt).toISOString() : undefined,
+                inLanguage: "fa-IR",
+              },
+            })),
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div className="page-wash">
+      {/* WebPage + ItemList JSON-LD — freshness صادقانه برای AI Search */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(homeSchemas) }}
+      />
       {/* HERO — H1 + Legal Problem Search + موضوعات محبوب + فانل */}
       <HomeHero />
 
@@ -244,6 +299,15 @@ export default async function HomePage() {
                       {a.title}
                     </h3>
                     <p className="mt-1.5 line-clamp-2 flex-1 text-xs leading-6 text-muted">{a.excerpt}</p>
+                    {/* تاریخ انتشار واقعی — سیگنال freshness مرئی برای کاربر و موتورها */}
+                    {a.publishedAt && (
+                      <time
+                        dateTime={new Date(a.publishedAt).toISOString().slice(0, 10)}
+                        className="mt-2 text-[11px] font-bold text-accent-text"
+                      >
+                        {formatJalali(new Date(a.publishedAt))}
+                      </time>
+                    )}
                     <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-primary transition-all duration-300 group-hover:gap-2.5">
                       {t("ادامه مطلب")}
                       <Icon name="arrow" className="h-3.5 w-3.5" />
@@ -276,6 +340,26 @@ export default async function HomePage() {
               href: `/lawyers/city/${c.slug}`,
             }))}
           />
+        </Container>
+      </section>
+
+      {/* پرسش‌های متداول — AEO: پاسخ خودکفا + FAQPage schema (منبع واحد با /ai/faq.json) */}
+      <section className="mt-24">
+        <Container>
+          <Reveal variant="blur">
+            <SectionHeading
+              eyebrow={t("پاسخ‌های سریع")}
+              title={t("پرسش‌های متداول دربارهٔ دادورزان")}
+              desc={t("پاسخ کوتاه و قطعی رایج‌ترین پرسش‌های کاربران پلتفرم.")}
+            />
+          </Reveal>
+          <div className="mt-8">
+            <FaqSection
+              items={HOME_FAQS.map((f) => ({ q: f.question, a: f.answer }))}
+              title={t("پرسش‌های متداول")}
+              canonicalPath="/"
+            />
+          </div>
         </Container>
       </section>
 

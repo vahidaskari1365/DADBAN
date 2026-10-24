@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { HOME_MARKDOWN } from "@/lib/ai-discovery";
 
 /**
  * Proxy (جانشین Middleware در Next.js 16) — محافظت از صفحات حساس.
@@ -19,6 +20,30 @@ const ADMIN_COOKIE = "dadban_admin";
 
 export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // ─── مذاکرهٔ محتوا برای عامل‌های هوش مصنوعی (geo-checklist.dev) ────────────
+  // عامل‌هایی که «text/markdown» می‌پرسند، نسخهٔ مارک‌داون سبک صفحهٔ اصلی
+  // را می‌گیرند (بدون HTML اضافه) — استاندارد AI-Discovery.
+  const accept = req.headers.get("accept") ?? "";
+  if (
+    pathname === "/" &&
+    accept.includes("text/markdown") &&
+    !accept.includes("text/html")
+  ) {
+    return new Response(HOME_MARKDOWN, {
+      headers: {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Cache-Control": "public, max-age=3600",
+      },
+    });
+  }
+
+  // ─── مسیر استاندارد /.well-known/ai.txt → روت داخلی /ai/ai.txt ─────────────
+  if (pathname === "/.well-known/ai.txt") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/ai/ai.txt";
+    return NextResponse.rewrite(url);
+  }
 
   // ─── Security headers (برای همه‌ی responses) ──────────────────────────
   const res = NextResponse.next();
@@ -98,5 +123,17 @@ export const config = {
   /**
    * فقط مسیرهای حساس middleware رو اجرا می‌کنه (نه static assets).
    */
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/developer/:path*", "/keywords/:path*", "/workspace/:path*", "/court-sim/:path*", "/case-desk/:path*", "/manage/:path*", "/notifications/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/developer/:path*",
+    "/keywords/:path*",
+    "/workspace/:path*",
+    "/court-sim/:path*",
+    "/case-desk/:path*",
+    "/manage/:path*",
+    "/notifications/:path*",
+    "/.well-known/:path*",
+    "/",
+  ],
 };

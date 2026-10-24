@@ -43,3 +43,6 @@ server.log
 eng.traineddata
 *.traineddata
 warmlogs/
+
+# دیتای لوکال PGlite — هرگز در گیت
+tmp/dadban-data*/

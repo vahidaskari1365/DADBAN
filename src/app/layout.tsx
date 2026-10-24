@@ -78,11 +78,9 @@ export async function generateMetadata(): Promise<Metadata> {
   },
   alternates: {
     canonical: "/",
-    languages: {
-      "fa-IR": "/",
-      "en-US": "/en",
-      "x-default": "/",
-    },
+    // توجه: hreflang en-US→/en حذف شد — چنین مسیری وجود ندارد و در
+    // Search Console خطای ۴۰۴ نسخهٔ جایگزین می‌دهد. تغییر زبان با کوکی است
+    // (URL یکسان)؛ پس alternates.languages معنا ندارد.
   },
   openGraph: {
     type: "website",

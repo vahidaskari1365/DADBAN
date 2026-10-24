@@ -44,7 +44,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/dashboard/", "/admin"],
       },
       {
-        userAgent: ["ClaudeBot", "Claude-Search", "Claude-User"], // Claude: crawl + search + user browsing
+        userAgent: ["ClaudeBot", "Claude-SearchBot", "Claude-User"], // Claude: crawl + search citations + user browsing
         allow: "/",
         disallow: ["/api/", "/dashboard/", "/admin"],
       },
@@ -72,6 +72,11 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: "Google-Extended",
+        allow: "/",
+        disallow: ["/api/", "/dashboard/", "/admin"],
+      },
+      {
+        userAgent: "Applebot", // Siri/Spotlight/Apple Intelligence citations
         allow: "/",
         disallow: ["/api/", "/dashboard/", "/admin"],
       },

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "mcp-search-console": {
+      "command": "uvx",
+      "args": ["mcp-search-console"],
+      "env": {
+        "GSC_CREDENTIALS_PATH": "/home/z/.config/gsc/service_account.json",
+        "GSC_OAUTH_CLIENT_SECRETS_FILE": "/home/z/.config/gsc/client_secret.json",
+        "GSC_DATA_STATE": "all"
+      }
+    }
+  }
+}
