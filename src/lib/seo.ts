@@ -15,6 +15,8 @@ import { SITE_NAME, SITE_NAME_EN, SITE_TITLE, SITE_DESCRIPTION } from "./brand";
 import { SITE_URL } from "./site";
 import { SPECIALTY_LANDINGS, CITY_LANDINGS } from "./seo-landings";
 import { LAWS } from "./laws-content";
+import { JUDGMENTS } from "./content";
+import { JUDGMENTS_UPDATED } from "./judgments-content";
 import { faNum } from "./data";
 import { safeJsonLd } from "./jsonld";
 import { ARTICLES_CONTENT_VERSION, articleData } from "@/data/articles-seed";
@@ -326,6 +328,9 @@ ${SPECIALTY_LANDINGS.map((s) => `- [${s.h1}](${SEO_BASE}/lawyers/specialty/${s.s
 - [مرکز قوانین (${faNum(LAWS.length)} قانون مهم ایران با توضیح کامل)](${SEO_BASE}/laws)
 - [آرای قضایی](${SEO_BASE}/judgments)
 - [واژه‌نامه حقوقی](${SEO_BASE}/glossary)
+
+## آرای قضایی — تحلیل رویه دیوان عالی کشور به زبان ساده (هر رأی: پاسخ کوتاه، نکات کلیدی، مواد قانونی و پرسش‌های متداول — بازبینی ${JUDGMENTS_UPDATED})
+${JUDGMENTS.map((j) => `- [${j.title}](${SEO_BASE}/judgments/${j.slug})`).join("\n")}
 
 ## راهنماهای عمیق مجله (${faNum(articleData.length)} مقاله — هر مقاله: پاسخ سریع AEO، استناد به ماده قانون، جدول عملی SXO و پرسش‌های متداول)
 ${articleData.map((a) => `- [${a.title}](${SEO_BASE}/knowledge/${a.slug})`).join("\n")}

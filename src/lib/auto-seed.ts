@@ -693,6 +693,26 @@ export async function ensureAeoArticles(): Promise<void> {
   bootLog(`ensureAeoArticles: ensured ${rows.length} AEO articles (add-only)`);
 }
 
+/**
+ * انتشار آرای قضایی جدید در boot — add-only و idempotent (هم‌ارز ensureAeoArticles).
+ * رأی‌های موجود در DB (ویرایش ادمین) بازنویسی نمی‌شوند؛ فقط رأی‌های تازه‌افزوده‌شده
+ * به JUDGMENTS (کد تحریریه) به DB اضافه می‌شوند تا /judgments و sitemap کامل بمانند.
+ */
+export async function ensureJudgments(): Promise<void> {
+  if (!JUDGMENTS.length) return;
+  const rows = JUDGMENTS.map((x, i) => ({
+    slug: x.slug,
+    title: x.title,
+    court: x.court,
+    date: x.date,
+    subject: x.subject,
+    summary: x.summary,
+    sortOrder: i,
+  }));
+  await db.insert(judgments).values(rows).onConflictDoNothing({ target: judgments.slug });
+  bootLog(`ensureJudgments: ensured ${rows.length} judgments (add-only)`);
+}
+
 /** Manual re-seed: wipe and re-insert. */
 export async function seedAll(): Promise<SeedCounts> {
   await db.execute(
@@ -740,6 +760,12 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
         console.error("[auto-seed] ensureAeoArticles failed:", err);
       }
       try {
+        await ensureJudgments();
+      } catch (err) {
+        bootLog(`fast-path ensureJudgments threw: ${err instanceof Error ? err.message : String(err)}`);
+        console.error("[auto-seed] ensureJudgments failed:", err);
+      }
+      try {
         await upgradeArticles();
       } catch (err) {
         bootLog(`fast-path upgradeArticles threw: ${err instanceof Error ? err.message : String(err)}`);
@@ -783,6 +809,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
       await db.insert(articles).values(articleData).onConflictDoNothing({ target: articles.slug });
       await ensureAeoArticles();
       await db.insert(qaQuestions).values(qaData).onConflictDoNothing({ target: qaQuestions.slug });
+      await ensureJudgments();
     } catch {
       /* non-fatal */
     }

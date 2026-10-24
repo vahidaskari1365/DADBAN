@@ -80,6 +80,7 @@ export function aiSummary() {
       fee_guide: `${SITE_URL}/fee-guide`,
       knowledge: `${SITE_URL}/knowledge`,
       laws: `${SITE_URL}/laws`,
+      judgments: `${SITE_URL}/judgments`,
     },
   };
 }
@@ -138,6 +139,7 @@ ${SITE_NAME} (${SITE_NAME_EN}) پلتفرم هوشمند خدمات حقوقی �
 - مشاوره آنلاین (متنی/صوتی/تصویری): ${SITE_URL}/consultation
 - مجلهٔ حقوقی با پاسخ سریع و استناد ماده قانون: ${SITE_URL}/knowledge
 - مرکز قوانین به زبان ساده: ${SITE_URL}/laws
+- آرای قضایی و رویه دیوان عالی کشور به زبان ساده: ${SITE_URL}/judgments
 - پرسش‌وپاسخ حقوقی: ${SITE_URL}/qa
 - محاسبه‌گرهای حقوقی: ${SITE_URL}/calculators
 
@@ -178,6 +180,7 @@ export const HOME_MARKDOWN = `# ${SITE_NAME} (${SITE_NAME_EN})
 ## پایگاه دانش حقوقی
 - [مقالات حقوقی](/knowledge) — پاسخ سریع AEO، استناد به مادهٔ قانون و جدول عملی
 - [مرکز قوانین](/laws) — خلاصهٔ سادهٔ قوانین مهم ایران
+- [آرای قضایی](/judgments) — تحلیل وحدت رویه و رویهٔ قضایی به زبان ساده با پاسخ کوتاه و مواد قانونی
 - [پرسش‌وپاسخ حقوقی](/qa) — پاسخ وکلای تأییدشده
 - [محاسبه‌گرهای حقوقی](/calculators) — مهریه، نفقه، دیه
 - [واژه‌نامهٔ حقوقی](/glossary)
