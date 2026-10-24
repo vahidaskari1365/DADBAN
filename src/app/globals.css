@@ -1450,6 +1450,15 @@ input, select, textarea {
   animation-name: marquee-rtl;
 }
 
+/* توقف Marquee هنگام هاور — باید «بعد از» تعریف .animate-marquee بیاید:
+   شورت‌کات animation آن play-state را به running ریست می‌کند و قانونِ
+   لایه‌شدهٔ group-hover تیلویند را می‌پوشاند (باگ: نوار روی هاور نمی‌ایستاد).
+   این قانون unlayered است و بر یوتیتی‌های لایه‌شده برتری دارد. */
+[data-pause-on-hover="true"]:hover .animate-marquee,
+[data-pause-on-hover="true"]:hover .animate-marquee-vertical {
+  animation-play-state: paused;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    لوگوی دادورزان — موشن گرافیک طلایی
    ورود نرم (scale-in) + درخشش متحرک روی سطح طلایی + هالهٔ نفس‌کشنده
