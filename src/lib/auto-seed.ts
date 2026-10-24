@@ -3,6 +3,16 @@
 
 import { db } from "@/db";
 import { articleData, ARTICLES_CONTENT_VERSION } from "@/data/articles-seed";
+import {
+  QA_FAMILY_A,
+  QA_FAMILY_B,
+  QA_CRIMINAL_A,
+  QA_CRIMINAL_B,
+  QA_PROPERTY_A,
+  QA_PROPERTY_B,
+} from "@/data/qa-batches";
+import type { QaSeedItem } from "@/data/qa-batches-family-a";
+import { AEO_ARTICLES } from "@/data/aeo-articles";
 import { bootLog } from "@/lib/boot-log";
 import {
   lawyers,
@@ -96,6 +106,13 @@ const qaData = [
   { slug: "check-siyadi-chist", question: "چک صیادی چیست و چه تفاوتی با چک عادی دارد؟", body: "بانک گفت چک صیادی است. معنی‌اش چیست؟", answer: "چک صیادی چکی است که در سامانه صیاد ثبت می‌شود و اطلاعات صادرکننده و گیرنده در آن ثبت می‌گردد. این چک‌ها ردیابی آسان‌تری دارند و در صورت برگشت، امکان پیگیری قانونی قوی‌تری فراهم می‌شود. گواهی عدم پرداخت این چک‌ها هم از سامانه صیاد صادر می‌شود.", category: "چک و اسناد", lawyerName: "تحریریهٔ حقوقی دادورزان", lawyerTitle: "پاسخ بررسی‌شدهٔ حقوقی — حوزهٔ چک و اسناد", verified: true, helpful: 29, views: 4700, createdAt: daysAgo(14) },
   { slug: "elzam-be-tanzim-sand", question: "الزام به تنظیم سند چگونه است؟", body: "ملکی خریده‌ام اما فروشنده حاضر به تنظیم سند رسمی نیست.", answer: "اگر مبایعه‌نامه معتبر دارید، می‌توانید با دادخواست «الزام به تنظیم سند رسمی» در دادگاه محل وقوع ملک، فروشنده را ملزم کنید. در صورت امتناع وی، دادگاه حکم تنظیم سند را صادر می‌کند و انتقال بدون حضور او نیز ممکن می‌شود. داشتن مبایعه‌نامه و مدارک پرداخت ثمن ضروری است.", category: "ملک", lawyerName: "تحریریهٔ حقوقی دادورزان", lawyerTitle: "پاسخ بررسی‌شدهٔ حقوقی — حوزهٔ ملک و ثبت", verified: true, helpful: 24, views: 3900, createdAt: daysAgo(18) },
   { slug: "khiyanat-dar-amanat", question: "خیانت در امانت چه زمانی محقق می‌شود؟", body: "سندی به کسی دادم که پس نداده. آیا خیانت در امانت است؟", answer: "خیانت در امانت زمانی محقق می‌شود که شخصی مالی که به عنوان امانت یا برای انجام کاری به او سپرده شده را پس ندهد یا مصرف کند. اثبات رابطه امانی و امتناع از بازگرداندن، ارکان جرم هستند. شکایت در دادسرا ثبت و در صورت احراز، تعقیب کیفری انجام می‌شود.", category: "کیفری", lawyerName: "تحریریهٔ حقوقی دادورزان", lawyerTitle: "پاسخ بررسی‌شدهٔ حقوقی — حوزهٔ کیفری", verified: true, helpful: 19, views: 3300, createdAt: daysAgo(22) },
+  /* بسته‌های AEO نقشه ۱۲ هفته‌ای — ۶۰ پرسش/پاسخ جدید (خانواده، کیفری/چک، ملکی/ارث) */
+  ...(QA_FAMILY_A as QaSeedItem[]),
+  ...(QA_FAMILY_B as QaSeedItem[]),
+  ...(QA_CRIMINAL_A as QaSeedItem[]),
+  ...(QA_CRIMINAL_B as QaSeedItem[]),
+  ...(QA_PROPERTY_A as QaSeedItem[]),
+  ...(QA_PROPERTY_B as QaSeedItem[]),
 ];
 
 /* ----------------------------- Provisioning ----------------------------- */
@@ -652,6 +669,30 @@ async function upgradeArticles(): Promise<void> {
   }
 }
 
+/**
+ * انتشار مقاله‌های AEO (بسته‌های citation-ready) در boot — add-only و idempotent.
+ * هم‌ارز مسیر دستی POST /api/seo/article-sync: مقاله موجود در DB (ویرایش ادمین)
+ * هیچ‌وقت بازنویسی نمی‌شود (onConflictDoNothing)؛ فقط مقاله‌های جدید اضافه می‌شوند
+ * تا انتشار محتوای جدید بدون نیاز به CRON_SECRET قطعی باشد.
+ */
+export async function ensureAeoArticles(): Promise<void> {
+  if (!AEO_ARTICLES.length) return;
+  const rows = AEO_ARTICLES.map((a) => ({
+    slug: a.slug,
+    title: a.title,
+    category: a.category,
+    excerpt: a.excerpt,
+    quickAnswer: a.quickAnswer,
+    content: a.content,
+    faq: JSON.stringify(a.faq),
+    readTime: a.readTime,
+    author: "تیم تحریریه دادورزان",
+    authorRole: "پژوهشگر حقوق",
+  }));
+  await db.insert(articles).values(rows).onConflictDoNothing({ target: articles.slug });
+  bootLog(`ensureAeoArticles: ensured ${rows.length} AEO articles (add-only)`);
+}
+
 /** Manual re-seed: wipe and re-insert. */
 export async function seedAll(): Promise<SeedCounts> {
   await db.execute(
@@ -691,6 +732,12 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
           bootLog(`step ${name}: FAILED: ${err instanceof Error ? err.message : String(err)}`);
           console.error(`[auto-seed] ${name} failed:`, err);
         }
+      }
+      try {
+        await ensureAeoArticles();
+      } catch (err) {
+        bootLog(`fast-path ensureAeoArticles threw: ${err instanceof Error ? err.message : String(err)}`);
+        console.error("[auto-seed] ensureAeoArticles failed:", err);
       }
       try {
         await upgradeArticles();
@@ -734,6 +781,7 @@ export async function ensureSeeded(): Promise<{ seeded: boolean; counts: SeedCou
     // Always add missing articles/QA (new content), never overwrite existing.
     try {
       await db.insert(articles).values(articleData).onConflictDoNothing({ target: articles.slug });
+      await ensureAeoArticles();
       await db.insert(qaQuestions).values(qaData).onConflictDoNothing({ target: qaQuestions.slug });
     } catch {
       /* non-fatal */

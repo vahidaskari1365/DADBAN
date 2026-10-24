@@ -63,6 +63,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "fee-payment", priority: 0.8, changeFreq: "monthly" as const, lastMod: NOW },
     // تعرفه وکالت ۱۴۰۵ — صفحه پولی سئو
     { path: "fee-guide", priority: 0.9, changeFreq: "weekly" as const, lastMod: NOW },
+    // گزارش آماری — citation مغناطیسی برای موتورهای AI
+    { path: "reports/cases-1405", priority: 0.7, changeFreq: "daily" as const, lastMod: NOW },
     // صفحات فرود سئو — هاب‌ها و صفحات فرود تخصص/شهر/ترکیبی
     { path: "lawyers/specialty", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },
     { path: "lawyers/city", priority: 0.8, changeFreq: "weekly" as const, lastMod: NOW },

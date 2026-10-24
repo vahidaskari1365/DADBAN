@@ -14,6 +14,8 @@
  */
 
 import type { IconKey } from "@/lib/data";
+import { CITY_LANDINGS_PHASE2_A } from "@/data/city-landings-phase2-a";
+import { CITY_LANDINGS_PHASE2_B } from "@/data/city-landings-phase2-b";
 
 export type FeeRow = { label: string; range?: string; rate?: string };
 export type FaqItem = { q: string; a: string };
@@ -927,6 +929,9 @@ export const CITY_LANDINGS: CityLanding[] = [
     faqs: cityTemplateFaqs(c),
   } satisfies CityLanding;
 });
+
+/** فاز ۲ — هفته ۱۲ نقشه ۱۲ هفته‌ای: ۲۰ شهر جدید با محتوای اختصاصی (خارج از الگوی عمومی) */
+CITY_LANDINGS.push(...CITY_LANDINGS_PHASE2_A, ...CITY_LANDINGS_PHASE2_B);
 
 
 /* ==================== تعرفه رسمی ۱۴۰۵ ==================== */

@@ -32,6 +32,18 @@ import { AEO_ARTICLES_BATCH_4A } from "./aeo-articles-batch4a";
 import { AEO_ARTICLES_BATCH_4B } from "./aeo-articles-batch4b";
 import { AEO_ARTICLES_BATCH_4C } from "./aeo-articles-batch4c";
 import { AEO_ARTICLES_BATCH_4D } from "./aeo-articles-batch4d";
+import { AEO_ARTICLES_BATCH_5A } from "./aeo-articles-batch5a";
+import { AEO_ARTICLES_BATCH_5B } from "./aeo-articles-batch5b";
+import { AEO_ARTICLES_BATCH_5C } from "./aeo-articles-batch5c";
+import { AEO_ARTICLES_BATCH_5D } from "./aeo-articles-batch5d";
+import { AEO_ARTICLES_BATCH_5E } from "./aeo-articles-batch5e";
+import { AEO_ARTICLES_BATCH_5F } from "./aeo-articles-batch5f";
+import { AEO_ARTICLES_BATCH_5G } from "./aeo-articles-batch5g";
+import { AEO_ARTICLES_BATCH_5H } from "./aeo-articles-batch5h";
+import { AEO_ARTICLES_BATCH_5I } from "./aeo-articles-batch5i";
+import { AEO_ARTICLES_BATCH_5J } from "./aeo-articles-batch5j";
+import { AEO_ARTICLES_BATCH_5K } from "./aeo-articles-batch5k";
+import { AEO_ARTICLES_BATCH_5L } from "./aeo-articles-batch5l";
 
 /** بستهٔ فاز ۲ — batch 1 (۶ مقاله) + batch 2 (۸ مقاله: نفقه، حق حبس، چک صیادی، تخلیه ملک، وکالت در طلاق، الزام به سند، بیمه بیکاری، مالیات بر ارث) */
 export const AEO_ARTICLES: AeoArticleSeed[] = [
@@ -855,4 +867,17 @@ export const AEO_ARTICLES: AeoArticleSeed[] = [
   ...AEO_ARTICLES_BATCH_4B,
   ...AEO_ARTICLES_BATCH_4C,
   ...AEO_ARTICLES_BATCH_4D,
+  /** بستهٔ ۵ — نقشه ۱۲ هفته‌ای (۱۲ مقاله: انتخاب وکیل، تعرفه وکالت، کلاهبرداری، خیانت در امانت، مجازات چک، دفاع مستأجر، اخراج غیرقانونی، سنوات، برگ تشخیص، داوری، وصول مطالبات، علامت تجاری) */
+  ...AEO_ARTICLES_BATCH_5A,
+  ...AEO_ARTICLES_BATCH_5B,
+  ...AEO_ARTICLES_BATCH_5C,
+  ...AEO_ARTICLES_BATCH_5D,
+  ...AEO_ARTICLES_BATCH_5E,
+  ...AEO_ARTICLES_BATCH_5F,
+  ...AEO_ARTICLES_BATCH_5G,
+  ...AEO_ARTICLES_BATCH_5H,
+  ...AEO_ARTICLES_BATCH_5I,
+  ...AEO_ARTICLES_BATCH_5J,
+  ...AEO_ARTICLES_BATCH_5K,
+  ...AEO_ARTICLES_BATCH_5L,
 ];
