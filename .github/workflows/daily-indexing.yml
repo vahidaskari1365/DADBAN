@@ -89,6 +89,7 @@ jobs:
           # SubmitSitemap روی هر دو واریانت + snapshot CrawlStats
           # تا وریفیکیشن BWT کامل نشده، خطا به‌صورت شفاف در سامری ثبت می‌شود.
           OUTPUT=$(node scripts/bing-daily.mjs || echo "bing-daily failed")
+          echo "$OUTPUT"
           {
             echo "$OUTPUT"
           } >> "$GITHUB_STEP_SUMMARY"
