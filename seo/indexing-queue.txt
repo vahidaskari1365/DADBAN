@@ -1,7 +1,7 @@
-# صف درخواست نمایه‌سازی روزانه — اولویت‌دار (بالا = مهم‌تر)
-# منبع: آدیت ۳۹۴ صفحه‌ای (run 39134135601، 2026-10-18): 129 صفحه ایندکس شده
-# + محتوای تازهٔ نقشه ۱۲ هفته‌ای (2026-10-24): ۱۲ مقاله، گزارش آماری، لندینگ‌های شهر فاز ۲
-# محتوای تازهٔ امروز — اولویت مطلق (کشف سریع توسط Job B ربات UI)
+# صف درخواست نمایه‌سازی روزانه — بازسازی 2026-10-24 بر اساس آدیت کامل GSC (۴۶۲ URL)
+# اولویت: محتوای تازهٔ ۱۲هفته > داپلیکیت‌های canonical-تعمیری > CNI > DNI پرارزش > UNKNOWN پرارزش
+
+# ── ۱) محتوای تازه (مقالات + گزارش آماری) — اولویت مطلق ──
 https://dadvarzan.com/knowledge/chegune-vekil-khob-entekhab-1405
 https://dadvarzan.com/knowledge/tarefe-vekalat-1405
 https://dadvarzan.com/knowledge/mojazat-kolahbardari-1405
@@ -15,6 +15,38 @@ https://dadvarzan.com/knowledge/davari-tejari-1405
 https://dadvarzan.com/knowledge/vasool-motalebat-1405
 https://dadvarzan.com/knowledge/sabt-alamat-tejari-1405
 https://dadvarzan.com/reports/cases-1405
+
+# ── ۲) ۲۱ صفحهٔ Duplicate (رفع canonical — نیاز به خزش مجدد) ──
+https://dadvarzan.com/knowledge/taghsim-ers
+https://dadvarzan.com/knowledge/sharayet-shekat-keifari
+https://dadvarzan.com/knowledge/hoghogh-kargar-ekhraj
+https://dadvarzan.com/knowledge/mehrieh-taklif-ghanooni
+https://dadvarzan.com/knowledge/hazant-farzand-pas-az-jodayi
+https://dadvarzan.com/knowledge/hazine-vakil-tarefe-vekalat
+https://dadvarzan.com/knowledge/hagh-shabanan-dayar
+https://dadvarzan.com/knowledge/ejare-be-shart-tamlik-1405
+https://dadvarzan.com/services/doc-prep
+https://dadvarzan.com/services/commission-100-defense
+https://dadvarzan.com/judgments/j3
+https://dadvarzan.com/glossary/ejraye-ahkam
+https://dadvarzan.com/judgments/j1
+https://dadvarzan.com/glossary/estrdad
+https://dadvarzan.com/contact
+https://dadvarzan.com/glossary/eblagh
+https://dadvarzan.com/judgments/j5
+https://dadvarzan.com/glossary/afrAz
+https://dadvarzan.com/glossary/estishhad
+https://dadvarzan.com/contracts/review
+https://dadvarzan.com/glossary/habs
+https://dadvarzan.com/glossary/tafsil
+https://dadvarzan.com/judgments/j6
+
+# ── ۳) Crawled-not-indexed (۳ صفحه) ──
+https://dadvarzan.com/knowledge/tafavot-vakil-payeh-yek-moshaver
+https://dadvarzan.com/lawyers/city/shiraz
+https://dadvarzan.com/legal/terms
+
+# ── ۴) لندینگ شهر فاز ۲ ──
 https://dadvarzan.com/lawyers/city/kashan
 https://dadvarzan.com/lawyers/city/sari
 https://dadvarzan.com/lawyers/city/gorgan
@@ -25,17 +57,72 @@ https://dadvarzan.com/lawyers/city/ardabil
 https://dadvarzan.com/lawyers/city/yazd
 https://dadvarzan.com/lawyers/city/kerman
 https://dadvarzan.com/lawyers/city/hamedan
-# صف قبلی — خدمات مدیریت‌شدهٔ بدون ایندکس (از آدیت 2026-10-18)
+https://dadvarzan.com/lawyers/city/qom
+https://dadvarzan.com/lawyers/city/ahan
+https://dadvarzan.com/lawyers/city/zanjan
+https://dadvarzan.com/lawyers/city/urmia
+https://dadvarzan.com/lawyers/city/bandar-abbas
+https://dadvarzan.com/lawyers/city/varamin
+https://dadvarzan.com/lawyers/city/savadkuh
+https://dadvarzan.com/lawyers/city/mahshahr
+https://dadvarzan.com/lawyers/city/khorramshahr
+https://dadvarzan.com/lawyers/city/ilam
+
+# ── ۵) Discovered-not-indexed پرارزش ──
+https://dadvarzan.com/knowledge/chak-sayadi-1405
+https://dadvarzan.com/knowledge/hoqoq-malekat-fekri
+https://dadvarzan.com/knowledge/moshaver-hoghoghi-hoosh-masnooie
+https://dadvarzan.com/knowledge/tavafoghnameh-talaq-1405
+https://dadvarzan.com/knowledge/mablagh-diyeh-1405
 https://dadvarzan.com/services/administrative-request
-https://dadvarzan.com/services/case-followup
-https://dadvarzan.com/services/commission-100-defense
-https://dadvarzan.com/services/court-docs-errand
-https://dadvarzan.com/services/court-execution-agent
-https://dadvarzan.com/services/deed-execution-office
-https://dadvarzan.com/services/doc-prep
-https://dadvarzan.com/services/doc-review
-https://dadvarzan.com/services/enforcement-followup
-https://dadvarzan.com/services/enforcement-tracking
+https://dadvarzan.com/services/vehicle-registry-errand
 https://dadvarzan.com/services/general-managed-task
 https://dadvarzan.com/services/inheritance-package
-https://dadvarzan.com/services/lawyer-referral
+https://dadvarzan.com/services/tax-office-admin
+https://dadvarzan.com/services/org-followup
+https://dadvarzan.com/lawyers/specialty/ers
+https://dadvarzan.com/lawyers/specialty/kar/ahvaz
+https://dadvarzan.com/lawyers/specialty/mahriyeh/mashhad
+https://dadvarzan.com/lawyers/specialty/ers/qom
+https://dadvarzan.com/lawyers/specialty/melki/qom
+https://dadvarzan.com/lawyers/specialty/mahriyeh/tehran
+https://dadvarzan.com/lawyers/specialty/chek/qazvin
+https://dadvarzan.com/lawyers/specialty/mahriyeh/ahvaz
+https://dadvarzan.com/lawyers/specialty/tejarat/urmia
+https://dadvarzan.com/lawyers/specialty/ers/tehran
+https://dadvarzan.com/lawyers/specialty/mohajerat/qazvin
+https://dadvarzan.com/lawyers/specialty/chek/hamedan
+https://dadvarzan.com/lawyers/specialty/ers/shiraz
+https://dadvarzan.com/lawyers/specialty/mahriyeh/hamedan
+https://dadvarzan.com/lawyers/specialty/sabt-brand/rasht
+https://dadvarzan.com/lawyers/specialty/kar/shiraz
+https://dadvarzan.com/lawyers/specialty/kar/qom
+https://dadvarzan.com/lawyers/specialty/gharardad/tabriz
+https://dadvarzan.com/lawyers/specialty/chek/karaj
+
+# ── ۶) Unknown پرارزش (دسته‌بندی خدمات + قوانین مهم) ──
+https://dadvarzan.com/knowledge/mamnoolkhoroji-bedehi
+https://dadvarzan.com/services/category/family
+https://dadvarzan.com/services/tax-followup
+https://dadvarzan.com/services/category/administrative
+https://dadvarzan.com/services/case-followup
+https://dadvarzan.com/services/category/criminal
+https://dadvarzan.com/services/enforcement-followup
+https://dadvarzan.com/services/category/property
+https://dadvarzan.com/services/category/commercial
+https://dadvarzan.com/lawyers/specialty/sabt-brand/kerman
+https://dadvarzan.com/lawyers/specialty/ers/tabriz
+https://dadvarzan.com/lawyers/specialty/mahriyeh/esfahan
+https://dadvarzan.com/lawyers/specialty/gharardad/yazd
+https://dadvarzan.com/lawyers/specialty/chek/rasht
+https://dadvarzan.com/lawyers/specialty/gharardad/ahvaz
+https://dadvarzan.com/lawyers/specialty/mahriyeh/kermanshah
+https://dadvarzan.com/lawyers/specialty/ers/mashhad
+https://dadvarzan.com/lawyers/specialty/maliati/ahvaz
+https://dadvarzan.com/lawyers/specialty/talaq-khanavadeh/rasht
+https://dadvarzan.com/lawyers/specialty/mohajerat/ahvaz
+https://dadvarzan.com/lawyers/specialty/mohajerat/kermanshah
+https://dadvarzan.com/lawyers/specialty/maliati/hamedan
+https://dadvarzan.com/lawyers/specialty/maliati/karaj
+https://dadvarzan.com/lawyers/specialty/sabt-sherkat/esfahan
+https://dadvarzan.com/lawyers/specialty/maliati/urmia

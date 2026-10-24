@@ -62,8 +62,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Probe sitemap.xml از شبکهٔ مایکروسافت (Azure)
-        id: probe
         run: |
           CODE=$(curl -sS -o /tmp/sitemap.xml -w "%{http_code}" --max-time 45 https://dadvarzan.com/sitemap.xml || echo curl-failed)
           METRICS=$(curl -sS -o /dev/null -w "ttfb=%{time_starttransfer}s total=%{time_total}s size=%{size_download}B" --max-time 45 https://dadvarzan.com/sitemap.xml || echo curl-failed)
@@ -78,14 +82,22 @@ jobs:
             exit 1
           fi
 
-      - name: Resubmit sitemap به Bing Webmaster API
+      - name: SubmitSitemap (هر دو واریانت) + snapshot روند InIndex
         env:
           BING_API_KEY: ${{ secrets.BING_API_KEY }}
         run: |
-          RESP=$(curl -sS -X POST -H "Content-Length: 0" --max-time 30 \
-            "https://ssl.bing.com/webmaster/api.svc/json/SubmitSitemap?apikey=$BING_API_KEY&siteUrl=https%3A%2F%2Fdadvarzan.com&feedUrl=https%3A%2F%2Fdadvarzan.com%2Fsitemap.xml" || echo curl-failed)
-          echo "SubmitSitemap → $RESP"
-          echo "- Resubmit response: \`$RESP\`" >> "$GITHUB_STEP_SUMMARY"
+          # SubmitSitemap روی هر دو واریانت + snapshot CrawlStats
+          # تا وریفیکیشن BWT کامل نشده، خطا به‌صورت شفاف در سامری ثبت می‌شود.
+          OUTPUT=$(node scripts/bing-daily.mjs || echo "bing-daily failed")
+          {
+            echo "$OUTPUT"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: IndexNow — سابمیت کل sitemap به Bing/Yandex/Seznam
+        run: |
+          OUT=$(node scripts/indexnow-daily.mjs || echo "indexnow failed")
+          echo "$OUT"
+          echo "$OUT" >> "$GITHUB_STEP_SUMMARY"
 
   request-indexing:
     runs-on: ubuntu-latest
