@@ -1,25 +1,37 @@
 #!/usr/bin/env node
 /**
- * Bing Webmaster Tools — آدیت کامل با API رسمی
+ * Bing Webmaster Tools — آدیت کامل + رفع مشکل با API رسمی (v2 — endpointهای درست)
  * Usage: BING_API_KEY=... node scripts/bing-audit.mjs
  * خروجی: bing-audit-results.json (بدون هیچ داده حساس — کلید هرگز چاپ نمی‌شود)
  *
- * API docs: https://www.bing.com/webmasters/help/webmasters-api-hub-v1-9e1c9d74
+ * نکته مهم (2026-10-24): endpointهای GetSites / GetSitemaps / GetUrlStatistics
+ * دیگر وجود ندارند (404 خالی می‌دهند حتی با کلید الکی). معادل‌های درست:
+ *   GetSites      → GetUserSites
+ *   GetSitemaps   → GetFeeds
+ *   SubmitSitemap → SubmitFeed (POST)
+ *   GetCrawlIssues → فهرست مشکلات SEO که بینگ گزارش می‌کند (هدف اصلی آدیت)
+ *   SubmitUrlBatch → سابمیت گروهی URL برای ایندکس (POST)
  */
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, existsSync, readFileSync } from 'node:fs';
 
 const KEY = process.env.BING_API_KEY;
 if (!KEY) { console.error('BING_API_KEY required'); process.exit(1); }
 const API = 'https://ssl.bing.com/webmaster/api.svc/json';
+const HOST = 'dadvarzan.com';
+const VARIANTS = [`https://${HOST}`, `https://www.${HOST}`];
 
-const out = { ts: new Date().toISOString(), sites: null, sitemaps: {}, crawlStats: {}, queryStats: {}, linkCounts: {}, urlStats: {}, submitTests: {} };
+const out = { ts: new Date().toISOString(), userSites: null, site: null, feeds: {}, crawlIssues: {}, crawlStats: {}, queryStats: {}, linkCounts: {}, submitFeed: {}, submitBatch: {}, verified: false };
 
 async function api(endpoint, params = {}, method = 'GET') {
   const url = new URL(`${API}/${endpoint}`);
   url.searchParams.set('apikey', KEY);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   try {
-    const res = await fetch(url, { method, signal: AbortSignal.timeout(30_000) });
+    const res = await fetch(url, {
+      method,
+      ...(method === 'POST' ? { headers: { 'Content-Type': 'application/json; charset=utf-8' }, body: JSON.stringify({}) } : {}),
+      signal: AbortSignal.timeout(30_000),
+    });
     const text = await res.text();
     let body;
     try { body = JSON.parse(text); } catch { body = { raw: text.slice(0, 200) }; }
@@ -29,76 +41,71 @@ async function api(endpoint, params = {}, method = 'GET') {
   }
 }
 
-// ── ۱) همهٔ سایت‌های ثبت‌شده با این کلید — حیاتی‌ترین فراخوانی ──
-const sites = await api('GetSites');
-out.sites = sites.body?.d?.map(s => ({ url: s.Url, verified: !!s.IsVerified, cat: s.AssociatedAggregationService ?? null, indexNowEnabled: s.IndexNowEnabled ?? null })) ?? { status: sites.status, raw: sites.body };
-console.log('GetSites →', JSON.stringify(out.sites));
+// ── ۱) GetUserSites — تنها راه درست فهرست سایت‌ها ──
+const us = await api('GetUserSites');
+out.userSites = { status: us.status, sites: us.body?.d?.map(s => ({ url: s.Url, verified: !!s.IsVerified, indexNowEnabled: s.IndexNowEnabled ?? null, cat: s.AssociatedAggregationService ?? null })) ?? { status: us.status, body: us.body } };
+console.log('GetUserSites →', JSON.stringify(out.userSites));
 
-// GetSites یک‌بار دیگر (اگر 404 موقتی بود) + تست هر دو واریانت پراپرتی
-const sites2 = await api('GetSites');
-out.sitesRetry = { status: sites2.status, body: sites2.body };
-console.log('GetSites retry →', sites2.status, JSON.stringify(sites2.body).slice(0, 300));
-
-// کدام واریانت واقعاً با این کلید شناخته می‌شود؟ (CrawlStats حتی برای سایت ناشناخته خطای مشخص می‌دهد)
-const variants = ['https://dadvarzan.com', 'https://www.dadvarzan.com'];
-out.variantProbe = {};
-for (const v of variants) {
-  const cs = await api('GetCrawlStats', { siteUrl: v });
-  out.variantProbe[v] = { status: cs.status, hasData: Array.isArray(cs.body?.d) && cs.body.d.length > 0, error: cs.body?.ErrorCode ?? null, message: cs.body?.Message ?? null };
-  console.log(`variant ${v} → HTTP ${cs.status}`, JSON.stringify(cs.body).slice(0, 150));
+const sites = Array.isArray(us.body?.d) ? us.body.d : [];
+const main = sites.find(s => s.Url?.replace(/\/$/, '') === `https://${HOST}`) ?? sites.find(s => s.Url?.includes(HOST));
+if (main) {
+  out.site = { url: main.Url, verified: !!main.IsVerified, indexNowEnabled: main.IndexNowEnabled ?? null };
+  out.verified = !!main.IsVerified;
 }
-const workingVariant = Object.entries(out.variantProbe).find(([, p]) => p.hasData)?.[0] ?? 'https://dadvarzan.com';
+const SITE_URL = main?.Url?.replace(/\/$/, '') ?? `https://${HOST}`;
+console.log('→ using siteUrl:', SITE_URL, '| verified:', out.verified);
 
-const SITE_URL = workingVariant;
-console.log('→ using siteUrl:', SITE_URL);
+// ── ۲) GetCrawlIssues — لیست مشکلاتی که خود بینگ گزارش کرده ──
+const ci = await api('GetCrawlIssues', { siteUrl: SITE_URL });
+const issues = Array.isArray(ci.body?.d) ? ci.body.d : null;
+out.crawlIssues = { status: ci.status, count: issues?.length ?? null, issues: issues?.map(i => ({ url: i.Url ?? i.DiscoveredUrl, category: i.IssueType ?? i.Category, code: i.HttpStatus ?? null, date: i.DiscoveryDate ?? null })) ?? ci.body };
+console.log('GetCrawlIssues →', JSON.stringify(out.crawlIssues).slice(0, 800));
 
-// ── ۲) sitemapها ──
-const sm = await api('GetSitemaps', { siteUrl: SITE_URL });
-out.sitemaps = { siteUrl: SITE_URL, status: sm.status, body: sm.body };
-console.log('GetSitemaps →', JSON.stringify(sm.body).slice(0, 400));
+// ── ۳) GetFeeds — وضعیت sitemapها ──
+const gf = await api('GetFeeds', { siteUrl: SITE_URL });
+const feeds = Array.isArray(gf.body?.d) ? gf.body.d : null;
+out.feeds = { status: gf.status, count: feeds?.length ?? null, feeds: feeds?.map(f => ({ url: f.Url ?? f.FeedUrl, status: f.Status, lastMod: f.LastModifiedDate ?? null, discovered: f.DiscoveredUrlsCount ?? f.DiscoveredCount ?? null, indexed: f.InIndexCount ?? null })) ?? gf.body };
+console.log('GetFeeds →', JSON.stringify(out.feeds).slice(0, 600));
 
-// ── ۳) CrawlStats (۶ ماه اخیر) ──
+// ── ۴) SubmitFeed — سابمیت sitemap اصلی (در هر صورت اجرا می‌کنیم — idempotent) ──
+const sf = await api('SubmitFeed', { siteUrl: SITE_URL, feedUrl: `${SITE_URL}/sitemap.xml` }, 'POST');
+out.submitFeed.sitemap = { status: sf.status, body: sf.body };
+console.log('SubmitFeed sitemap.xml →', JSON.stringify(sf.body).slice(0, 300));
+
+// ── ۵) SubmitUrlBatch — سابمیت گروهی URLهای اولویت‌دار (۲۵۰ سقف هر batch) ──
+const queuePath = 'seo/indexing-queue.txt';
+if (existsSync(queuePath)) {
+  const urls = readFileSync(queuePath, 'utf8').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#')).map(l => l.startsWith('http') ? l : `https://${HOST}${l}`);
+  const batch = urls.slice(0, 250);
+  const res = await fetch(`${API}/SubmitUrlBatch?apikey=${KEY}&siteUrl=${encodeURIComponent(SITE_URL)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    body: JSON.stringify({ siteUrl: SITE_URL, urlList: batch }),
+    signal: AbortSignal.timeout(60_000),
+  });
+  const text = await res.text();
+  let body; try { body = JSON.parse(text); } catch { body = { raw: text.slice(0, 200) }; }
+  out.submitBatch = { status: res.status, submitted: batch.length, body };
+  console.log(`SubmitUrlBatch (${batch.length} URLs) → HTTP ${res.status}`, JSON.stringify(body).slice(0, 300));
+} else {
+  console.log('SubmitUrlBatch skipped —', queuePath, 'not found');
+}
+
+// ── ۶) آمار خزش/ترافیک/بک‌لینک ──
 const cs = await api('GetCrawlStats', { siteUrl: SITE_URL });
-out.crawlStats = { status: cs.status, body: cs.body };
-const crawlInfo = cs.body?.d;
-if (crawlInfo) {
-  const withData = Object.entries(crawlInfo).filter(([k, v]) => Array.isArray(v) && v.length);
-  console.log('GetCrawlStats keys with data:', withData.map(([k, v]) => `${k}:${v.length}`).join(', ') || 'EMPTY');
-}
+const crawlData = cs.body?.d;
+out.crawlStats = { status: cs.status, hasData: Array.isArray(crawlData) && crawlData.length > 0, sample: Array.isArray(crawlData) ? crawlData.slice(0, 3) : cs.body };
+console.log('GetCrawlStats →', JSON.stringify(out.crawlStats).slice(0, 400));
 
-// ── ۴) QueryStats (۳ ماه اخیر) ──
 const qs = await api('GetQueryStats', { siteUrl: SITE_URL });
-out.queryStats = { status: qs.status, body: qs.body };
-console.log('GetQueryStats →', JSON.stringify(qs.body).slice(0, 300));
+out.queryStats = { status: qs.status, rows: Array.isArray(qs.body?.d) ? qs.body.d.length : 0 };
+console.log('GetQueryStats →', JSON.stringify(out.queryStats));
 
-// ── ۵) LinkCounts ──
 const lc = await api('GetLinkCounts', { siteUrl: SITE_URL });
-out.linkCounts = { status: lc.status, body: lc.body };
-console.log('GetLinkCounts →', JSON.stringify(lc.body).slice(0, 300));
-
-// ── ۶) Index Explorer برای صفحات کلیدی ──
-const sampleUrls = [
-  'https://dadvarzan.com/',
-  'https://dadvarzan.com/lawyers',
-  'https://dadvarzan.com/knowledge/tarefe-vekalat-1405',
-  'https://dadvarzan.com/lawyers/city/shiraz',
-  'https://dadvarzan.com/services/administrative-request',
-];
-for (const u of sampleUrls) {
-  const us = await api('GetUrlStatistics', { siteUrl: SITE_URL, url: u });
-  out.urlStats[u] = { status: us.status, body: us.body };
-  console.log(`GetUrlStatistics ${u} →`, JSON.stringify(us.body).slice(0, 250));
-}
-
-// ── ۷) تست SubmitSitemap روی هر دو واریانت پراپرتی ──
-for (const v of variants) {
-  const ss = await api('SubmitSitemap', {
-    siteUrl: v,
-    feedUrl: `${v}/sitemap.xml`,
-  }, 'POST');
-  out.submitTests[`sitemap_${v}`] = { status: ss.status, body: ss.body };
-  console.log(`SubmitSitemap ${v} →`, JSON.stringify(ss.body).slice(0, 300));
-}
+const lcD = lc.body?.d;
+out.linkCounts = { status: lc.status, total: lcD?.TotalPages ?? null, links: lcD?.Links?.length ?? null };
+console.log('GetLinkCounts →', JSON.stringify(out.linkCounts));
 
 writeFileSync('bing-audit-results.json', JSON.stringify(out, null, 2));
 console.log('✓ written bing-audit-results.json');
+console.log('SUMMARY:', JSON.stringify({ verified: out.verified, site: out.site?.url, crawlIssues: out.crawlIssues.count, feeds: out.feeds.count, submitFeed: out.submitFeed.sitemap?.status, submitBatch: out.submitBatch?.status }));
