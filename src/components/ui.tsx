@@ -130,7 +130,16 @@ export function Avatar({
   );
 }
 
-export function Logo({ withText = true, tagline }: { withText?: boolean; tagline?: string }) {
+export function Logo({
+  withText = true,
+  tagline,
+  hideTagline = false,
+}: {
+  withText?: boolean;
+  tagline?: string;
+  /** شعار زیر لوگو را کامل حذف می‌کند — هدر بدون جملهٔ کنار لوگو (درخواست مالک) */
+  hideTagline?: boolean;
+}) {
   return (
     <span className="inline-flex items-center gap-3">
       <span className="logo-motion relative inline-flex h-12 w-12 shrink-0 rounded-xl shadow-md ring-1 ring-black/5 sm:h-14 sm:w-14">
@@ -148,7 +157,9 @@ export function Logo({ withText = true, tagline }: { withText?: boolean; tagline
         <span className="flex flex-col leading-none">
           <span className="text-lg font-extrabold tracking-tight text-foreground">{SITE_NAME}</span>
           {/* شعار فقط از sm به بالا — روی موبایل عرض هدر را سرریز می‌کرد */}
-          <span className="hidden text-[10px] font-medium text-muted sm:block">{tagline ?? SITE_TAGLINE}</span>
+          {!hideTagline && (
+            <span className="hidden text-[10px] font-medium text-muted sm:block">{tagline ?? SITE_TAGLINE}</span>
+          )}
         </span>
       )}
     </span>

@@ -44,6 +44,10 @@ export function Marquee({
         .map((_, i) => (
           <div
             key={i}
+            /* کپی‌های ۲ به بعد فقط برای افکت بی‌نهایت‌اند — از دسترس‌پذیری و
+               ترتیب فوکوس خارج می‌شوند تا لینک‌های داخل نوار دوباره شنیده/فوکوس نشوند
+               (aria-hidden روی محتوای فوکوس‌پذیر ممنوع است؛ inert خودش غیرفعال می‌کند) */
+            {...(i > 0 ? ({ inert: true, "aria-hidden": true } as Record<string, unknown>) : {})}
             className={cn("flex shrink-0 justify-around gap-(--gap)", {
               "animate-marquee flex-row": !vertical,
               "animate-marquee-vertical flex-col": vertical,

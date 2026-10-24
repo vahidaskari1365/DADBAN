@@ -9,7 +9,7 @@ import { HomeHero } from "@/components/home-hero";
 import { Marquee } from "@/components/magicui/marquee";
 import { ShineBorder } from "@/components/magicui/shine-border";
 import { AuroraText } from "@/components/magicui/aurora-text";
-import { LEGAL_TOPICS } from "@/lib/data";
+import { LEGAL_TOPICS, topicHref } from "@/lib/data";
 import { FeeBanner } from "@/components/fee/fee-banner";
 import { TrustStrip } from "@/components/home/action-hub";
 import { MainPaths } from "@/components/home/main-paths";
@@ -125,26 +125,25 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* Magic UI — نوار بی‌نهایت موضوعات حقوقی (تزئینی؛ فهرست واقعی برای اسکرین‌ریدر) */}
+      {/* Magic UI — نوار بی‌نهایت موضوعات حقوقی — هر موضوع لینک به صفحهٔ همان موضوع */}
       <section className="mt-8" aria-label={t("موضوعات حقوقی پرجستجو")}>
         <Container>
-          <p className="sr-only">
-            {LEGAL_TOPICS.map((tp) => t(tp.label)).join("، ")}
-          </p>
           <div className="relative overflow-hidden rounded-2xl border border-border bg-surface/60 py-1.5 [mask-image:linear-gradient(to_left,transparent,black_10%,black_90%,transparent)]">
-            <div aria-hidden="true">
-              <Marquee pauseOnHover repeat={2} className="[--duration:36s]">
-                {LEGAL_TOPICS.map((tp) => (
-                  <span key={tp.label} className="inline-flex items-center">
-                    <span className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold text-foreground-soft transition-colors hover:text-primary">
-                      <Icon name={tp.icon} className="h-3.5 w-3.5 text-accent-text" />
-                      {t(tp.label)}
-                    </span>
-                    <span className="text-accent/50">✦</span>
-                  </span>
-                ))}
-              </Marquee>
-            </div>
+            <Marquee pauseOnHover repeat={2} className="[--duration:36s]">
+              {LEGAL_TOPICS.map((tp) => (
+                <span key={tp.label} className="inline-flex items-center">
+                  <Link
+                    href={topicHref(tp.label)}
+                    title={t(tp.hint)}
+                    className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold text-foreground-soft transition-colors hover:text-primary"
+                  >
+                    <Icon name={tp.icon} className="h-3.5 w-3.5 text-accent-text" />
+                    {t(tp.label)}
+                  </Link>
+                  <span className="text-accent/50">✦</span>
+                </span>
+              ))}
+            </Marquee>
           </div>
         </Container>
       </section>

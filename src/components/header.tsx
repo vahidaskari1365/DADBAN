@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Container, Logo, Button } from "./ui";
-import { SITE_TAGLINE } from "@/lib/brand";
 import { Icon } from "./icons";
 import { ThemeToggle } from "./theme-toggle";
 import { BackButton } from "./back-button";
@@ -158,7 +157,8 @@ export function Header() {
             if (pathname === "/") window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         >
-          <Logo tagline={t(SITE_TAGLINE)} />
+          {/* هدر بدون شعار کنار لوگو — حذف جمله به درخواست مالک */}
+          <Logo hideTagline />
         </Link>
 
         {/* Center nav */}
@@ -298,7 +298,7 @@ export function Header() {
             >
             {/* هدر drawer */}
             <div className="flex items-center justify-between border-b border-border p-4">
-              <Logo tagline={t(SITE_TAGLINE)} />
+              <Logo hideTagline />
               <button
                 ref={drawerCloseRef}
                 type="button"

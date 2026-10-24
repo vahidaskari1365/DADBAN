@@ -41,6 +41,31 @@ export const LEGAL_TOPICS: { label: string; icon: IconKey; hint: string }[] = [
   { label: "مهاجرت", icon: "id", hint: "وکالت و امور مهاجرتی" },
 ];
 
+/* ---------------- Topic → Page links (نوار متحرک صفحهٔ اصلی) ----------------
+ * هر موضوعِ نوار متحرک، لینک به صفحهٔ فرود همان موضوع است (صفحات فرود تخصص
+ * وکیل در seo-landings.ts). موضوع بدون صفحهٔ اختصاصی به نزدیک‌ترین تخصص
+ * وکیل ملکی می‌رود؛ fallback امن همیشه /lawyers است.
+ */
+export const TOPIC_HREFS: Record<string, string> = {
+  "طلاق": "/lawyers/specialty/talaq-khanavadeh",
+  "مهریه": "/lawyers/specialty/mahriyeh",
+  "نفقه و حضانت": "/lawyers/specialty/hezanat",
+  "ارث": "/lawyers/specialty/ers",
+  "چک": "/lawyers/specialty/chek",
+  "ملک و اجاره": "/lawyers/specialty/melki",
+  "قرارداد": "/lawyers/specialty/gharardad",
+  "کیفری": "/lawyers/specialty/keifari",
+  "تصرف عدوانی": "/lawyers/specialty/melki",
+  "شرکت": "/lawyers/specialty/sabt-sherkat",
+  "مالیات": "/lawyers/specialty/maliati",
+  "کار": "/lawyers/specialty/kar",
+  "سرقفلی": "/lawyers/specialty/melki",
+  "مهاجرت": "/lawyers/specialty/mohajerat",
+};
+
+/** لینک صفحهٔ موضوع — برای موضوعات بدون صفحهٔ اختصاصی، جستجوی وکیل */
+export const topicHref = (label: string): string => TOPIC_HREFS[label] ?? "/lawyers";
+
 /* ---------------- Services (quick-access grid) ---------------- */
 export const SERVICES: {
   title: string;
